@@ -1,0 +1,160 @@
+.card {
+  overflow-x: auto; /* Habilita desplazamiento horizontal si es necesario */
+  max-width: 100%; /* Asegura que el contenedor no exceda su tamaño padre */
+  padding: 5px; /* Espaciado interno */
+  background-color: #1d1f20; /* Color de fondo */
+}
+
+.table th,
+.table td {
+  white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+  text-align: left; /* Alineación del texto */
+}
+
+.table {
+  background-color: transparent;
+}
+
+.table th,
+.table td {
+  background-color: transparent;
+}
+
+.calculator {
+  max-width: 500px; /* Ancho máximo para pantallas grandes */
+
+  margin: 0 auto; /* Centra la calculadora */
+  border: 1px solid #2c2c2c;
+  border-radius: 5px;
+  background-color: #161616;
+  margin-bottom: 30px;
+  box-shadow: 0px 0 30px rgba(1, 41, 112, 0.1);
+  word-wrap: break-word;
+}
+
+/* Pantalla de la calculadora */
+.calculator-screen {
+  width: 100%;
+  height: 60px;
+  border: none;
+  border-radius: 5px;
+  gap: 15px;
+  background-color: #2c2c2c;
+  color: #fff;
+  text-align: right;
+  padding-right: 20px;
+  padding-left: 10px;
+  font-size: 2rem; /* Tamaño de texto ajustado */
+}
+
+/* Estilo para los botones */
+.calculator-keys {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columnas */
+  gap: 5px; /* Espacio entre botones */
+  padding: 5px;
+}
+
+.calculator button {
+  height: 45px;
+  font-size: 1.2rem; /* Tamaño de texto ajustado */
+  border-radius: 5px;
+  background-color: #646262;
+  border: 1px solid #646262;
+  transition: background-color 0.3s ease;
+}
+
+.calculator button:hover {
+  background-color: #ddd;
+}
+
+.operator {
+  background-color: #ff9900;
+  color: rgb(255, 255, 255);
+}
+
+.equal-sign {
+  grid-column: span 2; /* Ocupa dos columnas */
+  background-color: #d4dbdd;
+  color: white;
+}
+
+.function {
+  background-color: #ff6666;
+  color: white;
+}
+
+/* Respuesta a pantallas más pequeñas */
+@media (max-width: 600px) {
+  .calculator-screen {
+    font-size: 1.5rem;
+  }
+
+  .calculator-keys {
+    grid-template-columns: repeat(4, 1fr); /* Ajuste para pantallas pequeñas */
+  }
+
+  .calculator button {
+    font-size: 1.25rem; /* Ajuste del tamaño de los botones */
+  }
+}
+
+/* Asegurar que el modal no se cierre al hacer clic fuera */
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+table th,
+table td {
+  text-align: center !important; /* Fuerza el centrado horizontal */
+  vertical-align: middle !important; /* Fuerza el centrado vertical */
+}
+
+iframe {
+  width: 100%;
+  height: 600px;
+  border: none;
+}
+
+/* Contenedor principal del calendario */
+.calendar-container {
+  background-color: #1e1e1e;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+/* Encabezados de los días */
+.calendar-container th {
+  background-color: #333;
+  color: white;
+  padding: 10px;
+  text-align: center;
+}
+
+/* Celdas de los días */
+.calendar-container td {
+  background-color: #222;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #444;
+}
+
+/* Día actual */
+.calendar-container .today {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: bold;
+}
+
+/* Hover en los días */
+.calendar-container td:hover {
+  background-color: #444;
+  cursor: pointer;
+}
+
+.calendar-iframe {
+  filter: invert(0.85) hue-rotate(180deg);
+}
