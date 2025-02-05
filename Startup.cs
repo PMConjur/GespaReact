@@ -38,7 +38,7 @@ namespace NoriAPI
             });
 
             services.AddScoped<IDbConnection>(c =>
-                new SqlConnection(Configuration.GetConnectionString("Ventas")));
+                new SqlConnection(Configuration.GetConnectionString("Piso2Amex")));
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserService, UserService>();

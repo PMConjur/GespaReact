@@ -17,7 +17,7 @@ namespace NoriAPI.Services
     {
 
         ////Task<List<dynamic>> ValidateUser(string username, string password, int extension, int bloqueo, string dominio, string computadora, string usuarioWindows, string ip, string aplicacion, string version);
-        Task<EjecutivoLogin> ValidateUser(AuthRequest request);
+        Task<ResultadoLogin> ValidateUser(AuthRequest request);
 
     }
 
@@ -32,7 +32,7 @@ namespace NoriAPI.Services
             _userRepository = userRepository;
         }
 
-        public async Task<EjecutivoLogin> ValidateUser(AuthRequest request)
+        public async Task<ResultadoLogin> ValidateUser(AuthRequest request)
         {
             // Variables para crear el objeto EjecutivoLogin de retorno:
             string mensaje;
@@ -49,7 +49,7 @@ namespace NoriAPI.Services
                 }
                 catch
                 {
-                    return new EjecutivoLogin("No se pudo validar el usuario, falló la solicitud con el servidor.", null, null);
+                    return new ResultadoLogin("No se pudo validar el usuario, falló la solicitud con el servidor.", null, null);
                     throw;
                 }
             }
@@ -64,7 +64,7 @@ namespace NoriAPI.Services
 
                 if (property == "Mensaje")
                 {
-                    return new EjecutivoLogin(property, expiro, null);
+                    return new ResultadoLogin(property, expiro, null);
                 }
 
             }

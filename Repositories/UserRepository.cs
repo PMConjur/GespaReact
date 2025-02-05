@@ -25,7 +25,7 @@ namespace NoriAPI.Repositories
 
         public async Task<dynamic> ValidateUser(AuthRequest request)
         {
-            using var connection = new SqlConnection(_configuration.GetConnectionString("Ventas"));
+            using var connection = new SqlConnection(_configuration.GetConnectionString("Piso2Amex"));
 
             string storedIniciaSesion = "EXEC [dbCollection].[API].[IniciaSesion]";
             var parameters = new

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "zs1BuPqnuGQ=",
+  "dgSpecHash": "uHtV6Q2CE7k=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Yoshua Rodriguez\\source\\repos\\Genesis\\NoriAPI.csproj",
+  "projectFilePath": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\NoriAPI.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Yoshua Rodriguez\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\Yoshua Rodriguez\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

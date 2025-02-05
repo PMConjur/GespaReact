@@ -2988,11 +2988,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Yoshua Rodriguez\\source\\repos\\Genesis\\NoriAPI.csproj",
+      "projectUniqueName": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\NoriAPI.csproj",
       "projectName": "NoriAPI",
-      "projectPath": "C:\\Users\\Yoshua Rodriguez\\source\\repos\\Genesis\\NoriAPI.csproj",
+      "projectPath": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\NoriAPI.csproj",
       "packagesPath": "C:\\Users\\Yoshua Rodriguez\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Yoshua Rodriguez\\source\\repos\\Genesis\\obj\\",
+      "outputPath": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Yoshua Rodriguez\\AppData\\Roaming\\NuGet\\NuGet.Config",

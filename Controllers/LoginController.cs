@@ -27,7 +27,7 @@ namespace NoriAPI.Controllers
 
 
         [HttpPost("iniciar-sesion")]
-        public async Task<ActionResult<EjecutivoLogin>> Login([FromBody] AuthRequest request)
+        public async Task<ActionResult<ResultadoLogin>> Login([FromBody] AuthRequest request)
         {
             var ejecutivo = await _userService.ValidateUser(request);
 
@@ -39,36 +39,36 @@ namespace NoriAPI.Controllers
             return Ok(new { ejecutivo });
         }
 
-        private string GenerateJwtToken(AuthRequest user)
-        {
-            var secretKey = _configuration["JwtSettings:Secret"];
-            if (string.IsNullOrEmpty(secretKey))
-            {
-                throw new InvalidOperationException("JWT Secret is not configured.");
-            }
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var encargadoUsers = _configuration.GetSection("RoleMappings:EncargadoUsers").Get<List<string>>();
+        //private string GenerateJwtToken(AuthRequest user)
+        //{
+        //    var secretKey = _configuration["JwtSettings:Secret"];
+        //    if (string.IsNullOrEmpty(secretKey))
+        //    {
+        //        throw new InvalidOperationException("JWT Secret is not configured.");
+        //    }
+        //    var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        //    var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+        //    var encargadoUsers = _configuration.GetSection("RoleMappings:EncargadoUsers").Get<List<string>>();
 
-            var role = encargadoUsers!.Contains(user.Usuario!) ? "Encargado" : "EjecutivoLogin";
+        //    var role = encargadoUsers!.Contains(user.Usuario!) ? "Encargado" : "EjecutivoLogin";
 
-            var claims = new List<Claim>
-            {
-                new (JwtRegisteredClaimNames.Sub, user.Usuario!),
-                new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new ("UserID", user.Usuario!.ToString()),
-                new (ClaimTypes.Role, role) // Add the role as a claim
-            };
+        //    var claims = new List<Claim>
+        //    {
+        //        new (JwtRegisteredClaimNames.Sub, user.Usuario!),
+        //        new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        //        new ("UserID", user.Usuario!.ToString()),
+        //        new (ClaimTypes.Role, role) // Add the role as a claim
+        //    };
 
-            var token = new JwtSecurityToken(
-                issuer: _configuration["JwtSettings:Issuer"],
-                audience: _configuration["JwtSettings:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(int.Parse(_configuration["JwtSettings:ExpiryHours"] ?? "1")),
-                signingCredentials: credentials);
+        //    var token = new JwtSecurityToken(
+        //        issuer: _configuration["JwtSettings:Issuer"],
+        //        audience: _configuration["JwtSettings:Audience"],
+        //        claims: claims,
+        //        expires: DateTime.UtcNow.AddHours(int.Parse(_configuration["JwtSettings:ExpiryHours"] ?? "1")),
+        //        signingCredentials: credentials);
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
+        //    return new JwtSecurityTokenHandler().WriteToken(token);
+        //}
 
 
         //[HttpGet("validate-api-key")]
