@@ -11,6 +11,7 @@
         public string? UsuarioWindows { get; set; }
         public string? IP { get; set; }
         public string? Aplicacion { get; set; }
+        public string? Version { get; set; }
 
     }
 }

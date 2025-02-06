@@ -95,9 +95,6 @@ D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\obj\Debug\net5.0\NoriAPI.csproj.
 D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\obj\Debug\net5.0\NoriAPI.MvcApplicationPartsAssemblyInfo.cs
 D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\obj\Debug\net5.0\NoriAPI.MvcApplicationPartsAssemblyInfo.cache
 D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\obj\Debug\net5.0\NoriAPI.sourcelink.json
-D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\obj\Debug\net5.0\NoriAPI.dll
-D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\obj\Debug\net5.0\refint\NoriAPI.dll
-D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\obj\Debug\net5.0\NoriAPI.pdb
 D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\bin\Debug\net5.0\appsettings.Development.json
 D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\bin\Debug\net5.0\appsettings.json
 D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\bin\Debug\net5.0\NoriAPI.exe
@@ -175,5 +172,8 @@ D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\obj\Debug\net5.0\staticwebassets
 D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\obj\Debug\net5.0\staticwebassets\msbuild.buildMultiTargeting.NoriAPI.props
 D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\obj\Debug\net5.0\staticwebassets\msbuild.buildTransitive.NoriAPI.props
 D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\obj\Debug\net5.0\NoriAPI.csproj.Up2Date
+D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\obj\Debug\net5.0\NoriAPI.dll
+D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\obj\Debug\net5.0\refint\NoriAPI.dll
+D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\obj\Debug\net5.0\NoriAPI.pdb
 D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\obj\Debug\net5.0\NoriAPI.genruntimeconfig.cache
 D:\Users\Yoshi\Documentos\ReposGespa\GespaReact\obj\Debug\net5.0\ref\NoriAPI.dll

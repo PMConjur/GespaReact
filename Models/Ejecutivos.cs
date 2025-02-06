@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace NoriAPI.Models
 {
 
-    public partial class EjecutivoInfoLogin
+    public partial class Ejecutivos
     {
         public int idEjecutivo { get; set; }
 

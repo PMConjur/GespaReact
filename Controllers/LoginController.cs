@@ -31,7 +31,7 @@ namespace NoriAPI.Controllers
         {
             var ejecutivo = await _userService.ValidateUser(request);
 
-            if (ejecutivo == null)
+            if (!ejecutivo.Mensaje.IsNullOrEmpty() || ejecutivo.Expiro == true || ejecutivo.Sesion == true)
             {
                 return Unauthorized(new { ejecutivo });
             }

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NoriAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ac9c9819096b45a5a7f8bc085ac26285f3311a83")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a62984c4f4be24d0ed4b658631739e1ec112d2ef")]
 [assembly: System.Reflection.AssemblyProductAttribute("NoriAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NoriAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

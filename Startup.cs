@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using NoriAPI.Repositories;
 using NoriAPI.Services;
+using NoriAPI.Middleware;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -43,12 +44,11 @@ namespace NoriAPI
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserService, UserService>();
 
-            //services.AddAuthentication("Bearer")
-            //.AddJwtBearer("Bearer", options =>
-            //{
-            //    options.Audience = Configuration["Jwt:Audience"];
-            //    options.Audience = Configuration["Jwt:Audience"];
-            //});
+            services.AddAuthentication("Bearer")
+            .AddJwtBearer("Bearer", options =>
+            {
+                options.Audience = Configuration["Jwt:Audience"];
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -60,6 +60,8 @@ namespace NoriAPI
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "NoriAPI v1"));
             }
+
+            app.UseGlobalErrorHandler();
 
             app.UseHttpsRedirection();
 

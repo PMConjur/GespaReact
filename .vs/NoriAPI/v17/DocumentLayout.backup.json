@@ -7,24 +7,28 @@
       "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:controllers\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\repositories\\userrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:repositories\\userrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\models\\login\\resultadologin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:models\\login\\resultadologin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\repositories\\userrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:repositories\\userrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\models\\login\\authrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:models\\login\\authrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\models\\ejecutivos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:models\\ejecutivos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\noriapi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:noriapi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     }
   ],
   "DocumentGroupContainers": [
@@ -34,32 +38,48 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 10,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\appsettings.json",
-              "RelativeDocumentMoniker": "appsettings.json",
-              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\appsettings.json",
-              "RelativeToolTip": "appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAOAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-02-05T00:45:42.23Z",
+              "DocumentIndex": 0,
+              "Title": "LoginController.cs",
+              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Controllers\\LoginController.cs",
+              "RelativeDocumentMoniker": "Controllers\\LoginController.cs",
+              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Controllers\\LoginController.cs",
+              "RelativeToolTip": "Controllers\\LoginController.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAAAkwBwAAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-04T22:23:21.542Z",
+              "IsPinned": true,
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "Startup.cs",
-              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Startup.cs",
-              "RelativeDocumentMoniker": "Startup.cs",
-              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Startup.cs",
-              "RelativeToolTip": "Startup.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACgAAABOAAAAAAAAAA==",
+              "Title": "UserService.cs",
+              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Services\\UserService.cs",
+              "RelativeDocumentMoniker": "Services\\UserService.cs",
+              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Services\\UserService.cs",
+              "RelativeToolTip": "Services\\UserService.cs",
+              "ViewState": "AgIAAFIAAAAAAAAAAAAiwCYAAABEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-05T00:45:37.616Z",
+              "WhenOpened": "2025-02-04T22:25:01.604Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "UserRepository.cs",
+              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Repositories\\UserRepository.cs",
+              "RelativeDocumentMoniker": "Repositories\\UserRepository.cs",
+              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Repositories\\UserRepository.cs",
+              "RelativeToolTip": "Repositories\\UserRepository.cs",
+              "ViewState": "AgIAACgAAAAAAAAAAAAiwDUAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-04T22:29:46.769Z",
+              "IsPinned": true,
               "EditorCaption": ""
             },
             {
@@ -89,53 +109,53 @@
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "UserRepository.cs",
-              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Repositories\\UserRepository.cs",
-              "RelativeDocumentMoniker": "Repositories\\UserRepository.cs",
-              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Repositories\\UserRepository.cs",
-              "RelativeToolTip": "Repositories\\UserRepository.cs",
-              "ViewState": "AgIAADkAAAAAAAAAAAAUwBkAAAA1AAAAAAAAAA==",
+              "Title": "ResultadoLogin.cs",
+              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Models\\Login\\ResultadoLogin.cs",
+              "RelativeDocumentMoniker": "Models\\Login\\ResultadoLogin.cs",
+              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Models\\Login\\ResultadoLogin.cs",
+              "RelativeToolTip": "Models\\Login\\ResultadoLogin.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAkAAAASAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-04T22:29:46.769Z",
+              "WhenOpened": "2025-02-06T00:40:09.975Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "UserService.cs",
-              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Services\\UserService.cs",
-              "RelativeDocumentMoniker": "Services\\UserService.cs",
-              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Services\\UserService.cs",
-              "RelativeToolTip": "Services\\UserService.cs",
-              "ViewState": "AgIAAC8AAAAAAAAAAAAowD0AAAAiAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-04T22:25:01.604Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "LoginController.cs",
-              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Controllers\\LoginController.cs",
-              "RelativeDocumentMoniker": "Controllers\\LoginController.cs",
-              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Controllers\\LoginController.cs",
-              "RelativeToolTip": "Controllers\\LoginController.cs",
-              "ViewState": "AgIAAEQAAAAAAAAAAAAIwFgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-04T22:23:21.542Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
               "Title": "AuthRequest.cs",
               "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Models\\Login\\AuthRequest.cs",
               "RelativeDocumentMoniker": "Models\\Login\\AuthRequest.cs",
               "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Models\\Login\\AuthRequest.cs",
               "RelativeToolTip": "Models\\Login\\AuthRequest.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAsAAAAnAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAArAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-04T22:23:00.315Z",
+              "WhenOpened": "2025-02-06T00:36:51.083Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Ejecutivos.cs",
+              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Models\\Ejecutivos.cs",
+              "RelativeDocumentMoniker": "Models\\Ejecutivos.cs",
+              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Models\\Ejecutivos.cs",
+              "RelativeToolTip": "Models\\Ejecutivos.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAUwAoAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-06T00:28:36.621Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "NoriAPI",
+              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\NoriAPI.csproj",
+              "RelativeDocumentMoniker": "NoriAPI.csproj",
+              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\NoriAPI.csproj",
+              "RelativeToolTip": "NoriAPI.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-02-06T00:17:55.842Z",
               "EditorCaption": ""
             }
           ]
