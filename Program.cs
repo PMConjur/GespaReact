@@ -22,7 +22,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => 
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "NoriAPI v1");
-        c.RoutePrefix = string.Empty; // Hace que Swagger se muestre en la raíz
+        //c.RoutePrefix = string.Empty; // Hace que Swagger se muestre en la raíz
     });
 }
 

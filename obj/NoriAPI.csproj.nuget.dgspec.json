@@ -1,25 +1,27 @@
 {
   "format": 1,
   "restore": {
-    "/Users/urielsaenz/Documents/CodeGit/Back/GespaReact/NoriAPI.csproj": {}
+    "D:\\Users\\Yoshi\\Documentos\\Repos\\GespaReact\\NoriAPI.csproj": {}
   },
   "projects": {
-    "/Users/urielsaenz/Documents/CodeGit/Back/GespaReact/NoriAPI.csproj": {
+    "D:\\Users\\Yoshi\\Documentos\\Repos\\GespaReact\\NoriAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/urielsaenz/Documents/CodeGit/Back/GespaReact/NoriAPI.csproj",
+        "projectUniqueName": "D:\\Users\\Yoshi\\Documentos\\Repos\\GespaReact\\NoriAPI.csproj",
         "projectName": "NoriAPI",
-        "projectPath": "/Users/urielsaenz/Documents/CodeGit/Back/GespaReact/NoriAPI.csproj",
-        "packagesPath": "/Users/urielsaenz/.nuget/packages/",
-        "outputPath": "/Users/urielsaenz/Documents/CodeGit/Back/GespaReact/obj/",
+        "projectPath": "D:\\Users\\Yoshi\\Documentos\\Repos\\GespaReact\\NoriAPI.csproj",
+        "packagesPath": "C:\\Users\\Yoshua Rodriguez\\.nuget\\packages\\",
+        "outputPath": "D:\\Users\\Yoshi\\Documentos\\Repos\\GespaReact\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/urielsaenz/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\Yoshua Rodriguez\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -32,12 +34,21 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
         }
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "Azure.Core": {
+              "target": "Package",
+              "version": "[1.38.0, )"
+            },
             "Dapper": {
               "target": "Package",
               "version": "[2.0.123, )"
@@ -82,7 +93,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/Cellar/dotnet@8/8.0.12/libexec/sdk/8.0.112/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.404/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
