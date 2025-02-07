@@ -1,9 +1,8 @@
 {
   "ExpandedNodes": [
     "",
-    "\\bin",
-    "\\Controllers",
-    "\\Models"
+    "\\Controllers"
   ],
+  "SelectedNode": "\\NoriAPI.sln",
   "PreviewInSolutionExplorer": false
 }

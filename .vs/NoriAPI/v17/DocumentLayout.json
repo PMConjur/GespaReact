@@ -1,45 +1,45 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\",
+  "WorkspaceRootPath": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\controllers\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\c\u00E9sarrdz\\1 gespa web react\\codegit\\gespareact\\controllers\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:controllers\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\noriapi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\noriapi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:noriapi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\models\\login\\authrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\models\\login\\authrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:models\\login\\authrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\models\\login\\resultadologin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\models\\login\\resultadologin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:models\\login\\resultadologin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\repositories\\userrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\repositories\\userrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:repositories\\userrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\reposgespa\\gespareact\\models\\ejecutivos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\models\\ejecutivos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:models\\ejecutivos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -50,17 +50,17 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "LoginController.cs",
-              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Controllers\\LoginController.cs",
+              "DocumentMoniker": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Controllers\\LoginController.cs",
               "RelativeDocumentMoniker": "Controllers\\LoginController.cs",
-              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Controllers\\LoginController.cs",
+              "ToolTip": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Controllers\\LoginController.cs",
               "RelativeToolTip": "Controllers\\LoginController.cs",
-              "ViewState": "AgIAABgAAAAAAAAAAAAQwBIAAAAoAAAAAAAAAA==",
+              "ViewState": "AQIAABQAAAAAAAAAAAAcwAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-02-04T22:23:21.542Z",
               "IsPinned": true,
@@ -70,9 +70,9 @@
               "$type": "Document",
               "DocumentIndex": 8,
               "Title": "UserRepository.cs",
-              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Repositories\\UserRepository.cs",
+              "DocumentMoniker": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Repositories\\UserRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\UserRepository.cs",
-              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Repositories\\UserRepository.cs",
+              "ToolTip": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Repositories\\UserRepository.cs",
               "RelativeToolTip": "Repositories\\UserRepository.cs",
               "ViewState": "AgIAACgAAAAAAAAAAAAiwDUAAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -83,9 +83,9 @@
               "$type": "Document",
               "DocumentIndex": 4,
               "Title": "Startup.cs",
-              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Startup.cs",
+              "DocumentMoniker": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Startup.cs",
               "RelativeDocumentMoniker": "Startup.cs",
-              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Startup.cs",
+              "ToolTip": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Startup.cs",
               "RelativeToolTip": "Startup.cs",
               "ViewState": "AgIAADIAAAAAAAAAAAAuwDgAAAAsAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -93,17 +93,8 @@
               "IsPinned": true
             },
             {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "UserService.cs",
-              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Services\\UserService.cs",
-              "RelativeDocumentMoniker": "Services\\UserService.cs",
-              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Services\\UserService.cs",
-              "RelativeToolTip": "Services\\UserService.cs",
-              "ViewState": "AgIAAHYAAAAAAAAAAAAAwI4AAAA+AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-07T01:05:12.953Z",
-              "EditorCaption": ""
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
             },
             {
               "$type": "Bookmark",
@@ -131,11 +122,23 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "UserService.cs",
+              "DocumentMoniker": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Services\\UserService.cs",
+              "RelativeDocumentMoniker": "Services\\UserService.cs",
+              "ToolTip": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Services\\UserService.cs",
+              "RelativeToolTip": "Services\\UserService.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-07T01:05:12.953Z"
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 5,
               "Title": "appsettings.json",
-              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\appsettings.json",
+              "DocumentMoniker": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\appsettings.json",
               "RelativeDocumentMoniker": "appsettings.json",
-              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\appsettings.json",
+              "ToolTip": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\appsettings.json",
               "RelativeToolTip": "appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
@@ -145,22 +148,21 @@
               "$type": "Document",
               "DocumentIndex": 2,
               "Title": "Program.cs",
-              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Program.cs",
+              "DocumentMoniker": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Program.cs",
+              "ToolTip": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Program.cs",
               "RelativeToolTip": "Program.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAABUAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-06T19:28:21.681Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-02-06T19:28:21.681Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 7,
               "Title": "ResultadoLogin.cs",
-              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Models\\Login\\ResultadoLogin.cs",
+              "DocumentMoniker": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Models\\Login\\ResultadoLogin.cs",
               "RelativeDocumentMoniker": "Models\\Login\\ResultadoLogin.cs",
-              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Models\\Login\\ResultadoLogin.cs",
+              "ToolTip": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Models\\Login\\ResultadoLogin.cs",
               "RelativeToolTip": "Models\\Login\\ResultadoLogin.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -170,9 +172,9 @@
               "$type": "Document",
               "DocumentIndex": 6,
               "Title": "AuthRequest.cs",
-              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Models\\Login\\AuthRequest.cs",
+              "DocumentMoniker": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Models\\Login\\AuthRequest.cs",
               "RelativeDocumentMoniker": "Models\\Login\\AuthRequest.cs",
-              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Models\\Login\\AuthRequest.cs",
+              "ToolTip": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Models\\Login\\AuthRequest.cs",
               "RelativeToolTip": "Models\\Login\\AuthRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -182,9 +184,9 @@
               "$type": "Document",
               "DocumentIndex": 9,
               "Title": "Ejecutivos.cs",
-              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Models\\Ejecutivos.cs",
+              "DocumentMoniker": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Models\\Ejecutivos.cs",
               "RelativeDocumentMoniker": "Models\\Ejecutivos.cs",
-              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Models\\Ejecutivos.cs",
+              "ToolTip": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Models\\Ejecutivos.cs",
               "RelativeToolTip": "Models\\Ejecutivos.cs",
               "ViewState": "AgIAABgAAAAAAAAAAAAUwAoAAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -194,9 +196,9 @@
               "$type": "Document",
               "DocumentIndex": 3,
               "Title": "NoriAPI.csproj",
-              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\NoriAPI.csproj",
+              "DocumentMoniker": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\NoriAPI.csproj",
               "RelativeDocumentMoniker": "NoriAPI.csproj",
-              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\NoriAPI.csproj",
+              "ToolTip": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\NoriAPI.csproj",
               "RelativeToolTip": "NoriAPI.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",

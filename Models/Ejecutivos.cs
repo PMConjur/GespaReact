@@ -56,5 +56,7 @@ namespace NoriAPI.Models
         public DateTime? FechaBaja { get; set; }
 
 
+
+
     }
 }

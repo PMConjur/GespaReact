@@ -26,6 +26,21 @@ namespace NoriAPI.Controllers
         }
 
 
+        [HttpPost ("Resetea-Contraseña")]//Endpoint Padrino
+
+        public async Task<ActionResult<ResultadoLogin>> Login([FromBody] ReseteaContra request)
+        {
+            var resetea = await _userService.ValidateContra(request);
+
+            if (!resetea.Mensaje.IsNullOrEmpty())
+            {
+                return Unauthorized(new { resetea });
+
+            }
+            return Ok(new { resetea });
+
+        }
+
         [HttpPost("iniciar-sesion")]
         public async Task<ActionResult<ResultadoLogin>> Login([FromBody] AuthRequest request)
         {

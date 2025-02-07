@@ -10,6 +10,7 @@ namespace NoriAPI.Repositories
 {
     public interface IUserRepository
     {
+        Task<dynamic> ValidateContra(ReseteaContra request);
         Task<dynamic> ValidateUser(AuthRequest request);
         Task<dynamic> ValidateUserRetry(AuthRequest request);
     }
@@ -24,6 +25,30 @@ namespace NoriAPI.Repositories
             _configuration = configuration;
         }
 
+        public async Task<dynamic> ValidateContra(ReseteaContra request)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string storedEstableceContra = "[dbCollection].[dbo].[1.2.EstableceContraseña]";
+            var parameters = new
+            {
+                Usuario = request.Usuario,
+                NuevaContraseña = request.NuevaContra,
+                Contraseña = request.Contra
+
+            };
+            var ReseteaContra = (await connection.QueryFirstOrDefaultAsync<dynamic>(
+                storedEstableceContra,
+                parameters,
+                commandType: CommandType.StoredProcedure
+            ));
+
+            return ReseteaContra;
+
+        }
+
+
+      
         public async Task<dynamic> ValidateUser(AuthRequest request)
         {
             using var connection = GetConnection("Piso2Amex");

@@ -1,10 +1,26 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\",
+  "WorkspaceRootPath": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Models\\EjecutivosPruebasActivar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Models\\EjecutivosPruebasActivar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Models\\Ejecutivos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Models\\Ejecutivos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Models\\EjecutivoMetas.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Models\\EjecutivoMetas.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Saenz.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Saenz.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -14,8 +30,12 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 7,
           "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c64b9c2-e352-428e-a56d-0ace190b99a6}"
@@ -43,10 +63,62 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "EjecutivosPruebasActivar.cs",
+              "DocumentMoniker": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Models\\EjecutivosPruebasActivar.cs",
+              "RelativeDocumentMoniker": "Models\\EjecutivosPruebasActivar.cs",
+              "ToolTip": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Models\\EjecutivosPruebasActivar.cs",
+              "RelativeToolTip": "Models\\EjecutivosPruebasActivar.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-07T18:17:38.061Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Ejecutivos.cs",
+              "DocumentMoniker": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Models\\Ejecutivos.cs",
+              "RelativeDocumentMoniker": "Models\\Ejecutivos.cs",
+              "ToolTip": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Models\\Ejecutivos.cs",
+              "RelativeToolTip": "Models\\Ejecutivos.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAADwvwAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-07T18:17:37.165Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "EjecutivoMetas.cs",
+              "DocumentMoniker": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Models\\EjecutivoMetas.cs",
+              "RelativeDocumentMoniker": "Models\\EjecutivoMetas.cs",
+              "ToolTip": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Models\\EjecutivoMetas.cs",
+              "RelativeToolTip": "Models\\EjecutivoMetas.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAADwvwAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-07T18:17:35.53Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Saenz.cs",
+              "DocumentMoniker": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Saenz.cs",
+              "RelativeDocumentMoniker": "Saenz.cs",
+              "ToolTip": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Saenz.cs",
+              "RelativeToolTip": "Saenz.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAJAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-07T17:39:49.8Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "Startup.cs",
-              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Startup.cs",
+              "DocumentMoniker": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Startup.cs",
               "RelativeDocumentMoniker": "Startup.cs",
-              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\ReposGespa\\GespaReact\\Startup.cs",
+              "ToolTip": "D:\\C\u00E9sarRdz\\1 Gespa Web React\\CodeGit\\GespaReact\\Startup.cs",
               "RelativeToolTip": "Startup.cs",
               "ViewState": "AgIAAAkAAAAAAAAAAAAAADEAAABDAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
