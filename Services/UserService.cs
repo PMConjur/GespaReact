@@ -13,6 +13,9 @@ namespace NoriAPI.Services
     {
 
         ////Task<List<dynamic>> ValidateUser(string username, string password, int extension, int bloqueo, string dominio, string computadora, string usuarioWindows, string ip, string aplicacion, string version);
+        ///
+
+        Task<ResultadoReseteo> ValidateContra(ReseteaContra request);
         Task<ResultadoLogin> ValidateUser(AuthRequest request);
 
     }
@@ -28,6 +31,25 @@ namespace NoriAPI.Services
             _userRepository = userRepository;
         }
 
+        public async Task<ResultadoReseteo> ValidateContra(ReseteaContra request)
+        {
+            string mensaje = null;
+
+            var validateReseteaContra = await _userRepository.ValidateContra(request);
+
+            var dict = (IDictionary<string, object>)validateReseteaContra;
+
+            if (dict.TryGetValue("Mensaje", out object mensajeObj) && mensajeObj != null)
+            {
+                mensaje = mensajeObj.ToString();
+                return new ResultadoReseteo(mensaje);
+            }
+            var resultadoReseteo = new ResultadoReseteo(mensaje);
+            return resultadoReseteo;
+
+        }
+
+
         public async Task<ResultadoLogin> ValidateUser(AuthRequest request)
         {
             // Variables para crear el objeto EjecutivoLogin de retorno:
@@ -35,9 +57,6 @@ namespace NoriAPI.Services
             bool expiro = false;
             bool sesion = false;
             EjecutivoInfoLogin ejecutivoInfoLogin = null;
-
-            //TODO: Llamar al stored que valida los días que faltan.
-
 
             //Llamamos al store procedure que valida las credenciales del usuario.
             var validateUser = await _userRepository.ValidateUser(request);
