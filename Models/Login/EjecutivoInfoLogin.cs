@@ -21,6 +21,7 @@ namespace NoriAPI.Models.Login
         public short idÁrea { get; set; }
         public byte Jerarquía { get; set; }
         public int Extensión { get; set; }
+        public int Dias {  get; set; }   
 
     }
 }

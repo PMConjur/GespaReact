@@ -131,6 +131,10 @@ namespace NoriAPI.Services
             if (dict.TryGetValue("Extensión", out var extension) && extension != null)
                 info.Extensión = Convert.ToInt32(extension);
 
+            if (dict.TryGetValue("Días", out var dias) && dias != null)
+                info.Dias = Convert.ToInt32(dias);
+
+
             return info;
         }
 
