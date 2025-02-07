@@ -18,13 +18,9 @@ body {
   background: #000000;
   color: #bfc4cc;
 }
-
-.login-page {
-  font-family: "Open Sans", sans-serif;
+.bodyColor {
   background: #000000;
-  color: #bfc4cc;
 }
-
 a {
   color: #bdfd9d;
   text-decoration: none;
@@ -42,6 +38,52 @@ h4,
 h5,
 h6 {
   font-family: "Nunito", sans-serif;
+}
+.pagetitle-max-size {
+  font-size: 70px;
+  margin-bottom: 0;
+  /* font-weight: 350; */
+  color: #81d4e4;
+}
+.pagetitle-max {
+  font-size: 50px;
+  margin-bottom: 0;
+  /* font-weight: 350; */
+  color: #ae8503;
+}
+
+.pagetitlehome-max-size {
+  font-size: 65px;
+  /* margin-bottom: 0; */
+  /* font-weight: 350; */
+  color: #c2c6cc;
+}
+
+.pagetitlehome-max {
+  font-size: 35px;
+  margin-bottom: 0;
+  font-weight: 100;
+  color: #fafafa;
+}
+
+.pagetitlehome-max img {
+  max-width: 6%;
+}
+/*--------------------------------------------------------------
+# Jumbotron
+--------------------------------------------------------------*/
+.jumbotron {
+  padding: 2rem 2rem;
+  color: #2c2c2c;
+  border-radius: 20px;
+}
+
+.jumbotron img {
+  max-width: 90%;
+}
+
+.jumbotron p {
+  color: #2eca6a;
 }
 
 /*--------------------------------------------------------------
@@ -253,7 +295,7 @@ h6 {
 /* Card */
 .card {
   margin-bottom: 30px;
-  border: none;
+  /* border: none; */
   border-radius: 5px;
   /* box-shadow: 0px 9px 13px 0px rgb(255 255 255); */
   word-wrap: break-word;
@@ -275,6 +317,7 @@ h6 {
   font-weight: 500;
   color: #d1d1d1;
   font-family: "Poppins", sans-serif;
+  /* padding: 10px; */
 }
 
 .card-title span {
@@ -722,7 +765,7 @@ h6 {
   font-weight: 600;
   color: #e6e7f1;
   transition: 0.3;
-  background: #161616;
+  background: #1d1f20;
   padding: 10px 15px;
   border-radius: 4px;
 }

@@ -12,6 +12,22 @@ dist
 dist-ssr
 *.local
 
+# Archivos de variables de entorno comunes
+.env
+.env.local
+.env.*       # Ignora cualquier archivo que comience con .env (por ejemplo, .env.production)
+config.json
+settings.py
+secrets.json
+
+
+# Dependencias de npm/yarn
+/node_modules/
+/vendor/
+package-lock.json
+yarn.lock
+
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -1,13 +1,30 @@
-import React, { useEffect } from "react";
-import { TimerPassword } from "../../assets/js/restriccion-login";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function Login() {
-  useEffect(() => {
-    const passwordInput = document.getElementById("yourPassword");
-    if (passwordInput) {
-      TimerPassword(passwordInput);
+const Login = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [displayPassword, setDisplayPassword] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!username || !password) {
+      alert("Por favor, completa los campos.");
+      return;
     }
-  }, []);
+
+    // Mostrar la contraseña real durante 250ms solo en el input
+    setDisplayPassword(password);
+
+    setTimeout(() => {
+      setDisplayPassword("•".repeat(password.length)); // Ocultar con "•" después de 250ms
+    }, 250);
+
+    // Redirigir después de la breve visualización de la contraseña
+    navigate("/home");
+  };
 
   return (
     <div>
@@ -18,13 +35,10 @@ export default function Login() {
             <div className="row justify-content-center">
               <div className="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
                 <div className="d-flex justify-content-center py-4">
-                  <a
-                    href="index.html"
-                    className="logo d-flex align-items-center w-auto"
-                  >
-                    <img src="assets/img/logo-login.png" alt="" />
+                  <h2 className="logo d-flex align-items-center w-auto">
+                    <img src="{assets/img/logo-login.png}" alt="" />
                     <span className="d-none d-lg-block">Gespa Web</span>
-                  </a>
+                  </h2>
                 </div>
 
                 <div className="card mb-3 border border-0">
@@ -38,7 +52,11 @@ export default function Login() {
                       </p>
                     </div>
 
-                    <form className="row g-3 needs-validation" noValidate>
+                    <form
+                      className="row g-3 needs-validation"
+                      noValidate
+                      onSubmit={handleSubmit}
+                    >
                       <div className="col-12">
                         <label for="yourUsername" className="form-label">
                           Usuario (Ingresa letras mayúsculas)
@@ -59,7 +77,9 @@ export default function Login() {
                             pattern="[A-Z]{4}"
                             title="Debe contener exactamente 4 letras mayúsculas"
                             maxLength="4"
-                            onInput="this.value = this.value.replace(/[^A-Z]/g, '')"
+                            //onInput="this.value = this.value.replace(/[^A-Z]/g, '')"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                           />
                           <div className="invalid-feedback">
                             Ingresa exactamente 4 letras mayúsculas.
@@ -84,6 +104,16 @@ export default function Login() {
                             className="form-control"
                             id="yourPassword"
                             required
+                            value={displayPassword}
+                            onChange={(e) => {
+                              setPassword(e.target.value);
+                              setDisplayPassword(e.target.value); // Muestra la contraseña real temporalmente
+                              setTimeout(() => {
+                                setDisplayPassword(
+                                  "•".repeat(e.target.value.length)
+                                ); // Ocultar con "•"
+                              }, 250);
+                            }}
                           />
                         </div>
                         <div className="invalid-feedback">
@@ -109,7 +139,11 @@ export default function Login() {
                       </div>
 
                       <div className="col-12">
-                        <button className="btn btn-primary w-100" type="submit">
+                        <button
+                          className="btn btn-primary w-100"
+                          type="submit"
+                          id="loginButton"
+                        >
                           Ingresar
                         </button>
                       </div>
@@ -130,4 +164,6 @@ export default function Login() {
       <footer>Gespa web 2025.</footer>
     </div>
   );
-}
+};
+
+export default Login;
