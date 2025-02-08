@@ -70,7 +70,7 @@ namespace NoriAPI.Services
                 }
                 catch
                 {
-                    return new ResultadoLogin("No se pudo validar el usuario, falló la solicitud con el servidor.", null, null, null);
+                    return new ResultadoLogin("No se pudo validar el usuario, falló la solicitud con el servidor.", null, null, null, null);
                     throw;
                 }
             }
@@ -94,7 +94,7 @@ namespace NoriAPI.Services
             if (dict.TryGetValue("Mensaje", out object mensajeObj) && mensajeObj != null)
             {
                 mensaje = mensajeObj.ToString();
-                return new ResultadoLogin(mensaje, sesion, expiro, null);
+                return new ResultadoLogin(mensaje, sesion, expiro, null, null);
             }
 
             // Si se encontró "idEjecutivo", se asume que la consulta fue exitosa
@@ -103,8 +103,8 @@ namespace NoriAPI.Services
                 ejecutivoInfoLogin = MapToEjecutivoInfo(dict);
             }
 
+            var resultado = new ResultadoLogin(mensaje, sesion, expiro, ejecutivoInfoLogin, null);
 
-            var resultado = new ResultadoLogin(mensaje, sesion, expiro, ejecutivoInfoLogin);
             return resultado;
 
         }

@@ -18,10 +18,10 @@ namespace NoriAPI.Models.Login
         public string Encargado { get; set; } = null!;
         public string NombreEjecutivo { get; set; } = null!;
         public short? idSucursal { get; set; }
-        public short idÁrea { get; set; }
-        public byte Jerarquía { get; set; }
-        public int Extensión { get; set; }
-        public int Dias {  get; set; }   
+        public short? idÁrea { get; set; }
+        public byte? Jerarquía { get; set; }
+        public int? Extensión { get; set; }
+        public int? Dias {  get; set; }
 
     }
 }

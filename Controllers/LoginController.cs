@@ -13,16 +13,25 @@ using System.Collections.Generic;
 namespace NoriAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/login")]
     public class LoginController : ControllerBase
     {
         private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
+        private readonly string secretKey;
+        private readonly string issuer;
+        private readonly string audience;
+        private readonly DateTime expirationTime;
 
         public LoginController(IUserService userService, IConfiguration configuration)
         {
             _userService = userService;
             _configuration = configuration;
+
+            secretKey = _configuration["JwtSettings:Key"];
+            issuer = _configuration["JwtSettings:Issuer"];
+            audience = _configuration["JwtSettings:Audience"];
+            expirationTime = DateTime.UtcNow.AddHours(int.Parse(_configuration["JwtSettings:ExpiryHours"] ?? "1"));
         }
 
 
@@ -37,10 +46,10 @@ namespace NoriAPI.Controllers
                 return Unauthorized(new { resetea });
 
             }
+
             return Ok(new { resetea });
 
         }
-
 
 
         [HttpPost("iniciar-sesion")]
@@ -53,39 +62,45 @@ namespace NoriAPI.Controllers
                 return Unauthorized(new { ejecutivo });
             }
 
+            ejecutivo.Token = GenerateJwtToken(request);
+
             return Ok(new { ejecutivo });
         }
 
-        //private string GenerateJwtToken(AuthRequest user)
-        //{
-        //    var secretKey = _configuration["JwtSettings:Secret"];
-        //    if (string.IsNullOrEmpty(secretKey))
-        //    {
-        //        throw new InvalidOperationException("JWT Secret is not configured.");
-        //    }
-        //    var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-        //    var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-        //    var encargadoUsers = _configuration.GetSection("RoleMappings:EncargadoUsers").Get<List<string>>();
+        private string GenerateJwtToken(AuthRequest user)
+        {
 
-        //    var role = encargadoUsers!.Contains(user.Usuario!) ? "Encargado" : "EjecutivoLogin";
+            if (string.IsNullOrEmpty(secretKey))
+            {
+                throw new InvalidOperationException("JWT Secret is not configured.");
+            }
 
-        //    var claims = new List<Claim>
-        //    {
-        //        new (JwtRegisteredClaimNames.Sub, user.Usuario!),
-        //        new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        //        new ("UserID", user.Usuario!.ToString()),
-        //        new (ClaimTypes.Role, role) // Add the role as a claim
-        //    };
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        //    var token = new JwtSecurityToken(
-        //        issuer: _configuration["JwtSettings:Issuer"],
-        //        audience: _configuration["JwtSettings:Audience"],
-        //        claims: claims,
-        //        expires: DateTime.UtcNow.AddHours(int.Parse(_configuration["JwtSettings:ExpiryHours"] ?? "1")),
-        //        signingCredentials: credentials);
+            // TODO: Implement role-based authorization
+            //var encargadoUsers = _configuration.GetSection("RoleMappings:EncargadoUsers").Get<List<string>>();
+            //var role = encargadoUsers!.Contains(user.Usuario!) ? "Encargado" : "EjecutivoLogin";
 
-        //    return new JwtSecurityTokenHandler().WriteToken(token);
-        //}
+            var claims = new List<Claim>
+            {
+                new (JwtRegisteredClaimNames.Sub, user.Usuario!),
+                new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new ("Usuario", user.Usuario!.ToString()),
+                //new (ClaimTypes.Role, role) // Add the role as a claim
+            };
+
+            var tokenBody = new JwtSecurityToken(
+                issuer: issuer,
+                audience: audience,
+                claims: claims,
+                expires: expirationTime,
+                signingCredentials: credentials);
+
+            var token = new JwtSecurityTokenHandler().WriteToken(tokenBody);
+
+            return token;
+        }
 
 
         //[HttpGet("validate-api-key")]
