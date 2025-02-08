@@ -174,6 +174,12 @@ namespace NoriAPI.Services
         //    return isValid;
         //}
 
+        public async Task<bool> RegisterTokenForUser(string token)
+        {
+            //TODO:  Completar el método
+            return true;
+        }
+
         private SqlConnection GetConnection(string connection)
         {
             return new SqlConnection(_configuration.GetConnectionString(connection));
