@@ -21,6 +21,12 @@ const Header = ({ toggleSidebar }) => {
     );
   };
 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
   return (
     <header id="header" className="header fixed-top d-flex align-items-center">
       <div
@@ -60,7 +66,6 @@ const Header = ({ toggleSidebar }) => {
             <option value="all">Seleccionar Filtro</option>
             <option value="alerts">Nombre</option>
             <option value="users">ID</option>
-            <option value="components">No. Empleado</option>
           </select>
           <button
             type="submit"
@@ -83,7 +88,7 @@ const Header = ({ toggleSidebar }) => {
       </div>
 
       <nav className="header-nav ms-auto">
-        <ul className="d-flex align-items-center">
+        <ul className="d-flex align-items-center" style={{marginRight: "40px"}}>
           <li className="nav-item d-block d-lg-none">
             <a className="nav-link nav-icon search-bar-toggle" href="/home">
               <i className="bi bi-search"></i>
@@ -94,19 +99,20 @@ const Header = ({ toggleSidebar }) => {
             <a
               className="nav-link nav-profile d-flex align-items-center pe-0"
               href="#"
-              data-bs-toggle="dropdown"
+              onClick={toggleDropdown}
             >
               <img
                 src={User}
                 alt="Profile"
-                class="rounded-circle"
+                className="rounded-circle"
               ></img>
               <span className="d-none d-md-block dropdown-toggle ps-2">
                 K. Anderson
               </span>
             </a>
 
-            <ul className="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+            <ul className={`dropdown-menu dropdown-menu-end dropdown-menu-arrow profile ${isDropdownOpen ? "show" : ""}`}
+                 style={{minWidth: "180px"}}>
               <li className="dropdown-header">
                 <h6>Kevin Anderson</h6>
                 <span>Web Designer</span>
@@ -117,46 +123,46 @@ const Header = ({ toggleSidebar }) => {
 
               <li>
                 <a
-                  class="dropdown-item d-flex align-items-center"
-                  href="users-profile.html"
+                  className="dropdown-item d-flex align-items-center"
+                  href="/ejemplo"
                 >
-                  <i class="bi bi-person"></i>
+                  <i className="bi bi-person"></i>
                   <span>My Profile</span>
                 </a>
               </li>
               <li>
-                <hr class="dropdown-divider" />
+                <hr className="dropdown-divider" />
               </li>
 
               <li>
                 <a
-                  class="dropdown-item d-flex align-items-center"
+                  className="dropdown-item d-flex align-items-center"
                   href="users-profile.html"
                 >
-                  <i class="bi bi-gear"></i>
+                  <i className="bi bi-gear"></i>
                   <span>Account Settings</span>
                 </a>
               </li>
               <li>
-                <hr class="dropdown-divider" />
+                <hr className="dropdown-divider" />
               </li>
 
               <li>
                 <a
-                  class="dropdown-item d-flex align-items-center"
+                  className="dropdown-item d-flex align-items-center"
                   href="pages-faq.html"
                 >
-                  <i class="bi bi-question-circle"></i>
+                  <i className="bi bi-question-circle"></i>
                   <span>Need Help?</span>
                 </a>
               </li>
               <li>
-                <hr class="dropdown-divider" />
+                <hr className="dropdown-divider" />
               </li>
 
               <li>
-                <a class="dropdown-item d-flex align-items-center" href="#">
-                  <i class="bi bi-box-arrow-right"></i>
+                <a className="dropdown-item d-flex align-items-center" href="#">
+                  <i className="bi bi-box-arrow-right"></i>
                   <span>Sign Out</span>
                 </a>
               </li>

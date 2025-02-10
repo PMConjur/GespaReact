@@ -24,3 +24,8 @@
      align-items: center;
 
   }
+
+  .dropdown-menu-arrow{
+    margin-right: "50px";
+    margin-top: 40px;
+  }

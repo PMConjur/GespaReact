@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import CampoUsuario from "../../Components/LoginComponent/CampoUsuario";
-import CampoContraseña from "../../Components/LoginComponent/CampoContraseña";
-import CampoCartera from "../../Components/LoginComponent/CampoCartera";
-import BotonIngresar from "../../Components/LoginComponent/BotonIngresar";
-import ModalCuenta from "../../Components/LoginComponent/ModalCuenta";
+import CampoUsuario from "../../components/LoginComponent/CampoUsuario";
+import CampoContraseña from "../../components/LoginComponent/CampoContraseña";
+import CampoCartera from "../../components/LoginComponent/CampoCartera";
+import BotonIngresar from "../../components/LoginComponent/BotonIngresar";
+import ModalCuenta from "../../components/LoginComponent/ModalCuenta";
 import logo from "../../assets/img/logo22.png";
 import { Modal } from "bootstrap";
 import "bootstrap/dist/js/bootstrap.bundle.min.js"; // Importa Bootstrap JS

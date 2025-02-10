@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import Layout from "../../Components/Header";
+import Layout from "../../components/Header";
 import Home1 from "../../assets/img/not-found.svg";
 import Maintenance from "../../assets/img/maintenance.png";
 
