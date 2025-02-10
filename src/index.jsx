@@ -1,14 +1,16 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-
 import "./assets/css/style.css";
 import "./assets/vendor/bootstrap/css/bootstrap.min.css";
 import "./assets/vendor/bootstrap-icons/bootstrap-icons.css";
-import "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.slim.min.js";
 import "./assets/vendor/boxicons/css/boxicons.min.css";
 import "./assets/vendor/quill/quill.snow.css";
+import "./assets/vendor/quill/quill.bubble.css";
 import "./assets/vendor/remixicon/remixicon.css";
 import "./assets/vendor/simple-datatables/style.css";
+import "./assets/css/style.css";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 import {
   BrowserRouter as Router,
