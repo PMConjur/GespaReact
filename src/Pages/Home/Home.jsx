@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import Layout from "../../components/Header";
+import Layout from "../../Components/Header";
 import Home1 from "../../assets/img/not-found.svg";
 import Maintenance from "../../assets/img/maintenance.png";
 
@@ -13,7 +13,7 @@ const Home = () => {
 
   return (
     <div>
-      <Layout/>
+      <Layout />
       <main id="main" className="main">
         <div className="jumbotron">
           <div className="row">
@@ -30,8 +30,8 @@ const Home = () => {
                   <div className="p-4 my-xxl-4">
                     <br />
                     <span className="pagetitlehome-max-size">
-                      <i className="bi bi-house-door-fill"></i> Bienvenido a Gespa
-                      web
+                      <i className="bi bi-house-door-fill"></i> Bienvenido a
+                      Gespa web
                     </span>
                     <br />
 
