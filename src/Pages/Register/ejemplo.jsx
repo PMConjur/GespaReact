@@ -9,9 +9,9 @@ const ejemplo = () => {
       border: '2px solid orange'
     }}>
       <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10}}>
-      <img src={Maintenence2} alt="img mantenimiento"  style={{width: "50px"}}/>
+     
       <h2 style={{color: "yellow"}}>Estamos en mantenimiento </h2>
-      <img src={Maintenence2} alt="img mantenimiento" className="hover-effect" style={{width: "50px"}}/>
+      
       </div>
        
       <h3 style={{color: "white", marginTop: 15, marginBottom: 15}}>Vuelva mas tarde</h3>
