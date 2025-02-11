@@ -1,7 +1,7 @@
-// CampoCartera.jsx
+// TextFieldPortfolio.jsx
 import React, { useState } from "react";
 
-const CampoCartera = () => {
+const TextFieldPortfolio = () => {
   const [cartera, setCartera] = useState("");
 
   // Función para manejar el cambio de selección
@@ -41,4 +41,4 @@ const CampoCartera = () => {
   );
 };
 
-export default CampoCartera;
+export default TextFieldPortfolio;

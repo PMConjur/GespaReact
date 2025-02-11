@@ -1,6 +1,6 @@
 import React from "react";
 
-const BotonIngresar = ({ disabled }) => {
+const EnterButton = ({ disabled }) => {
   return (
     <div className="col-12">
       <button
@@ -14,4 +14,4 @@ const BotonIngresar = ({ disabled }) => {
   );
 };
 
-export default BotonIngresar;
+export default EnterButton;

@@ -1,6 +1,6 @@
 import React from "react";
 
-const ModalCambioContraseña = ({
+const ModalChangePassword = ({
   showSecondModal,
   closeSecondModal,
   newPassword,
@@ -130,4 +130,4 @@ const ModalCambioContraseña = ({
   );
 };
 
-export default ModalCambioContraseña;
+export default ModalChangePassword;

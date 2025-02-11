@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import CampoUsuario from "../../Components/LoginComponent/CampoUsuario";
-import CampoContraseña from "../../Components/LoginComponent/CampoContraseña";
-import CampoCartera from "../../Components/LoginComponent/CampoCartera";
-import BotonIngresar from "../../Components/LoginComponent/BotonIngresar";
-import ModalCuenta from "../../Components/LoginComponent/ModalCuenta";
-import ModalCambioContraseña from "../../Components/LoginComponent/ModalCambioContraseña";
+import TextFielUser from "../../Components/LoginComponent/TextFielUser";
+import TextFielPassword from "../../Components/LoginComponent/TextFielPassword";
+import TextFieldPortfolio from "../../Components/LoginComponent/TextFieldPortfolio";
+import EnterButton from "../../Components/LoginComponent/EnterButton";
+import ModalPrincipal from "../../Components/LoginComponent/ModalPrincipal";
+import ModalChangePassword from "../../Components/LoginComponent/ModalChangePassword";
 import logo from "../../assets/img/logo22.png";
 import { Modal } from "bootstrap";
 import "bootstrap/dist/js/bootstrap.bundle.min.js"; // Importa Bootstrap JS
@@ -21,7 +21,7 @@ const LoginForm = () => {
     upperCase: false,
     lowerCase: false,
     number: false,
-    symbol: false
+    symbol: false,
   });
   const [passwordMatch, setPasswordMatch] = useState(false);
 
@@ -63,7 +63,7 @@ const LoginForm = () => {
       upperCase: /[A-Z]/.test(value),
       lowerCase: /[a-z]/.test(value),
       number: /[0-9]/.test(value),
-      symbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(value)
+      symbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(value),
     });
   };
 
@@ -108,20 +108,20 @@ const LoginForm = () => {
                       noValidate
                     >
                       <div className="col-12">
-                        <CampoUsuario
+                        <TextFielUser
                           onChange={(e) => setUser(e.target.value)}
                         />
                       </div>
                       <div className="col-12">
-                        <CampoContraseña
+                        <TextFielPassword
                           onChange={(e) => setPassword(e.target.value)}
                         />
                       </div>
                       <div className="col-12">
-                        <CampoCartera />
+                        <TextFieldPortfolio />
                       </div>
                       <div className="col-12">
-                        <BotonIngresar disabled={!isFormValid} />
+                        <EnterButton disabled={!isFormValid} />
                       </div>
                       <div className="col-12">
                         <p className="small mb-0" style={{ color: "white" }}>
@@ -132,12 +132,12 @@ const LoginForm = () => {
                     </form>
 
                     {/* Modal incluido dentro del LoginForm */}
-                    <ModalCuenta
+                    <ModalPrincipal
                       openSecondModal={openSecondModal}
                       password={password}
                       user={user}
                     />
-                    <ModalCambioContraseña
+                    <ModalChangePassword
                       showSecondModal={showSecondModal}
                       closeSecondModal={closeSecondModal}
                       newPassword={newPassword}

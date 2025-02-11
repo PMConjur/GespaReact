@@ -1,7 +1,7 @@
-// CampoUsuario.jsx
+// TextFielUser.jsx
 import React, { useState } from "react";
 
-const CampoUsuario = () => {
+const TextFielUser = () => {
   // Estado para el valor del campo y la validación
   const [usuario, setUsuario] = useState("");
   const [esValido, setEsValido] = useState(null);
@@ -72,4 +72,4 @@ const CampoUsuario = () => {
   );
 };
 
-export default CampoUsuario;
+export default TextFielUser;

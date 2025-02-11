@@ -1,10 +1,10 @@
 import React, { useRef, useState } from "react";
-import ModalCuenta from "./ModalCuenta";
-import ModalCambioContraseña from "./ModalCambioContraseña";
+import ModalPrincipal from "./ModalPrincipal";
+import ModalChangePassword from "./ModalChangePassword";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 
-const GestorModales = () => {
+const ModalMaster = () => {
   const [showSecondModal, setShowSecondModal] = useState(false);
   const modalRef = useRef(null);
 
@@ -23,10 +23,10 @@ const GestorModales = () => {
   return (
     <div>
       {/* Primer Modal */}
-      <ModalCuenta modalRef={modalRef} openSecondModal={openSecondModal} />
+      <ModalPrincipal modalRef={modalRef} openSecondModal={openSecondModal} />
 
       {/* Segundo Modal */}
-      <ModalCambioContraseña
+      <ModalChangePassword
         showSecondModal={showSecondModal}
         closeSecondModal={closeSecondModal}
       />
@@ -34,4 +34,4 @@ const GestorModales = () => {
   );
 };
 
-export default GestorModales;
+export default ModalMaster;

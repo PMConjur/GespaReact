@@ -1,7 +1,7 @@
-// CampoContraseña.jsx
+// TextFielPassword.jsx
 import React, { useState } from "react";
 
-const CampoContraseña = () => {
+const TextFielPassword = () => {
   // Estado para el valor del campo y la validación
   const [contraseña, setContraseña] = useState("");
   const [esValida, setEsValida] = useState(null);
@@ -97,4 +97,4 @@ const CampoContraseña = () => {
   );
 };
 
-export default CampoContraseña;
+export default TextFielPassword;

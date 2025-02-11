@@ -3,7 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const ModalCuenta = ({ openSecondModal, user, password }) => {
+const ModalPrincipal = ({ openSecondModal, user, password }) => {
   const navigate = useNavigate();
 
   const handleNoClick = () => {
@@ -17,7 +17,7 @@ const ModalCuenta = ({ openSecondModal, user, password }) => {
       usuarioWindows: "gespa.web",
       ip: "192.168.7.1",
       aplicacion: "GespaWeb",
-      version: "1.0.0"
+      version: "1.0.0",
     };
     navigate("/home");
     axios
@@ -66,4 +66,4 @@ const ModalCuenta = ({ openSecondModal, user, password }) => {
   );
 };
 
-export default ModalCuenta;
+export default ModalPrincipal;
