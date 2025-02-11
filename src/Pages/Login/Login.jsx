@@ -10,6 +10,8 @@ import { Modal } from "bootstrap";
 import "bootstrap/dist/js/bootstrap.bundle.min.js"; // Importa Bootstrap JS
 
 const LoginForm = () => {
+  const [password, setPassword] = useState("");
+  const [user, setUser] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [showSecondModal, setShowSecondModal] = useState(false);
   const [newPassword, setNewPassword] = useState("");
@@ -19,7 +21,7 @@ const LoginForm = () => {
     upperCase: false,
     lowerCase: false,
     number: false,
-    symbol: false,
+    symbol: false
   });
   const [passwordMatch, setPasswordMatch] = useState(false);
 
@@ -61,7 +63,7 @@ const LoginForm = () => {
       upperCase: /[A-Z]/.test(value),
       lowerCase: /[a-z]/.test(value),
       number: /[0-9]/.test(value),
-      symbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(value),
+      symbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(value)
     });
   };
 
@@ -106,10 +108,14 @@ const LoginForm = () => {
                       noValidate
                     >
                       <div className="col-12">
-                        <CampoUsuario />
+                        <CampoUsuario
+                          onChange={(e) => setUser(e.target.value)}
+                        />
                       </div>
                       <div className="col-12">
-                        <CampoContraseña />
+                        <CampoContraseña
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
                       </div>
                       <div className="col-12">
                         <CampoCartera />
@@ -126,7 +132,11 @@ const LoginForm = () => {
                     </form>
 
                     {/* Modal incluido dentro del LoginForm */}
-                    <ModalCuenta openSecondModal={openSecondModal} />
+                    <ModalCuenta
+                      openSecondModal={openSecondModal}
+                      password={password}
+                      user={user}
+                    />
                     <ModalCambioContraseña
                       showSecondModal={showSecondModal}
                       closeSecondModal={closeSecondModal}

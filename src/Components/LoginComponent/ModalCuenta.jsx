@@ -1,7 +1,36 @@
 import "../../assets/vendor/bootstrap/css/bootstrap.min.css";
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-const ModalCuenta = ({ openSecondModal }) => {
+const ModalCuenta = ({ openSecondModal, user, password }) => {
+  const navigate = useNavigate();
+
+  const handleNoClick = () => {
+    const login = {
+      user,
+      password,
+      extension: 0,
+      bloqueo: 0,
+      dominio: "SIS-DES-2021",
+      computadora: "SIS-DES-2021.gespaWeb.cj",
+      usuarioWindows: "gespa.web",
+      ip: "192.168.7.1",
+      aplicacion: "GespaWeb",
+      version: "1.0.0"
+    };
+    navigate("/home");
+    axios
+      .post("http://192.168.7.33/api/Login/iniciar-sesion", login)
+      .then((response) => {
+        console.log("login exitoso");
+
+        const userData = response.data;
+        localStorage.setItem("ejecutivo,mensaje,sesion", userData.storedUser);
+      })
+      .catch((error) => console.log("error no hay permisos", error));
+  };
+
   return (
     <div
       className="modal fade"
@@ -19,6 +48,7 @@ const ModalCuenta = ({ openSecondModal }) => {
               type="button"
               className="btn btn-success px-4"
               data-bs-dismiss="modal"
+              onClick={handleNoClick}
             >
               No
             </button>
