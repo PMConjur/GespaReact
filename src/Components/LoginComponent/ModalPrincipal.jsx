@@ -39,7 +39,10 @@ const ModalPrincipal = ({ openSecondModal, user, password }) => {
       aria-hidden="true"
     >
       <div className="modal-dialog" role="document">
-        <div className="card-body modal-content text-center">
+        <div
+          className="card-body modal-content text-center"
+          style={{ backgroundColor: "#1D1F20", color: "white" }}
+        >
           <h5 className="card-title">Gestor de Cuenta</h5>
           <p>Su contraseña expira en 30 días</p>
           <p>¿Deseas cambiar ahora?</p>

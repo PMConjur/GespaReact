@@ -14,16 +14,6 @@ const LoginForm = () => {
   const [user, setUser] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [showSecondModal, setShowSecondModal] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordValid, setPasswordValid] = useState({
-    length: false,
-    upperCase: false,
-    lowerCase: false,
-    number: false,
-    symbol: false,
-  });
-  const [passwordMatch, setPasswordMatch] = useState(false);
 
   useEffect(() => {
     const modalElement = document.getElementById("firstModal");
@@ -54,29 +44,6 @@ const LoginForm = () => {
   };
 
   const closeSecondModal = () => setShowSecondModal(false);
-
-  const handlePasswordChange = (e) => {
-    const { value } = e.target;
-    setNewPassword(value);
-    setPasswordValid({
-      length: value.length >= 10,
-      upperCase: /[A-Z]/.test(value),
-      lowerCase: /[a-z]/.test(value),
-      number: /[0-9]/.test(value),
-      symbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(value),
-    });
-  };
-
-  const handleConfirmPasswordChange = (e) => {
-    const { value } = e.target;
-    setConfirmPassword(value);
-    setPasswordMatch(value === newPassword);
-  };
-
-  const handleSubmitPasswordChange = (e) => {
-    e.preventDefault();
-    // Lógica para manejar el cambio de contraseña
-  };
 
   return (
     <main>
@@ -140,15 +107,6 @@ const LoginForm = () => {
                     <ModalChangePassword
                       showSecondModal={showSecondModal}
                       closeSecondModal={closeSecondModal}
-                      newPassword={newPassword}
-                      setNewPassword={setNewPassword}
-                      confirmPassword={confirmPassword}
-                      setConfirmPassword={setConfirmPassword}
-                      handlePasswordChange={handlePasswordChange}
-                      handleConfirmPasswordChange={handleConfirmPasswordChange}
-                      passwordValid={passwordValid}
-                      passwordMatch={passwordMatch}
-                      handleSubmit={handleSubmitPasswordChange}
                     />
                   </div>
                 </div>
