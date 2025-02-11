@@ -137,7 +137,7 @@ const Header = ({ toggleSidebar }) => {
               <li>
                 <a
                   className="dropdown-item d-flex align-items-center"
-                  href="users-profile.html"
+                  href="/ejemplo"
                 >
                   <i className="bi bi-gear"></i>
                   <span>Account Settings</span>
@@ -150,7 +150,7 @@ const Header = ({ toggleSidebar }) => {
               <li>
                 <a
                   className="dropdown-item d-flex align-items-center"
-                  href="pages-faq.html"
+                  href="/ejemplo"
                 >
                   <i className="bi bi-question-circle"></i>
                   <span>Need Help?</span>
@@ -161,7 +161,7 @@ const Header = ({ toggleSidebar }) => {
               </li>
 
               <li>
-                <a className="dropdown-item d-flex align-items-center" href="#">
+                <a className="dropdown-item d-flex align-items-center" href="/ejemplo">
                   <i className="bi bi-box-arrow-right"></i>
                   <span>Sign Out</span>
                 </a>
@@ -195,7 +195,7 @@ const Sidebar = ({ isSidebarOpen }) => {
     <aside id="sidebar" className={`sidebar ${isSidebarOpen ? "" : "collapsed"}`}>
       <ul className="sidebar-nav" id="sidebar-nav">
         <li className="nav-item">
-          <a className="nav-link" href="index.html">
+          <a className="nav-link" href="/home">
             <i className="bi bi-buildings-fill"></i>
             <span>Inicio</span>
           </a>
@@ -206,7 +206,7 @@ const Sidebar = ({ isSidebarOpen }) => {
           <a
             className={`nav-link ${isMenuOpen.components ? "" : "collapsed"}`}
             onClick={() => toggleMenu("components")}
-            href="#"
+           
           >
             <i className="bi bi-journal-text"></i><span>Información</span>
             <i className={`bi bi-chevron-${isMenuOpen.components ? "up" : "down"} ms-auto`}></i>
@@ -216,72 +216,72 @@ const Sidebar = ({ isSidebarOpen }) => {
             className={`nav-content collapse ${isMenuOpen.components ? "show" : ""}`}
           >
             <li>
-              <a href="components-alerts.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Alerts</span>
               </a>
             </li>
             <li>
-              <a href="components-accordion.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Accordion</span>
               </a>
             </li>
             <li>
-              <a href="components-badges.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Badges</span>
               </a>
             </li>
             <li>
-              <a href="components-breadcrumbs.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Breadcrumbs</span>
               </a>
             </li>
             <li>
-              <a href="components-buttons.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Buttons</span>
               </a>
             </li>
             <li>
-              <a href="components-cards.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Cards</span>
               </a>
             </li>
             <li>
-              <a href="components-carousel.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Carousel</span>
               </a>
             </li>
             <li>
-              <a href="components-list-group.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>List group</span>
               </a>
             </li>
             <li>
-              <a href="components-modal.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Modal</span>
               </a>
             </li>
             <li>
-              <a href="components-tabs.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Tabs</span>
               </a>
             </li>
             <li>
-              <a href="components-pagination.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Pagination</span>
               </a>
             </li>
             <li>
-              <a href="components-progress.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Progress</span>
               </a>
             </li>
             <li>
-              <a href="components-spinners.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Spinners</span>
               </a>
             </li>
             <li>
-              <a href="components-tooltips.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Tooltips</span>
               </a>
             </li>
@@ -293,7 +293,7 @@ const Sidebar = ({ isSidebarOpen }) => {
           <a
             className={`nav-link ${isMenuOpen.forms ? "" : "collapsed"}`}
             onClick={() => toggleMenu("forms")}
-            href="#"
+            
           >
             <i className="bi bi-arrow-down-up"></i><span>Acciones</span>
             <i className={`bi bi-chevron-${isMenuOpen.forms ? "up" : "down"} ms-auto`}></i>
@@ -303,22 +303,22 @@ const Sidebar = ({ isSidebarOpen }) => {
             className={`nav-content collapse ${isMenuOpen.forms ? "show" : ""}`}
           >
             <li>
-              <a href="forms-elements.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Form Elements</span>
               </a>
             </li>
             <li>
-              <a href="forms-layouts.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Form Layouts</span>
               </a>
             </li>
             <li>
-              <a href="forms-editors.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Form Editors</span>
               </a>
             </li>
             <li>
-              <a href="forms-validation.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Form Validation</span>
               </a>
             </li>
@@ -330,7 +330,7 @@ const Sidebar = ({ isSidebarOpen }) => {
           <a
             className={`nav-link ${isMenuOpen.tables ? "" : "collapsed"}`}
             onClick={() => toggleMenu("tables")}
-            href="#"
+            
           >
             <i className="bi bi-person-lines-fill"></i><span>Ejecutivo</span>
             <i className={`bi bi-chevron-${isMenuOpen.tables ? "up" : "down"} ms-auto`}></i>
@@ -340,12 +340,12 @@ const Sidebar = ({ isSidebarOpen }) => {
             className={`nav-content collapse ${isMenuOpen.tables ? "show" : ""}`}
           >
             <li>
-              <a href="tables-general.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>General Tables</span>
               </a>
             </li>
             <li>
-              <a href="tables-data.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Data Tables</span>
               </a>
             </li>
@@ -357,7 +357,7 @@ const Sidebar = ({ isSidebarOpen }) => {
           <a
             className={`nav-link ${isMenuOpen.charts ? "" : "collapsed"}`}
             onClick={() => toggleMenu("charts")}
-            href="#"
+           
           >
             <i className="bi bi-person-vcard"></i><span>Cuenta</span>
             <i className={`bi bi-chevron-${isMenuOpen.charts ? "up" : "down"} ms-auto`}></i>
@@ -367,17 +367,17 @@ const Sidebar = ({ isSidebarOpen }) => {
             className={`nav-content collapse ${isMenuOpen.charts ? "show" : ""}`}
           >
             <li>
-              <a href="charts-chartjs.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Chart.js</span>
               </a>
             </li>
             <li>
-              <a href="charts-apexcharts.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>ApexCharts</span>
               </a>
             </li>
             <li>
-              <a href="charts-echarts.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>ECharts</span>
               </a>
             </li>
@@ -389,7 +389,7 @@ const Sidebar = ({ isSidebarOpen }) => {
           <a
             className={`nav-link ${isMenuOpen.icons ? "" : "collapsed"}`}
             onClick={() => toggleMenu("icons")}
-            href="#"
+            
           >
             <i className="bi bi-gem"></i><span>Icons</span>
             <i className={`bi bi-chevron-${isMenuOpen.icons ? "up" : "down"} ms-auto`}></i>
@@ -399,17 +399,17 @@ const Sidebar = ({ isSidebarOpen }) => {
             className={`nav-content collapse ${isMenuOpen.icons ? "show" : ""}`}
           >
             <li>
-              <a href="icons-bootstrap.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Bootstrap Icons</span>
               </a>
             </li>
             <li>
-              <a href="icons-remix.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Remix Icons</span>
               </a>
             </li>
             <li>
-              <a href="icons-boxicons.html">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i><span>Boxicons</span>
               </a>
             </li>
@@ -421,7 +421,7 @@ const Sidebar = ({ isSidebarOpen }) => {
           <a
             className={`nav-link ${isMenuOpen.pages ? "" : "collapsed"}`}
             onClick={() => toggleMenu("pages")}
-            href="#"
+            
           >
             <i className="bi bi-menu-button-wide"></i>
             <span>Pages</span>
@@ -429,37 +429,37 @@ const Sidebar = ({ isSidebarOpen }) => {
           </a>
           <ul id="components-nav" className={`nav-content collapse ${isMenuOpen.pages ? "show" : ""}`}>
             <li>
-              <a href="/perfil">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i>
                 <span>Perfil</span>
               </a>
             </li>
             <li>
-              <a href="/faq">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i>
                 <span>FAQ</span>
               </a>
             </li>
             <li>
-              <a href="/contact">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i>
                 <span>Contact</span>
               </a>
             </li>
             <li>
-              <a href="/register">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i>
                 <span>Register</span>
               </a>
             </li>
             <li>
-              <a href="/login">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i>
                 <span>Login</span>
               </a>
             </li>
             <li>
-              <a href="/error-404">
+              <a href="/ejemplo">
                 <i className="bi bi-circle"></i>
                 <span>Error 404</span>
               </a>
