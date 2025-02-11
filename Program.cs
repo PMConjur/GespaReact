@@ -26,7 +26,9 @@ builder.Services.AddSwaggerGen(c =>
 
 // Registramos los servicios
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ISearchRepository, SearchRepository>();
 
 var app = builder.Build();
 
