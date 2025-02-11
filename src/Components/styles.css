@@ -1,0 +1,26 @@
+.sidebar {
+    transition: all 0.3s ease-in-out;
+    width: 250px;
+
+  }
+  
+  .sidebar.collapsed {
+    width: 0;
+    overflow: hidden;
+    padding: 0
+    
+  }
+  
+  .header{
+    padding-right: 50px;
+
+  }
+
+  .Buttom-search{
+     background-color: "#0d6efd";
+     margin-left: "10px"; 
+     color: "white";
+     border-radius: "5px";
+     align-items: center;
+
+  }

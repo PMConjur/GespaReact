@@ -1,4 +1,7 @@
 import { useNavigate } from "react-router-dom";
+import Layout from "../../Components/Header";
+import Home1 from "../../assets/img/not-found.svg";
+import Maintenance from "../../assets/img/maintenance.png";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -10,28 +13,29 @@ const Home = () => {
 
   return (
     <div>
-      <main id="main" class="main">
-        <div class="jumbotron">
-          <div class="row">
-            <div class="mb-12">
-              <div class="row g-0">
-                <div class="col-sm-4">
+      <Layout />
+      <main id="main" className="main">
+        <div className="jumbotron">
+          <div className="row">
+            <div className="mb-12">
+              <div className="row g-0">
+                <div className="col-sm-4">
                   <img
-                    src="../assets/img/home1.png"
-                    class="img-fluid rounded-start"
+                    src={Home1}
+                    className="img-fluid rounded-start"
                     alt="..."
                   />
                 </div>
-                <div class="col-sm-8">
-                  <div class="p-4 my-xxl-4">
+                <div className="col-sm-8">
+                  <div className="p-4 my-xxl-4">
                     <br />
-                    <span class="pagetitlehome-max-size">
-                      <i class="bi bi-house-door-fill"></i> Bienvenido a Gespa
-                      web
+                    <span className="pagetitlehome-max-size">
+                      <i className="bi bi-house-door-fill"></i> Bienvenido a
+                      Gespa web
                     </span>
                     <br />
 
-                    <span class="pagetitlehome-max">
+                    <span className="pagetitlehome-max">
                       Gestionando con pasión
                     </span>
                     <br />
@@ -45,30 +49,30 @@ const Home = () => {
             </div>
           </div>
         </div>
-        <div class="row">
-          <div class="pagetitle col-lg-12">
-            <div class="card mb-12">
-              <div class="row g-0">
-                <div class="col-md-6">
-                  <div class="card-body">
+        <div className="row">
+          <div className="pagetitle col-lg-12">
+            <div className="card mb-12">
+              <div className="row g-0">
+                <div className="col-md-6">
+                  <div className="card-body" style={{ height: "100%" }}>
                     <br />
-                    <span class="pagetitle-max-size">
-                      <i class="bi bi-exclamation-triangle"></i> Oops!
+                    <span className="pagetitle-max-size">
+                      <i className="bi bi-exclamation-triangle"></i> Oops!
                     </span>
                     <br />
-                    <span class="pagetitle-max">
-                      <i class="bi bi-plug"></i> Pagina en mantenimiento
+                    <span className="pagetitle-max">
+                      <i className="bi bi-plug"></i> Pagina en mantenimiento
                     </span>
-                    <p class="card-text">
+                    <p className="card-text">
                       Actualmente estamos realizando mejoras a nuestro portal,
                       disculpe las molestias.
                     </p>
                   </div>
                 </div>
-                <div class="col-md-6">
+                <div className="col-md-6">
                   <img
-                    src="assets/img/maintenance.png"
-                    class="img-fluid rounded-start"
+                    src={Maintenance}
+                    className="img-fluid rounded-start"
                     alt="..."
                   />
                 </div>
@@ -77,9 +81,9 @@ const Home = () => {
           </div>
         </div>
 
-        <div class="pagetitle"></div>
+        <div className="pagetitle"></div>
 
-        <section class="section dashboard"></section>
+        <section className="section dashboard"></section>
       </main>
     </div>
   );
