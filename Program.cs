@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using NoriAPI.Middleware;
 using NoriAPI.Repositories;
 using NoriAPI.Services;
 
@@ -44,6 +45,7 @@ app.UseSwaggerUI(c =>
     //c.RoutePrefix = string.Empty; // Hace que Swagger se muestre en la raíz
 });
 
+app.UseGlobalErrorHandler();
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthorization();

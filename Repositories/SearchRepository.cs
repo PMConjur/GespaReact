@@ -12,7 +12,7 @@ namespace NoriAPI.Repositories
 {
     public interface ISearchRepository
     {
-        Task<dynamic> ValidateBusqueda(string filtro);
+        Task<dynamic> ValidateBusqueda(string filtro, string ValorBusqueda);
 
     }
 
@@ -25,10 +25,8 @@ namespace NoriAPI.Repositories
             _configuration = configuration;
         }
 
-        public async Task<dynamic> ValidateBusqueda(string filtro)
-        {
-            //esto se debe cambiar
-
+        public async Task<dynamic> ValidateBusqueda(string filtro, string ValorBusqueda)
+        {            
             using var connection = GetConnection("Piso2Amex");
 
             string queryBusqueda = "WAITFOR DELAY '00:00:00';\r\n" +
@@ -45,70 +43,58 @@ namespace NoriAPI.Repositories
                                     "FROM Cuentas C \r\n" +
                                     "    	INNER JOIN Productos P ON P.idProducto = C.idProducto \r\n" +
                                     "    	INNER JOIN Carteras CL ON CL.idCartera = C.idCartera \r\n" +
-                                    "       INNER JOIN ValoresCatálogo V ON V.idValor = C.idSituación \r\n" +
-                                    "WHERE CuentaActiva = 1"
-                                    ;
-            //string Filtro = request.Filtro;
+                                    "       INNER JOIN ValoresCatálogo V ON V.idValor = C.idSituación \r\n"
+                                    
+                                    ;            
             switch (filtro)
             {
                 case "Cuenta":
-                    //queryBusqueda = sQueryBúsqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
-                    //sQueryWHERE += " AND C.idCuenta = '" + BúsquedaLimpia.Replace(" ", "") + "' ";// + sQueryidCartera;
+                    queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
+                    queryBusqueda += " WHERE CuentaActiva = 1 AND C.idCuenta = '" + ValorBusqueda.Replace(" ", "") + "' ";
                     break;
 
                 case "Nombre":
-                    //sQueryBúsqueda = sQueryBúsqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)")
-                    //    + " INNER JOIN Nombres N (NOLOCK) ON N.Expediente = C.Expediente ";
-                    //
-                    //foreach (string sNombre in BúsquedaLimpia.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
-                    //    sQueryWHERE += " AND CONTAINS( N.NombreDeudor, '" + sNombre.Replace("'", "") + "') ";
-                    //
-                    //sQueryWHERE += sQueryidCartera;
-
+                    queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
+                    queryBusqueda += " INNER JOIN Nombres N (NOLOCK) ON N.Expediente = C.Expediente ";
+                    
+                    foreach (string sNombre in ValorBusqueda.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
+                        queryBusqueda += " AND CONTAINS( N.NombreDeudor, '" + sNombre.Replace("'", "") + "') ";
+                    queryBusqueda += "WHERE CuentaActiva = 1";
                     break;
 
                 case "RFC":
-                    //sQueryBúsqueda = sQueryBúsqueda.Replace("Cuentas C", "Cuentas C WITH (INDEX(IX_Cuentas_RFC), NOLOCK)");
-                    //sQueryWHERE += " AND  CHARINDEX('" + BúsquedaLimpia.Replace(" ", "") + "', C.RFC) = 1  ";
+                    queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (INDEX(IX_Cuentas_RFC), NOLOCK)");
+                    queryBusqueda += " WHERE CuentaActiva = 1 AND  CHARINDEX('" + ValorBusqueda.Replace(" ", "") + "', C.RFC) = 1  ";
                     break;
 
-                case "Número Cliente":
-                    //sQueryBúsqueda = sQueryBúsqueda.Replace("Cuentas C", "Cuentas C WITH (INDEX(IX_Cuentas_NúmeroCliente), NOLOCK)");
-                    //sQueryWHERE += " AND  C.NúmeroCliente = '" + BúsquedaLimpia.Replace(" ", "") + "' " + sQueryidCartera;
+                case "Numero Cliente":
+                    queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (INDEX(IX_Cuentas_NúmeroCliente), NOLOCK)");
+                    queryBusqueda += " WHERE CuentaActiva = 1 AND  C.NúmeroCliente = '" + ValorBusqueda.Replace(" ", "") + "' ";
                     break;
 
-                case "Teléfono":
-                    //sQueryBúsqueda = sQueryBúsqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
-                    //sQueryBúsqueda += "       LEFT JOIN Teléfonos T WITH (NOLOCK) ON T.idCartera = C.idCartera AND T.idCuenta = C.idCuenta \r\n";
+                case "Telefono":
+                    queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
+                    queryBusqueda += "  LEFT JOIN Teléfonos T WITH (NOLOCK) ON T.idCartera = C.idCartera AND T.idCuenta = C.idCuenta \r\n";
 
-                    //foreach (char caracter in Búsqueda.Replace(" ", ""))
+                    //foreach (char caracter in ValorBusqueda.Replace(" ", ""))
                     //    if (!char.IsDigit(caracter))
                     //        return tblResultado;
-                    //
-                    //sQueryWHERE += " AND T.NúmeroTelefónico = RIGHT('" + BúsquedaLimpia.Replace(" ", "") + "', 10) ";
+                    //que el equipo Front controle que solo sean numeros y sean 10 digitos
+
+                    queryBusqueda += " WHERE CuentaActiva = 1 AND T.NúmeroTelefónico = RIGHT('" + ValorBusqueda.Replace(" ", "") + "', 10) ";
                     break;
 
-                case "Expediente":
-                    //string sExpediente = "";
-                    //if (BúsquedaLimpia.Length <= 3)
-                    //    return tblResultado;
-                    //
-                    //sQueryWHERE += " AND CL.Abreviación = '";
-                    //foreach (char Caracter in BúsquedaLimpia.Substring(0, 3))
-                    //    if (char.IsLetter(Caracter))
-                    //        sQueryWHERE += Caracter;
-                    //
-                    //sQueryWHERE += "' AND C.Expediente = ";
-                    //foreach (char Caracter in BúsquedaLimpia.Substring(3))
-                    //    if (char.IsDigit(Caracter))
-                    //        sExpediente += Caracter;
-                    //
-                    //if (sExpediente == "")
-                    //    return tblResultado;
-                    //else
-                    //    sQueryWHERE += sExpediente;
-                    //
-                    //sQueryBúsqueda = sQueryBúsqueda.Replace("Cuentas C", DataBaseConn.TablaCuentas(BúsquedaLimpia) + " C WITH (NOLOCK) ");
+                case "Expediente":     //El equipo Front debe validar que no tenga letras
+                                       
+                    queryBusqueda += " WHERE CuentaActiva = 1 AND CL.Abreviación = '";
+                    foreach (char Caracter in ValorBusqueda.Substring(0, 3))
+                        if (char.IsLetter(Caracter))
+                            queryBusqueda += Caracter;
+                    queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
+
+                    queryBusqueda += "' AND C.Expediente = " + ValorBusqueda.Replace("AMX", "").Replace("amx", "").Replace(" ", "");                    
+
+                    
                     break;
 
                 default:
@@ -116,6 +102,7 @@ namespace NoriAPI.Repositories
                     break;
             }
 
+            // Recuerda cómo especificar la palabra clave (para reemplazar QueryFirstOrDefaultAsync) en el valor del tipo de dato).
             var busqueda = (await connection.QueryFirstOrDefaultAsync<dynamic>(
                 queryBusqueda,
                 //parameters,

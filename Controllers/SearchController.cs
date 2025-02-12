@@ -31,18 +31,17 @@ namespace NoriAPI.Controllers
 
         [HttpGet("busqueda-cuenta")]//Endpoint Padrino
         //public async Task<ActionResult<ResultadoBusqueda>> Busqueda([FromBody] Busqueda request)
-        public async Task<ActionResult<ResultadoBusqueda>> Busqueda([FromQuery] string filtro)
+        public async Task<ActionResult<ResultadoBusqueda>> Busqueda([FromQuery] string filtro, string ValorBusqueda)
         {
-            var Busqueda = await _searchService.ValidateBusqueda(filtro);
+            //checar el error
+            var Busqueda = await _searchService.ValidateBusqueda(filtro, ValorBusqueda);
 
             if (!Busqueda.Mensaje.IsNullOrEmpty())
             {
-                return Unauthorized(new { Busqueda });
+                return BadRequest(new { Busqueda.Mensaje });
 
             }
-
-            return Ok(new { Busqueda });
-
+            return Ok(new { Busqueda.Busquedainfo });
         }
 
 

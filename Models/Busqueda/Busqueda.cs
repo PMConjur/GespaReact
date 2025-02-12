@@ -3,5 +3,6 @@
     public class Busqueda
     {
         public string Filtro {  get; set; }
+        public string ValorBusqueda { get; set; }
     }
 }
