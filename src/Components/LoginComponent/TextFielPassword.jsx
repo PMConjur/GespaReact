@@ -1,12 +1,9 @@
 // TextFielPassword.jsx
 import React, { useState } from "react";
 
-const TextFielPassword = () => {
-  // Estado para el valor del campo y la validación
-  const [contraseña, setContraseña] = useState("");
+const TextFielPassword = ({ value, onChange }) => {
   const [esValida, setEsValida] = useState(null);
 
-  // Función de validación
   const validatePassword = (password) => {
     const hasUppercase = /[A-Z]/.test(password); // Verifica al menos una mayúscula
     const hasLowercase = /[a-z]/.test(password); // Verifica al menos una minúscula
@@ -19,14 +16,12 @@ const TextFielPassword = () => {
     );
   };
 
-  // Manejador de cambios en el input
   const handleInputChange = (e) => {
     let value = e.target.value;
-    // Limitar a 10 caracteres
     if (value.length > 10) {
       value = value.slice(0, 10);
     }
-    setContraseña(value);
+    onChange(e);
 
     if (value.length === 0) {
       setEsValida(null); // Sin validación si está vacío
@@ -61,7 +56,7 @@ const TextFielPassword = () => {
               : ""
           }`}
           id="yourPassword"
-          value={contraseña}
+          value={value}
           onChange={handleInputChange}
           required
           maxLength="10"
@@ -89,7 +84,7 @@ const TextFielPassword = () => {
       {/* Retroalimentación general cuando no se ingresa la contraseña */}
       <div
         className="invalid-feedback"
-        style={{ display: contraseña.length === 0 ? "block" : "none" }}
+        style={{ display: value.length === 0 ? "block" : "none" }}
       >
         Ingresa la contraseña!
       </div>

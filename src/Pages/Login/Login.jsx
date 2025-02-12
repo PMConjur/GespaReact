@@ -11,7 +11,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js"; // Importa Bootstrap JS
 
 const LoginForm = () => {
   const [password, setPassword] = useState("");
-  const [user, setUser] = useState(false);
+  const [user, setUser] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
   const [showSecondModal, setShowSecondModal] = useState(false);
 
@@ -76,11 +76,13 @@ const LoginForm = () => {
                     >
                       <div className="col-12">
                         <TextFielUser
+                          value={user}
                           onChange={(e) => setUser(e.target.value)}
                         />
                       </div>
                       <div className="col-12">
                         <TextFielPassword
+                          value={password}
                           onChange={(e) => setPassword(e.target.value)}
                         />
                       </div>
