@@ -6,6 +6,8 @@ import User from "../assets/img/user.svg";
 
 const Header = ({ toggleSidebar }) => {
   const [selectedOption, setSelectedOption] = useState("all");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
 
   const handleOptionChange = (e) => {
     setSelectedOption(e.target.value);
@@ -21,12 +23,18 @@ const Header = ({ toggleSidebar }) => {
     );
   };
 
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
+  const toggleSearchBar = (e) => {
+    e.preventDefault();
+    setIsSearchVisible((prev) => {
+      console.log("Nuevo estado de búsqueda:", !prev);
+      return !prev;
+    });
+  };
+  
   return (
     <header id="header" className="header fixed-top d-flex align-items-center">
       <div
@@ -43,13 +51,15 @@ const Header = ({ toggleSidebar }) => {
         </a>
       </div>
 
-      <div className="search-bar">
+      {/* Barra de búsqueda principal (solo visible en pantallas grandes) */}
+      <div className=" d-none d-lg-block" style={{marginLeft: "30px"}}>
         <form
-          className="search-form d-flex align-items-center"
+          className=" d-flex align-items-center"
           onSubmit={handleSearch}
-          style={{ gap: "1rem" }}
+          style={{ gap: "1rem",  width: "100%", marginLeft:"20px"}}
         >
           <input
+
             type="text"
             name="query"
             placeholder="Busqueda de cuenta"
@@ -61,8 +71,6 @@ const Header = ({ toggleSidebar }) => {
             value={selectedOption}
             onChange={handleOptionChange}
             aria-label="Selecciona el filtro"
-            
-            
           >
             <option>Selecciona el filtro</option>
             <option>Cuenta</option>
@@ -90,55 +98,89 @@ const Header = ({ toggleSidebar }) => {
               gap: "5px",
             }}
           >
-            <i class="bi bi-arrow-repeat" style={{color: "white"}}></i>
-            <span className="d-none d-lg-block">Automatico</span>     
+            <i className="bi bi-arrow-repeat" style={{ color: "white" }}></i>
+            <span className="d-none d-lg-block">Automatico</span>
           </button>
         </form>
       </div>
 
       <nav className="header-nav ms-auto">
-        <ul className="d-flex align-items-center" style={{marginRight: "40px"}}>
+        <ul
+          className="d-flex align-items-center"
+          style={{ marginRight: "40px" }}
+        >
+          {/* Ícono de búsqueda en pantallas pequeñas */}
           <li className="nav-item d-block d-lg-none">
-            <a className="nav-link nav-icon search-bar-toggle">
-              <i className="bi bi-search"></i>
-            </a>
+            <button
+              className="nav-link nav-icon search-bar-toggle btn btn-link p-0"
+              onClick={toggleSearchBar}
+            >
+              <i className="bi bi-search" style={{color: "white"}}></i>
+            </button>
           </li>
 
+          {isSearchVisible && (
+            <li
+              className="nav-item w-100 d-block d-lg-none"
+              style={{ marginBottom: "-100px", zIndex: "50", position: "fixed", margin: "start" }}
+            >
+              <div className=" p-2" style={{right: "0", left: "0"}}>
+                <form
+                  className="search-form d-flex align-items-center"
+                  onSubmit={handleSearch}
+                >
+                  <input
+                    type="text"
+                    name="query"
+                    placeholder="Search"
+                    className="form-control me-2"
+                  />
+                  <button
+                    type="submit"
+                    title="Search"
+                    className="btn btn-primary"
+                  >
+                    <i className="bi bi-search"></i>
+                  </button>
+                </form>
+              </div>
+            </li>
+          )}
+
+          {/* Perfil del usuario */}
           <li className="nav-item dropdown pe-3">
             <a
               className="nav-link nav-profile d-flex align-items-center pe-0"
-              
               onClick={toggleDropdown}
             >
-              <img
-                src={User}
-                alt="Profile"
-                className="rounded-circle"
-              ></img>
-              <span className="d-none d-md-block dropdown-toggle ps-2">Cesar Rodriguez</span>
+              <img src={User} alt="Profile" className="rounded-circle" />
+              <span className=" d-md-block dropdown-toggle ps-2">
+                Cesar Rodriguez
+              </span>
             </a>
 
-            <ul className={`dropdown-menu dropdown-menu-end dropdown-menu-arrow profile ${isDropdownOpen ? "show" : ""}`}
-                 >
-              
-              <li className="dropdown-header" style={{padding: "10px"}}>
+            <ul
+              className={`dropdown-menu dropdown-menu-end dropdown-menu-arrow profile ${
+                isDropdownOpen ? "show" : ""
+              }`}
+            >
+              <li className="dropdown-header" style={{ padding: "10px" }}>
                 <p>Cesar Enrique Rodriguez Alvarez</p>
                 <i className="ri-id-card-fill"></i>
-                <span >23389</span>
+                <span>23389</span>
               </li>
-
               <li>
-                <hr className="dropdown-divider"/>
+                <hr className="dropdown-divider" />
               </li>
-  
               <li>
-                <a className="dropdown-item d-flex align-items-center" href="/ejemplo">
+                <a
+                  className="dropdown-item d-flex align-items-center"
+                  href="/ejemplo"
+                >
                   <i className="ri-customer-service-2-line"></i>
-                  <span href="/ejemplo">Ejecutivo Telefonico</span>
+                  <span>Ejecutivo Telefonico</span>
                 </a>
               </li>
-            
-             
             </ul>
           </li>
         </ul>
@@ -165,7 +207,10 @@ const Sidebar = ({ isSidebarOpen }) => {
   };
 
   return (
-    <aside id="sidebar" className={`sidebar ${isSidebarOpen ? "" : "collapsed"}`}>
+    <aside
+      id="sidebar"
+      className={`sidebar ${isSidebarOpen ? "" : "collapsed"}`}
+    >
       <ul className="sidebar-nav" id="sidebar-nav">
         <li className="nav-item">
           <a className="nav-link" href="/home">
