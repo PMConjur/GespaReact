@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import "bootstrap/dist/js/bootstrap.min.js";
 import "./styles.css";
 import Logo from "../assets/img/logo22.png";
 import User from "../assets/img/user.svg";
@@ -46,7 +48,7 @@ const Header = ({ toggleSidebar }) => {
           onClick={toggleSidebar}
         ></i>
         <a href="/home" className="logo d-flex align-items-center">
-          <img src={Logo} alt="Logo" />
+          <img src={Logo} alt="Logo" className="d-none d-md-block"/>
           <span className="d-none d-lg-block">Gespa</span>
         </a>
       </div>
@@ -64,6 +66,7 @@ const Header = ({ toggleSidebar }) => {
             name="query"
             placeholder="Busqueda de cuenta"
             title="Enter search keyword"
+            style={{padding: "5px"}}
           />
           <select
             name="filter"
@@ -132,8 +135,9 @@ const Header = ({ toggleSidebar }) => {
                   <input
                     type="text"
                     name="query"
-                    placeholder="Search"
+                    placeholder="Busqueda de cuenta"
                     className="form-control me-2"
+                    style={{margin: "5px"}}
                   />
                   <button
                     type="submit"
@@ -149,22 +153,20 @@ const Header = ({ toggleSidebar }) => {
 
           {/* Perfil del usuario */}
           <li className="nav-item dropdown pe-3">
-            <a
-              className="nav-link nav-profile d-flex align-items-center pe-0"
-              onClick={toggleDropdown}
-            >
-              <img src={User} alt="Profile" className="rounded-circle" />
-              <span className=" d-md-block dropdown-toggle ps-2">
-                Cesar Rodriguez
-              </span>
-            </a>
+
+
+           
+            <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+            <img src={User} alt="Profile" class="rounded-circle"/>
+            <span class=" dropdown-toggle ps-2">Cesar Enrique</span>
+          </a>
 
             <ul
               className={`dropdown-menu dropdown-menu-end dropdown-menu-arrow profile ${
                 isDropdownOpen ? "show" : ""
               }`}
             >
-              <li className="dropdown-header" style={{ padding: "10px" }}>
+              <li className=" dropdown-header" style={{ padding: "10px" }}>
                 <p>Cesar Enrique Rodriguez Alvarez</p>
                 <i className="ri-id-card-fill"></i>
                 <span>23389</span>
