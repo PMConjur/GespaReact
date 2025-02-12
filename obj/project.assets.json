@@ -1867,47 +1867,24 @@
     ]
   },
   "packageFolders": {
-<<<<<<< HEAD
-    "C:\\Users\\Yoshua Rodriguez\\.nuget\\packages\\": {}
-=======
-    "C:\\Users\\Padrino\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
->>>>>>> Mark8.1-Endpoints
+    "/Users/urielsaenz/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-<<<<<<< HEAD
-      "projectUniqueName": "D:\\Users\\Yoshi\\Documentos\\Repos\\NoriAPI.csproj",
+      "projectUniqueName": "/Users/urielsaenz/Documents/CodeGit/Back/GespaReact/NoriAPI.csproj",
       "projectName": "NoriAPI",
-      "projectPath": "D:\\Users\\Yoshi\\Documentos\\Repos\\NoriAPI.csproj",
-      "packagesPath": "C:\\Users\\Yoshua Rodriguez\\.nuget\\packages\\",
-      "outputPath": "D:\\Users\\Yoshi\\Documentos\\Repos\\obj\\",
-=======
-      "projectUniqueName": "C:\\Users\\Padrino\\Documents\\GitCode\\NoriAPI.csproj",
-      "projectName": "NoriAPI",
-      "projectPath": "C:\\Users\\Padrino\\Documents\\GitCode\\NoriAPI.csproj",
-      "packagesPath": "C:\\Users\\Padrino\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Padrino\\Documents\\GitCode\\obj\\",
->>>>>>> Mark8.1-Endpoints
+      "projectPath": "/Users/urielsaenz/Documents/CodeGit/Back/GespaReact/NoriAPI.csproj",
+      "packagesPath": "/Users/urielsaenz/.nuget/packages/",
+      "outputPath": "/Users/urielsaenz/Documents/CodeGit/Back/GespaReact/obj/",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-<<<<<<< HEAD
-        "C:\\Users\\Yoshua Rodriguez\\AppData\\Roaming\\NuGet\\NuGet.Config",
-=======
-        "C:\\Users\\Padrino\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
->>>>>>> Mark8.1-Endpoints
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "/Users/urielsaenz/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -1920,17 +1897,7 @@
         "warnAsError": [
           "NU1605"
         ]
-      },
-      "restoreAuditProperties": {
-        "enableAudit": "true",
-        "auditLevel": "low",
-        "auditMode": "direct"
-<<<<<<< HEAD
       }
-=======
-      },
-      "SdkAnalysisLevel": "9.0.100"
->>>>>>> Mark8.1-Endpoints
     },
     "frameworks": {
       "net8.0": {
@@ -1984,11 +1951,7 @@
             "privateAssets": "all"
           }
         },
-<<<<<<< HEAD
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.404/PortableRuntimeIdentifierGraph.json"
-=======
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
->>>>>>> Mark8.1-Endpoints
+        "runtimeIdentifierGraphPath": "/usr/local/Cellar/dotnet@8/8.0.12/libexec/sdk/8.0.112/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
