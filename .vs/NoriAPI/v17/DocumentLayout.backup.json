@@ -3,20 +3,28 @@
   "WorkspaceRootPath": "D:\\Users\\Yoshi\\Documentos\\Repos\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\repos\\controllers\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:controllers\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\repos\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\repos\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\repos\\models\\login\\resultadologin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:models\\login\\resultadologin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\repos\\controllers\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:controllers\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\repos\\repositories\\userrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:repositories\\userrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\repos\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\repos\\noriapi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:noriapi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
       "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\repos\\models\\login\\resultadoreseteo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -25,10 +33,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\repos\\models\\login\\reseteacontra.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:models\\login\\reseteacontra.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\repos\\models\\login\\resultadologin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:models\\login\\resultadologin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -38,7 +42,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 10,
           "Children": [
             {
               "$type": "Document",
@@ -46,9 +50,9 @@
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\Repos\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\Repos\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAAAAAAAAAAAA==",
+              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\Repos\\Program.cs*",
+              "RelativeToolTip": "Program.cs*",
+              "ViewState": "AgIAABAAAAAAAAAAAAAAACIAAAAxAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-02-06T19:28:21.681Z",
               "IsPinned": true,
@@ -56,13 +60,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
               "Title": "LoginController.cs",
               "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\Repos\\Controllers\\LoginController.cs",
               "RelativeDocumentMoniker": "Controllers\\LoginController.cs",
               "ToolTip": "D:\\Users\\Yoshi\\Documentos\\Repos\\Controllers\\LoginController.cs",
               "RelativeToolTip": "Controllers\\LoginController.cs",
-              "ViewState": "AgIAADsAAAAAAAAAAAAowEgAAAAQAAAAAAAAAA==",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAuwFoAAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-02-04T22:23:21.542Z",
               "IsPinned": true,
@@ -70,13 +74,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "UserRepository.cs",
               "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\Repos\\Repositories\\UserRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\UserRepository.cs",
               "ToolTip": "D:\\Users\\Yoshi\\Documentos\\Repos\\Repositories\\UserRepository.cs",
               "RelativeToolTip": "Repositories\\UserRepository.cs",
-              "ViewState": "AgIAADoAAAAAAAAAAAAiwE0AAAAIAAAAAAAAAA==",
+              "ViewState": "AgIAAA4AAAAAAAAAAAA5wC8AAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-02-04T22:29:46.769Z",
               "IsPinned": true,
@@ -108,52 +112,65 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 5,
+              "Title": "NoriAPI",
+              "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\Repos\\NoriAPI.csproj",
+              "RelativeDocumentMoniker": "NoriAPI.csproj",
+              "ToolTip": "D:\\Users\\Yoshi\\Documentos\\Repos\\NoriAPI.csproj",
+              "RelativeToolTip": "NoriAPI.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-02-11T01:21:20.515Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
               "Title": "appsettings.json",
               "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\Repos\\appsettings.json",
               "RelativeDocumentMoniker": "appsettings.json",
               "ToolTip": "D:\\Users\\Yoshi\\Documentos\\Repos\\appsettings.json",
               "RelativeToolTip": "appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAATAAAAAAAAAA==",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABQAAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2025-02-07T23:25:41.552Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 6,
               "Title": "ResultadoReseteo.cs",
               "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\Repos\\Models\\Login\\ResultadoReseteo.cs",
               "RelativeDocumentMoniker": "Models\\Login\\ResultadoReseteo.cs",
               "ToolTip": "D:\\Users\\Yoshi\\Documentos\\Repos\\Models\\Login\\ResultadoReseteo.cs",
               "RelativeToolTip": "Models\\Login\\ResultadoReseteo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAZAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-02-07T20:17:26.366Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 7,
               "Title": "ReseteaContra.cs",
               "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\Repos\\Models\\Login\\ReseteaContra.cs",
               "RelativeDocumentMoniker": "Models\\Login\\ReseteaContra.cs",
               "ToolTip": "D:\\Users\\Yoshi\\Documentos\\Repos\\Models\\Login\\ReseteaContra.cs",
               "RelativeToolTip": "Models\\Login\\ReseteaContra.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAYAAAAVAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-02-07T20:16:40.172Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 2,
               "Title": "ResultadoLogin.cs",
               "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\Repos\\Models\\Login\\ResultadoLogin.cs",
               "RelativeDocumentMoniker": "Models\\Login\\ResultadoLogin.cs",
               "ToolTip": "D:\\Users\\Yoshi\\Documentos\\Repos\\Models\\Login\\ResultadoLogin.cs",
               "RelativeToolTip": "Models\\Login\\ResultadoLogin.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAIAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAQAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-02-06T00:40:09.975Z",
               "EditorCaption": ""
