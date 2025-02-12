@@ -7,7 +7,10 @@ import ModalPrincipal from "../../Components/LoginComponent/ModalPrincipal";
 import ModalChangePassword from "../../Components/LoginComponent/ModalChangePassword";
 import logo from "../../assets/img/logo22.png";
 import { Modal } from "bootstrap";
-import "bootstrap/dist/js/bootstrap.bundle.min.js"; // Importa Bootstrap JS
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import "bootstrap/dist/js/bootstrap.min.js";
+
 
 const LoginForm = () => {
   const [password, setPassword] = useState("");

@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "bootstrap/dist/js/bootstrap.min.js";
 import "./styles.css";
+import "./styles.css";
 import Logo from "../assets/img/logo22.png";
 import User from "../assets/img/user.svg";
 
@@ -48,25 +49,24 @@ const Header = ({ toggleSidebar }) => {
           onClick={toggleSidebar}
         ></i>
         <a href="/home" className="logo d-flex align-items-center">
-          <img src={Logo} alt="Logo" className="d-none d-md-block"/>
+          <img src={Logo} alt="Logo" className="" />
           <span className="d-none d-lg-block">Gespa</span>
         </a>
       </div>
 
       {/* Barra de búsqueda principal (solo visible en pantallas grandes) */}
-      <div className=" d-none d-lg-block" style={{marginLeft: "30px"}}>
+      <div className=" d-none d-lg-block" style={{ marginLeft: "30px" }}>
         <form
           className=" d-flex align-items-center"
           onSubmit={handleSearch}
-          style={{ gap: "1rem",  width: "100%", marginLeft:"20px"}}
+          style={{ gap: "1rem", width: "100%", marginLeft: "20px" }}
         >
           <input
-
             type="text"
             name="query"
             placeholder="Busqueda de cuenta"
             title="Enter search keyword"
-            style={{padding: "5px"}}
+            style={{ padding: "5px" }}
           />
           <select
             name="filter"
@@ -118,26 +118,32 @@ const Header = ({ toggleSidebar }) => {
               className="nav-link nav-icon search-bar-toggle btn btn-link p-0"
               onClick={toggleSearchBar}
             >
-              <i className="bi bi-search" style={{color: "white"}}></i>
+              <i className="bi bi-search" style={{ color: "white" }}></i>
             </button>
           </li>
 
           {isSearchVisible && (
             <li
-              className="nav-item w-100 d-block d-lg-none"
-              style={{ marginBottom: "-100px", zIndex: "50", position: "fixed", margin: "start" }}
+              className="nav-item d-block d-lg-none"
+              style={{
+               
+               
+               
+                
+              }}
             >
-              <div className=" p-2" style={{right: "0", left: "0"}}>
+              <div className="p-2" style={{ width: "100%", position: "absolute", top: "50px", left: "0" }}>
                 <form
                   className="search-form d-flex align-items-center"
                   onSubmit={handleSearch}
+                  style={{ width: "100%" }}
                 >
                   <input
                     type="text"
                     name="query"
                     placeholder="Busqueda de cuenta"
                     className="form-control me-2"
-                    style={{margin: "5px"}}
+                    style={{ margin: "5px", width: "100%" }}
                   />
                   <button
                     type="submit"
@@ -153,13 +159,19 @@ const Header = ({ toggleSidebar }) => {
 
           {/* Perfil del usuario */}
           <li className="nav-item dropdown pe-3">
-
-
-           
-            <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src={User} alt="Profile" class="rounded-circle"/>
-            <span class=" dropdown-toggle ps-2">Cesar Enrique</span>
-          </a>
+            <a
+              className="nav-link nav-profile pe-0"
+              href="#"
+              data-bs-toggle="dropdown"
+            >
+              <div className="d-flex align-items-center dropdown-toggle">
+                <img src={User} alt="Profile" className="rounded-circle " style={{width: "36px"}}>
+                </img>
+                <span className="ps-2 d-none d-md-block ">
+                  Cesar Enrique
+                </span>
+              </div>
+            </a>
 
             <ul
               className={`dropdown-menu dropdown-menu-end dropdown-menu-arrow profile ${

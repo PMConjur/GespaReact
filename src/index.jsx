@@ -9,8 +9,10 @@ import "./assets/vendor/quill/quill.bubble.css";
 import "./assets/vendor/remixicon/remixicon.css";
 import "./assets/vendor/simple-datatables/style.css";
 import "./assets/css/style.css";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import "bootstrap/dist/js/bootstrap.min.js";
+
 
 import {
   BrowserRouter as Router,
