@@ -13,22 +13,42 @@ const Header = ({ toggleSidebar }) => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // Aquí puedes hacer algo con la búsqueda y la opción seleccionada
-    console.log("Searching for:", e.target.query.value, "in category:", selectedOption);
+    console.log(
+      "Searching for:",
+      e.target.query.value,
+      "in category:",
+      selectedOption
+    );
+  };
+
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
   };
 
   return (
     <header id="header" className="header fixed-top d-flex align-items-center">
-      <div className="d-flex align-items-center justify-content-between" style={{ gap: "1rem" }}>
-      <i className="bi bi-list toggle-sidebar-btn" onClick={toggleSidebar}></i>
-        <a href="/" className="logo d-flex align-items-center">
+      <div
+        className="d-flex align-items-center justify-content-between"
+        style={{ gap: "1rem" }}
+      >
+        <i
+          className="bi bi-list toggle-sidebar-btn"
+          onClick={toggleSidebar}
+        ></i>
+        <a href="/home" className="logo d-flex align-items-center">
           <img src={Logo} alt="Logo" />
           <span className="d-none d-lg-block">Gespa</span>
-        </a>  
+        </a>
       </div>
-      
+
       <div className="search-bar">
-        <form className="search-form d-flex align-items-center" onSubmit={handleSearch} style={{ gap: "1rem" }}>
+        <form
+          className="search-form d-flex align-items-center"
+          onSubmit={handleSearch}
+          style={{ gap: "1rem" }}
+        >
           <input
             type="text"
             name="query"
@@ -40,42 +60,86 @@ const Header = ({ toggleSidebar }) => {
             className="form-select"
             value={selectedOption}
             onChange={handleOptionChange}
-            aria-label="Search category"
-            style={{ border: "none" }}
+            aria-label="Selecciona el filtro"
+            
+            
           >
-            <option value="all">Seleccionar Filtro</option>
-            <option value="alerts">Nombre</option>
-            <option value="users">ID</option>
-            <option value="components">No. Empleado</option>
+            <option>Selecciona el filtro</option>
+            <option>Cuenta</option>
+            <option>Nombre</option>
+            <option>RFC</option>
+            <option>Numero de cliente</option>
+            <option>Telefono</option>
+            <option>Expediente</option>
           </select>
-          <button type="submit" title="Search" style={{ 
-            backgroundColor: "#0d6efd",    
-            marginLeft: "-14px",         
-            color: "white", 
-            border: "none", 
-            justifyContent: "center",
-            alignItems: "center",
-            padding: "0 10px", 
-            borderRadius: "5px",
-          height: "38px",}}>
-              <span className="d-none d-lg-block">Automatico</span>
+          <button
+            type="submit"
+            title="Search"
+            style={{
+              backgroundColor: "#0d6efd",
+              marginLeft: "-10px",
+              color: "white",
+              border: "none",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "0 10px",
+              borderRadius: "5px",
+              height: "38px",
+              display: "flex",
+              textAlign: "center",
+              gap: "5px",
+            }}
+          >
+            <i class="bi bi-arrow-repeat" style={{color: "white"}}></i>
+            <span className="d-none d-lg-block">Automatico</span>     
           </button>
         </form>
       </div>
 
       <nav className="header-nav ms-auto">
-        <ul className="d-flex align-items-center">
+        <ul className="d-flex align-items-center" style={{marginRight: "40px"}}>
           <li className="nav-item d-block d-lg-none">
-            <a className="nav-link nav-icon search-bar-toggle" href="/home">
+            <a className="nav-link nav-icon search-bar-toggle">
               <i className="bi bi-search"></i>
             </a>
           </li>
 
           <li className="nav-item dropdown pe-3">
-            <a className="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-              <img src={User} alt="Usuario" className="rounded-circle" />
-              <span className="d-none d-md-block dropdown-toggle ps-2">K. Anderson</span>
+            <a
+              className="nav-link nav-profile d-flex align-items-center pe-0"
+              
+              onClick={toggleDropdown}
+            >
+              <img
+                src={User}
+                alt="Profile"
+                className="rounded-circle"
+              ></img>
+              <span className="d-none d-md-block dropdown-toggle ps-2">Cesar Rodriguez</span>
             </a>
+
+            <ul className={`dropdown-menu dropdown-menu-end dropdown-menu-arrow profile ${isDropdownOpen ? "show" : ""}`}
+                 >
+              
+              <li className="dropdown-header" style={{padding: "10px"}}>
+                <p>Cesar Enrique Rodriguez Alvarez</p>
+                <i className="ri-id-card-fill"></i>
+                <span >23389</span>
+              </li>
+
+              <li>
+                <hr className="dropdown-divider"/>
+              </li>
+  
+              <li>
+                <a className="dropdown-item d-flex align-items-center" href="/ejemplo">
+                  <i className="ri-customer-service-2-line"></i>
+                  <span href="/ejemplo">Ejecutivo Telefonico</span>
+                </a>
+              </li>
+            
+             
+            </ul>
           </li>
         </ul>
       </nav>
@@ -84,90 +148,45 @@ const Header = ({ toggleSidebar }) => {
 };
 
 const Sidebar = ({ isSidebarOpen }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState({
+    components: false,
+    forms: false,
+    tables: false,
+    charts: false,
+    icons: false,
+    pages: false,
+  });
+
+  const toggleMenu = (menu) => {
+    setIsMenuOpen((prevState) => ({
+      ...prevState,
+      [menu]: !prevState[menu],
+    }));
+  };
+
   return (
     <aside id="sidebar" className={`sidebar ${isSidebarOpen ? "" : "collapsed"}`}>
       <ul className="sidebar-nav" id="sidebar-nav">
         <li className="nav-item">
-          <a className="nav-link" href="/">
-            <i className="bi bi-grid"></i>
+          <a className="nav-link" href="/home">
+            <i className="bi bi-house"></i>
             <span>Inicio</span>
           </a>
         </li>
         <li className="nav-item">
-          <a className="nav-link" href="/">
-            <i className="bi bi-grid"></i>
-            <span>Informacion</span>
+          <a className="nav-link" href="/ejemplo">
+            <i className="bi bi-nut"></i>
+            <span>Gestion</span>
           </a>
         </li>
         <li className="nav-item">
           <a className="nav-link" href="/">
-            <i className="bi bi-grid"></i>
-            <span>Acciones</span>
+            <i className="bi bi-box-arrow-right"></i>
+            <span>Cerrar Sesion</span>
           </a>
         </li>
-        <li className="nav-item">
-          <a className="nav-link" href="/">
-            <i className="bi bi-grid"></i>
-            <span>Ejecutivo</span>
-          </a>
-        </li>
-        <li className="nav-item">
-          <a className="nav-link" href="/">
-            <i className="bi bi-grid"></i>
-            <span>Cuenta</span>
-          </a>
-        </li>
-        <li className="nav-item">
-          <a className="nav-link" href="/">
-            <i className="bi bi-grid"></i>
-            <span>Mas</span>
-          </a>
-        </li>
-        <li className="nav-item">
-          <a className="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
-            <i className="bi bi-menu-button-wide"></i>
-            <span>Pages</span>
-            <i className="bi bi-chevron-down ms-auto"></i>
-          </a>
-          <ul id="components-nav" className="nav-content collapse" data-bs-parent="#sidebar-nav">
-            <li>
-              <a href="/components-alerts">
-                <i className="bi bi-circle"></i>
-                <span>Perfil</span>
-              </a>
-            </li>
-            <li>
-              <a href="/components-alerts">
-                <i className="bi bi-circle"></i>
-                <span>FAQ</span>
-              </a> 
-            </li>
-            <li>
-              <a href="/components-alerts">
-                <i className="bi bi-circle"></i>
-                <span>Contact</span>
-              </a> 
-            </li>
-            <li>
-              <a href="/components-alerts">
-                <i className="bi bi-circle"></i>
-                <span>Register</span>
-              </a> 
-            </li>
-            <li>
-              <a href="/components-alerts">
-                <i className="bi bi-circle"></i>
-                <span>Login</span>
-              </a> 
-            </li>
-            <li>
-              <a href="/components-alerts">
-                <i className="bi bi-circle"></i>
-                <span>Error 404</span>
-              </a> 
-            </li>
-          </ul>
-        </li>
+
+        <li className="nav-heading">Grupo Consorcio</li>
       </ul>
     </aside>
   );
