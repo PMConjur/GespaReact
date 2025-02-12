@@ -6,10 +6,10 @@ import axios from "axios";
 const ModalPrincipal = ({ openSecondModal, user, password }) => {
   const navigate = useNavigate();
 
-  const handleNoClick = () => {
+  const handleNoClick = async () => {
     const login = {
-      user,
-      password,
+      usuario: user,
+      contrasenia: password,
       extension: 0,
       bloqueo: 0,
       dominio: "SIS-DES-2021",
@@ -17,18 +17,31 @@ const ModalPrincipal = ({ openSecondModal, user, password }) => {
       usuarioWindows: "gespa.web",
       ip: "192.168.7.1",
       aplicacion: "GespaWeb",
-      version: "1.0.0",
+      version: "1.0.0"
     };
-    navigate("/home");
-    axios
-      .post("http://192.168.7.33/api/Login/iniciar-sesion", login)
-      .then((response) => {
-        console.log("login exitoso");
 
-        const userData = response.data;
-        localStorage.setItem("ejecutivo,mensaje,sesion", userData.storedUser);
-      })
-      .catch((error) => console.log("error no hay permisos", error));
+    try {
+      const response = await axios.post(
+        "http://192.168.7.33/api/Login/iniciar-sesion",
+        login
+      );
+      const userData = response.data.user;
+
+      if (userData.message) {
+        console.log("Message:", userData.message);
+        localStorage.setItem("message", userData.message);
+      } else {
+        const { message, session, expires, token, UserInfo } = userData;
+        localStorage.setItem("session", session);
+        localStorage.setItem("expires", expires);
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(UserInfo));
+      }
+
+      navigate("/home");
+    } catch (error) {
+      console.log("error no hay permisos", error);
+    }
   };
 
   return (
