@@ -10,11 +10,13 @@ using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using NoriAPI.Models.Busqueda;
+using Microsoft.AspNetCore.Authorization;
 
 namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/Search")]
+    [Authorize]
     public class SearchController : Controller
     {
         private readonly IConfiguration _configuration;
