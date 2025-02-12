@@ -1,5 +1,6 @@
 {
   "Version": 1,
+<<<<<<< HEAD
   "WorkspaceRootPath": "D:\\Users\\Yoshi\\Documentos\\Repos\\",
   "Documents": [
     {
@@ -33,6 +34,29 @@
     {
       "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|d:\\users\\yoshi\\documentos\\repos\\models\\login\\reseteacontra.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:models\\login\\reseteacontra.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+=======
+  "WorkspaceRootPath": "C:\\Users\\Padrino\\Documents\\GitCode\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|c:\\users\\padrino\\documents\\gitcode\\repositories\\searchrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:repositories\\searchrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|c:\\users\\padrino\\documents\\gitcode\\services\\searchservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:services\\searchservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|c:\\users\\padrino\\documents\\gitcode\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|c:\\users\\padrino\\documents\\gitcode\\middleware\\globalerrorhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:middleware\\globalerrorhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|c:\\users\\padrino\\documents\\gitcode\\controllers\\searchcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{23CB5273-05EA-4BA2-B809-D3FB79ED3183}|NoriAPI.csproj|solutionrelative:controllers\\searchcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+>>>>>>> Mark8.1-Endpoints
     }
   ],
   "DocumentGroupContainers": [
@@ -42,6 +66,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
+<<<<<<< HEAD
           "SelectedChildIndex": 2,
           "Children": [
             {
@@ -87,6 +112,11 @@
               "EditorCaption": ""
             },
             {
+=======
+          "SelectedChildIndex": 10,
+          "Children": [
+            {
+>>>>>>> Mark8.1-Endpoints
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c64b9c2-e352-428e-a56d-0ace190b99a6}"
             },
@@ -111,7 +141,20 @@
               "Name": "ST:128:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
             },
             {
+              "$type": "Bookmark",
+              "Name": "ST:2:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:4:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:3:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            },
+            {
               "$type": "Document",
+<<<<<<< HEAD
               "DocumentIndex": 5,
               "Title": "NoriAPI",
               "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\Repos\\NoriAPI.csproj",
@@ -121,10 +164,22 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
               "WhenOpened": "2025-02-11T01:21:20.515Z",
+=======
+              "DocumentIndex": 3,
+              "Title": "GlobalErrorHandler.cs",
+              "DocumentMoniker": "C:\\Users\\Padrino\\Documents\\GitCode\\Middleware\\GlobalErrorHandler.cs",
+              "RelativeDocumentMoniker": "Middleware\\GlobalErrorHandler.cs",
+              "ToolTip": "C:\\Users\\Padrino\\Documents\\GitCode\\Middleware\\GlobalErrorHandler.cs",
+              "RelativeToolTip": "Middleware\\GlobalErrorHandler.cs",
+              "ViewState": "AgIAAFkAAAAAAAAAAAAwwGsAAAA/AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-12T00:38:50.947Z",
+>>>>>>> Mark8.1-Endpoints
               "EditorCaption": ""
             },
             {
               "$type": "Document",
+<<<<<<< HEAD
               "DocumentIndex": 2,
               "Title": "appsettings.json",
               "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\Repos\\appsettings.json",
@@ -134,10 +189,22 @@
               "ViewState": "AgIAAAMAAAAAAAAAAAAAAA8AAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2025-02-07T23:25:41.552Z",
+=======
+              "DocumentIndex": 0,
+              "Title": "SearchRepository.cs",
+              "DocumentMoniker": "C:\\Users\\Padrino\\Documents\\GitCode\\Repositories\\SearchRepository.cs",
+              "RelativeDocumentMoniker": "Repositories\\SearchRepository.cs",
+              "ToolTip": "C:\\Users\\Padrino\\Documents\\GitCode\\Repositories\\SearchRepository.cs*",
+              "RelativeToolTip": "Repositories\\SearchRepository.cs*",
+              "ViewState": "AgIAAEgAAAAAAAAAAAApwF8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-10T23:54:25.169Z",
+>>>>>>> Mark8.1-Endpoints
               "EditorCaption": ""
             },
             {
               "$type": "Document",
+<<<<<<< HEAD
               "DocumentIndex": 6,
               "Title": "ResultadoReseteo.cs",
               "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\Repos\\Models\\Login\\ResultadoReseteo.cs",
@@ -160,10 +227,22 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-02-07T20:16:40.172Z",
+=======
+              "DocumentIndex": 1,
+              "Title": "SearchService.cs",
+              "DocumentMoniker": "C:\\Users\\Padrino\\Documents\\GitCode\\Services\\SearchService.cs",
+              "RelativeDocumentMoniker": "Services\\SearchService.cs",
+              "ToolTip": "C:\\Users\\Padrino\\Documents\\GitCode\\Services\\SearchService.cs",
+              "RelativeToolTip": "Services\\SearchService.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAIAxwCUAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-10T23:40:39.336Z",
+>>>>>>> Mark8.1-Endpoints
               "EditorCaption": ""
             },
             {
               "$type": "Document",
+<<<<<<< HEAD
               "DocumentIndex": 3,
               "Title": "ResultadoLogin.cs",
               "DocumentMoniker": "D:\\Users\\Yoshi\\Documentos\\Repos\\Models\\Login\\ResultadoLogin.cs",
@@ -171,8 +250,30 @@
               "ToolTip": "D:\\Users\\Yoshi\\Documentos\\Repos\\Models\\Login\\ResultadoLogin.cs",
               "RelativeToolTip": "Models\\Login\\ResultadoLogin.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAqwAQAAAARAAAAAAAAAA==",
+=======
+              "DocumentIndex": 4,
+              "Title": "SearchController.cs",
+              "DocumentMoniker": "C:\\Users\\Padrino\\Documents\\GitCode\\Controllers\\SearchController.cs",
+              "RelativeDocumentMoniker": "Controllers\\SearchController.cs",
+              "ToolTip": "C:\\Users\\Padrino\\Documents\\GitCode\\Controllers\\SearchController.cs",
+              "RelativeToolTip": "Controllers\\SearchController.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAWwBkAAAArAAAAAAAAAA==",
+>>>>>>> Mark8.1-Endpoints
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-06T00:40:09.975Z",
+              "WhenOpened": "2025-02-10T23:28:50.027Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Padrino\\Documents\\GitCode\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\Padrino\\Documents\\GitCode\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAB8AAAAAAAAAAAAAADIAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-10T23:26:05.215Z",
               "EditorCaption": ""
             }
           ]

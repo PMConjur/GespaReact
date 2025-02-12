@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NoriAPI.Middleware;
 using NoriAPI.Repositories;
 using NoriAPI.Services;
 using System.Linq;
@@ -82,7 +83,9 @@ builder.Services.AddSwaggerGen(options =>
 
 // Registramos los servicios
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ISearchRepository, SearchRepository>();
 
 var app = builder.Build();
 
@@ -98,6 +101,7 @@ app.UseSwaggerUI(c =>
     //c.RoutePrefix = string.Empty; // Hace que Swagger se muestre en la raíz
 });
 
+app.UseGlobalErrorHandler();
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication(); // Asegúrate de agregar esta línea para usar autenticación
