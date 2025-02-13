@@ -31,13 +31,38 @@ function OffcanvasExample() {
           }}
         >
           <Container fluid>
-            <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`} 
-            style={{margin: "0 10px"}}/>
-            <Navbar.Brand href="#"
-            style={{ left: "0", marginRight: "auto" }}>
+            <Navbar.Toggle
+              aria-controls={`offcanvasNavbar-expand-${expand}`}
+              style={{ margin: "0 10px" }}
+            />
+            <Navbar.Brand href="#" style={{ left: "0", marginRight: "auto" }}>
               Gespa <Image src={Logo} style={{ width: "36px" }} roundedCircle />
             </Navbar.Brand>
 
+            <Form className="d-flex" data-bs-theme="dark"
+            style={{gap: "10px", alignContent: "center", justifyContent: "center", alignItems: "center"}}>
+              <Form.Control
+                type="search"
+                placeholder="Search"
+                className="me-2"
+                aria-label="Search"
+              />
+              <NavDropdown
+                title="Filtrar por"
+                id={`offcanvasNavbarDropdown-expand-${expand}`}
+                data-bs-theme="dark"
+                style={{ color: "white" }}
+                variant="primary"
+              >
+                <NavDropdown.Item href="#action3">Cuenta</NavDropdown.Item>
+                <NavDropdown.Item href="#action4">Nombre</NavDropdown.Item>
+                <NavDropdown.Item href="#action3">RFC</NavDropdown.Item>
+                <NavDropdown.Item href="#action3">No. cliente</NavDropdown.Item>
+                <NavDropdown.Item href="#action3">Telefono</NavDropdown.Item>
+                <NavDropdown.Item href="#action3">Expediente</NavDropdown.Item>
+              </NavDropdown>
+              <Button variant="primary">Automatico</Button>
+            </Form>
             <Navbar.Offcanvas
               id={`offcanvasNavbar-expand-${expand}`}
               aria-labelledby={`offcanvasNavbarLabel-expand-${expand}`}
@@ -46,8 +71,9 @@ function OffcanvasExample() {
               data-bs-theme="dark"
             >
               <Offcanvas.Header closeButton>
-                <Offcanvas.Title id={`offcanvasNavbarLabel-expand-${expand}`}>
-                </Offcanvas.Title>
+                <Offcanvas.Title
+                  id={`offcanvasNavbarLabel-expand-${expand}`}
+                ></Offcanvas.Title>
               </Offcanvas.Header>
               <Offcanvas.Body>
                 <Nav className="justify-content-end flex-grow-1 pe-3">
