@@ -12,6 +12,7 @@ namespace NoriAPI.Services
     public interface ISearchService
     {
         Task<ResultadoBusqueda> ValidateBusqueda(string filtro, string ValorBusqueda);
+        Task<ResultadoProductividad> ValidateProductividad(int NumEmpleado);
 
     }
 
@@ -26,7 +27,6 @@ namespace NoriAPI.Services
         {
             _configuration = configuration;
             _searchRepository = searchRepository;
-
         }
 
         public async Task<ResultadoBusqueda> ValidateBusqueda(string filtro, string ValorBusqueda)
@@ -35,30 +35,51 @@ namespace NoriAPI.Services
             BusquedaInfo busquedaInfo = null;
 
 
-            var validatebusqueda = await _searchRepository.ValidateBusqueda(filtro, ValorBusqueda);
+            var validateBusqueda = await _searchRepository.ValidateBusqueda(filtro, ValorBusqueda);
 
-            var busq = (IDictionary<string, object>)validatebusqueda;
-            
-            if(busq == null)
+            var busq = (IDictionary<string, object>)validateBusqueda;
+
+            if (busq == null)
             {
                 mensaje = "No se encontro Informacion";
                 var resultadoBusqueda = new ResultadoBusqueda(mensaje, null);
-                return resultadoBusqueda;                
+                return resultadoBusqueda;
             }
             else
             {
                 busquedaInfo = MapToInfoBusqueda(busq);
                 var resultadoBusqueda = new ResultadoBusqueda(mensaje, busquedaInfo);
                 return resultadoBusqueda;
-            }            
+            }
+        }
+
+
+        public async Task<ResultadoProductividad> ValidateProductividad(int NumEmpeado)
+        {
+            string mensaje = null;
+
+            var validateProductividad = await _searchRepository.ValidateProductividad(NumEmpeado);
+
+            if (validateProductividad == null)
+            {
+                mensaje = "No se encontro informacion";
+                var resultadoProductividad = new ResultadoProductividad(mensaje);
+                return resultadoProductividad;
+            }
+            else
+            {
+                var resultadoProductividad = new ResultadoProductividad(mensaje);
+                return resultadoProductividad;
+            }
+
         }
 
         private static BusquedaInfo MapToInfoBusqueda(IDictionary<string, object> busq)
         {
             var busqueda = new BusquedaInfo();
 
-            if(busq.TryGetValue("Cuenta", out var idcuenta) && idcuenta != null)
-                busqueda.IdCuenta = idcuenta.ToString();
+            if (busq.TryGetValue("Cuenta", out var idCuenta) && idCuenta != null)
+                busqueda.IdCuenta = idCuenta.ToString();
 
             if (busq.TryGetValue("Cartera", out var cartera) && cartera != null)
                 busqueda.Cartera = cartera.ToString();
@@ -72,14 +93,14 @@ namespace NoriAPI.Services
             if (busq.TryGetValue("RFC", out var rfc) && rfc != null)
                 busqueda.RFC = rfc.ToString();
 
-            if (busq.TryGetValue("NúmeroCliente", out var numcliente) && numcliente != null)
-                busqueda.NumeroCliente = numcliente.ToString();
+            if (busq.TryGetValue("NúmeroCliente", out var numCliente) && numCliente != null)
+                busqueda.NumeroCliente = numCliente.ToString();
 
             if (busq.TryGetValue("Situación", out var situacion) && situacion != null)
                 busqueda.Situacion = situacion.ToString();
 
-            if (busq.TryGetValue("idCartera", out var idcartera) && idcartera != null)
-                busqueda.IdCartera = idcartera.ToString();
+            if (busq.TryGetValue("idCartera", out var idCartera) && idCartera != null)
+                busqueda.IdCartera = idCartera.ToString();
 
             return busqueda;
 

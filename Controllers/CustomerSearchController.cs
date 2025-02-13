@@ -17,25 +17,22 @@ namespace NoriAPI.Controllers
     [ApiController]
     [Route("api/Search")]
     [Authorize]
-    public class SearchController : Controller
+    public class CustomerSearchController : Controller
     {
         private readonly IConfiguration _configuration;
         private readonly ISearchService _searchService;
 
-        public SearchController(IConfiguration configuration, ISearchService searchService)
+        public CustomerSearchController(IConfiguration configuration, ISearchService searchService)
         {
             _configuration = configuration;
             _searchService = searchService;
 
         }
 
-
-
         [HttpGet("busqueda-cuenta")]//Endpoint Padrino
         //public async Task<ActionResult<ResultadoBusqueda>> Busqueda([FromBody] Busqueda request)
         public async Task<ActionResult<ResultadoBusqueda>> Busqueda([FromQuery] string filtro, string ValorBusqueda)
-        {
-            //checar el error
+        {            
             var Busqueda = await _searchService.ValidateBusqueda(filtro, ValorBusqueda);
 
             if (!Busqueda.Mensaje.IsNullOrEmpty())
@@ -46,16 +43,20 @@ namespace NoriAPI.Controllers
             return Ok(new { Busqueda.Busquedainfo });
         }
 
+        [HttpGet("productividad-ejecutivo")]//Endpoint Padrino
+
+        public async Task<ActionResult<ResultadoProductividad>> Productividad([FromQuery] int NumEmpleado)
+        {
+            var Productividad = await _searchService.ValidateProductividad(NumEmpleado);
+
+            if(!Productividad.Mensaje.IsNullOrEmpty()) 
+            { 
+                return BadRequest(new { Productividad.Mensaje }); 
+            }
+            return Ok(new { Productividad.Mensaje });
 
 
-
-
-
-
-
-
-
-
+        }
 
 
     }

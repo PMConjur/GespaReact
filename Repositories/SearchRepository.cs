@@ -13,6 +13,7 @@ namespace NoriAPI.Repositories
     public interface ISearchRepository
     {
         Task<dynamic> ValidateBusqueda(string filtro, string ValorBusqueda);
+        Task<dynamic> ValidateProductividad(int NumEmpleado);
 
     }
 
@@ -91,7 +92,7 @@ namespace NoriAPI.Repositories
                         if (char.IsLetter(Caracter))
                             queryBusqueda += Caracter;
                     queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
-
+                    //quitar letras cuando se libere a todas las carteras
                     queryBusqueda += "' AND C.Expediente = " + ValorBusqueda.Replace("AMX", "").Replace("amx", "").Replace(" ", "");                    
 
                     
@@ -111,6 +112,27 @@ namespace NoriAPI.Repositories
 
             return busqueda;
 
+        }
+
+        public async Task<dynamic> ValidateProductividad(string filtro, string ValorBusqueda)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string queryProductividad = "";
+
+            var productividad = (await connection.QueryFirstOrDefaultAsync<dynamic>(
+                queryProductividad,
+                //parameters,
+                commandType: CommandType.Text
+            ));
+
+            return productividad;
+
+        }
+
+        public Task<dynamic> ValidateProductividad(int NumEmpleado)
+        {
+            throw new NotImplementedException();
         }
 
         private SqlConnection GetConnection(string connection)
