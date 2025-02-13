@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Form, Button } from "react-bootstrap";
+import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
 import { toast, Toaster } from "sonner"; // Import the toast and Toaster components
 import axios from "axios"; // Import axios for API calls
 import { useNavigate } from "react-router-dom";
@@ -82,7 +83,7 @@ function Login() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </Form.Group>
-
+        
         <Button variant="primary" type="submit">
           Ingresar
         </Button>
