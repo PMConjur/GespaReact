@@ -17,7 +17,7 @@ namespace NoriAPI.Controllers
     [ApiController]
     [Route("api/Search")]
     [Authorize]
-    public class SearchController : Controller
+    public class SearchController : ControllerBase
     {
         private readonly IConfiguration _configuration;
         private readonly ISearchService _searchService;
