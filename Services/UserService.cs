@@ -180,9 +180,5 @@ namespace NoriAPI.Services
             return true;
         }
 
-        private SqlConnection GetConnection(string connection)
-        {
-            return new SqlConnection(_configuration.GetConnectionString(connection));
-        }
     }
 }
