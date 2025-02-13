@@ -30,7 +30,7 @@ function OffcanvasExample() {
             zIndex: "1000",
           }}
         >
-          <Container fluid>
+          <Container fluid className="justify-content-between">
             <Navbar.Toggle
               aria-controls={`offcanvasNavbar-expand-${expand}`}
               style={{ margin: "0 10px" }}
@@ -39,8 +39,18 @@ function OffcanvasExample() {
               Gespa <Image src={Logo} style={{ width: "36px" }} roundedCircle />
             </Navbar.Brand>
 
-            <Form className="d-flex" data-bs-theme="dark"
-            style={{gap: "10px", alignContent: "center", justifyContent: "center", alignItems: "center"}}>
+            <Form
+              className="d-flex"
+              data-bs-theme="dark"
+              style={{
+                gap: "10px",
+                alignContent: "center",
+                justifyContent: "center",
+                alignItems: "center",
+                marginLeft: "auto",
+                marginRight: "auto",
+              }}
+            >
               <Form.Control
                 type="search"
                 placeholder="Search"
@@ -52,7 +62,6 @@ function OffcanvasExample() {
                 id={`offcanvasNavbarDropdown-expand-${expand}`}
                 data-bs-theme="dark"
                 style={{ color: "white" }}
-                variant="primary"
               >
                 <NavDropdown.Item href="#action3">Cuenta</NavDropdown.Item>
                 <NavDropdown.Item href="#action4">Nombre</NavDropdown.Item>
@@ -63,6 +72,34 @@ function OffcanvasExample() {
               </NavDropdown>
               <Button variant="primary">Automatico</Button>
             </Form>
+
+            <Dropdown
+              as={ButtonGroup}
+              drop="start" // Esto moverá el menú hacia la izquierda
+              style={{
+                backgroundColor: "transparent",
+                border: "none",
+                textAlign: "center",
+                justifyContent: "center",
+                alignItems: "center",
+                marginRight: "10px",
+              }}
+            >
+              <Dropdown.Toggle split variant="dark" id="dropdown-split-basic" />
+
+              <Dropdown.Menu className="custom-dropdown-menu"
+              drop="start"
+              style={{ textAlign: "center"}}>
+                <p>Cesar Enrique Rodriguez Alvarez</p>
+                <p href="#/action-2">23389</p>
+                <Dropdown.Item href="#/action-3">
+                  Ejecutivo Telefonico
+                </Dropdown.Item>
+              </Dropdown.Menu>
+
+              <span style={{ color: "white" }}>Cesar Enrique</span>
+            </Dropdown>
+
             <Navbar.Offcanvas
               id={`offcanvasNavbar-expand-${expand}`}
               aria-labelledby={`offcanvasNavbarLabel-expand-${expand}`}
