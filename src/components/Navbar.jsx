@@ -7,10 +7,11 @@ import NavDropdown from "react-bootstrap/NavDropdown";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import Image from "react-bootstrap/Image";
 import Logo from "../assets/img/logo22.png";
-
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Dropdown from "react-bootstrap/Dropdown";
-import { left } from "@popperjs/core";
+import User from "../assets/img/user.svg";
+import Col from "react-bootstrap/Col";
+
 
 function OffcanvasExample() {
   return (
@@ -35,7 +36,10 @@ function OffcanvasExample() {
               aria-controls={`offcanvasNavbar-expand-${expand}`}
               style={{ margin: "0 10px" }}
             />
-            <Navbar.Brand href="#" style={{ left: "0", marginRight: "auto" }}>
+            <Navbar.Brand
+              href="/home"
+              style={{ left: "0", marginRight: "auto" }}
+            >
               Gespa <Image src={Logo} style={{ width: "36px" }} roundedCircle />
             </Navbar.Brand>
 
@@ -63,12 +67,18 @@ function OffcanvasExample() {
                 data-bs-theme="dark"
                 style={{ color: "white" }}
               >
-                <NavDropdown.Item href="#action3">Cuenta</NavDropdown.Item>
-                <NavDropdown.Item href="#action4">Nombre</NavDropdown.Item>
-                <NavDropdown.Item href="#action3">RFC</NavDropdown.Item>
-                <NavDropdown.Item href="#action3">No. cliente</NavDropdown.Item>
-                <NavDropdown.Item href="#action3">Telefono</NavDropdown.Item>
-                <NavDropdown.Item href="#action3">Expediente</NavDropdown.Item>
+                <NavDropdown.Item href="/maintenance">Cuenta</NavDropdown.Item>
+                <NavDropdown.Item href="/maintenance">Nombre</NavDropdown.Item>
+                <NavDropdown.Item href="/maintenance">RFC</NavDropdown.Item>
+                <NavDropdown.Item href="/maintenance">
+                  No. cliente
+                </NavDropdown.Item>
+                <NavDropdown.Item href="/maintenance">
+                  Telefono
+                </NavDropdown.Item>
+                <NavDropdown.Item href="/maintenance">
+                  Expediente
+                </NavDropdown.Item>
               </NavDropdown>
               <Button variant="primary">Automatico</Button>
             </Form>
@@ -83,20 +93,25 @@ function OffcanvasExample() {
                 justifyContent: "center",
                 alignItems: "center",
                 marginRight: "10px",
+                gap: "5px",
               }}
             >
               <Dropdown.Toggle split variant="dark" id="dropdown-split-basic" />
 
-              <Dropdown.Menu className="custom-dropdown-menu"
-              drop="start"
-              style={{ textAlign: "center"}}>
+              <Dropdown.Menu
+                className="custom-dropdown-menu"
+                drop="start"
+                style={{ textAlign: "center" }}
+              >
                 <p>Cesar Enrique Rodriguez Alvarez</p>
-                <p href="#/action-2">23389</p>
-                <Dropdown.Item href="#/action-3">
+                <p>23389</p>
+                <Dropdown.Item href="/maintenance">
                   Ejecutivo Telefonico
                 </Dropdown.Item>
               </Dropdown.Menu>
-
+              <Col xs={6} md={4}>
+                <Image src={User} roundedCircle />
+              </Col>
               <span style={{ color: "white" }}>Cesar Enrique</span>
             </Dropdown>
 
@@ -114,13 +129,13 @@ function OffcanvasExample() {
               </Offcanvas.Header>
               <Offcanvas.Body>
                 <Nav className="justify-content-end flex-grow-1 pe-3">
-                  <Nav.Link href="#action1">
+                  <Nav.Link href="/home">
                     <h5>Inicio</h5>
                   </Nav.Link>
-                  <Nav.Link href="#action2">
+                  <Nav.Link href="/maintenance">
                     <h5>Gestion</h5>
                   </Nav.Link>
-                  <Nav.Link href="#action2">
+                  <Nav.Link href="/maintenance">
                     <h5>Cerrar Sesion</h5>
                   </Nav.Link>
                   <br />
