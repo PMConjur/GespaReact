@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from "react";
-import CampoUsuario from "../../components/LoginComponent/CampoUsuario";
-import CampoContraseña from "../../components/LoginComponent/CampoContraseña";
-import CampoCartera from "../../components/LoginComponent/CampoCartera";
-import BotonIngresar from "../../components/LoginComponent/BotonIngresar";
-import ModalCuenta from "../../components/LoginComponent/ModalCuenta";
+import React, { useEffect, useState } from "react";
+import TextFielUser from "../../Components/LoginComponent/TextFielUser";
+import TextFielPassword from "../../Components/LoginComponent/TextFielPassword";
+import TextFieldPortfolio from "../../Components/LoginComponent/TextFieldPortfolio";
+import EnterButton from "../../Components/LoginComponent/EnterButton";
+import ModalPrincipal from "../../Components/LoginComponent/ModalPrincipal";
+import ModalChangePassword from "../../Components/LoginComponent/ModalChangePassword";
 import logo from "../../assets/img/logo22.png";
 import { Modal } from "bootstrap";
 import "bootstrap/dist/js/bootstrap.bundle.min.js"; // Importa Bootstrap JS
 
 const LoginForm = () => {
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [bank, setBank] = useState("");
+  const [user, setUser] = useState("");
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [showSecondModal, setShowSecondModal] = useState(false);
 
   useEffect(() => {
     const modalElement = document.getElementById("firstModal");
@@ -19,6 +21,11 @@ const LoginForm = () => {
       new Modal(modalElement); // Inicializa el modal correctamente
     }
   }, []);
+
+  const handleInputChange = () => {
+    const form = document.querySelector(".needs-validation");
+    setIsFormValid(form.checkValidity());
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -28,6 +35,15 @@ const LoginForm = () => {
       modalInstance.show(); // Abre el modal correctamente
     }
   };
+
+  const openSecondModal = () => {
+    const firstModalElement = document.getElementById("firstModal");
+    const firstModalInstance = Modal.getInstance(firstModalElement);
+    firstModalInstance.hide(); // Cierra el primer modal
+    setShowSecondModal(true); // Abre el segundo modal
+  };
+
+  const closeSecondModal = () => setShowSecondModal(false);
 
   return (
     <main>
@@ -55,22 +71,26 @@ const LoginForm = () => {
                     <form
                       className="row g-3 needs-validation"
                       onSubmit={handleSubmit}
+                      onChange={handleInputChange}
                       noValidate
                     >
                       <div className="col-12">
-                        <CampoUsuario value={username} setValue={setUsername} />
-                      </div>
-                      <div className="col-12">
-                        <CampoContraseña
-                          value={password}
-                          setValue={setPassword}
+                        <TextFielUser
+                          value={user}
+                          onChange={(e) => setUser(e.target.value)}
                         />
                       </div>
                       <div className="col-12">
-                        <CampoCartera value={bank} setValue={setBank} />
+                        <TextFielPassword
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
                       </div>
                       <div className="col-12">
-                        <BotonIngresar />
+                        <TextFieldPortfolio />
+                      </div>
+                      <div className="col-12">
+                        <EnterButton disabled={!isFormValid} />
                       </div>
                       <div className="col-12">
                         <p className="small mb-0" style={{ color: "white" }}>
@@ -81,7 +101,17 @@ const LoginForm = () => {
                     </form>
 
                     {/* Modal incluido dentro del LoginForm */}
-                    <ModalCuenta />
+                    <ModalPrincipal
+                      openSecondModal={openSecondModal}
+                      password={password}
+                      user={user}
+                    />
+                    <ModalChangePassword
+                      showSecondModal={showSecondModal}
+                      closeSecondModal={closeSecondModal}
+                      user={user}
+                      password={password}
+                    />
                   </div>
                 </div>
               </div>

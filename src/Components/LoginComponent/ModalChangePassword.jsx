@@ -1,19 +1,52 @@
 import React, { useState } from "react";
 
-const ModalCambioContraseña = ({
+const ModalChangePassword = ({
   showSecondModal,
   closeSecondModal,
-  newPassword,
-  setNewPassword,
-  confirmPassword,
-  setConfirmPassword,
-  handlePasswordChange,
-  handleConfirmPasswordChange,
-  passwordValid,
-  passwordMatch,
-  handleSubmit,
+  user,
+  password,
 }) => {
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordValid, setPasswordValid] = useState({
+    length: false,
+    upperCase: false,
+    lowerCase: false,
+    number: false,
+    symbol: false,
+    differentFromCurrent: false,
+  });
+  const [passwordMatch, setPasswordMatch] = useState(false);
+
   if (!showSecondModal) return null; // No se renderiza si no está visible
+
+  const handlePasswordChange = (e) => {
+    const { value } = e.target;
+    setNewPassword(value);
+    setPasswordValid({
+      length: value.length >= 10,
+      upperCase: /[A-Z]/.test(value),
+      lowerCase: /[a-z]/.test(value),
+      number: /[0-9]/.test(value),
+      symbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(value),
+      differentFromCurrent: value !== password,
+    });
+  };
+
+  const handleConfirmPasswordChange = (e) => {
+    const { value } = e.target;
+    setConfirmPassword(value);
+    setPasswordMatch(value === newPassword);
+  };
+
+  const handleSubmitPasswordChange = (e) => {
+    e.preventDefault();
+    alert("La contraseña se actualizó correctamente.");
+  };
+
+  const getInputBorderColor = (isValid) => {
+    return isValid ? "green" : "red";
+  };
 
   return (
     <div
@@ -28,7 +61,10 @@ const ModalCambioContraseña = ({
         className="modal-dialog modal-dialog-centered modal-lg"
         role="document"
       >
-        <div className="modal-content p-4">
+        <div
+          className="modal-content p-4"
+          style={{ backgroundColor: "#1D1F20", color: "white" }}
+        >
           <div className="modal-header">
             <h5 className="modal-title">Modificar Contraseña</h5>
             <button
@@ -37,10 +73,11 @@ const ModalCambioContraseña = ({
               data-bs-dismiss="modal"
               aria-label="Cerrar"
               onClick={closeSecondModal}
+              style={{ filter: "invert(1)" }}
             ></button>
           </div>
           <div className="modal-body">
-            <form id="password-form" onSubmit={handleSubmit}>
+            <form id="password-form" onSubmit={handleSubmitPasswordChange}>
               <div className="mb-3">
                 <label htmlFor="new-password" className="form-label">
                   Nueva Contraseña
@@ -51,7 +88,18 @@ const ModalCambioContraseña = ({
                   id="new-password"
                   value={newPassword}
                   onChange={handlePasswordChange}
+                  maxLength={10}
                   required
+                  style={{
+                    borderColor: getInputBorderColor(
+                      passwordValid.length &&
+                        passwordValid.upperCase &&
+                        passwordValid.lowerCase &&
+                        passwordValid.number &&
+                        passwordValid.symbol &&
+                        passwordValid.differentFromCurrent
+                    ),
+                  }}
                 />
               </div>
               <div className="mb-3">
@@ -64,7 +112,11 @@ const ModalCambioContraseña = ({
                   id="confirm-password"
                   value={confirmPassword}
                   onChange={handleConfirmPasswordChange}
+                  maxLength={10}
                   required
+                  style={{
+                    borderColor: getInputBorderColor(passwordMatch),
+                  }}
                 />
               </div>
 
@@ -107,6 +159,18 @@ const ModalCambioContraseña = ({
                   >
                     Debe contener al menos un símbolo
                   </li>
+                  <li
+                    className={`text-${
+                      passwordValid.differentFromCurrent ? "success" : "danger"
+                    }`}
+                  >
+                    La nueva contraseña debe ser diferente de la actual
+                  </li>
+                  <li
+                    className={`text-${passwordMatch ? "success" : "danger"}`}
+                  >
+                    La nueva contraseña debe coincidir con su confirmación
+                  </li>
                 </ul>
               </div>
 
@@ -114,6 +178,13 @@ const ModalCambioContraseña = ({
                 <button
                   type="submit"
                   className="btn btn-success"
+                  style={{
+                    backgroundColor:
+                      !passwordMatch ||
+                      !Object.values(passwordValid).every(Boolean)
+                        ? "gray"
+                        : "",
+                  }}
                   disabled={
                     !passwordMatch ||
                     !Object.values(passwordValid).every(Boolean)
@@ -121,6 +192,7 @@ const ModalCambioContraseña = ({
                 >
                   Actualizar Contraseña
                 </button>
+                <p style={{ visibility: "hidden" }}>{password}</p>
               </div>
             </form>
           </div>
@@ -130,4 +202,4 @@ const ModalCambioContraseña = ({
   );
 };
 
-export default ModalCambioContraseña;
+export default ModalChangePassword;

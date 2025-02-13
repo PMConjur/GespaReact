@@ -1,21 +1,17 @@
-// CampoUsuario.jsx
+// TextFielUser.jsx
 import React, { useState } from "react";
 
-const CampoUsuario = () => {
-  // Estado para el valor del campo y la validación
-  const [usuario, setUsuario] = useState("");
+const TextFielUser = ({ value, onChange }) => {
   const [esValido, setEsValido] = useState(null);
 
-  // Función de validación
   const validateUsername = (value) => {
     const regex = /^[A-Z]{4}$/; // Expresión regular para exactamente 4 letras mayúsculas
     return regex.test(value);
   };
 
-  // Manejador de cambios en el input
   const handleInputChange = (e) => {
     const value = e.target.value.replace(/[^A-Z]/g, ""); // Reemplazar cualquier valor no mayúscula
-    setUsuario(value);
+    onChange(e);
 
     if (validateUsername(value)) {
       setEsValido(true);
@@ -48,7 +44,7 @@ const CampoUsuario = () => {
               : ""
           }`}
           id="yourUsername"
-          value={usuario}
+          value={value}
           onChange={handleInputChange}
           required
           maxLength="4"
@@ -72,4 +68,4 @@ const CampoUsuario = () => {
   );
 };
 
-export default CampoUsuario;
+export default TextFielUser;
