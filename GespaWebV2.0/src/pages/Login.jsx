@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import { toast, Toaster } from "sonner"; // Import the toast and Toaster components
 import axios from "axios"; // Import axios for API calls
+import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,9 +41,18 @@ function Login() {
         login
       );
       console.log("API Response:", response.data);
-      toast.success("Inicio de sesión correcto", {
-        description: f.toLocaleDateString()
-      });
+
+      if (response.data.mensaje) {
+        toast.error(response.data.mensaje); // Show toast alert with the error message from the API
+      } else {
+        toast.success(
+          "Inicio de sesión correcto",
+          {
+            description: f.toLocaleDateString()
+          },
+          navigate("/home")
+        );
+      }
     } catch (error) {
       console.error("There was a problem with the axios operation:", error);
       toast.error("Error en la conexión");
