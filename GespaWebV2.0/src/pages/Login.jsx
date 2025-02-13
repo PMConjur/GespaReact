@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Form, Button } from "react-bootstrap";
+import { toast, Toaster } from "sonner"; // Import the toast and Toaster components
 
 const Login = () => {
   const [user, setUser] = useState("");
@@ -10,6 +11,7 @@ const Login = () => {
     // Handle login logic here
     console.log("User:", user);
     console.log("Password:", password);
+    toast.success("Login successful!"); // Add toast notification
   };
 
   return (
@@ -40,6 +42,7 @@ const Login = () => {
           Ingresar
         </Button>
       </Form>
+      <Toaster /> {/* Add Toaster component for toast visibility */}
     </div>
   );
 };
