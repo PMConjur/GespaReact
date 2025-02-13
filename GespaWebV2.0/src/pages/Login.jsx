@@ -1,17 +1,51 @@
 import { useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import { toast, Toaster } from "sonner"; // Import the toast and Toaster components
+import axios from "axios"; // Import axios for API calls
 
-const Login = () => {
+function Login() {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log("User:", user);
-    console.log("Password:", password);
-    toast.success("Login successful!"); // Add toast notification
+    const f = new Date();
+
+    if (!user) {
+      toast.error("Ingresa un usuario valido"); // Show toast alert for empty user field
+      return;
+    }
+    if (!password) {
+      toast.error("Ingresa una contraseña valida"); // Show toast alert for empty password field
+      return;
+    }
+
+    const login = {
+      usuario: user,
+      contrasenia: password,
+      extension: 1870,
+      bloqueo: 1,
+      dominio: "DES-SIS-1870",
+      computadora: "DES-SIS-1870",
+      usuarioWindows: "Yoshua Rodriguez",
+      ip: "192.168.7.1",
+      aplicacion: "Gespa",
+      version: "3.3.0"
+    };
+
+    try {
+      const response = await axios.post(
+        "http://192.168.7.33/api/login/iniciar-sesion",
+        login
+      );
+      console.log("API Response:", response.data);
+      toast.success("Inicio de sesión correcto", {
+        description: f.toLocaleDateString()
+      });
+    } catch (error) {
+      console.error("There was a problem with the axios operation:", error);
+      toast.error("Error en la conexión");
+    }
   };
 
   return (
@@ -42,9 +76,10 @@ const Login = () => {
           Ingresar
         </Button>
       </Form>
-      <Toaster /> {/* Add Toaster component for toast visibility */}
+      <Toaster richColors position="top-right" />{" "}
+      {/* Add Toaster component for toast visibility */}
     </div>
   );
-};
+}
 
 export default Login;
