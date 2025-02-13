@@ -17,7 +17,11 @@ namespace NoriAPI.Controllers
     [ApiController]
     [Route("api/Search")]
     [Authorize]
+<<<<<<< HEAD:Controllers/CustomerSearchController.cs
     public class CustomerSearchController : Controller
+=======
+    public class SearchController : ControllerBase
+>>>>>>> 8ffb28573f0878e82eec53a003056d2289bfebea:Controllers/SearchController.cs
     {
         private readonly IConfiguration _configuration;
         private readonly ISearchService _searchService;
