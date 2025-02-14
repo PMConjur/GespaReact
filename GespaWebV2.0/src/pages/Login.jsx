@@ -2,15 +2,16 @@ import { useState } from "react";
 import { Button, Form, Card, Container, InputGroup } from "react-bootstrap";
 import { toast, Toaster } from "sonner"; // Import the toast and Toaster components
 import axios from "axios"; // Import axios for API calls
-import { useNavigate } from "react-router-dom";
 import { PersonFillLock, KeyFill } from "react-bootstrap-icons";
 import "../index.css";
+import ModalChange from "../components/ModalChange"; // Import ModalChange component
 
 function Login() {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [showModal, setShowModal] = useState(false); // State to control modal visibility
   const [days, setDays] = useState(null); // State to store days value
+  const [expire, setExpire] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,17 +46,28 @@ function Login() {
       console.log("API Response:", response.data);
 
       if (response.data.ejecutivo.mensaje) {
-        toast.error("Error al iniciar sesion:", {
-          description: response.data.ejecutivo.mensaje
-        }); // Show toast alert with the error message from the API
+        if (response.data.ejecutivo.expiro === true) {
+          setExpire(response.data.ejecutivo.expiro);
+
+          setShowModal(true); // Show the modal
+        } else {
+          toast.error("Error al iniciar sesion:", {
+            description: response.data.ejecutivo.mensaje
+          }); // Show toast alert with the error message from the API
+        }
       } else {
-        setDays(response.data.dias);
+        setDays(response.data.ejecutivo.infoEjecutivo.dias);
+
         setShowModal(true); // Show the modal
       }
     } catch (error) {
       console.error("There was a problem with the axios operation:", error);
       toast.error("Error en la conexión");
     }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
   };
 
   return (
@@ -122,7 +134,13 @@ function Login() {
       <Toaster richColors position="top-right" />{" "}
       {/* Add Toaster component for toast visibility */}
       {showModal && (
-        <ModalChange user={user} password={password} days={days} />
+        <ModalChange
+          user={user}
+          password={password}
+          days={days}
+          expire={expire}
+          onClose={handleCloseModal}
+        />
       )}{" "}
       {/* Render ModalChange */}
     </div>
