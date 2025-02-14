@@ -2,6 +2,7 @@ import "./App.css";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
+import ModalChange from "./components/ModalChange";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 function App() {
   return (
@@ -10,6 +11,8 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/home" element={<Home />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/ModalChange" element={<ModalChange />} />
       </Routes>
     </Router>
   );

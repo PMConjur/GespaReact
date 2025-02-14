@@ -2,16 +2,16 @@ import { useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import { toast, Toaster } from "sonner"; // Import the toast and Toaster components
 import axios from "axios"; // Import axios for API calls
-import { useNavigate } from "react-router-dom";
+import ModalChange from "../components/ModalChange"; // Import ModalChange component
 
 function Login() {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false); // State to control modal visibility
+  const [days, setDays] = useState(null); // State to store days value
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const f = new Date();
 
     if (!user) {
       toast.error("Ingresa un usuario valido"); // Show toast alert for empty user field
@@ -45,13 +45,8 @@ function Login() {
       if (response.data.mensaje) {
         toast.error(response.data.mensaje); // Show toast alert with the error message from the API
       } else {
-        toast.success(
-          "Inicio de sesión correcto",
-          {
-            description: f.toLocaleDateString()
-          },
-          navigate("/home")
-        );
+        setDays(response.data.dias);
+        setShowModal(true); // Show the modal
       }
     } catch (error) {
       console.error("There was a problem with the axios operation:", error);
@@ -89,6 +84,10 @@ function Login() {
       </Form>
       <Toaster richColors position="top-right" />{" "}
       {/* Add Toaster component for toast visibility */}
+      {showModal && (
+        <ModalChange user={user} password={password} days={days} />
+      )}{" "}
+      {/* Render ModalChange */}
     </div>
   );
 }
