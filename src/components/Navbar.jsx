@@ -69,20 +69,17 @@ function OffcanvasExample() {
                 style={{ color: "white" }}
                 className="d-none d-md-block"
               >
-                <NavDropdown.Item href="/maintenance">Cuenta</NavDropdown.Item>
-                <NavDropdown.Item href="/maintenance">Nombre</NavDropdown.Item>
+                <NavDropdown.Item href="/maintenance">idCuenta</NavDropdown.Item>
+                <NavDropdown.Item href="/maintenance">Nombre Deudor</NavDropdown.Item>
+                <NavDropdown.Item href="/maintenance">Producto</NavDropdown.Item>
                 <NavDropdown.Item href="/maintenance">RFC</NavDropdown.Item>
-                <NavDropdown.Item href="/maintenance">
-                  No. cliente
-                </NavDropdown.Item>
-                <NavDropdown.Item href="/maintenance">
-                  Telefono
-                </NavDropdown.Item>
-                <NavDropdown.Item href="/maintenance">
-                  Expediente
-                </NavDropdown.Item>
+                <NavDropdown.Item href="/maintenance">No. cliente</NavDropdown.Item>
+                <NavDropdown.Item href="/maintenance">idCartera</NavDropdown.Item>
+                <NavDropdown.Item href="/maintenance">Situacion</NavDropdown.Item>
               </NavDropdown>
-              <Button className="d-none d-md-block" variant="primary">Automatico</Button>
+              <Button className="d-none d-md-block" variant="primary">
+                Automatico
+              </Button>
             </Form>
 
             <Dropdown
@@ -111,10 +108,12 @@ function OffcanvasExample() {
                   Ejecutivo Telefonico
                 </Dropdown.Item>
               </Dropdown.Menu>
-              <Col >
-                <Image src={User} roundedCircle style={{width: "36px"}}/>
+              <Col>
+                <Image src={User} roundedCircle style={{ width: "36px" }} />
               </Col>
-              <span className="d-none d-lg-block" style={{ color: "white" }}>Cesar Enrique</span>
+              <span className="d-none d-lg-block" style={{ color: "white" }}>
+                Cesar Enrique
+              </span>
             </Dropdown>
 
             <Navbar.Offcanvas
@@ -137,7 +136,7 @@ function OffcanvasExample() {
                   <Nav.Link href="/maintenance">
                     <h5>Gestion</h5>
                   </Nav.Link>
-                  <Nav.Link href="/login"> 
+                  <Nav.Link href="/login">
                     <h5>Cerrar Sesion</h5>
                   </Nav.Link>
                   <br />
