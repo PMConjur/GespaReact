@@ -1,14 +1,16 @@
-﻿namespace NoriAPI.Models.Busqueda
+﻿using System.Collections.Generic;
+
+namespace NoriAPI.Models.Busqueda
 {
     public class ResultadoBusqueda
     {
-        public ResultadoBusqueda(string mensaje, BusquedaInfo busquedainfo)
+        public string Mensaje { get; set; }
+        public List<BusquedaInfo> ListaResultados { get; set; }  // 🔹 Cambiar a lista
+
+        public ResultadoBusqueda(string mensaje, List<BusquedaInfo> listaResultados)
         {
             Mensaje = mensaje;
-            Busquedainfo = busquedainfo;
+            ListaResultados = listaResultados;
         }
-
-        public string Mensaje { get; set; }        
-        public BusquedaInfo Busquedainfo { get; set; }
     }
 }

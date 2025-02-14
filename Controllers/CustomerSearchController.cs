@@ -17,11 +17,8 @@ namespace NoriAPI.Controllers
     [ApiController]
     [Route("api/Search")]
     [Authorize]
-<<<<<<< HEAD:Controllers/CustomerSearchController.cs
     public class CustomerSearchController : Controller
-=======
-    public class SearchController : ControllerBase
->>>>>>> 8ffb28573f0878e82eec53a003056d2289bfebea:Controllers/SearchController.cs
+
     {
         private readonly IConfiguration _configuration;
         private readonly ISearchService _searchService;
@@ -44,7 +41,7 @@ namespace NoriAPI.Controllers
                 return BadRequest(new { Busqueda.Mensaje });
 
             }
-            return Ok(new { Busqueda.Busquedainfo });
+            return Ok(new { Busqueda.ListaResultados });
         }
 
         [HttpGet("productividad-ejecutivo")]//Endpoint Padrino
