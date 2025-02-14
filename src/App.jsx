@@ -4,10 +4,7 @@ import Home from "./pages/Home";
 import Register from "./pages/Register";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-<<<<<<< HEAD:GespaWebV2.0/src/App.jsx
-=======
 import Maintenance from "./pages/Maintenance";
->>>>>>> HU2.1-Buscador:src/App.jsx
 
 function App() {
   return (
