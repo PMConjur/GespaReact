@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Form, Button } from "react-bootstrap";
+import { Button, Form, Card, Container, InputGroup } from "react-bootstrap";
 import { toast, Toaster } from "sonner"; // Import the toast and Toaster components
 import axios from "axios"; // Import axios for API calls
-import ModalChange from "../components/ModalChange"; // Import ModalChange component
+import { useNavigate } from "react-router-dom";
+import { PersonFillLock, KeyFill } from "react-bootstrap-icons";
+import "../index.css";
 
 function Login() {
   const [user, setUser] = useState("");
@@ -42,8 +44,10 @@ function Login() {
       );
       console.log("API Response:", response.data);
 
-      if (response.data.mensaje) {
-        toast.error(response.data.mensaje); // Show toast alert with the error message from the API
+      if (response.data.ejecutivo.mensaje) {
+        toast.error("Error al iniciar sesion:", {
+          description: response.data.ejecutivo.mensaje
+        }); // Show toast alert with the error message from the API
       } else {
         setDays(response.data.dias);
         setShowModal(true); // Show the modal
@@ -56,31 +60,64 @@ function Login() {
 
   return (
     <div className="container mt-5">
-      <h1>LOGIN</h1>
+      <h1>Gespa Web</h1>
       <Form onSubmit={handleSubmit}>
-        <Form.Group controlId="formBasicEmail">
-          <Form.Label>User</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Enter user"
-            value={user}
-            onChange={(e) => setUser(e.target.value)}
-          />
-        </Form.Group>
+        <Container>
+          <Card
+            className="p-4 text-white shadow-lg"
+            style={{ backgroundColor: "#1c1f24" }}
+          >
+            <h3>Inicio sesión CJ</h3>
 
-        <Form.Group controlId="formBasicPassword">
-          <Form.Label>Password</Form.Label>
-          <Form.Control
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </Form.Group>
+            <span className="bg-gray">
+              Ingresa tu usuario de 4 dígitos y tu contraseña
+            </span>
 
-        <Button variant="primary" type="submit">
-          Ingresar
-        </Button>
+            <br />
+            {/* Usuario */}
+            <Form.Group className="mb-3" controlId="formBasicEmail">
+              <Form.Label>Usuario</Form.Label>
+              <InputGroup>
+                <InputGroup.Text>
+                  <PersonFillLock></PersonFillLock>
+                </InputGroup.Text>
+                <Form.Control
+                  type="text"
+                  placeholder="Teclea tu usuario"
+                  value={user}
+                  onChange={(e) => setUser(e.target.value)}
+                />
+              </InputGroup>
+            </Form.Group>
+            {/* Contraseña */}
+            <Form.Group className="mb-3" controlId="formBasicPassword">
+              <Form.Label>Contraseña</Form.Label>
+              <InputGroup>
+                <InputGroup.Text>
+                  <KeyFill></KeyFill>
+                </InputGroup.Text>
+                <Form.Control
+                  type="password"
+                  placeholder="Teclea tu contraseña"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </InputGroup>
+            </Form.Group>
+            {/* Cartera */}
+            <Form.Group className="mb-3">
+              <Form.Label>Cartera</Form.Label>
+              <Form.Select required>
+                <option value="">Selecciona una cartera...</option>
+                <option value="1">American Express</option>
+              </Form.Select>
+            </Form.Group>
+
+            <Button variant="primary" type="submit" className="w-100">
+              Ingresar
+            </Button>
+          </Card>
+        </Container>
       </Form>
       <Toaster richColors position="top-right" />{" "}
       {/* Add Toaster component for toast visibility */}
