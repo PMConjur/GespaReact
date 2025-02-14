@@ -32,8 +32,8 @@ function ModalChange({ user, password, days, expire, onClose }) {
   };
 
   const getExpireMessage = () => {
-    if (days === "1") {
-      return "Su contraseña ha expirado";
+    if (days != "1") {
+      return `Su contraseña expira en ${days} días`;
     } else if (expire === true) {
       return "Su contraseña expiro";
     }

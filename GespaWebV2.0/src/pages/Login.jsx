@@ -50,6 +50,10 @@ function Login() {
           setExpire(response.data.ejecutivo.expiro);
 
           setShowModal(true); // Show the modal
+        } else if (response.data.ejecutivo.expiro === false) {
+          setExpire(response.data.ejecutivo.expiro);
+
+          setShowModal(true); // Show the modal
         } else {
           toast.error("Error al iniciar sesion:", {
             description: response.data.ejecutivo.mensaje
@@ -72,7 +76,7 @@ function Login() {
 
   return (
     <div className="container mt-5">
-      <h1>Gespa Web</h1>
+      <h1 className="text-white">Gespa Web</h1>
       <Form onSubmit={handleSubmit}>
         <Container>
           <Card
