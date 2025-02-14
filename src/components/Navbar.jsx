@@ -39,6 +39,7 @@ function OffcanvasExample() {
             <Navbar.Brand
               href="/home"
               style={{ left: "0", marginRight: "auto" }}
+              className="d-none d-md-block"
             >
               Gespa <Image src={Logo} style={{ width: "36px" }} roundedCircle />
             </Navbar.Brand>
@@ -66,6 +67,7 @@ function OffcanvasExample() {
                 id={`offcanvasNavbarDropdown-expand-${expand}`}
                 data-bs-theme="dark"
                 style={{ color: "white" }}
+                className="d-none d-md-block"
               >
                 <NavDropdown.Item href="/maintenance">Cuenta</NavDropdown.Item>
                 <NavDropdown.Item href="/maintenance">Nombre</NavDropdown.Item>
@@ -80,7 +82,7 @@ function OffcanvasExample() {
                   Expediente
                 </NavDropdown.Item>
               </NavDropdown>
-              <Button variant="primary">Automatico</Button>
+              <Button className="d-none d-md-block" variant="primary">Automatico</Button>
             </Form>
 
             <Dropdown
@@ -109,10 +111,10 @@ function OffcanvasExample() {
                   Ejecutivo Telefonico
                 </Dropdown.Item>
               </Dropdown.Menu>
-              <Col xs={6} md={4}>
-                <Image src={User} roundedCircle />
+              <Col >
+                <Image src={User} roundedCircle style={{width: "36px"}}/>
               </Col>
-              <span style={{ color: "white" }}>Cesar Enrique</span>
+              <span className="d-none d-lg-block" style={{ color: "white" }}>Cesar Enrique</span>
             </Dropdown>
 
             <Navbar.Offcanvas
@@ -135,7 +137,7 @@ function OffcanvasExample() {
                   <Nav.Link href="/maintenance">
                     <h5>Gestion</h5>
                   </Nav.Link>
-                  <Nav.Link href="/maintenance">
+                  <Nav.Link href="/login"> 
                     <h5>Cerrar Sesion</h5>
                   </Nav.Link>
                   <br />
