@@ -68,7 +68,6 @@ namespace NoriAPI.Services
 
         }
 
-
         public async Task<ResultadoProductividad> ValidateProductividad(int NumEmpeado)
         {
             string mensaje = null;

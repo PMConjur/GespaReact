@@ -34,7 +34,7 @@ namespace NoriAPI.Repositories
             using var connection = GetConnection("Piso2Amex");
 
             string queryBusqueda = "WAITFOR DELAY '00:00:00';\r\n" +
-                                    "SELECT TOP 300 \r\n" +
+                                    "SELECT TOP 100 \r\n" +
                                     "   C.idCuenta Cuenta, \r\n" +
                                     "   CL.Cartera, \r\n" +
                                     "   P.Producto, \r\n" +

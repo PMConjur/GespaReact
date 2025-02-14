@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace NoriAPI.Controllers
 {
     [ApiController]
-    [Route("api/Search")]
+    [Route("api/search-customer")]
     [Authorize]
     public class CustomerSearchController : Controller
 
