@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 
-const ModalChangePassword = ({ showSecondModal, closeSecondModal }) => {
+const ModalChangePassword = ({
+  showSecondModal,
+  closeSecondModal,
+  currentPassword,
+}) => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordValid, setPasswordValid] = useState({
@@ -11,6 +15,7 @@ const ModalChangePassword = ({ showSecondModal, closeSecondModal }) => {
     symbol: false,
   });
   const [passwordMatch, setPasswordMatch] = useState(false);
+  const [passwordDifferent, setPasswordDifferent] = useState(false);
 
   if (!showSecondModal) return null; // No se renderiza si no está visible
 
@@ -24,6 +29,7 @@ const ModalChangePassword = ({ showSecondModal, closeSecondModal }) => {
       number: /[0-9]/.test(value),
       symbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(value),
     });
+    setPasswordDifferent(value !== currentPassword);
   };
 
   const handleConfirmPasswordChange = (e) => {
@@ -89,7 +95,8 @@ const ModalChangePassword = ({ showSecondModal, closeSecondModal }) => {
                         passwordValid.upperCase &&
                         passwordValid.lowerCase &&
                         passwordValid.number &&
-                        passwordValid.symbol
+                        passwordValid.symbol &&
+                        passwordDifferent
                     ),
                   }}
                 />
@@ -156,6 +163,13 @@ const ModalChangePassword = ({ showSecondModal, closeSecondModal }) => {
                   >
                     La nueva contraseña debe coincidir con su confirmación
                   </li>
+                  <li
+                    className={`text-${
+                      passwordDifferent ? "success" : "danger"
+                    }`}
+                  >
+                    La nueva contraseña debe ser diferente de la actual
+                  </li>
                 </ul>
               </div>
 
@@ -166,13 +180,15 @@ const ModalChangePassword = ({ showSecondModal, closeSecondModal }) => {
                   style={{
                     backgroundColor:
                       !passwordMatch ||
-                      !Object.values(passwordValid).every(Boolean)
+                      !Object.values(passwordValid).every(Boolean) ||
+                      !passwordDifferent
                         ? "gray"
                         : "",
                   }}
                   disabled={
                     !passwordMatch ||
-                    !Object.values(passwordValid).every(Boolean)
+                    !Object.values(passwordValid).every(Boolean) ||
+                    !passwordDifferent
                   }
                 >
                   Actualizar Contraseña

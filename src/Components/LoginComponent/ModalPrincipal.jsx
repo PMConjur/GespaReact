@@ -17,7 +17,7 @@ const ModalPrincipal = ({ openSecondModal, user, password }) => {
       usuarioWindows: "gespa.web",
       ip: "192.168.7.1",
       aplicacion: "GespaWeb",
-      version: "1.0.0"
+      version: "1.0.0",
     };
 
     try {
@@ -59,30 +59,6 @@ const ModalPrincipal = ({ openSecondModal, user, password }) => {
           <h5 className="card-title">Gestor de Cuenta</h5>
           <p>Su contraseña expira en 30 días</p>
           <p>¿Deseas cambiar ahora?</p>
-          <div className="mb-3">
-            <label htmlFor="modalUser" className="form-label">
-              Usuario
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="modalUser"
-              value={user}
-              readOnly
-            />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="modalPassword" className="form-label">
-              Contraseña
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="modalPassword"
-              value={password}
-              readOnly
-            />
-          </div>
           <div className="d-flex justify-content-center gap-3 mt-3">
             <button
               type="button"
