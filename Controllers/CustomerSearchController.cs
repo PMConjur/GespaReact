@@ -15,9 +15,10 @@ using Microsoft.AspNetCore.Authorization;
 namespace NoriAPI.Controllers
 {
     [ApiController]
-    [Route("api/Search")]
+    [Route("api/search-customer")]
     [Authorize]
-    public class CustomerSearchController : ControllerBase
+    public class CustomerSearchController : Controller
+
     {
         private readonly IConfiguration _configuration;
         private readonly ISearchService _searchService;
@@ -40,7 +41,7 @@ namespace NoriAPI.Controllers
                 return BadRequest(new { Busqueda.Mensaje });
 
             }
-            return Ok(new { Busqueda.Busquedainfo });
+            return Ok(new { Busqueda.ListaResultados });
         }
 
         [HttpGet("productividad-ejecutivo")]//Endpoint Padrino

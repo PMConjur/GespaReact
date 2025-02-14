@@ -6,6 +6,7 @@ using NoriAPI.Models.Busqueda;
 using NoriAPI.Models.Login;
 using System;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NoriAPI.Repositories
@@ -27,11 +28,13 @@ namespace NoriAPI.Repositories
         }
 
         public async Task<dynamic> ValidateBusqueda(string filtro, string ValorBusqueda)
-        {            
+        {
+            string validacion = null;
+
             using var connection = GetConnection("Piso2Amex");
 
             string queryBusqueda = "WAITFOR DELAY '00:00:00';\r\n" +
-                                    "SELECT TOP 300 \r\n" +
+                                    "SELECT TOP 100 \r\n" +
                                     "   C.idCuenta Cuenta, \r\n" +
                                     "   CL.Cartera, \r\n" +
                                     "   P.Producto, \r\n" +
@@ -61,6 +64,7 @@ namespace NoriAPI.Repositories
                     foreach (string sNombre in ValorBusqueda.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
                         queryBusqueda += " AND CONTAINS( N.NombreDeudor, '" + sNombre.Replace("'", "") + "') ";
                     queryBusqueda += "WHERE CuentaActiva = 1";
+                    validacion = "Nombre";
                     break;
 
                 case "RFC":
@@ -103,14 +107,16 @@ namespace NoriAPI.Repositories
                     break;
             }
 
-            // Recuerda cómo especificar la palabra clave (para reemplazar QueryFirstOrDefaultAsync) en el valor del tipo de dato).
-            var busqueda = (await connection.QueryFirstOrDefaultAsync<dynamic>(
-                queryBusqueda,
-                //parameters,
-                commandType: CommandType.Text
-            ));
-
-            return busqueda;
+            if (validacion == "Nombre")
+            {
+                var busqueda = (await connection.QueryAsync<dynamic>(queryBusqueda, commandType: CommandType.Text));
+                return busqueda;                
+            }
+            else
+            {
+                var busqueda = (await connection.QueryFirstOrDefaultAsync<dynamic>(queryBusqueda, commandType: CommandType.Text));
+                return busqueda;
+            }                    
 
         }
 
@@ -120,11 +126,11 @@ namespace NoriAPI.Repositories
 
             string queryProductividad = "";
 
-            var productividad = (await connection.QueryFirstOrDefaultAsync<dynamic>(
+            var productividad = (await connection.QueryAsync<dynamic>(
                 queryProductividad,
                 //parameters,
                 commandType: CommandType.Text
-            ));
+            )).ToList();
 
             return productividad;
 
