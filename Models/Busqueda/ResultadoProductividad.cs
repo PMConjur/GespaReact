@@ -6,7 +6,7 @@
         {
             Mensaje = mensaje;
         }
-        public string Mensaje {  get; set; }
+        public string Mensaje { get; set; }
 
 
     }
