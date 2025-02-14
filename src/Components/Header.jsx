@@ -61,8 +61,6 @@ const Header = ({ toggleSidebar }) => {
             value={selectedOption}
             onChange={handleOptionChange}
             aria-label="Selecciona el filtro"
-            
-            
           >
             <option>Selecciona el filtro</option>
             <option>Cuenta</option>
@@ -90,14 +88,17 @@ const Header = ({ toggleSidebar }) => {
               gap: "5px",
             }}
           >
-            <i class="bi bi-arrow-repeat" style={{color: "white"}}></i>
-            <span className="d-none d-lg-block">Automatico</span>     
+            <i class="bi bi-arrow-repeat" style={{ color: "white" }}></i>
+            <span className="d-none d-lg-block">Automatico</span>
           </button>
         </form>
       </div>
 
       <nav className="header-nav ms-auto">
-        <ul className="d-flex align-items-center" style={{marginRight: "40px"}}>
+        <ul
+          className="d-flex align-items-center"
+          style={{ marginRight: "40px" }}
+        >
           <li className="nav-item d-block d-lg-none">
             <a className="nav-link nav-icon search-bar-toggle">
               <i className="bi bi-search"></i>
@@ -107,38 +108,38 @@ const Header = ({ toggleSidebar }) => {
           <li className="nav-item dropdown pe-3">
             <a
               className="nav-link nav-profile d-flex align-items-center pe-0"
-              
               onClick={toggleDropdown}
             >
-              <img
-                src={User}
-                alt="Profile"
-                className="rounded-circle"
-              ></img>
-              <span className="d-none d-md-block dropdown-toggle ps-2">Cesar Rodriguez</span>
+              <img src={User} alt="Profile" className="rounded-circle"></img>
+              <span className="d-none d-md-block dropdown-toggle ps-2">
+                Cesar Rodriguez
+              </span>
             </a>
 
-            <ul className={`dropdown-menu dropdown-menu-end dropdown-menu-arrow profile ${isDropdownOpen ? "show" : ""}`}
-                 >
-              
-              <li className="dropdown-header" style={{padding: "10px"}}>
+            <ul
+              className={`dropdown-menu dropdown-menu-end dropdown-menu-arrow profile ${
+                isDropdownOpen ? "show" : ""
+              }`}
+            >
+              <li className="dropdown-header" style={{ padding: "10px" }}>
                 <p>Cesar Enrique Rodriguez Alvarez</p>
                 <i className="ri-id-card-fill"></i>
-                <span >23389</span>
+                <span>23389</span>
               </li>
 
               <li>
-                <hr className="dropdown-divider"/>
+                <hr className="dropdown-divider" />
               </li>
-  
+
               <li>
-                <a className="dropdown-item d-flex align-items-center" href="/ejemplo">
+                <a
+                  className="dropdown-item d-flex align-items-center"
+                  href="/ejemplo"
+                >
                   <i className="ri-customer-service-2-line"></i>
                   <span href="/ejemplo">Ejecutivo Telefonico</span>
                 </a>
               </li>
-            
-             
             </ul>
           </li>
         </ul>
@@ -165,7 +166,10 @@ const Sidebar = ({ isSidebarOpen }) => {
   };
 
   return (
-    <aside id="sidebar" className={`sidebar ${isSidebarOpen ? "" : "collapsed"}`}>
+    <aside
+      id="sidebar"
+      className={`sidebar ${isSidebarOpen ? "" : "collapsed"}`}
+    >
       <ul className="sidebar-nav" id="sidebar-nav">
         <li className="nav-item">
           <a className="nav-link" href="/home">

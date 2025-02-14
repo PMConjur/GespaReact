@@ -9,17 +9,18 @@ import "./assets/vendor/quill/quill.bubble.css";
 import "./assets/vendor/remixicon/remixicon.css";
 import "./assets/vendor/simple-datatables/style.css";
 import "./assets/css/style.css";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Navigate
+  Navigate,
 } from "react-router-dom";
 import Login from "./Pages/Login/Login";
 import Home from "./Pages/Home/Home";
+import RegistrationRequest from "./Pages/Registration-Request/RegistrationRequest";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -29,6 +30,7 @@ root.render(
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/registration-request" element={<RegistrationRequest />} />
         <Route path="*" element={<Navigate to="/" />} />{" "}
         {/* Redirige a Login */}
       </Routes>

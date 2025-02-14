@@ -6,6 +6,7 @@ import EnterButton from "../../Components/LoginComponent/EnterButton";
 import ModalHandler from "../../Components/LoginComponent/ModalHandler";
 import logo from "../../assets/img/logo22.png";
 import { Modal } from "bootstrap"; // Importa Bootstrap Modal
+import { Link } from "react-router-dom";
 
 const LoginForm = () => {
   const [password, setPassword] = useState("");
@@ -76,7 +77,9 @@ const LoginForm = () => {
                       <div className="col-12">
                         <p className="small mb-0" style={{ color: "white" }}>
                           Aún no tienes cuenta.{" "}
-                          <a href="pages-register.html">Solicita tu alta.</a>
+                          <Link to="/registration-request">
+                            Solicitar Registro
+                          </Link>
                         </p>
                       </div>
                     </form>
