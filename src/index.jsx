@@ -16,11 +16,10 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-
+  Navigate
 } from "react-router-dom";
 import Login from "./Pages/Login/Login";
 import Home from "./Pages/Home/Home";
-import Ejemplo from "./Pages/Register/ejemplo";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -30,7 +29,7 @@ root.render(
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/ejemplo" element={<Ejemplo/>} />{" "}
+        <Route path="*" element={<Navigate to="/" />} />{" "}
         {/* Redirige a Login */}
       </Routes>
     </Router>

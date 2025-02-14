@@ -3,8 +3,7 @@ import React, { useState } from "react";
 const ModalChangePassword = ({
   showSecondModal,
   closeSecondModal,
-  user,
-  password,
+  currentPassword,
 }) => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -14,9 +13,9 @@ const ModalChangePassword = ({
     lowerCase: false,
     number: false,
     symbol: false,
-    differentFromCurrent: false,
   });
   const [passwordMatch, setPasswordMatch] = useState(false);
+  const [passwordDifferent, setPasswordDifferent] = useState(false);
 
   if (!showSecondModal) return null; // No se renderiza si no está visible
 
@@ -29,8 +28,8 @@ const ModalChangePassword = ({
       lowerCase: /[a-z]/.test(value),
       number: /[0-9]/.test(value),
       symbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(value),
-      differentFromCurrent: value !== password,
     });
+    setPasswordDifferent(value !== currentPassword);
   };
 
   const handleConfirmPasswordChange = (e) => {
@@ -97,7 +96,7 @@ const ModalChangePassword = ({
                         passwordValid.lowerCase &&
                         passwordValid.number &&
                         passwordValid.symbol &&
-                        passwordValid.differentFromCurrent
+                        passwordDifferent
                     ),
                   }}
                 />
@@ -160,16 +159,16 @@ const ModalChangePassword = ({
                     Debe contener al menos un símbolo
                   </li>
                   <li
-                    className={`text-${
-                      passwordValid.differentFromCurrent ? "success" : "danger"
-                    }`}
-                  >
-                    La nueva contraseña debe ser diferente de la actual
-                  </li>
-                  <li
                     className={`text-${passwordMatch ? "success" : "danger"}`}
                   >
                     La nueva contraseña debe coincidir con su confirmación
+                  </li>
+                  <li
+                    className={`text-${
+                      passwordDifferent ? "success" : "danger"
+                    }`}
+                  >
+                    La nueva contraseña debe ser diferente de la actual
                   </li>
                 </ul>
               </div>
@@ -181,18 +180,19 @@ const ModalChangePassword = ({
                   style={{
                     backgroundColor:
                       !passwordMatch ||
-                      !Object.values(passwordValid).every(Boolean)
+                      !Object.values(passwordValid).every(Boolean) ||
+                      !passwordDifferent
                         ? "gray"
                         : "",
                   }}
                   disabled={
                     !passwordMatch ||
-                    !Object.values(passwordValid).every(Boolean)
+                    !Object.values(passwordValid).every(Boolean) ||
+                    !passwordDifferent
                   }
                 >
                   Actualizar Contraseña
                 </button>
-                <p style={{ visibility: "hidden" }}>{password}</p>
               </div>
             </form>
           </div>

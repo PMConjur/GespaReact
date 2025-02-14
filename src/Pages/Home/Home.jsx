@@ -1,13 +1,30 @@
 import { useNavigate } from "react-router-dom";
-import Layout from "../../components/Header";
+import Layout from "../../Components/Header";
 import Home1 from "../../assets/img/not-found.svg";
 import Maintenance from "../../assets/img/maintenance.png";
+import { useEffect, useState } from "react";
 
 const Home = () => {
   const navigate = useNavigate();
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const session = localStorage.getItem("session");
+    const expires = localStorage.getItem("expires");
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+    const message = localStorage.getItem("message");
+
+    if (message) {
+      console.log("Message:", message);
+    } else {
+      setUserData({ session, expires, token, user });
+    }
+  }, []);
 
   const handleLogout = () => {
     // Lógica para cerrar sesión (limpiar estado, etc.)
+    localStorage.clear();
     navigate("/"); // Redirige al login
   };
 
