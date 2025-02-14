@@ -4,6 +4,10 @@ import Home from "./pages/Home";
 import Register from "./pages/Register";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+<<<<<<< HEAD:GespaWebV2.0/src/App.jsx
+=======
+import Maintenance from "./pages/Maintenance";
+>>>>>>> HU2.1-Buscador:src/App.jsx
 
 function App() {
   return (
@@ -12,6 +16,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/home" element={<Home />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/maintenance" element={<Maintenance />} />
       </Routes>
     </Router>
   );

@@ -1,0 +1,39 @@
+.sidebar {
+    transition: all 0.3s ease-in-out;
+    width: 250px;
+
+  }
+  
+  .sidebar.collapsed {
+    width: 0;
+    overflow: hidden;
+    padding: 0
+    
+  }
+  
+  .header{
+
+
+  }
+
+  .Buttom-search{
+     background-color: "#0d6efd";
+     margin-left: "10px"; 
+     color: "white";
+     border-radius: "5px";
+     align-items: center;
+
+  }
+
+  .dropdown-menu-arrow{
+    margin-right: "50px";
+    margin-top: 40px;
+  }
+
+  .dropdown-header{
+   white-space: normal;
+  }
+
+  .form-select{
+    border-radius: "3px";
+  }
