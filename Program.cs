@@ -52,7 +52,7 @@ builder.Services.AddEndpointsApiExplorer();
 // Agregar Swagger con autenticación
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Mi API", Version = "v1" });
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "NoriAPI", Version = "v1" });
 
     // Configurar Bearer Token
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -84,8 +84,13 @@ builder.Services.AddSwaggerGen(options =>
 // Registramos los servicios
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
+builder.Services.AddScoped<IEjecutivoService, EjecutivoService>();
+
+// Registramos los Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISearchRepository, SearchRepository>();
+builder.Services.AddScoped<IEjecutivoRepository, EjecutivoRepository>();
+
 
 var app = builder.Build();
 

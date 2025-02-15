@@ -60,7 +60,6 @@ namespace NoriAPI.Controllers
 
             if (!string.IsNullOrEmpty(ejecutivo.Mensaje) || ejecutivo.Expiro == true || ejecutivo.Sesion == true)
             {
-                // Ahora el método regresa OK en lugar de Unauthorized.
                 return Ok(new { ejecutivo });
             }
 

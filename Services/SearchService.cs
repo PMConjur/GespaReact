@@ -6,6 +6,7 @@ using NoriAPI.Models;
 using NoriAPI.Models.Login;
 using System.Threading.Tasks;
 using NoriAPI.Models.Busqueda;
+using System.Linq;
 
 namespace NoriAPI.Services
 {
@@ -32,27 +33,40 @@ namespace NoriAPI.Services
         public async Task<ResultadoBusqueda> ValidateBusqueda(string filtro, string ValorBusqueda)
         {
             string mensaje = null;
-            BusquedaInfo busquedaInfo = null;
-
+            List<BusquedaInfo> listaBusquedaInfo = new List<BusquedaInfo>();
 
             var validateBusqueda = await _searchRepository.ValidateBusqueda(filtro, ValorBusqueda);
 
-            var busq = (IDictionary<string, object>)validateBusqueda;
+            if (validateBusqueda == null)
+            {
+                mensaje = "No se encontró información";
+                return new ResultadoBusqueda(mensaje, null);
+            }
 
-            if (busq == null)
+            // 🔹 Si Dapper devuelve una sola fila, lo convierte en un diccionario
+            if (validateBusqueda is IDictionary<string, object> singleRow)
             {
-                mensaje = "No se encontro Informacion";
-                var resultadoBusqueda = new ResultadoBusqueda(mensaje, null);
-                return resultadoBusqueda;
+                var busquedaInfo = MapToInfoBusqueda(singleRow);
+                return new ResultadoBusqueda(mensaje, new List<BusquedaInfo> { busquedaInfo });
             }
-            else
+
+            // 🔹 Si Dapper devuelve múltiples filas, las convertimos en una lista de diccionarios
+            var listaDiccionarios = ((IEnumerable<dynamic>)validateBusqueda)
+                .Select(item => (IDictionary<string, object>)item)
+                .ToList();
+
+            if (!listaDiccionarios.Any())
             {
-                busquedaInfo = MapToInfoBusqueda(busq);
-                var resultadoBusqueda = new ResultadoBusqueda(mensaje, busquedaInfo);
-                return resultadoBusqueda;
+                mensaje = "No se encontró información";
+                return new ResultadoBusqueda(mensaje, new List<BusquedaInfo>());
             }
+
+            // 🔹 Convertir a lista de `BusquedaInfo`
+            listaBusquedaInfo = listaDiccionarios.Select(MapToInfoBusqueda).ToList();
+
+            return new ResultadoBusqueda(mensaje, listaBusquedaInfo);
+
         }
-
 
         public async Task<ResultadoProductividad> ValidateProductividad(int NumEmpeado)
         {
