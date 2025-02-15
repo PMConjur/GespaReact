@@ -12,26 +12,50 @@ import Dropdown from "react-bootstrap/Dropdown";
 import User from "../assets/img/user.svg";
 import Col from "react-bootstrap/Col";
 import axios from 'axios';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import FormControl from "react-bootstrap/FormControl";
 
 
 function OffcanvasExample() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('Cuenta');
-  const [searchResults, setSearchResults] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCR1JIIiwianRpIjoiMTJmNTFmNTYtNDI5Yi00MzZlLWJlM2UtYzBhNjc0MWE2YmNjIiwiVXN1YXJpbyI6IkJHUkgiLCJleHAiOjE3Mzk1ODE2NjIsImlzcyI6IjE5Mi4xNjguNy4zMyIsImF1ZCI6IjE5Mi4xNjguNS4zOCJ9.yY1hnbY6NeFDXFO3BwmC9rOwg5CLQn90C_KvUvmEqMo'; // Reemplaza 'YOUR_ACCESS_TOKEN_HERE' con tu token de acceso 
+
+  useEffect(() => {
+    if (filter && !searchTerm) {
+      fetchFilterData(filter);
+    }
+  }, [filter]);
+
+  const fetchFilterData = async (filter) => {
+    try {
+      const response = await axios.get('http://192.168.7.33/api/Search/busqueda-cuenta', {
+        params: { filtro: filter },
+        headers: {
+          Authorization: token,
+        },
+      });
+      console.log('Response for filter:', response.data);
+      setSearchResults(response.data.busquedainfo || []);
+    } catch (error) {
+      console.error('Error fetching filter data:', error);
+    }
+  };
 
   const handleSearch = async () => {
     try {
       const response = await axios.get('http://192.168.7.33/api/Search/busqueda-cuenta', {
-        params: { query: searchTerm, filter: filter },
+        params: { filtro: filter, ValorBusqueda: searchTerm },
         headers: {
-          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJST0FDIiwianRpIjoiYTM3ODhlMWQtOTczMC00YjRjLWFhMjEtYjRiM2EwZjFkNjRhIiwiVXN1YXJpbyI6IlJPQUMiLCJleHAiOjE3Mzk1NjE1MTYsImlzcyI6IjE5Mi4xNjguNy4zMyIsImF1ZCI6IjE5Mi4xNjguNS4zOCJ9.ul1goTwMxMQzhMLHZdX4ty_EE0MwUA6Syw1gr1H59y4',
+          Authorization: token,
         },
-        
       });
-      console.log(searchTerm, filter),
-      console.log('Response from endpoint:', response);
-      setSearchResults(response.data.busquedainfo);
+      console.log('Response for search term:', response.data);
+      setSearchResults(Array.isArray(response.data.busquedainfo) ? response.data.busquedainfo : []);
     } catch (error) {
       console.error('Error fetching search results:', error);
     }
@@ -39,6 +63,43 @@ function OffcanvasExample() {
 
   const handleFilterSelect = (filter) => {
     setFilter(filter);
+    setSearchTerm('');
+  };
+
+  const handleInputChange = async (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    if (value.length > 0) {
+      try {
+        const response = await axios.get('http://192.168.7.33/api/Search/busqueda-cuenta', {
+          params: { filtro: filter, ValorBusqueda: value },
+          headers: {
+            Authorization: token,
+          },
+        });
+        console.log('Response for suggestions:', response.data.busquedainfo);
+        if (Array.isArray(response.data.busquedainfo)) {
+          setSuggestions(response.data.busquedainfo);
+          setShowSuggestions(true);
+        } else {
+          setSuggestions([]);
+          setShowSuggestions(false);
+        }
+      } catch (error) {
+        console.error('Error fetching suggestions:', error);
+        setShowSuggestions(false);
+      }
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setSearchTerm(suggestion.nombreDeudor);
+    setSuggestions([]);
+    setShowSuggestions(false);
   };
 
   return (
@@ -71,7 +132,7 @@ function OffcanvasExample() {
               Gespa <Image src={Logo} style={{ width: '36px' }} roundedCircle />
             </Navbar.Brand>
 
-            <Form
+            <form
               className="d-flex"
               data-bs-theme="dark"
               style={{
@@ -87,32 +148,51 @@ function OffcanvasExample() {
                 handleSearch();
               }}
             >
-              <Form.Control
-                type="search"
-                placeholder="Buscar Cuenta"
-                className="me-2"
-                aria-label="Search"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+              <div style={{ position: 'relative', width: '300px' }}>
+                <FormControl
+                  type="search"
+                  placeholder="Buscar"
+                  className="me-2"
+                  aria-label="Search"
+                  value={searchTerm}
+                  onChange={handleInputChange}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 100)} // delay to allow click event
+                  style={{ width: '100%' }}
+                />
+                {showSuggestions && (
+                  <div style={{ position: 'absolute', top: '100%', left: '0', width: '100%', backgroundColor: 'white', border: '1px solid #ddd', zIndex: 1000 }}>
+                    {suggestions.map((suggestion, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        style={{ padding: '10px', cursor: 'pointer' }}
+                      >
+                        {suggestion.nombreDeudor}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <NavDropdown
                 title={`Filtrar por: ${filter}`}
                 id={`offcanvasNavbarDropdown-expand-${expand}`}
                 data-bs-theme="dark"
                 style={{ color: 'white' }}
                 className="d-none d-md-block"
+                onSelect={handleFilterSelect}
               >
-                <NavDropdown.Item onClick={() => handleFilterSelect('Cuenta')}>Cuenta</NavDropdown.Item>
-                <NavDropdown.Item onClick={() => handleFilterSelect('Nombre')}>Nombre</NavDropdown.Item>
-                <NavDropdown.Item onClick={() => handleFilterSelect('RFC')}>RFC</NavDropdown.Item>
-                <NavDropdown.Item onClick={() => handleFilterSelect('Numero de cliente')}>Numero de cliente</NavDropdown.Item>
-                <NavDropdown.Item onClick={() => handleFilterSelect('Telefono')}>Telefono</NavDropdown.Item>
-                <NavDropdown.Item onClick={() => handleFilterSelect('Expediente')}>Expediente</NavDropdown.Item>
+                <NavDropdown.Item eventKey="Cuenta">Cuenta</NavDropdown.Item>
+                <NavDropdown.Item eventKey="Nombre">Nombre</NavDropdown.Item>
+                <NavDropdown.Item eventKey="RFC">RFC</NavDropdown.Item>
+                <NavDropdown.Item eventKey="Numero de cliente">Numero de cliente</NavDropdown.Item>
+                <NavDropdown.Item eventKey="Telefono">Telefono</NavDropdown.Item>
+                <NavDropdown.Item eventKey="Expediente">Expediente</NavDropdown.Item>
               </NavDropdown>
               <Button className="d-none d-md-block" variant="primary" type="submit">
                 Buscar
               </Button>
-            </Form>
+            </form>
 
             <Dropdown
               as={ButtonGroup}
@@ -190,4 +270,3 @@ function OffcanvasExample() {
 }
 
 export default OffcanvasExample;
-
