@@ -22,7 +22,25 @@ namespace NoriAPI.Controllers
         [HttpGet] // 🔹 Agregar esta anotación
         public IActionResult Index()
         {
+
+            //*
+            //Cesar 
+            //*//
+
+            /*
+             
+             Yoshi
+             */
+
+
+
+            /*
+             Padrino
+             */
+
             return Ok("Hola desde EjecutivoController");
         }
+
+
     }
 }

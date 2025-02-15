@@ -14,7 +14,7 @@ namespace NoriAPI.Services
     {
         Task<ResultadoBusqueda> ValidateBusqueda(string filtro, string ValorBusqueda);
         Task<ResultadoProductividad> ValidateProductividad(int NumEmpleado);
-
+        Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado);
     }
 
 
@@ -88,6 +88,34 @@ namespace NoriAPI.Services
 
         }
 
+        public async Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado)
+        {
+            string mensaje = null;
+            List<AutomaticoInfo> listaAutomasticoInfo = new List<AutomaticoInfo>();
+
+            var validateAutomatico = await _searchRepository.ValidateAutomatico(numEmpleado);
+
+            if (validateAutomatico == null) 
+            {
+                mensaje = "No hay cuentas";
+                return new ResultadoAutomatico(mensaje, null);
+            
+            }
+
+            //si devuelve una sola fila
+            if (validateAutomatico is IDictionary<string, object> singleRow)
+            {
+                var 
+
+            }
+
+
+
+
+        }
+
+
+
         private static BusquedaInfo MapToInfoBusqueda(IDictionary<string, object> busq)
         {
             var busqueda = new BusquedaInfo();
@@ -119,6 +147,9 @@ namespace NoriAPI.Services
             return busqueda;
 
         }
+
+        private stat
+
 
     }
 }

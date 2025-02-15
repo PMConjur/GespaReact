@@ -15,7 +15,7 @@ namespace NoriAPI.Repositories
     {
         Task<dynamic> ValidateBusqueda(string filtro, string ValorBusqueda);
         Task<dynamic> ValidateProductividad(int NumEmpleado);
-
+        Task<dynamic> ValidateAutomatico(int numEmpleado);
     }
 
     public class SearchRepository : ISearchRepository
@@ -133,6 +133,24 @@ namespace NoriAPI.Repositories
             )).ToList();
 
             return productividad;
+
+        }
+
+        public async Task<dynamic> ValidateAutomatico(int numEmpleado)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string storedAutomatico = "EXEC dbMemory.AMS.ObtieneCuenta";
+            var parameters = new
+            {
+                numEmpleado = numEmpleado
+            };
+            var Automatico = (await connection.QueryFirstOrDefaultAsync<dynamic>(
+                storedAutomatico,
+                parameters,
+                commandType : CommandType.StoredProcedure                
+                ));
+            return Automatico;
 
         }
 
