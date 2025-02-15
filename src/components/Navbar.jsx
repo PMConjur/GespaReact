@@ -1,6 +1,5 @@
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
-import Form from "react-bootstrap/Form";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
@@ -14,6 +13,11 @@ import Col from "react-bootstrap/Col";
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import FormControl from "react-bootstrap/FormControl";
+import { Alert } from "react-bootstrap";
+import { Card } from "react-bootstrap";
+import '../scss/styles.scss'
+import { Row } from "react-bootstrap";
+import { FaRegCreditCard, FaUser, FaFileAlt, FaCalendarCheck, FaClipboardList } from "react-icons/fa";
 
 
 function OffcanvasExample() {
@@ -22,176 +26,233 @@ function OffcanvasExample() {
   const [searchResults, setSearchResults] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCR1JIIiwianRpIjoiODJhODQ2NzYtODE2YS00YzQ2LTgyZmUtMjZkM2FkZGM2MGQzIiwiVXN1YXJpbyI6IkJHUkgiLCJleHAiOjE3Mzk2NDEzNDgsImlzcyI6IjE5Mi4xNjguNy4zMyIsImF1ZCI6IjE5Mi4xNjguNS4zOCJ9.pESN3-1QvCLs-Wg7YqDMUXqINRQKhqAxOFv9v-AYqxI'; // Reemplaza 'YOUR_ACCESS_TOKEN_HERE' con tu token de acceso
+  const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCR1JIIiwianRpIjoiMTlmNDJjNjctMTgzZC00ZDE5LWIzYTUtNWE1ZmQyZmQ4MTFhIiwiVXN1YXJpbyI6IkJHUkgiLCJleHAiOjE3Mzk2NDYwOTQsImlzcyI6IjE5Mi4xNjguNy4zMyIsImF1ZCI6IjE5Mi4xNjguNS4zOCJ9.zOOx8AyGRGuCfdJX9PTIhgADDjmY7YFWSY4cgZ2Ud0w'; // Reemplaza 'YOUR_ACCESS_TOKEN_HERE' con tu token de acceso
 
- // Reemplaza 'YOUR_ACCESS_TOKEN_HERE' con tu token de acceso
+  useEffect(() => {
+    if (filter && !searchTerm) {
+      fetchFilterData(filter);
+    }
+  }, [filter]);
 
- useEffect(() => {
-  if (filter && !searchTerm) {
-    fetchFilterData(filter);
-  }
-}, [filter]);
-
-const fetchFilterData = async (filter) => {
-  try {
-    const response = await axios.get('http://192.168.7.33/api/search-customer/busqueda-cuenta', {
-      params: { filtro: filter },
-      headers: {
-        Authorization: token,
-      },
-    });
-    console.log('Response for filter:', response.data);
-    setSearchResults(response.data.listaResultados || []);
-  } catch (error) {
-    console.error('Error fetching filter data:', error);
-  }
-};
-
-const handleSearch = async () => {
-  try {
-    const response = await axios.get('http://192.168.7.33/api/search-customer/busqueda-cuenta', {
-      params: { filtro: filter, ValorBusqueda: searchTerm },
-      headers: {
-        Authorization: token,
-      },
-    });
-    console.log('Response for search term:', response.data);
-    setSearchResults(response.data.listaResultados || []);
-  } catch (error) {
-    console.error('Error fetching search results:', error);
-  }
-};
-
-const handleFilterSelect = (filter) => {
-  setFilter(filter);
-  setSearchTerm('');
-};
-
-const handleInputChange = async (e) => {
-  const value = e.target.value;
-  setSearchTerm(value);
-
-  if (value.length > 0) {
+  const fetchFilterData = async (filter) => {
     try {
       const response = await axios.get('http://192.168.7.33/api/search-customer/busqueda-cuenta', {
-        params: { filtro: filter, ValorBusqueda: value },
+        params: { filtro: filter },
         headers: {
           Authorization: token,
         },
       });
-      console.log('Response for suggestions:', response.data.listaResultados);
-      setSuggestions(response.data.listaResultados || []);
-      setShowSuggestions(true);
+      console.log('Response for filter:', response.data);
+      setSearchResults(response.data.listaResultados || []);
     } catch (error) {
-      console.error('Error fetching suggestions:', error);
+      console.error('Error fetching filter data:', error);
+    }
+  };
+
+  const handleSearch = async () => {
+    try {
+      const response = await axios.get('http://192.168.7.33/api/search-customer/busqueda-cuenta', {
+        params: { filtro: filter, ValorBusqueda: searchTerm },
+        headers: {
+          Authorization: token,
+        },
+      });
+      console.log('Response for search term:', response.data);
+      setSearchResults(response.data.listaResultados || []);
+    } catch (error) {
+      console.error('Error fetching search results:', error);
+    }
+  };
+
+  const handleFilterSelect = (filter) => {
+    setFilter(filter);
+    setSearchTerm('');
+    setErrorMessage(''); // Clear error message when changing filter
+  };
+
+  const handleInputChange = async (e) => {
+    const value = e.target.value.trim();
+    let maxLength;
+
+    // Validation based on selected filter
+    let valid = true;
+    switch (filter) {
+      case 'Cuenta':
+        valid = /^[0-9]*$/.test(value);
+        maxLength = 15;
+        if (!valid) setErrorMessage('Cuenta solo puede contener números.');
+        if (value.length > maxLength) setErrorMessage(`Cuenta puede tener máximo ${maxLength} caracteres.`);
+        break;
+      case 'Nombre':
+        valid = /^[A-Za-z\s]*$/.test(value);
+        maxLength = 50;
+        if (!valid) setErrorMessage('Nombre solo puede contener letras.');
+        if (value.length > maxLength) setErrorMessage(`Nombre puede tener máximo ${maxLength} caracteres.`);
+        break;
+      case 'RFC':
+        valid = /^[A-Za-z0-9]*$/.test(value);
+        maxLength = 13;
+        if (!valid) setErrorMessage('RFC solo puede contener caracteres alfanuméricos.');
+        if (value.length > maxLength) setErrorMessage(`RFC puede tener máximo ${maxLength} caracteres.`);
+        break;
+      case 'Numero de cliente':
+        valid = /^[0-9]*$/.test(value);
+        maxLength = 10;
+        if (!valid) setErrorMessage('Número de cliente solo puede contener números.');
+        if (value.length > maxLength) setErrorMessage(`Número de cliente puede tener máximo ${maxLength} caracteres.`);
+        break;
+      case 'Telefono':
+        valid = /^[0-9]*$/.test(value);
+        maxLength = 10;
+        if (!valid) setErrorMessage('Teléfono solo puede contener números.');
+        if (value.length > maxLength) setErrorMessage(`Teléfono puede tener máximo ${maxLength} caracteres.`);
+        break;
+      case 'Expediente':
+        valid = /^[A-Za-z0-9]*$/.test(value);
+        maxLength = 10;
+        if (!valid) setErrorMessage('Expediente solo puede contener caracteres alfanuméricos.');
+        if (value.length > maxLength) setErrorMessage(`Expediente puede tener máximo ${maxLength} caracteres.`);
+        break;
+      default:
+        valid = /^[A-Za-z0-9\s]*$/.test(value);
+        maxLength = 50; // Default maxLength for any other fields
+        if (!valid) setErrorMessage('Este campo solo puede contener caracteres alfanuméricos.');
+        if (value.length > maxLength) setErrorMessage(`Este campo puede tener máximo ${maxLength} caracteres.`);
+        break;
+    }
+
+    if (valid && value.length <= maxLength) {
+      setSearchTerm(value);
+      setErrorMessage(''); // Clear error message if the value is valid
+
+      if (value.length > 0) {
+        try {
+          const response = await axios.get('http://192.168.7.33/api/search-customer/busqueda-cuenta', {
+            params: { filtro: filter, ValorBusqueda: value },
+            headers: {
+              Authorization: token,
+            },
+          });
+          console.log('Response for suggestions:', response.data.listaResultados);
+          setSuggestions(response.data.listaResultados || []);
+          setShowSuggestions(true);
+        } catch (error) {
+          console.error('Error fetching suggestions:', error);
+          setShowSuggestions(false);
+        }
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    } else {
       setShowSuggestions(false);
     }
-  } else {
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setSearchTerm(suggestion.nombreDeudor);
+    setSearchResults([suggestion]);
     setSuggestions([]);
     setShowSuggestions(false);
-  }
-};
+  };
 
-const handleSuggestionClick = (suggestion) => {
-  setSearchTerm(suggestion.nombreDeudor);
-  setSuggestions([]);
-  setShowSuggestions(false);
-};
-
-return (
-  <>
-    {[false].map((expand) => (
-      <Navbar
-        key={expand}
-        expand={expand}
-        className="bg-dark mb-3"
-        data-bs-theme="dark"
-        style={{
-          width: '100%',
-          height: '60px',
-          top: '0',
-          position: 'fixed',
-          left: '0',
-          zIndex: '1000',
-        }}
-      >
-        <Container fluid className="justify-content-between">
-          <Navbar.Toggle
-            aria-controls={`offcanvasNavbar-expand-${expand}`}
-            style={{ margin: '0 10px' }}
-          />
-          <Navbar.Brand
-            href="/home"
-            style={{ left: '0', marginRight: 'auto' }}
-            className="d-none d-md-block"
-          >
-            Gespa <Image src={Logo} style={{ width: '36px' }} roundedCircle />
-          </Navbar.Brand>
-
-          <form
-            className="d-flex"
-            data-bs-theme="dark"
-            style={{
-              gap: '10px',
-              alignContent: 'center',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginLeft: 'auto',
-              marginRight: 'auto',
-            }}
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSearch();
-            }}
-          >
-            <NavDropdown
-              title={`Filtrar por: ${filter}`}
-              id={`offcanvasNavbarDropdown-expand-${expand}`}
-              data-bs-theme="dark"
-              style={{ color: 'white' }}
+  return (
+    <>
+      {[false].map((expand) => (
+        <Navbar
+          key={expand}
+          expand={expand}
+          className="bg-dark mb-3"
+          data-bs-theme="dark"
+          style={{
+            width: '100%',
+            height: '60px',
+            top: '0',
+            position: 'fixed',
+            left: '0',
+            zIndex: '1000',
+          }}
+        >
+          <Container fluid className="justify-content-between">
+            <Navbar.Toggle
+              aria-controls={`offcanvasNavbar-expand-${expand}`}
+              style={{ margin: '0 10px' }}
+            />
+            <Navbar.Brand
+              href="/home"
+              style={{ left: '0', marginRight: 'auto' }}
               className="d-none d-md-block"
-              onSelect={handleFilterSelect}
             >
-              <NavDropdown.Item eventKey="Cuenta">Cuenta</NavDropdown.Item>
-              <NavDropdown.Item eventKey="Nombre">Nombre</NavDropdown.Item>
-              <NavDropdown.Item eventKey="RFC">RFC</NavDropdown.Item>
-              <NavDropdown.Item eventKey="Numero de cliente">Numero de cliente</NavDropdown.Item>
-              <NavDropdown.Item eventKey="Telefono">Telefono</NavDropdown.Item>
-              <NavDropdown.Item eventKey="Expediente">Expediente</NavDropdown.Item>
-            </NavDropdown>
+              Gespa <Image src={Logo} style={{ width: '36px' }} roundedCircle />
+            </Navbar.Brand>
 
-            <div style={{ position: 'relative', width: '300px' }}>
-              <FormControl
-                type="search"
-                placeholder="Buscar"
-                className="me-2"
-                aria-label="Search"
-                value={searchTerm}
-                onChange={handleInputChange}
-                onFocus={() => setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // delay to allow click event
-                style={{ width: '100%' }}
-              />
-              {showSuggestions && suggestions.length > 0 && (
-                <div style={{ position: 'absolute', top: '100%', left: '0', width: '100%', backgroundColor: 'white', color: 'black', border: '1px solid #ddd', maxHeight: '300px', overflowY: 'auto', zIndex: 1000 }}>
-                  {suggestions.map((suggestion, index) => (
-                    <div
-                      key={index}
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      style={{ padding: '10px', cursor: 'pointer' }}
-                    >
-                      {suggestion.nombreDeudor}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <form
+              className="d-flex"
+              data-bs-theme="dark"
+              style={{
+                gap: '10px',
+                alignContent: 'center',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginLeft: 'auto',
+                marginRight: 'auto',
+              }}
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSearch();
+              }}
+            >
+              <NavDropdown
+                title={`Filtrar por: ${filter}`}
+                id={`offcanvasNavbarDropdown-expand-${expand}`}
+                data-bs-theme="dark"
+                style={{ color: 'white' }}
+                className="d-none d-md-block"
+                onSelect={handleFilterSelect}
+              >
+                <NavDropdown.Item eventKey="Cuenta">Cuenta</NavDropdown.Item>
+                <NavDropdown.Item eventKey="Nombre">Nombre</NavDropdown.Item>
+                <NavDropdown.Item eventKey="RFC">RFC</NavDropdown.Item>
+                <NavDropdown.Item eventKey="Numero de cliente">Numero de cliente</NavDropdown.Item>
+                <NavDropdown.Item eventKey="Telefono">Telefono</NavDropdown.Item>
+                <NavDropdown.Item eventKey="Expediente">Expediente</NavDropdown.Item>
+              </NavDropdown>
 
-            <Button className="d-none d-md-block" variant="primary" type="submit">
-              Buscar
-            </Button>
-          </form>
+              <div style={{ position: 'relative', width: '300px' }}>
+                <FormControl
+                  type="search"
+                  placeholder="Buscar"
+                  className="me-2"
+                  aria-label="Search"
+                  value={searchTerm}
+                  onChange={handleInputChange}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // delay to allow click event
+                  style={{ width: '100%' }}
+                />
+                {errorMessage && <Alert variant="danger" style={{ position: 'absolute', top: '100%', left: '0', width: '100%' }}>{errorMessage}</Alert>}
+                {showSuggestions && suggestions.length > 0 && (
+                  <div style={{ position: 'absolute', top: '100%', left: '0', width: '100%', backgroundColor: 'white', color: 'black', border: '1px solid #ddd', maxHeight: '300px', overflowY: 'auto', zIndex: 1000 }}>
+                    {suggestions.map((suggestion, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        style={{ padding: '10px', cursor: 'pointer' }}
+                      >
+                        {suggestion.nombreDeudor}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <Button className="d-none d-md-block" variant="primary" type="submit">
+                Buscar
+              </Button>
+            </form>
+
             <Dropdown
               as={ButtonGroup}
               drop="start"
@@ -253,18 +314,53 @@ return (
                   </div>
                 </Nav>
               </Offcanvas.Body>
-              </Navbar.Offcanvas>
+            </Navbar.Offcanvas>
           </Container>
         </Navbar>
       ))}
-      {searchResults && (
-        <div>
-          <h3>Resultados de la búsqueda:</h3>
-          <pre>{JSON.stringify(searchResults, null, 2)}</pre>
-        </div>
+      {searchResults.length > 0 && (
+      <Container fluid className="mt-3">
+        {searchResults.map((result, index) => (
+          <Card key={index} className="mb-3 custom-card mt-5" style={{backgroundColor: 'rgb(33, 37, 41)', display: 'grid'}}>
+            <Card.Body>
+              <Row>
+                {/* Espacio vacío para empujar los datos a la derecha */}
+                <Col md={6}></Col>
+
+                {/* Contenedor de los datos */}
+                <Col md={6} className="ms-auto">
+                  <Row>
+                    <Col md={4}>
+                      <p><FaRegCreditCard /> <strong>Producto:</strong> {result.producto}</p>
+                    </Col>
+                    <Col md={4}>
+                      <p><FaClipboardList /> <strong>Cuenta:</strong> {result.idCuenta}</p>
+                    </Col>
+                    <Col md={4}>
+                      <p><FaCalendarCheck /> <strong>Activada:</strong> {result.fechaActivacion || "N/A"}</p>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md={4}>
+                      <p><FaFileAlt /> <strong>Exp:</strong> {result.expediente || "N/A"}</p>
+                    </Col>
+                    <Col md={4}>
+                      <p><FaUser /> <strong>No. Cliente:</strong> {result.numeroCliente || "N/A"}</p>
+                    </Col>
+                    <Col md={4}>
+                      <p><FaFileAlt /> <strong>RFC:</strong> {result.rfc}</p>
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+            </Card.Body>
+          </Card>
+        ))}
+      </Container>
       )}
     </>
   );
 }
 
-export default OffcanvasExample
+export default OffcanvasExample;
+

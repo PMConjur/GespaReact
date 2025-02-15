@@ -37,3 +37,21 @@
   .form-select{
     border-radius: "3px";
   }
+
+  .custom-card {
+    background-color: #111;  /* Fondo negro */
+    color: #f8d86a; /* Texto dorado */
+    border: 1px solid #f8d86a; /* Borde dorado */
+    padding: 10px;
+  }
+  
+  .custom-card p {
+    margin-bottom: 5px;
+    font-size: 16px;
+    color: #fff; /* Texto blanco */
+  }
+  
+  .custom-card strong {
+    color: #f8d86a; /* Resaltado dorado */
+  }
+  
