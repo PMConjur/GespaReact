@@ -5,13 +5,15 @@ import axios from "axios"; // Import axios for API calls
 import { PersonFillLock, KeyFill } from "react-bootstrap-icons";
 import "../index.css";
 import ModalChange from "../components/ModalChange"; // Import ModalChange component
+import ModalChangePassword from "../components/ModalChangePassword"; // Import ModalChangePassword component
 
 function Login() {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
-  const [showModal, setShowModal] = useState(false); // State to control modal visibility
+  const [showModal, setShowModal] = useState(false); // State to control ModalChange visibility
+  const [showPasswordModal, setShowPasswordModal] = useState(false); // State to control ModalChangePassword visibility
   const [days, setDays] = useState(null); // State to store days value
-  const [expire, setExpire] = useState(false);
+  const [expire, setExpire] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,13 +48,8 @@ function Login() {
       console.log("API Response:", response.data);
 
       if (response.data.ejecutivo.mensaje) {
-        if (response.data.ejecutivo.expiro === true) {
-          setExpire(response.data.ejecutivo.expiro);
-
-          setShowModal(true); // Show the modal
-        } else if (response.data.ejecutivo.expiro === false) {
-          setExpire(response.data.ejecutivo.expiro);
-
+        if (response.data.ejecutivo.expiro != false) {
+          setExpire(response.data.ejecutivo.expiro == true ? true : false);
           setShowModal(true); // Show the modal
         } else {
           toast.error("Error al iniciar sesion:", {
@@ -61,7 +58,7 @@ function Login() {
         }
       } else {
         setDays(response.data.ejecutivo.infoEjecutivo.dias);
-
+        setExpire(response.data.ejecutivo.expiro == true ? true : false);
         setShowModal(true); // Show the modal
       }
     } catch (error) {
@@ -72,6 +69,15 @@ function Login() {
 
   const handleCloseModal = () => {
     setShowModal(false);
+  };
+
+  const handleShowPasswordModal = () => {
+    setShowModal(false); // Close the current modal
+    setShowPasswordModal(true); // Show the password change modal
+  };
+
+  const handleClosePasswordModal = () => {
+    setShowPasswordModal(false);
   };
 
   return (
@@ -144,9 +150,19 @@ function Login() {
           days={days}
           expire={expire}
           onClose={handleCloseModal}
+          onShowPasswordModal={handleShowPasswordModal} // Pass the function to show the password modal
         />
       )}{" "}
       {/* Render ModalChange */}
+      {showPasswordModal && (
+        <ModalChangePassword
+          showSecondModal={showPasswordModal}
+          closeSecondModal={handleClosePasswordModal}
+          user={user}
+          password={password}
+        />
+      )}{" "}
+      {/* Render ModalChangePassword */}
     </div>
   );
 }

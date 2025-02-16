@@ -2,8 +2,17 @@ import { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner"; // Import toast and Toaster
+import PropTypes from "prop-types"; // Import PropTypes for prop validation
+import "../App.css";
 
-function ModalChange({ user, password, days, expire, onClose }) {
+function ModalChange({
+  user,
+  password,
+  days,
+  expire,
+  onClose,
+  onShowPasswordModal
+}) {
   const [show, setShow] = useState(true);
   const navigate = useNavigate();
 
@@ -14,6 +23,7 @@ function ModalChange({ user, password, days, expire, onClose }) {
 
   const handleNoClick = async () => {
     if (expire === true) {
+      console.log(expire);
       toast.error("Su contraseña ha expirado", {
         description:
           "por favor cambie su contraseña, da click en el botón de sí para cambiarla"
@@ -27,12 +37,13 @@ function ModalChange({ user, password, days, expire, onClose }) {
   };
 
   const handleYesClick = () => {
-    toast.success("Redirigiendo a la página de cambio de contraseña...");
-    // Add logic to navigate to the password change page
+    toast.info("Ingresa los datos para actualizar tu contraseña");
+    setShow(false); // Close the current modal
+    onShowPasswordModal(); // Show the password change modal
   };
 
   const getExpireMessage = () => {
-    if (days != "1") {
+    if (days > 1 || days != null) {
       return `Su contraseña expira en ${days} días`;
     } else if (expire === true) {
       return "Su contraseña expiro";
@@ -63,5 +74,14 @@ function ModalChange({ user, password, days, expire, onClose }) {
     </>
   );
 }
+
+ModalChange.propTypes = {
+  user: PropTypes.string.isRequired,
+  password: PropTypes.string.isRequired,
+  days: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  expire: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onShowPasswordModal: PropTypes.func.isRequired // Add prop type for the function to show the password modal
+};
 
 export default ModalChange;

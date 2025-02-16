@@ -5,6 +5,7 @@ import Register from "./pages/Register";
 import ModalChange from "./components/ModalChange";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./scss/styles.scss";
 
 function App() {
   return (
