@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-import React from "react";
 import Navbar from "../components/Navbar";
 import Maintenance from "../assets/img/maintenance.png";
 import Home1 from "../assets/img/user.svg";
@@ -7,9 +5,9 @@ import Home1 from "../assets/img/user.svg";
 const Home = () => {
   return (
     <>
-    <Navbar/>
-    <main id="main"  data-bs-theme="dark">
-        <div className="jumbotron"  style={{marginTop: "60px"}}>
+      <Navbar />
+      <main id="main" data-bs-theme="dark">
+        <div className="jumbotron" style={{ marginTop: "60px" }}>
           <div className="row">
             <div className="mb-12">
               <div className="row g-0">
@@ -23,17 +21,22 @@ const Home = () => {
                 <div className="col-sm-8">
                   <div className="p-4 my-xxl-4">
                     <br />
-                    <span className="pagetitlehome-max-size " style={{color: "white"}}>
-                       Bienvenido a
-                      Gespa web
+                    <span
+                      className="pagetitlehome-max-size "
+                      style={{ color: "white" }}
+                    >
+                      Bienvenido a Gespa web
                     </span>
                     <br />
 
-                    <span className="pagetitlehome-max" style={{color: "white"}}>
+                    <span
+                      className="pagetitlehome-max"
+                      style={{ color: "white" }}
+                    >
                       Gestionando con pasión
                     </span>
                     <br />
-                    <p style={{color: "white"}}>
+                    <p style={{ color: "white" }}>
                       - El éxito es la suma de pequeños esfuerzos repetidos día
                       tras día.
                     </p>
@@ -80,15 +83,6 @@ const Home = () => {
         <section className="section dashboard"></section>
       </main>
     </>
-=======
-//import React from "react";
-
-const Home = () => {
-  return (
-    <div>
-      <h1>Inicio</h1>
-    </div>
->>>>>>> HU1.1-Modals
   );
 };
 

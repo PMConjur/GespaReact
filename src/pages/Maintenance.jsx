@@ -1,14 +1,12 @@
-import React from "react";
 import Navbar from "../components/Navbar";
 import Maintenance from "../assets/img/maintenance.png";
 
 const MaintenancePage = () => {
   return (
     <>
-    <Navbar/>
-    <main id="main"  data-bs-theme="dark">
-        
-        <div className="row" style={{marginTop: "60px"}}>
+      <Navbar />
+      <main id="main" data-bs-theme="dark">
+        <div className="row" style={{ marginTop: "60px" }}>
           <div className="pagetitle col-lg-12">
             <div className="card mb-12">
               <div className="row g-0">
