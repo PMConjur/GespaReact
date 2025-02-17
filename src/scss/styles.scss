@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .sidebar {
     transition: all 0.3s ease-in-out;
     width: 250px;
@@ -55,3 +56,27 @@
     color: grey !important; /* Asegura que se aplique */
     opacity: 0.3; /* Ajusta la opacidad si es necesario */
   }
+=======
+// _custom.scss
+.modal-content {
+  background-color: #1d1f20;
+  color: white;
+  border: none;
+  transition: all 0.3s;
+
+}
+.modal-header {
+  align-items: center;
+  border-bottom: var(--bs-modal-header-border-width) solid
+    var(--bs-modal-header-border-color);
+  border-top-left-radius: var(--bs-modal-inner-border-radius);
+  border-top-right-radius: var(--bs-modal-inner-border-radius);
+  display: flex;
+  flex-shrink: 0;
+  padding: var(--bs-modal-header-padding);
+}
+.btn-close {
+  background-color: #828282;
+}
+//ModalCustom
+>>>>>>> HU1.1-Modals

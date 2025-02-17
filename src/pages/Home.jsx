@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React from "react";
 import Navbar from "../components/Navbar";
 import Maintenance from "../assets/img/maintenance.png";
@@ -79,6 +80,15 @@ const Home = () => {
         <section className="section dashboard"></section>
       </main>
     </>
+=======
+//import React from "react";
+
+const Home = () => {
+  return (
+    <div>
+      <h1>Inicio</h1>
+    </div>
+>>>>>>> HU1.1-Modals
   );
 };
 
