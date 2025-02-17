@@ -18,6 +18,7 @@ import { Card } from "react-bootstrap";
 import '../scss/styles.scss'
 import { Row } from "react-bootstrap";
 import { FaRegCreditCard, FaUser, FaFileAlt, FaCalendarCheck, FaClipboardList } from "react-icons/fa";
+import { ArrowRepeat, Search } from "react-bootstrap-icons";
 
 
 function OffcanvasExample() {
@@ -28,7 +29,7 @@ function OffcanvasExample() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCR1JIIiwianRpIjoiMTlmNDJjNjctMTgzZC00ZDE5LWIzYTUtNWE1ZmQyZmQ4MTFhIiwiVXN1YXJpbyI6IkJHUkgiLCJleHAiOjE3Mzk2NDYwOTQsImlzcyI6IjE5Mi4xNjguNy4zMyIsImF1ZCI6IjE5Mi4xNjguNS4zOCJ9.zOOx8AyGRGuCfdJX9PTIhgADDjmY7YFWSY4cgZ2Ud0w'; // Reemplaza 'YOUR_ACCESS_TOKEN_HERE' con tu token de acceso
+  const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCR1JIIiwianRpIjoiMjg5ZmZlNzctMWQwMS00NWNiLThiZmUtNjU0Mjk3MWUxY2RhIiwiVXN1YXJpbyI6IkJHUkgiLCJleHAiOjE3Mzk4MjAzMDksImlzcyI6IjE5Mi4xNjguNy4zMyIsImF1ZCI6IjE5Mi4xNjguNS4zOCJ9.hhGkTeSoFGMptbcAyAhxpgSjEMC1CWzZEaiMNsMGONM'; // Reemplaza 'YOUR_ACCESS_TOKEN_HERE' con tu token de acceso
 
   useEffect(() => {
     if (filter && !searchTerm) {
@@ -73,7 +74,7 @@ function OffcanvasExample() {
   };
 
   const handleInputChange = async (e) => {
-    const value = e.target.value.trim();
+    const value = e.target.value;
     let maxLength;
 
     // Validation based on selected filter
@@ -167,79 +168,107 @@ function OffcanvasExample() {
           className="bg-dark mb-3"
           data-bs-theme="dark"
           style={{
-            width: '100%',
-            height: '60px',
-            top: '0',
-            position: 'fixed',
-            left: '0',
-            zIndex: '1000',
+            width: "100%",
+            height: "60px",
+            top: "0",
+            position: "fixed",
+            left: "0",
+            zIndex: "1000",
           }}
         >
           <Container fluid className="justify-content-between">
             <Navbar.Toggle
               aria-controls={`offcanvasNavbar-expand-${expand}`}
-              style={{ margin: '0 10px' }}
+              style={{ margin: "0 10px" }}
             />
+            <Image src={Logo} style={{ width: "30px" }} roundedCircle />
             <Navbar.Brand
               href="/home"
-              style={{ left: '0', marginRight: 'auto' }}
+              style={{ left: "0", marginRight: "auto" }}
               className="d-none d-md-block"
             >
-              Gespa <Image src={Logo} style={{ width: '36px' }} roundedCircle />
+              <h3>GespaWeb</h3>
             </Navbar.Brand>
 
             <form
               className="d-flex"
               data-bs-theme="dark"
               style={{
-                gap: '10px',
-                alignContent: 'center',
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginLeft: 'auto',
-                marginRight: 'auto',
+                gap: "10px",
+                alignContent: "center",
+                justifyContent: "center",
+                alignItems: "center",
+                marginLeft: "auto",
+                marginRight: "auto",
               }}
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSearch();
               }}
             >
-              <NavDropdown
-                title={`Filtrar por: ${filter}`}
-                id={`offcanvasNavbarDropdown-expand-${expand}`}
-                data-bs-theme="dark"
-                style={{ color: 'white' }}
-                className="d-none d-md-block"
-                onSelect={handleFilterSelect}
-              >
-                <NavDropdown.Item eventKey="Cuenta">Cuenta</NavDropdown.Item>
-                <NavDropdown.Item eventKey="Nombre">Nombre</NavDropdown.Item>
-                <NavDropdown.Item eventKey="RFC">RFC</NavDropdown.Item>
-                <NavDropdown.Item eventKey="Numero de cliente">Numero de cliente</NavDropdown.Item>
-                <NavDropdown.Item eventKey="Telefono">Telefono</NavDropdown.Item>
-                <NavDropdown.Item eventKey="Expediente">Expediente</NavDropdown.Item>
-              </NavDropdown>
-
-              <div style={{ position: 'relative', width: '300px' }}>
+              <div style={{ position: "relative", width: "300px" }}>
+                
                 <FormControl
+                  style={{
+                    width: "100%",
+                    backgroundColor: "white",
+                    paddingLeft: "35px", // Ajustar para que el texto no cubra el icono
+                    color: "black"
+                  }}
                   type="search"
                   placeholder="Buscar"
-                  className="me-2"
+                  className="custom-placeholder me-2"
                   aria-label="Search"
                   value={searchTerm}
                   onChange={handleInputChange}
                   onFocus={() => setShowSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // delay to allow click event
-                  style={{ width: '100%' }}
+                  onBlur={() =>
+                    setTimeout(() => setShowSuggestions(false), 200)
+                  }
                 />
-                {errorMessage && <Alert variant="danger" style={{ position: 'absolute', top: '100%', left: '0', width: '100%' }}>{errorMessage}</Alert>}
+                <Search
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "black",
+                    pointerEvents: "none", // Para que no bloquee la entrada de texto
+                  }}
+                />
+                {errorMessage && (
+                  <Alert
+                    variant="danger"
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: "0",
+                      width: "100%",
+                    }}
+                  >
+                    {errorMessage}
+                  </Alert>
+                )}
                 {showSuggestions && suggestions.length > 0 && (
-                  <div style={{ position: 'absolute', top: '100%', left: '0', width: '100%', backgroundColor: 'white', color: 'black', border: '1px solid #ddd', maxHeight: '300px', overflowY: 'auto', zIndex: 1000 }}>
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: "0",
+                      width: "100%",
+                      backgroundColor: "white",
+                      color: "black",
+                      border: "1px solid #ddd",
+                      maxHeight: "300px",
+                      overflowY: "auto",
+                      zIndex: 1000,
+                    }}
+                  >
                     {suggestions.map((suggestion, index) => (
                       <div
                         key={index}
                         onClick={() => handleSuggestionClick(suggestion)}
-                        style={{ padding: '10px', cursor: 'pointer' }}
+                        style={{ padding: "10px", cursor: "pointer" }}
                       >
                         {suggestion.nombreDeudor}
                       </div>
@@ -248,30 +277,61 @@ function OffcanvasExample() {
                 )}
               </div>
 
-              <Button className="d-none d-md-block" variant="primary" type="submit">
-                Buscar
+              <Button variant="light">
+                <NavDropdown
+                  title={`Seleccionar filtro: ${filter}`}
+                  id={`offcanvasNavbarDropdown-expand-${expand}`}
+                  data-bs-theme="dark"
+                  style={{ backgroundColor: ''}}
+                  className="d-none d-md-block"
+                  onSelect={handleFilterSelect}
+                >
+                  <NavDropdown.Item eventKey="Cuenta">Cuenta</NavDropdown.Item>
+                  <NavDropdown.Item eventKey="Nombre">Nombre</NavDropdown.Item>
+                  <NavDropdown.Item eventKey="RFC">RFC</NavDropdown.Item>
+                  <NavDropdown.Item eventKey="Numero de cliente">
+                    Numero de cliente
+                  </NavDropdown.Item>
+                  <NavDropdown.Item eventKey="Telefono">
+                    Telefono
+                  </NavDropdown.Item>
+                  <NavDropdown.Item eventKey="Expediente">
+                    Expediente
+                  </NavDropdown.Item>
+                </NavDropdown>
+              </Button>
+              <Button
+                className="d-none d-md-block"
+                variant="primary"
+                type="submit"
+              >
+                <ArrowRepeat> </ArrowRepeat>
+                <span>Automatico</span>
               </Button>
             </form>
 
             <Dropdown
               as={ButtonGroup}
-              drop="start"
+              drop="down"
               style={{
-                backgroundColor: 'transparent',
-                border: 'none',
-                textAlign: 'center',
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginRight: '10px',
-                gap: '5px',
+                backgroundColor: "transparent",
+                border: "none",
+                textAlign: "center",
+                justifyContent: "center",
+                alignItems: "center",
+                marginRight: "10px",
+                gap: "5px",
               }}
             >
-              <Dropdown.Toggle split variant="dark" id="dropdown-split-basic" />
+               <Col>
+                <Image src={User} roundedCircle style={{ width: "36px" }} />
+              </Col>
+              
 
               <Dropdown.Menu
                 className="custom-dropdown-menu"
-                drop="start"
-                style={{ textAlign: 'center' }}
+                drop="down"
+                style={{ textAlign: "center" }}
               >
                 <p>Cesar Enrique Rodriguez Alvarez</p>
                 <p>23389</p>
@@ -279,23 +339,24 @@ function OffcanvasExample() {
                   Ejecutivo Telefonico
                 </Dropdown.Item>
               </Dropdown.Menu>
-              <Col>
-                <Image src={User} roundedCircle style={{ width: '36px' }} />
-              </Col>
-              <span className="d-none d-lg-block" style={{ color: 'white' }}>
+             
+              <span className="d-none d-lg-block" style={{ color: "white" }}>
                 Cesar Enrique
               </span>
+              <Dropdown.Toggle split variant="dark" id="dropdown-split-basic" />
             </Dropdown>
 
             <Navbar.Offcanvas
               id={`offcanvasNavbar-expand-${expand}`}
               aria-labelledby={`offcanvasNavbarLabel-expand-${expand}`}
               placement="start"
-              style={{ left: '0' }}
+              style={{ left: "0" }}
               data-bs-theme="dark"
             >
               <Offcanvas.Header closeButton>
-                <Offcanvas.Title id={`offcanvasNavbarLabel-expand-${expand}`}></Offcanvas.Title>
+                <Offcanvas.Title
+                  id={`offcanvasNavbarLabel-expand-${expand}`}
+                ></Offcanvas.Title>
               </Offcanvas.Header>
               <Offcanvas.Body>
                 <Nav className="justify-content-end flex-grow-1 pe-3">
@@ -309,7 +370,7 @@ function OffcanvasExample() {
                     <h5>Cerrar Sesion</h5>
                   </Nav.Link>
                   <br />
-                  <div style={{ bottom: '0' }}>
+                  <div style={{ bottom: "0" }}>
                     <span>Grupo Consorcio</span>
                   </div>
                 </Nav>
@@ -318,46 +379,73 @@ function OffcanvasExample() {
           </Container>
         </Navbar>
       ))}
-      {searchResults.length > 0 && (
-      <Container fluid className="mt-3">
-        {searchResults.map((result, index) => (
-          <Card key={index} className="mb-3 custom-card mt-5" style={{backgroundColor: 'rgb(33, 37, 41)', display: 'grid'}}>
-            <Card.Body>
-              <Row>
-                {/* Espacio vacío para empujar los datos a la derecha */}
-                <Col md={6}></Col>
+      <div style={{ width: "50%", textAlign: "left", marginTop: '50px'}}>
+      <Card className="p-3" style={{ backgroundColor: "black", color: "white", border: "none" }}>
+        <Card.Title>
+          <span style={{ color: "gray" }}>Cartera:</span> <strong>American Express</strong>
+        </Card.Title>
+        <Card.Body className="p-0">
+          <div>
+            <a href="#" style={{ color: "lightgreen", textDecoration: "none" }}>Inicio</a> /{" "}
+            <a href="#" style={{ color: "lightblue", textDecoration: "none" }}>Productividad</a> /{" "}
+            <a href="#" style={{ color: "#6495ED", textDecoration: "none" }}>Recuperación</a> /{" "}
+            <a href="#" style={{ color: "orange", textDecoration: "none" }}>Tiempos</a>/{" "}
+            <a href="#" style={{ color: "lightblue", textDecoration: "none" }}>Simulador</a> 
+          </div>
+        </Card.Body>
+      </Card>
+    </div>
+    {searchResults.length > 0 && (
+  <Container fluid className="mt-3">
+    {searchResults.map((result, index) => (
+      <Card
+        key={index}
+        className="mb-3 custom-card mt-5"
+        style={{ backgroundColor: "rgb(33, 37, 41)" }}
+      >
+        <Card.Body>
+          {/* Contenedor de los datos que ocupa todo el ancho */}
+          <Row>
+            <Col md={4}>
+              <p>
+                <FaRegCreditCard /> <strong>Producto:</strong> {result.producto}
+              </p>
+            </Col>
+            <Col md={4}>
+              <p>
+                <FaClipboardList /> <strong>Cuenta:</strong> {result.idCuenta}
+              </p>
+            </Col>
+            <Col md={4}>
+              <p>
+                <FaCalendarCheck /> <strong>Activada:</strong>{" "}
+                {result.fechaActivacion || "N/A"}
+              </p>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={4}>
+              <p>
+                <FaFileAlt /> <strong>Exp:</strong> {result.expediente || "N/A"}
+              </p>
+            </Col>
+            <Col md={4}>
+              <p>
+                <FaUser /> <strong>No. Cliente:</strong> {result.numeroCliente || "N/A"}
+              </p>
+            </Col>
+            <Col md={4}>
+              <p>
+                <FaFileAlt /> <strong>RFC:</strong> {result.rfc}
+              </p>
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+    ))}
+  </Container>
+)}
 
-                {/* Contenedor de los datos */}
-                <Col md={6} className="ms-auto">
-                  <Row>
-                    <Col md={4}>
-                      <p><FaRegCreditCard /> <strong>Producto:</strong> {result.producto}</p>
-                    </Col>
-                    <Col md={4}>
-                      <p><FaClipboardList /> <strong>Cuenta:</strong> {result.idCuenta}</p>
-                    </Col>
-                    <Col md={4}>
-                      <p><FaCalendarCheck /> <strong>Activada:</strong> {result.fechaActivacion || "N/A"}</p>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md={4}>
-                      <p><FaFileAlt /> <strong>Exp:</strong> {result.expediente || "N/A"}</p>
-                    </Col>
-                    <Col md={4}>
-                      <p><FaUser /> <strong>No. Cliente:</strong> {result.numeroCliente || "N/A"}</p>
-                    </Col>
-                    <Col md={4}>
-                      <p><FaFileAlt /> <strong>RFC:</strong> {result.rfc}</p>
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
-            </Card.Body>
-          </Card>
-        ))}
-      </Container>
-      )}
     </>
   );
 }
