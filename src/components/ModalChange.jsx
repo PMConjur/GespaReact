@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { Modal, Button } from "react-bootstrap";
+import { Modal, Button, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner"; // Import toast and Toaster
 import PropTypes from "prop-types"; // Import PropTypes for prop validation
-import "../App.css";
 
 function ModalChange({
   user,
@@ -39,12 +38,16 @@ function ModalChange({
   const handleYesClick = () => {
     toast.info("Ingresa los datos para actualizar tu contraseña");
     setShow(false); // Close the current modal
-    onShowPasswordModal(); // Show the password change modal
+    onShowPasswordModal(password); // Show the password change modal and pass the password
   };
 
   const getExpireMessage = () => {
-    if (days > 1 || days != null) {
-      return `Su contraseña expira en ${days} días`;
+    if (days > 1 && expire === false) {
+      return (
+        <>
+          Su contraseña expira en <Badge bg="primary">{days}</Badge> días
+        </>
+      );
     } else if (expire === true) {
       return "Su contraseña expiro";
     }
@@ -58,10 +61,10 @@ function ModalChange({
         </Modal.Header>
         <Modal.Body>
           <p id="txtExpire">{getExpireMessage()}</p>
-          <p>¿Deseas cambiar ahora?</p>
+          <h6>¿Deseas cambiarla ahora?</h6>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="info" onClick={handleNoClick}>
+          <Button variant="danger" onClick={handleNoClick}>
             No
           </Button>
           <Button variant="success" onClick={handleYesClick}>

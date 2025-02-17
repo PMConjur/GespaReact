@@ -6,14 +6,16 @@ import { PersonFillLock, KeyFill } from "react-bootstrap-icons";
 import "../index.css";
 import ModalChange from "../components/ModalChange"; // Import ModalChange component
 import ModalChangePassword from "../components/ModalChangePassword"; // Import ModalChangePassword component
+import servicio from "../services/axiosServices"; // Import axiosServices
 
 function Login() {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [showModal, setShowModal] = useState(false); // State to control ModalChange visibility
   const [showPasswordModal, setShowPasswordModal] = useState(false); // State to control ModalChangePassword visibility
-  const [days, setDays] = useState(null); // State to store days value
+  const [days, setDays] = useState(""); // State to store days value
   const [expire, setExpire] = useState(null);
+  const [oldPassword, setOldPassword] = useState(""); // State to store old password
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,11 +33,11 @@ function Login() {
       usuario: user,
       contrasenia: password,
       extension: 1870,
-      bloqueo: 1,
-      dominio: "DES-SIS-1870",
-      computadora: "DES-SIS-1870",
-      usuarioWindows: "Yoshua Rodriguez",
-      ip: "192.168.7.1",
+      bloqueo: 0,
+      dominio: "DES-SYS-347",
+      computadora: "DES-SYS-347",
+      usuarioWindows: "omar.otiz",
+      ip: "192.168.5.236",
       aplicacion: "Gespa",
       version: "3.3.0"
     };
@@ -47,7 +49,7 @@ function Login() {
       );
       console.log("API Response:", response.data);
 
-      if (response.data.ejecutivo.mensaje) {
+      if (response.data.ejecutivo.mensaje != null) {
         if (response.data.ejecutivo.expiro != false) {
           setExpire(response.data.ejecutivo.expiro == true ? true : false);
           setShowModal(true); // Show the modal
@@ -60,6 +62,11 @@ function Login() {
         setDays(response.data.ejecutivo.infoEjecutivo.dias);
         setExpire(response.data.ejecutivo.expiro == true ? true : false);
         setShowModal(true); // Show the modal
+
+        // Set the token in axiosServices
+        servicio.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${response.data.ejecutivo.token}`;
       }
     } catch (error) {
       console.error("There was a problem with the axios operation:", error);
@@ -71,7 +78,8 @@ function Login() {
     setShowModal(false);
   };
 
-  const handleShowPasswordModal = () => {
+  const handleShowPasswordModal = (password) => {
+    setOldPassword(password); // Set the old password
     setShowModal(false); // Close the current modal
     setShowPasswordModal(true); // Show the password change modal
   };
@@ -159,7 +167,7 @@ function Login() {
           showSecondModal={showPasswordModal}
           closeSecondModal={handleClosePasswordModal}
           user={user}
-          password={password}
+          oldPassword={oldPassword} // Pass the old password
         />
       )}{" "}
       {/* Render ModalChangePassword */}

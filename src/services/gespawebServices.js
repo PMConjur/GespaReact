@@ -1,6 +1,17 @@
 import servicio from "./axiosServices";
 
-export function buscarPor(loginData) {
-    return servicio.get("/api/login/iniciar-sesion" + loginData); //retorna el evento dentro de la api con el nombre establecido del evento + el parametro que necesite para ejecutar el complemento
+export async function userReset(dataUserReset) {
+  try {
+    const response = await servicio.post(
+      "/login/resetea-password",
+      dataUserReset
+    );
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 401) {
+      throw new Error("No autorizado. Verifique sus credenciales.");
+    } else {
+      throw new Error("Error al actualizar la contraseña.");
+    }
   }
-  
+}
