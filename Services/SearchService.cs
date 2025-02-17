@@ -91,30 +91,19 @@ namespace NoriAPI.Services
         public async Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado)
         {
             string mensaje = null;
-            List<AutomaticoInfo> listaAutomasticoInfo = new List<AutomaticoInfo>();
-
-            var validateAutomatico = await _searchRepository.ValidateAutomatico(numEmpleado);
-
-            if (validateAutomatico == null) 
+            var automaticoInfo = await _searchRepository.ValidateAutomatico(numEmpleado);
+            var dict = (IDictionary<string, object>)automaticoInfo;
+                      
+            if(dict.TryGetValue("Mensaje", out object mensajeAuto) && mensajeAuto != null)
             {
-                mensaje = "No hay cuentas";
+                mensaje = mensajeAuto.ToString();
                 return new ResultadoAutomatico(mensaje, null);
-            
             }
 
-            //si devuelve una sola fila
-            if (validateAutomatico is IDictionary<string, object> singleRow)
-            {
-                var 
-
-            }
-
-
-
-
+            var automatico = MapInfoAutomatico(dict);
+            var resultadoAutomatico = new ResultadoAutomatico(mensaje, automatico);
+            return resultadoAutomatico;
         }
-
-
 
         private static BusquedaInfo MapToInfoBusqueda(IDictionary<string, object> busq)
         {
@@ -148,8 +137,24 @@ namespace NoriAPI.Services
 
         }
 
-        private stat
+        private static AutomaticoInfo MapInfoAutomatico(IDictionary<string, object> auto)
+        {
+            var automatico = new AutomaticoInfo();
 
+            if(auto.TryGetValue("idCartera", out var idcartera) && idcartera != null)
+                automatico.idCartera = idcartera.ToString();
+
+            if (auto.TryGetValue("idCuenta", out var idcuenta) && idcuenta != null)
+                automatico.idCuenta = idcuenta.ToString();
+
+            if (auto.TryGetValue("NúmeroTelefónico", out var numerotelefonico) && numerotelefonico != null)
+                automatico.numeroTelefonico = numerotelefonico.ToString();
+
+            return automatico;
+        }
+
+
+   
 
     }
 }

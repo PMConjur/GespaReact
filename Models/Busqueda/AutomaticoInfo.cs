@@ -2,9 +2,9 @@
 {
     public class AutomaticoInfo
     {
-        public int idCartera { get; set; }
-        public int idCuenta { get; set; }
-        public int numeroTelefonico { get; set; }
+        public string idCartera { get; set; }
+        public string idCuenta { get; set; }
+        public string numeroTelefonico { get; set; }
 
     }
 }

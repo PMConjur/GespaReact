@@ -51,7 +51,7 @@ namespace NoriAPI.Controllers
 
             if(!Productividad.Mensaje.IsNullOrEmpty()) 
             { 
-                return BadRequest(new { Productividad.Mensaje }); 
+                return Ok(new { Productividad.Mensaje }); 
             }
             return Ok(new { Productividad.Mensaje });
 
@@ -61,8 +61,14 @@ namespace NoriAPI.Controllers
         [HttpGet("automatico-ejecutivo")]//Endpoint Padrino
         public async Task<ActionResult<ResultadoAutomatico>> Automatico([FromQuery] int numEmpleado)
         {
+            var Automatico = await _searchService.ValidateAutomatico(numEmpleado);
 
+            if (!Automatico.Mensaje.IsNullOrEmpty())
+            {
+                return Ok(new { Automatico.Mensaje });
 
+            }
+            return Ok(Automatico.Cuenta);
         }
 
     }

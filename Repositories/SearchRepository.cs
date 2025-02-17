@@ -140,10 +140,10 @@ namespace NoriAPI.Repositories
         {
             using var connection = GetConnection("Piso2Amex");
 
-            string storedAutomatico = "EXEC dbMemory.AMS.ObtieneCuenta";
+            string storedAutomatico = "[dbMemory].[AMS].[ObtieneCuenta]";
             var parameters = new
             {
-                numEmpleado = numEmpleado
+                idEjecutivo = numEmpleado
             };
             var Automatico = (await connection.QueryFirstOrDefaultAsync<dynamic>(
                 storedAutomatico,
