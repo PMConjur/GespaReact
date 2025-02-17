@@ -17,7 +17,7 @@ namespace NoriAPI.Controllers
     [ApiController]
     [Route("api/search-customer")]
     [Authorize]
-    public class CustomerSearchController : Controller
+    public class CustomerSearchController : ControllerBase
 
     {
         private readonly IConfiguration _configuration;
@@ -45,7 +45,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("productividad-ejecutivo")]//Endpoint Padrino
-
         public async Task<ActionResult<ResultadoProductividad>> Productividad([FromQuery] int NumEmpleado)
         {
             var Productividad = await _searchService.ValidateProductividad(NumEmpleado);

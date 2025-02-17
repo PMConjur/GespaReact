@@ -13,7 +13,7 @@ namespace NoriAPI.Services
     public interface ISearchService
     {
         Task<ResultadoBusqueda> ValidateBusqueda(string filtro, string ValorBusqueda);
-        Task<ResultadoProductividad> ValidateProductividad(int NumEmpleado);
+        Task<ResultadoProductividad> ValidateProductividad(int numEmpleado);
 
     }
 
@@ -68,11 +68,11 @@ namespace NoriAPI.Services
 
         }
 
-        public async Task<ResultadoProductividad> ValidateProductividad(int NumEmpeado)
+        public async Task<ResultadoProductividad> ValidateProductividad(int numEmpleado)
         {
             string mensaje = null;
 
-            var validateProductividad = await _searchRepository.ValidateProductividad(NumEmpeado);
+            var validateProductividad = await _searchRepository.ValidateProductividad(numEmpleado);
 
             if (validateProductividad == null)
             {

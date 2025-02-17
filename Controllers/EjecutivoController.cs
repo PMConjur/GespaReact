@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Services;
+using System.Threading.Tasks;
 
 namespace NoriAPI.Controllers
 {
@@ -19,10 +21,20 @@ namespace NoriAPI.Controllers
 
         }
 
-        [HttpGet] // 🔹 Agregar esta anotación
-        public IActionResult Index()
+
+        [HttpGet("obtiene-negociaciones")]
+        public async Task<IActionResult> ObtieneNegociaciones([FromQuery] int idEjecutivo)
         {
-            return Ok("Hola desde EjecutivoController");
+            var negociaciones = await _ejecutivoService.ObtenerNegociaciones(idEjecutivo);
+
+            if (negociaciones.ConteoHoy == null)
+            {
+                return BadRequest(new { Mensaje = "No se encontraron negociaciones" });
+            }
+
+            return Ok( negociaciones );
         }
+      
+
     }
 }
