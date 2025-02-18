@@ -5,7 +5,7 @@ import { PersonFill, Cash, CurrencyDollar } from "react-bootstrap-icons";
 const DataCard = () => {
   return (
     <Row>
-      <Col>
+      <Col xs={12} md={3}>
         <Card
           className="warning-card text-light"
           style={{ backgroundColor: "#1d1f20" }}
@@ -37,7 +37,7 @@ const DataCard = () => {
           </Card.Body>
         </Card>
       </Col>
-      <Col>
+      <Col xs={12} md={3}>
         <Card
           className="warning-card text-light"
           style={{ backgroundColor: "#1d1f20" }}
@@ -67,7 +67,7 @@ const DataCard = () => {
           </Card.Body>
         </Card>
       </Col>
-      <Col>
+      <Col xs={12} md={3}>
         <Card
           className="warning-card text-light"
           style={{ backgroundColor: "#1d1f20" }}
@@ -99,7 +99,7 @@ const DataCard = () => {
           </Card.Body>
         </Card>
       </Col>
-      <Col>
+      <Col xs={12} md={3}>
         <Card
           className="warning-card text-light"
           style={{ backgroundColor: "#1d1f20" }}

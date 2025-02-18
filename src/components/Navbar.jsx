@@ -409,7 +409,7 @@ function OffcanvasExample() {
                   <Nav.Link href="/home">
                     <h5>Inicio</h5>
                   </Nav.Link>
-                  <Nav.Link href="/maintenance">
+                  <Nav.Link href="/managment">
                     <h5>Gestion</h5>
                   </Nav.Link>
                   <Nav.Link href="/login">
@@ -522,7 +522,7 @@ function OffcanvasExample() {
           ))}
         </Container>
       )}
-      <DataCard/>
+      
     </>
   );
 }
