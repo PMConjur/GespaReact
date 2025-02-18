@@ -41,7 +41,7 @@ function OffcanvasExample() {
   const nombreEjecutivo =
     responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo; // Use the name from responseData
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo; // Use the id from responseData
-  console.log(token);
+  //console.log(token); //Token del usuario
   useEffect(() => {
     if (filter && !searchTerm) {
       fetchFilterData(filter);
