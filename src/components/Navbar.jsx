@@ -26,6 +26,7 @@ import {
 } from "react-icons/fa";
 import { ArrowRepeat, Search } from "react-bootstrap-icons";
 import { useLocation } from "react-router-dom";
+import DataCard from "./DataCard";
 
 function OffcanvasExample() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -234,6 +235,7 @@ function OffcanvasExample() {
               className="d-none d-md-block"
             >
               <h3>GespaWeb</h3>
+              
             </Navbar.Brand>
 
             <form
@@ -520,6 +522,7 @@ function OffcanvasExample() {
           ))}
         </Container>
       )}
+      <DataCard/>
     </>
   );
 }

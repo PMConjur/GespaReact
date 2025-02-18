@@ -5,6 +5,7 @@ const MaintenancePage = () => {
   return (
     <>
       <Navbar />
+   
       <main id="main" data-bs-theme="dark">
         <div className="row" style={{ marginTop: "60px" }}>
           <div className="pagetitle col-lg-12">

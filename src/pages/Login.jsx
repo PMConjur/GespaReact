@@ -6,7 +6,8 @@ import { PersonFillLock, KeyFill } from "react-bootstrap-icons";
 import "../index.css";
 import ModalChange from "../components/ModalChange"; // Import ModalChange component
 import ModalChangePassword from "../components/ModalChangePassword"; // Import ModalChangePassword component
-
+import Image from "react-bootstrap/Image";
+import logo from "../assets/img/logo-login.png"
 function Login() {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
@@ -86,7 +87,10 @@ function Login() {
 
   return (
     <div className="container mt-5">
-      <h1 className="text-white">Gespa Web</h1>
+      <h1 className="text-white">
+        <Image src={logo} rounded className="img-logo" />
+        Gespa Web
+      </h1>
       <Form onSubmit={handleSubmit}>
         <Container>
           <Card

@@ -30,13 +30,6 @@
   border-radius: "3px";
 }
 
-.custom-card {
-  background-color: #111; /* Fondo negro */
-  color: #f8d86a; /* Texto dorado */
-  border: 1px solid #f8d86a; /* Borde dorado */
-  padding: 10px;
-}
-
 .custom-card p {
   margin-bottom: 5px;
   font-size: 16px;
@@ -50,4 +43,64 @@
 .custom-placeholder::placeholder {
   color: grey !important; /* Asegura que se aplique */
   opacity: 0.3; /* Ajusta la opacidad si es necesario */
+}
+.img-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.dashboard .warning-card h6 {
+  font-size: 30px;
+  color: #f1a441;
+  font-weight: 600;
+  margin: 0;
+  padding: 0;
+}
+.rounded-circle {
+  border-radius: 50% !important;
+  width: "50px";
+  height: "50px";
+}
+
+.dashboard .card-icon {
+  font-size: 32px;
+  line-height: 0;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
+.card-title {
+  padding: 20px 0 15px 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff;
+  font-family: "Poppins", sans-serif;
+  /* padding: 10px; */
+}
+
+.cutom-card {
+  overflow-x: auto;
+  max-width: 100%;
+  padding: 5px;
+  background-color: #1d1f20;
+}
+.card-body {
+  padding: 0 10px 10px 10px;
+  background-color: #1d1f20;
+}
+
+.card {
+  overflow-x: auto;
+  max-width: 100%;
+  padding: 5px;
+  background-color: #1d1f20;
+}
+
+#main {
+  margin-top: 60px;
+  padding: 20px 30px;
+  transition: all 0.3s;
 }
