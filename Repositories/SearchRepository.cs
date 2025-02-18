@@ -29,10 +29,13 @@ namespace NoriAPI.Repositories
 
         public async Task<dynamic> ValidateBusqueda(string filtro, string ValorBusqueda)
         {
+            // Variable para validación específica de búsqueda por nombre
             string validacion = null;
 
+            // Obtiene la conexión a la base de datos
             using var connection = GetConnection("Piso2Amex");
 
+            // Consulta base para la búsqueda
             string queryBusqueda = "WAITFOR DELAY '00:00:00';\r\n" +
                                     "SELECT TOP 100 \r\n" +
                                     "   C.idCuenta Cuenta, \r\n" +
@@ -51,8 +54,9 @@ namespace NoriAPI.Repositories
                                     "    	INNER JOIN Productos P ON P.idProducto = C.idProducto \r\n" +
                                     "    	INNER JOIN Carteras CL ON CL.idCartera = C.idCartera \r\n" +
                                     "       INNER JOIN ValoresCatálogo V ON V.idValor = C.idSituación \r\n"
-                                    
-                                    ;            
+
+                                    ;
+            // Modifica la consulta según el filtro proporcionado
             switch (filtro)
             {
                 case "Cuenta":
@@ -63,7 +67,7 @@ namespace NoriAPI.Repositories
                 case "Nombre":
                     queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
                     queryBusqueda += " INNER JOIN Nombres N (NOLOCK) ON N.Expediente = C.Expediente ";
-                    
+
                     foreach (string sNombre in ValorBusqueda.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
                         queryBusqueda += " AND CONTAINS( N.NombreDeudor, '" + sNombre.Replace("'", "") + "') ";
                     queryBusqueda += "WHERE CuentaActiva = 1";
@@ -93,16 +97,16 @@ namespace NoriAPI.Repositories
                     break;
 
                 case "Expediente":     //El equipo Front debe validar que no tenga letras
-                                       
+
                     queryBusqueda += " WHERE CuentaActiva = 1 AND CL.Abreviación = '";
                     foreach (char Caracter in ValorBusqueda.Substring(0, 3))
                         if (char.IsLetter(Caracter))
                             queryBusqueda += Caracter;
                     queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
                     //quitar letras cuando se libere a todas las carteras
-                    queryBusqueda += "' AND C.Expediente = " + ValorBusqueda.Replace("AMX", "").Replace("amx", "").Replace(" ", "");                    
+                    queryBusqueda += "' AND C.Expediente = " + ValorBusqueda.Replace("AMX", "").Replace("amx", "").Replace(" ", "");
 
-                    
+
                     break;
 
                 default:
@@ -110,16 +114,17 @@ namespace NoriAPI.Repositories
                     break;
             }
 
+            // Ejecuta la consulta y retorna los resultados
             if (validacion == "Nombre")
             {
                 var busqueda = (await connection.QueryAsync<dynamic>(queryBusqueda, commandType: CommandType.Text));
-                return busqueda;                
+                return busqueda;
             }
             else
             {
                 var busqueda = (await connection.QueryFirstOrDefaultAsync<dynamic>(queryBusqueda, commandType: CommandType.Text));
                 return busqueda;
-            }                    
+            }
 
         }
 
@@ -151,7 +156,7 @@ namespace NoriAPI.Repositories
             var Automatico = (await connection.QueryFirstOrDefaultAsync<dynamic>(
                 storedAutomatico,
                 parameters,
-                commandType : CommandType.StoredProcedure                
+                commandType: CommandType.StoredProcedure
                 ));
             return Automatico;
 

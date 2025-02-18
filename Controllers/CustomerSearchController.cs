@@ -33,7 +33,16 @@ namespace NoriAPI.Controllers
         [HttpGet("busqueda-cuenta")]//Endpoint Padrino
         //public async Task<ActionResult<ResultadoBusqueda>> Busqueda([FromBody] Busqueda request)
         public async Task<ActionResult<ResultadoBusqueda>> Busqueda([FromQuery] string filtro, string ValorBusqueda)
-        {            
+        {
+            // Lista de valores permitidos para el filtro
+            var valoresPermitidos = new List<string> { "Cuenta", "Nombre", "RFC", "Numero Cliente", "Telefono", "Expediente" }; // Valores contenidos en ValidateBusqueda de SearchRepository.
+
+            // Validar si el filtro está en la lista de valores permitidos
+            if (!valoresPermitidos.Contains(filtro))
+            {
+                return BadRequest(new { Mensaje = "El valor del filtro no es válido." });
+            }
+
             var Busqueda = await _searchService.ValidateBusqueda(filtro, ValorBusqueda);
 
             if (!Busqueda.Mensaje.IsNullOrEmpty())
@@ -49,9 +58,9 @@ namespace NoriAPI.Controllers
         {
             var Productividad = await _searchService.ValidateProductividad(NumEmpleado);
 
-            if(!Productividad.Mensaje.IsNullOrEmpty()) 
-            { 
-                return Ok(new { Productividad.Mensaje }); 
+            if (!Productividad.Mensaje.IsNullOrEmpty())
+            {
+                return Ok(new { Productividad.Mensaje });
             }
             return Ok(new { Productividad.Mensaje });
 
