@@ -10,26 +10,37 @@ import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Dropdown from "react-bootstrap/Dropdown";
 import User from "../assets/img/user.svg";
 import Col from "react-bootstrap/Col";
-import axios from 'axios';
-import React, { useState, useEffect } from 'react';
+import axios from "axios";
+import React, { useState, useEffect } from "react";
 import FormControl from "react-bootstrap/FormControl";
 import { Alert } from "react-bootstrap";
 import { Card } from "react-bootstrap";
-import '../scss/styles.scss'
+import "../scss/styles.scss";
 import { Row } from "react-bootstrap";
-import { FaRegCreditCard, FaUser, FaFileAlt, FaCalendarCheck, FaClipboardList } from "react-icons/fa";
+import {
+  FaRegCreditCard,
+  FaUser,
+  FaFileAlt,
+  FaCalendarCheck,
+  FaClipboardList,
+} from "react-icons/fa";
 import { ArrowRepeat, Search } from "react-bootstrap-icons";
 
+import CerrarSesion from "./CierraSesion"; // Importo el apartado CerrarSesion
 
 function OffcanvasExample() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState('Cuenta');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState("Cuenta");
   const [searchResults, setSearchResults] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCR1JIIiwianRpIjoiMjg5ZmZlNzctMWQwMS00NWNiLThiZmUtNjU0Mjk3MWUxY2RhIiwiVXN1YXJpbyI6IkJHUkgiLCJleHAiOjE3Mzk4MjAzMDksImlzcyI6IjE5Mi4xNjguNy4zMyIsImF1ZCI6IjE5Mi4xNjguNS4zOCJ9.hhGkTeSoFGMptbcAyAhxpgSjEMC1CWzZEaiMNsMGONM'; // Reemplaza 'YOUR_ACCESS_TOKEN_HERE' con tu token de acceso
+  const [user, setUser] = useState(""); // Estado para el usuario
+  const [password, setPassword] = useState(""); // Estado para la contraseña
+
+  const token =
+    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCR1JIIiwianRpIjoiMjg5ZmZlNzctMWQwMS00NWNiLThiZmUtNjU0Mjk3MWUxY2RhIiwiVXN1YXJpbyI6IkJHUkgiLCJleHAiOjE3Mzk4MjAzMDksImlzcyI6IjE5Mi4xNjguNy4zMyIsImF1ZCI6IjE5Mi4xNjguNS4zOCJ9.hhGkTeSoFGMptbcAyAhxpgSjEMC1CWzZEaiMNsMGONM"; // Reemplaza 'YOUR_ACCESS_TOKEN_HERE' con tu token de acceso
 
   useEffect(() => {
     if (filter && !searchTerm) {
@@ -39,38 +50,44 @@ function OffcanvasExample() {
 
   const fetchFilterData = async (filter) => {
     try {
-      const response = await axios.get('http://192.168.7.33/api/search-customer/busqueda-cuenta', {
-        params: { filtro: filter },
-        headers: {
-          Authorization: token,
-        },
-      });
-      console.log('Response for filter:', response.data);
+      const response = await axios.get(
+        "http://192.168.7.33/api/search-customer/busqueda-cuenta",
+        {
+          params: { filtro: filter },
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
+      console.log("Response for filter:", response.data);
       setSearchResults(response.data.listaResultados || []);
     } catch (error) {
-      console.error('Error fetching filter data:', error);
+      console.error("Error fetching filter data:", error);
     }
   };
 
   const handleSearch = async () => {
     try {
-      const response = await axios.get('http://192.168.7.33/api/search-customer/busqueda-cuenta', {
-        params: { filtro: filter, ValorBusqueda: searchTerm },
-        headers: {
-          Authorization: token,
-        },
-      });
-      console.log('Response for search term:', response.data);
+      const response = await axios.get(
+        "http://192.168.7.33/api/search-customer/busqueda-cuenta",
+        {
+          params: { filtro: filter, ValorBusqueda: searchTerm },
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
+      console.log("Response for search term:", response.data);
       setSearchResults(response.data.listaResultados || []);
     } catch (error) {
-      console.error('Error fetching search results:', error);
+      console.error("Error fetching search results:", error);
     }
   };
 
   const handleFilterSelect = (filter) => {
     setFilter(filter);
-    setSearchTerm('');
-    setErrorMessage(''); // Clear error message when changing filter
+    setSearchTerm("");
+    setErrorMessage(""); // Clear error message when changing filter
   };
 
   const handleInputChange = async (e) => {
@@ -80,67 +97,96 @@ function OffcanvasExample() {
     // Validation based on selected filter
     let valid = true;
     switch (filter) {
-      case 'Cuenta':
+      case "Cuenta":
         valid = /^[0-9]*$/.test(value);
         maxLength = 15;
-        if (!valid) setErrorMessage('Cuenta solo puede contener números.');
-        if (value.length > maxLength) setErrorMessage(`Cuenta puede tener máximo ${maxLength} caracteres.`);
+        if (!valid) setErrorMessage("Cuenta solo puede contener números.");
+        if (value.length > maxLength)
+          setErrorMessage(`Cuenta puede tener máximo ${maxLength} caracteres.`);
         break;
-      case 'Nombre':
+      case "Nombre":
         valid = /^[A-Za-z\s]*$/.test(value);
         maxLength = 50;
-        if (!valid) setErrorMessage('Nombre solo puede contener letras.');
-        if (value.length > maxLength) setErrorMessage(`Nombre puede tener máximo ${maxLength} caracteres.`);
+        if (!valid) setErrorMessage("Nombre solo puede contener letras.");
+        if (value.length > maxLength)
+          setErrorMessage(`Nombre puede tener máximo ${maxLength} caracteres.`);
         break;
-      case 'RFC':
+      case "RFC":
         valid = /^[A-Za-z0-9]*$/.test(value);
         maxLength = 13;
-        if (!valid) setErrorMessage('RFC solo puede contener caracteres alfanuméricos.');
-        if (value.length > maxLength) setErrorMessage(`RFC puede tener máximo ${maxLength} caracteres.`);
+        if (!valid)
+          setErrorMessage("RFC solo puede contener caracteres alfanuméricos.");
+        if (value.length > maxLength)
+          setErrorMessage(`RFC puede tener máximo ${maxLength} caracteres.`);
         break;
-      case 'Numero de cliente':
+      case "Numero de cliente":
         valid = /^[0-9]*$/.test(value);
         maxLength = 10;
-        if (!valid) setErrorMessage('Número de cliente solo puede contener números.');
-        if (value.length > maxLength) setErrorMessage(`Número de cliente puede tener máximo ${maxLength} caracteres.`);
+        if (!valid)
+          setErrorMessage("Número de cliente solo puede contener números.");
+        if (value.length > maxLength)
+          setErrorMessage(
+            `Número de cliente puede tener máximo ${maxLength} caracteres.`
+          );
         break;
-      case 'Telefono':
+      case "Telefono":
         valid = /^[0-9]*$/.test(value);
         maxLength = 10;
-        if (!valid) setErrorMessage('Teléfono solo puede contener números.');
-        if (value.length > maxLength) setErrorMessage(`Teléfono puede tener máximo ${maxLength} caracteres.`);
+        if (!valid) setErrorMessage("Teléfono solo puede contener números.");
+        if (value.length > maxLength)
+          setErrorMessage(
+            `Teléfono puede tener máximo ${maxLength} caracteres.`
+          );
         break;
-      case 'Expediente':
+      case "Expediente":
         valid = /^[A-Za-z0-9]*$/.test(value);
         maxLength = 10;
-        if (!valid) setErrorMessage('Expediente solo puede contener caracteres alfanuméricos.');
-        if (value.length > maxLength) setErrorMessage(`Expediente puede tener máximo ${maxLength} caracteres.`);
+        if (!valid)
+          setErrorMessage(
+            "Expediente solo puede contener caracteres alfanuméricos."
+          );
+        if (value.length > maxLength)
+          setErrorMessage(
+            `Expediente puede tener máximo ${maxLength} caracteres.`
+          );
         break;
       default:
         valid = /^[A-Za-z0-9\s]*$/.test(value);
         maxLength = 50; // Default maxLength for any other fields
-        if (!valid) setErrorMessage('Este campo solo puede contener caracteres alfanuméricos.');
-        if (value.length > maxLength) setErrorMessage(`Este campo puede tener máximo ${maxLength} caracteres.`);
+        if (!valid)
+          setErrorMessage(
+            "Este campo solo puede contener caracteres alfanuméricos."
+          );
+        if (value.length > maxLength)
+          setErrorMessage(
+            `Este campo puede tener máximo ${maxLength} caracteres.`
+          );
         break;
     }
 
     if (valid && value.length <= maxLength) {
       setSearchTerm(value);
-      setErrorMessage(''); // Clear error message if the value is valid
+      setErrorMessage(""); // Clear error message if the value is valid
 
       if (value.length > 0) {
         try {
-          const response = await axios.get('http://192.168.7.33/api/search-customer/busqueda-cuenta', {
-            params: { filtro: filter, ValorBusqueda: value },
-            headers: {
-              Authorization: token,
-            },
-          });
-          console.log('Response for suggestions:', response.data.listaResultados);
+          const response = await axios.get(
+            "http://192.168.7.33/api/search-customer/busqueda-cuenta",
+            {
+              params: { filtro: filter, ValorBusqueda: value },
+              headers: {
+                Authorization: token,
+              },
+            }
+          );
+          console.log(
+            "Response for suggestions:",
+            response.data.listaResultados
+          );
           setSuggestions(response.data.listaResultados || []);
           setShowSuggestions(true);
         } catch (error) {
-          console.error('Error fetching suggestions:', error);
+          console.error("Error fetching suggestions:", error);
           setShowSuggestions(false);
         }
       } else {
@@ -207,13 +253,12 @@ function OffcanvasExample() {
               }}
             >
               <div style={{ position: "relative", width: "300px" }}>
-                
                 <FormControl
                   style={{
                     width: "100%",
                     backgroundColor: "white",
                     paddingLeft: "35px", // Ajustar para que el texto no cubra el icono
-                    color: "black"
+                    color: "black",
                   }}
                   type="search"
                   placeholder="Buscar"
@@ -282,7 +327,7 @@ function OffcanvasExample() {
                   title={`Seleccionar filtro: ${filter}`}
                   id={`offcanvasNavbarDropdown-expand-${expand}`}
                   data-bs-theme="dark"
-                  style={{ backgroundColor: ''}}
+                  style={{ backgroundColor: "" }}
                   className="d-none d-md-block"
                   onSelect={handleFilterSelect}
                 >
@@ -323,10 +368,9 @@ function OffcanvasExample() {
                 gap: "5px",
               }}
             >
-               <Col>
+              <Col>
                 <Image src={User} roundedCircle style={{ width: "36px" }} />
               </Col>
-              
 
               <Dropdown.Menu
                 className="custom-dropdown-menu"
@@ -339,7 +383,7 @@ function OffcanvasExample() {
                   Ejecutivo Telefonico
                 </Dropdown.Item>
               </Dropdown.Menu>
-             
+
               <span className="d-none d-lg-block" style={{ color: "white" }}>
                 Cesar Enrique
               </span>
@@ -366,9 +410,8 @@ function OffcanvasExample() {
                   <Nav.Link href="/maintenance">
                     <h5>Gestion</h5>
                   </Nav.Link>
-                  <Nav.Link href="/login">
-                    <h5>Cerrar Sesion</h5>
-                  </Nav.Link>
+                  <CerrarSesion setUser={setUser} setPassword={setPassword} />
+                  {/* se agregar el apartadp cioerrasesion */}
                   <br />
                   <div style={{ bottom: "0" }}>
                     <span>Grupo Consorcio</span>
@@ -379,76 +422,105 @@ function OffcanvasExample() {
           </Container>
         </Navbar>
       ))}
-      <div style={{ width: "50%", textAlign: "left", marginTop: '50px'}}>
-      <Card className="p-3" style={{ backgroundColor: "black", color: "white", border: "none" }}>
-        <Card.Title>
-          <span style={{ color: "gray" }}>Cartera:</span> <strong>American Express</strong>
-        </Card.Title>
-        <Card.Body className="p-0">
-          <div>
-            <a href="#" style={{ color: "lightgreen", textDecoration: "none" }}>Inicio</a> /{" "}
-            <a href="#" style={{ color: "lightblue", textDecoration: "none" }}>Productividad</a> /{" "}
-            <a href="#" style={{ color: "#6495ED", textDecoration: "none" }}>Recuperación</a> /{" "}
-            <a href="#" style={{ color: "orange", textDecoration: "none" }}>Tiempos</a>/{" "}
-            <a href="#" style={{ color: "lightblue", textDecoration: "none" }}>Simulador</a> 
-          </div>
-        </Card.Body>
-      </Card>
-    </div>
-    {searchResults.length > 0 && (
-  <Container fluid className="mt-3">
-    {searchResults.map((result, index) => (
-      <Card
-        key={index}
-        className="mb-3 custom-card mt-5"
-        style={{ backgroundColor: "rgb(33, 37, 41)" }}
-      >
-        <Card.Body>
-          {/* Contenedor de los datos que ocupa todo el ancho */}
-          <Row>
-            <Col md={4}>
-              <p>
-                <FaRegCreditCard /> <strong>Producto:</strong> {result.producto}
-              </p>
-            </Col>
-            <Col md={4}>
-              <p>
-                <FaClipboardList /> <strong>Cuenta:</strong> {result.idCuenta}
-              </p>
-            </Col>
-            <Col md={4}>
-              <p>
-                <FaCalendarCheck /> <strong>Activada:</strong>{" "}
-                {result.fechaActivacion || "N/A"}
-              </p>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={4}>
-              <p>
-                <FaFileAlt /> <strong>Exp:</strong> {result.expediente || "N/A"}
-              </p>
-            </Col>
-            <Col md={4}>
-              <p>
-                <FaUser /> <strong>No. Cliente:</strong> {result.numeroCliente || "N/A"}
-              </p>
-            </Col>
-            <Col md={4}>
-              <p>
-                <FaFileAlt /> <strong>RFC:</strong> {result.rfc}
-              </p>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
-    ))}
-  </Container>
-)}
-
+      <div style={{ width: "50%", textAlign: "left", marginTop: "50px" }}>
+        <Card
+          className="p-3"
+          style={{ backgroundColor: "black", color: "white", border: "none" }}
+        >
+          <Card.Title>
+            <span style={{ color: "gray" }}>Cartera:</span>{" "}
+            <strong>American Express</strong>
+          </Card.Title>
+          <Card.Body className="p-0">
+            <div>
+              <a
+                href="#"
+                style={{ color: "lightgreen", textDecoration: "none" }}
+              >
+                Inicio
+              </a>{" "}
+              /{" "}
+              <a
+                href="#"
+                style={{ color: "lightblue", textDecoration: "none" }}
+              >
+                Productividad
+              </a>{" "}
+              /{" "}
+              <a href="#" style={{ color: "#6495ED", textDecoration: "none" }}>
+                Recuperación
+              </a>{" "}
+              /{" "}
+              <a href="#" style={{ color: "orange", textDecoration: "none" }}>
+                Tiempos
+              </a>
+              /{" "}
+              <a
+                href="#"
+                style={{ color: "lightblue", textDecoration: "none" }}
+              >
+                Simulador
+              </a>
+            </div>
+          </Card.Body>
+        </Card>
+      </div>
+      {searchResults.length > 0 && (
+        <Container fluid className="mt-3">
+          {searchResults.map((result, index) => (
+            <Card
+              key={index}
+              className="mb-3 custom-card mt-5"
+              style={{ backgroundColor: "rgb(33, 37, 41)" }}
+            >
+              <Card.Body>
+                {/* Contenedor de los datos que ocupa todo el ancho */}
+                <Row>
+                  <Col md={4}>
+                    <p>
+                      <FaRegCreditCard /> <strong>Producto:</strong>{" "}
+                      {result.producto}
+                    </p>
+                  </Col>
+                  <Col md={4}>
+                    <p>
+                      <FaClipboardList /> <strong>Cuenta:</strong>{" "}
+                      {result.idCuenta}
+                    </p>
+                  </Col>
+                  <Col md={4}>
+                    <p>
+                      <FaCalendarCheck /> <strong>Activada:</strong>{" "}
+                      {result.fechaActivacion || "N/A"}
+                    </p>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md={4}>
+                    <p>
+                      <FaFileAlt /> <strong>Exp:</strong>{" "}
+                      {result.expediente || "N/A"}
+                    </p>
+                  </Col>
+                  <Col md={4}>
+                    <p>
+                      <FaUser /> <strong>No. Cliente:</strong>{" "}
+                      {result.numeroCliente || "N/A"}
+                    </p>
+                  </Col>
+                  <Col md={4}>
+                    <p>
+                      <FaFileAlt /> <strong>RFC:</strong> {result.rfc}
+                    </p>
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
+          ))}
+        </Container>
+      )}
     </>
   );
 }
 
 export default OffcanvasExample;
-
