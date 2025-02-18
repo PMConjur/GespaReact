@@ -45,7 +45,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("productividad-ejecutivo")]//Endpoint Padrino
-
         public async Task<ActionResult<ResultadoProductividad>> Productividad([FromQuery] int NumEmpleado)
         {
             var Productividad = await _searchService.ValidateProductividad(NumEmpleado);
@@ -55,8 +54,6 @@ namespace NoriAPI.Controllers
                 return BadRequest(new { Productividad.Mensaje }); 
             }
             return Ok(new { Productividad.Mensaje });
-
-
         }
 
 

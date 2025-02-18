@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using NoriAPI.Models.Busqueda;
+using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Services;
+using System.Threading.Tasks;
 
 namespace NoriAPI.Controllers
 {
@@ -19,10 +22,12 @@ namespace NoriAPI.Controllers
 
         }
 
-        [HttpGet] // 🔹 Agregar esta anotación
-        public IActionResult Index()
+        [HttpGet("tiempos-ejecutivo")]//Endpoint C#
+        public async Task<ActionResult<TiemposEjecutivo>> Tiempos([FromQuery] int NumEmpleado)
         {
-            return Ok("Hola desde EjecutivoController");
+            var Tiempos = await _ejecutivoService.ValidateTimes(NumEmpleado);
+
+            return Ok(new { Tiempos.ResultadosTiempos });
         }
     }
 }
