@@ -43,7 +43,10 @@ namespace NoriAPI.Repositories
                                     "   C.NúmeroCliente, \r\n" +
                                     "   V.Valor Situación, \r\n" +
                                     //"   C.Saldo, \r\n" +
-                                    "   C.idCartera \r\n" +
+                                    "   C.idCartera, \r\n" +
+                                    "   C.Saldo, \r\n" +
+                                    "   C.Fecha_CambioActivación AS Activada, \r\n" +
+                                    "   C.Expediente \r\n" +
                                     "FROM Cuentas C \r\n" +
                                     "    	INNER JOIN Productos P ON P.idProducto = C.idProducto \r\n" +
                                     "    	INNER JOIN Carteras CL ON CL.idCartera = C.idCartera \r\n" +

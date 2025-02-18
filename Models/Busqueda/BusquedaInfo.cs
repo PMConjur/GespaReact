@@ -1,4 +1,7 @@
-﻿namespace NoriAPI.Models.Busqueda
+﻿using Microsoft.VisualBasic;
+using System;
+
+namespace NoriAPI.Models.Busqueda
 {
     public class BusquedaInfo
     {
@@ -10,5 +13,8 @@
         public string NumeroCliente { get; set; }
         public string Situacion { get; set; }
         public string IdCartera {  get; set; }
+        public double Saldo {  get; set; }
+        public DateTime Activada{  get; set; }
+        public int Expediente { get; set; }
     }
 }

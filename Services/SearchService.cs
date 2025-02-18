@@ -13,7 +13,7 @@ namespace NoriAPI.Services
     public interface ISearchService
     {
         Task<ResultadoBusqueda> ValidateBusqueda(string filtro, string ValorBusqueda);
-        Task<ResultadoProductividad> ValidateProductividad(int NumEmpleado);
+        Task<ResultadoProductividad> ValidateProductividad(int numEmpleado);
         Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado);
     }
 
@@ -68,11 +68,11 @@ namespace NoriAPI.Services
 
         }
 
-        public async Task<ResultadoProductividad> ValidateProductividad(int NumEmpeado)
+        public async Task<ResultadoProductividad> ValidateProductividad(int numEmpleado)
         {
             string mensaje = null;
 
-            var validateProductividad = await _searchRepository.ValidateProductividad(NumEmpeado);
+            var validateProductividad = await _searchRepository.ValidateProductividad(numEmpleado);
 
             if (validateProductividad == null)
             {
@@ -93,8 +93,8 @@ namespace NoriAPI.Services
             string mensaje = null;
             var automaticoInfo = await _searchRepository.ValidateAutomatico(numEmpleado);
             var dict = (IDictionary<string, object>)automaticoInfo;
-                      
-            if(dict.TryGetValue("Mensaje", out object mensajeAuto) && mensajeAuto != null)
+
+            if (dict.TryGetValue("Mensaje", out object mensajeAuto) && mensajeAuto != null)
             {
                 mensaje = mensajeAuto.ToString();
                 return new ResultadoAutomatico(mensaje, null);
@@ -133,6 +133,15 @@ namespace NoriAPI.Services
             if (busq.TryGetValue("idCartera", out var idCartera) && idCartera != null)
                 busqueda.IdCartera = idCartera.ToString();
 
+            if (busq.TryGetValue("Saldo", out var saldo) && saldo != null)
+                busqueda.Saldo = Convert.ToDouble(saldo);
+
+            if (busq.TryGetValue("Activada", out var activada) && activada != null)
+                busqueda.Activada = Convert.ToDateTime(activada);
+            
+            if (busq.TryGetValue("Expediente", out var expediente) && expediente != null)
+                busqueda.Expediente = Convert.ToInt32(expediente);
+
             return busqueda;
 
         }
@@ -141,7 +150,7 @@ namespace NoriAPI.Services
         {
             var automatico = new AutomaticoInfo();
 
-            if(auto.TryGetValue("idCartera", out var idcartera) && idcartera != null)
+            if (auto.TryGetValue("idCartera", out var idcartera) && idcartera != null)
                 automatico.idCartera = idcartera.ToString();
 
             if (auto.TryGetValue("idCuenta", out var idcuenta) && idcuenta != null)
@@ -154,7 +163,7 @@ namespace NoriAPI.Services
         }
 
 
-   
+
 
     }
 }
