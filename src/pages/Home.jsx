@@ -2,11 +2,13 @@ import React from "react";
 import Navbar from "../components/Navbar";
 import Maintenance from "../assets/img/maintenance.png";
 import Home1 from "../assets/img/user.svg";
+import SearchCustomer from "../components/SearchAutomatic";
 
 const Home = () => {
   return (
     <>
     <Navbar/>
+    <SearchCustomer />
     <main id="main"  data-bs-theme="dark">
         <div className="jumbotron"  style={{marginTop: "60px"}}>
           <div className="row">

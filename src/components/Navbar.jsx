@@ -19,7 +19,8 @@ import '../scss/styles.scss'
 import { Row } from "react-bootstrap";
 import { FaRegCreditCard, FaUser, FaFileAlt, FaCalendarCheck, FaClipboardList } from "react-icons/fa";
 import { ArrowRepeat, Search } from "react-bootstrap-icons";
-
+import { fetchData } from "../services/fetchAuto";
+import SearchCustomer from "./SearchAutomatic";
 
 function OffcanvasExample() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,8 +29,15 @@ function OffcanvasExample() {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCR1JIIiwianRpIjoiMjg5ZmZlNzctMWQwMS00NWNiLThiZmUtNjU0Mjk3MWUxY2RhIiwiVXN1YXJpbyI6IkJHUkgiLCJleHAiOjE3Mzk4MjAzMDksImlzcyI6IjE5Mi4xNjguNy4zMyIsImF1ZCI6IjE5Mi4xNjguNS4zOCJ9.hhGkTeSoFGMptbcAyAhxpgSjEMC1CWzZEaiMNsMGONM'; // Reemplaza 'YOUR_ACCESS_TOKEN_HERE' con tu token de acceso
+  const handleFetchData = () => {
+    fetchData(setData, setLoading, setError);
+  };
+
+  const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCR1JIIiwianRpIjoiMDliNDQ2NzgtMmZiMi00NjhmLWE0ZDgtMjY0NDRhYzc1YmU2IiwiVXN1YXJpbyI6IkJHUkgiLCJleHAiOjE3Mzk4OTc0NzQsImlzcyI6IjE5Mi4xNjguNy4zMyIsImF1ZCI6IjE5Mi4xNjguNS4zOCJ9.OMdu7x3C226iSUU0pf4CXzxe19EMMPFkKq0-V7iEBJY'; // Reemplaza 'YOUR_ACCESS_TOKEN_HERE' con tu token de acceso
 
   useEffect(() => {
     if (filter && !searchTerm) {
@@ -40,7 +48,7 @@ function OffcanvasExample() {
   const fetchFilterData = async (filter) => {
     try {
       const response = await axios.get('http://192.168.7.33/api/search-customer/busqueda-cuenta', {
-        params: { filtro: filter },
+        params: {  },
         headers: {
           Authorization: token,
         },
@@ -82,7 +90,7 @@ function OffcanvasExample() {
     switch (filter) {
       case 'Cuenta':
         valid = /^[0-9]*$/.test(value);
-        maxLength = 15;
+        maxLength = 16;
         if (!valid) setErrorMessage('Cuenta solo puede contener números.');
         if (value.length > maxLength) setErrorMessage(`Cuenta puede tener máximo ${maxLength} caracteres.`);
         break;
@@ -106,7 +114,7 @@ function OffcanvasExample() {
         break;
       case 'Telefono':
         valid = /^[0-9]*$/.test(value);
-        maxLength = 10;
+        maxLength = 13;
         if (!valid) setErrorMessage('Teléfono solo puede contener números.');
         if (value.length > maxLength) setErrorMessage(`Teléfono puede tener máximo ${maxLength} caracteres.`);
         break;
@@ -213,7 +221,8 @@ function OffcanvasExample() {
                     width: "100%",
                     backgroundColor: "white",
                     paddingLeft: "35px", // Ajustar para que el texto no cubra el icono
-                    color: "black"
+                    color: "black",
+                    
                   }}
                   type="search"
                   placeholder="Buscar"
@@ -234,6 +243,7 @@ function OffcanvasExample() {
                     transform: "translateY(-50%)",
                     color: "black",
                     pointerEvents: "none", // Para que no bloquee la entrada de texto
+                    
                   }}
                 />
                 {errorMessage && (
@@ -262,6 +272,7 @@ function OffcanvasExample() {
                       maxHeight: "300px",
                       overflowY: "auto",
                       zIndex: 1000,
+                      fontSize: '12px'
                     }}
                   >
                     {suggestions.map((suggestion, index) => (
@@ -301,13 +312,16 @@ function OffcanvasExample() {
                 </NavDropdown>
               </Button>
               <Button
-                className="d-none d-md-block"
-                variant="primary"
-                type="submit"
-              >
-                <ArrowRepeat> </ArrowRepeat>
-                <span>Automatico</span>
-              </Button>
+        className="d-none d-md-block"
+        variant="primary"
+        type="button"
+        onClick={handleFetchData}
+        disabled={loading}
+      >
+        <ArrowRepeat />
+        <span>Automatico</span>
+      </Button>
+      
             </form>
 
             <Dropdown
@@ -418,7 +432,7 @@ function OffcanvasExample() {
             </Col>
             <Col md={4}>
               <p>
-                <FaCalendarCheck /> <strong>Activada:</strong>{" "}
+                <FaCalendarCheck /> <strong>Fecha Activacion:</strong>{" "}
                 {result.fechaActivacion || "N/A"}
               </p>
             </Col>
@@ -426,7 +440,7 @@ function OffcanvasExample() {
           <Row>
             <Col md={4}>
               <p>
-                <FaFileAlt /> <strong>Exp:</strong> {result.expediente || "N/A"}
+                <FaFileAlt /> <strong>Expediente:</strong> {result.expediente || "N/A"}
               </p>
             </Col>
             <Col md={4}>
@@ -436,7 +450,7 @@ function OffcanvasExample() {
             </Col>
             <Col md={4}>
               <p>
-                <FaFileAlt /> <strong>RFC:</strong> {result.rfc}
+                <FaFileAlt /> <strong>RFC:</strong> {result.rfc || "N/A"}
               </p>
             </Col>
           </Row>
@@ -451,4 +465,3 @@ function OffcanvasExample() {
 }
 
 export default OffcanvasExample;
-
