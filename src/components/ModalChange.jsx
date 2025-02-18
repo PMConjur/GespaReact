@@ -10,7 +10,8 @@ function ModalChange({
   days,
   expire,
   onClose,
-  onShowPasswordModal
+  onShowPasswordModal,
+  responseData // Receive the response data
 }) {
   const [show, setShow] = useState(true);
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ function ModalChange({
     } else {
       if (days !== "1") {
         setShow(false);
-        navigate("/home");
+        navigate("/home", { state: responseData }); // Navigate to home with responseData
       }
     }
   };
@@ -38,7 +39,7 @@ function ModalChange({
   const handleYesClick = () => {
     toast.info("Ingresa los datos para actualizar tu contraseña");
     setShow(false); // Close the current modal
-    onShowPasswordModal(password); // Show the password change modal and pass the password
+    onShowPasswordModal(user, password); // Pass user and password to the password change modal
   };
 
   const getExpireMessage = () => {
@@ -84,7 +85,8 @@ ModalChange.propTypes = {
   days: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   expire: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  onShowPasswordModal: PropTypes.func.isRequired // Add prop type for the function to show the password modal
+  onShowPasswordModal: PropTypes.func.isRequired, // Add prop type for the function to show the password modal
+  responseData: PropTypes.object // Add prop type for the response data
 };
 
 export default ModalChange;

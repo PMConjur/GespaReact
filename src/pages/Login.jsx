@@ -6,7 +6,6 @@ import { PersonFillLock, KeyFill } from "react-bootstrap-icons";
 import "../index.css";
 import ModalChange from "../components/ModalChange"; // Import ModalChange component
 import ModalChangePassword from "../components/ModalChangePassword"; // Import ModalChangePassword component
-import servicio from "../services/axiosServices"; // Import axiosServices
 
 function Login() {
   const [user, setUser] = useState("");
@@ -15,7 +14,7 @@ function Login() {
   const [showPasswordModal, setShowPasswordModal] = useState(false); // State to control ModalChangePassword visibility
   const [days, setDays] = useState(""); // State to store days value
   const [expire, setExpire] = useState(null);
-  const [oldPassword, setOldPassword] = useState(""); // State to store old password
+  const [responseData, setResponseData] = useState(null); // State to store response data
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,10 +62,8 @@ function Login() {
         setExpire(response.data.ejecutivo.expiro == true ? true : false);
         setShowModal(true); // Show the modal
 
-        // Set the token in axiosServices
-        servicio.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${response.data.ejecutivo.token}`;
+        // Store the response data
+        setResponseData(response.data);
       }
     } catch (error) {
       console.error("There was a problem with the axios operation:", error);
@@ -78,8 +75,7 @@ function Login() {
     setShowModal(false);
   };
 
-  const handleShowPasswordModal = (password) => {
-    setOldPassword(password); // Set the old password
+  const handleShowPasswordModal = () => {
     setShowModal(false); // Close the current modal
     setShowPasswordModal(true); // Show the password change modal
   };
@@ -159,6 +155,7 @@ function Login() {
           expire={expire}
           onClose={handleCloseModal}
           onShowPasswordModal={handleShowPasswordModal} // Pass the function to show the password modal
+          responseData={responseData} // Pass the response data
         />
       )}{" "}
       {/* Render ModalChange */}
@@ -167,7 +164,7 @@ function Login() {
           showSecondModal={showPasswordModal}
           closeSecondModal={handleClosePasswordModal}
           user={user}
-          oldPassword={oldPassword} // Pass the old password
+          password={password}
         />
       )}{" "}
       {/* Render ModalChangePassword */}

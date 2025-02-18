@@ -8,8 +8,11 @@ export async function userReset(dataUserReset) {
     );
     return response.data;
   } catch (error) {
-    if (error.response && error.response.status === 401) {
-      throw new Error("No autorizado. Verifique sus credenciales.");
+    if (error.response) {
+      const errorMessage =
+        error.response.data?.resetea?.mensaje ||
+        "Error al actualizar la contraseña.";
+      throw new Error(errorMessage);
     } else {
       throw new Error("Error al actualizar la contraseña.");
     }
