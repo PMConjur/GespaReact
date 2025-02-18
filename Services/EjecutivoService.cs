@@ -11,8 +11,9 @@ namespace NoriAPI.Services
 {
     public interface IEjecutivoService
     {
-        Task<dynamic> EjecutivoPrueba();
-        Task<NegociacionesResponse> ObtenerNegociaciones(int idEjecutivo);
+
+        Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo);
+        Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
 
     }
 
@@ -26,14 +27,9 @@ namespace NoriAPI.Services
             _ejecutivoRepository = ejecutivoRepository;
         }
 
-        public async Task<dynamic> EjecutivoPrueba()
+        public async Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo)
         {
-            throw new NotImplementedException();
-        }
-
-        public async Task<NegociacionesResponse> ObtenerNegociaciones(int idEjecutivo)
-        {
-            var negociaciones = (await _ejecutivoRepository.ObtenerNegociacionesAsync(idEjecutivo)).ToList();
+            var negociaciones = (await _ejecutivoRepository.Negociaciones(idEjecutivo)).ToList();
 
             if (negociaciones.Count == 0)
             {
@@ -49,7 +45,7 @@ namespace NoriAPI.Services
             int conteo = negociaciones.Count(n => n.FechaCreacion == DateTime.Today);
 
             // Calcular tiempo promedio con base en FechaCreacion y FechaTermino
-            TimeSpan? tiempoPromedio = CalcularTiempoPromedio(negociaciones);
+            TimeSpan? tiempoPromedio = CalculateAverageTime(negociaciones);
 
             return new NegociacionesResponse
             {
@@ -67,7 +63,7 @@ namespace NoriAPI.Services
                     : new TiempoPromedioResponse()
             };
         }
-        private static TimeSpan? CalcularTiempoPromedio(IEnumerable<Negociacion> negociaciones)
+        private static TimeSpan? CalculateAverageTime(IEnumerable<Negociacion> negociaciones)
         {
             var tiempos = negociaciones
                 .Where(n => n.FechaCreacion.HasValue && n.FechaTermino.HasValue) // Asegura que ambos valores existen
@@ -80,7 +76,23 @@ namespace NoriAPI.Services
             return new TimeSpan(totalTicks / tiempos.Count);
         }
 
-    }
+        public async Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual)
+        {
+            if (actual == 1)
+            {
+                return await _ejecutivoRepository.RecuperacionActual(idEjecutivo);
+            }
+            else
+            {
+                return await _ejecutivoRepository.RecuperacionAnterior(idEjecutivo);
+            }
+        }
 
+    }
 }
+
+
+
+
+
 

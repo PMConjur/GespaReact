@@ -22,17 +22,30 @@ namespace NoriAPI.Controllers
         }
 
 
-        [HttpGet("obtiene-negociaciones")]
-        public async Task<IActionResult> ObtieneNegociaciones([FromQuery] int idEjecutivo)
+        [HttpGet("get-negociaciones")]
+        public async Task<IActionResult> GetNegociaciones([FromQuery] int idEjecutivo)
         {
-            var negociaciones = await _ejecutivoService.ObtenerNegociaciones(idEjecutivo);
+            var negociaciones = await _ejecutivoService.GetNegociaciones(idEjecutivo);
 
             if (negociaciones.ConteoHoy == null)
             {
-                return BadRequest(new { Mensaje = "No se encontraron negociaciones" });
+                return BadRequest(new { Mensaje = "No se encontraron negociaciones." });
             }
 
             return Ok( negociaciones );
+        }
+
+        [HttpGet("get-recuperacion")]
+        public async Task<IActionResult> GetRecuperacion([FromQuery] int idEjecutivo, [FromQuery] int actual)
+        {
+            var recuperacion = await _ejecutivoService.GetRecuperacion(idEjecutivo, actual);
+
+            if (recuperacion == null)
+            {
+                return BadRequest(new { Mensaje = "No se pudo obtener la recuperación del ejecutivo." });
+            }
+
+            return Ok(recuperacion);
         }
       
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Data.SqlClient;
@@ -13,7 +14,9 @@ namespace NoriAPI.Repositories
     public interface IEjecutivoRepository
     {
         Task<dynamic> TemplateMethod();
-        Task<IEnumerable<Negociacion>> ObtenerNegociacionesAsync(int idEjecutivo);
+        Task<IEnumerable<Negociacion>> Negociaciones(int idEjecutivo);
+        Task<Recuperacion> RecuperacionActual(int idEjecutivo);
+        Task<Recuperacion> RecuperacionAnterior(int idEjecutivo);
 
     }
     public class EjecutivoRepository : IEjecutivoRepository
@@ -31,9 +34,9 @@ namespace NoriAPI.Repositories
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<Negociacion>> ObtenerNegociacionesAsync(int idEjecutivo)
+        public async Task<IEnumerable<Negociacion>> Negociaciones(int idEjecutivo)
         {
-            using var sqlConnection = GetConnection("Piso2Amex");
+            using var connection = GetConnection("Piso2Amex");
 
             var query = @"
                 SELECT 
@@ -43,7 +46,28 @@ namespace NoriAPI.Repositories
                     _CartaConvenio AS CartaConvenio, MesActual
                 FROM fn_NegociacionesEjecutivo(@idEjecutivo)";
 
-            return await sqlConnection.QueryAsync<Negociacion>(query, new { idEjecutivo });
+            return await connection.QueryAsync<Negociacion>(query, new { idEjecutivo });
+        }
+
+        public async Task<Recuperacion> RecuperacionActual(int idEjecutivo)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string queryFunction = "SELECT * FROM fn_RecuperacionActualEjecutivo(@idEjecutivo)";
+            var parameters = new { idEjecutivo = idEjecutivo };
+            var actualResult = await connection.QueryFirstOrDefaultAsync<Recuperacion>(queryFunction, parameters);
+
+            return actualResult;
+        }
+        public async Task<Recuperacion> RecuperacionAnterior(int idEjecutivo)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string queryFunction = "SELECT * FROM fn_RecuperaciónEjecutivo(@idEjecutivo)";
+            var parameters = new { idEjecutivo = idEjecutivo };
+            var previousResult = await connection.QueryFirstOrDefaultAsync<Recuperacion>(queryFunction, parameters);
+
+            return previousResult;
         }
 
 
