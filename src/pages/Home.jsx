@@ -1,6 +1,7 @@
 import Navbar from "../components/Navbar";
 import Maintenance from "../assets/img/maintenance.png";
 import Home1 from "../assets/img/user.svg";
+import { Calculator, Calendar } from "./Widgets";
 
 const Home = () => {
   return (
@@ -76,6 +77,15 @@ const Home = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="row">
+          <div className="card mb-12"></div>
+          <Calculator />
+        </div>
+        <div className="row">
+          <div className="card mb-12"></div>
+          <Calendar />
         </div>
 
         <div className="pagetitle"></div>
