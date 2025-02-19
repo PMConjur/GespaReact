@@ -94,6 +94,11 @@ namespace NoriAPI.Services
             var automaticoInfo = await _searchRepository.ValidateAutomatico(numEmpleado);
             var dict = (IDictionary<string, object>)automaticoInfo;
 
+            if(automaticoInfo is null)
+            {
+                return new ResultadoAutomatico("No se encontró info. para el automático del Ejecutivo", null);
+            }
+
             if (dict.TryGetValue("Mensaje", out object mensajeAuto) && mensajeAuto != null)
             {
                 mensaje = mensajeAuto.ToString();

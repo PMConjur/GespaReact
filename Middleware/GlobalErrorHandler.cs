@@ -92,7 +92,8 @@ namespace NoriAPI.Middleware
                 title = ex.GetType().ToString(),
                 type = siteLink,
                 errors = message,
-                traceId = context.TraceIdentifier
+                traceId = context.TraceIdentifier,
+                stackTrace = ex.StackTrace // Agregar la traza de la pila para identificar el método, la clase y el archivo
             };
 
             context.Response.ContentType = "application/json";

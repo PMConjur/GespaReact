@@ -17,7 +17,7 @@ namespace NoriAPI.Controllers
     [ApiController]
     [Route("api/search-customer")]
     //[Authorize]
-    public class CustomerSearchController : Controller
+    public class CustomerSearchController : ControllerBase
 
     {
         private readonly IConfiguration _configuration;
@@ -27,7 +27,6 @@ namespace NoriAPI.Controllers
         {
             _configuration = configuration;
             _searchService = searchService;
-
         }
 
         [HttpGet("busqueda-cuenta")]//Endpoint Padrino
