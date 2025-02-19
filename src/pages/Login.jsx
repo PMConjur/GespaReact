@@ -1,13 +1,21 @@
 import { useState } from "react";
-import { Button, Form, Card, Container, InputGroup } from "react-bootstrap";
+import {
+  Button,
+  Form,
+  Card,
+  Container,
+  InputGroup,
+  Row,
+  Image
+} from "react-bootstrap";
 import { toast, Toaster } from "sonner"; // Import the toast and Toaster components
 import axios from "axios"; // Import axios for API calls
 import { PersonFillLock, KeyFill } from "react-bootstrap-icons";
 import "../index.css";
 import ModalChange from "../components/ModalChange"; // Import ModalChange component
 import ModalChangePassword from "../components/ModalChangePassword"; // Import ModalChangePassword component
-import Image from "react-bootstrap/Image";
-import logo from "../assets/img/logo-login.png"
+import logo from "../assets/img/logo-login.png";
+
 function Login() {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
@@ -65,6 +73,7 @@ function Login() {
 
         // Store the response data
         setResponseData(response.data);
+        localStorage.setItem("responseData", JSON.stringify(response.data)); // Save response data to localStorage
       }
     } catch (error) {
       console.error("There was a problem with the axios operation:", error);
@@ -93,60 +102,62 @@ function Login() {
       </h1>
       <Form onSubmit={handleSubmit}>
         <Container>
-          <Card
-            className="p-4 text-white shadow-lg"
-            style={{ backgroundColor: "#1c1f24" }}
-          >
-            <h3>Inicio sesión CJ</h3>
+          <Row className="row justify-content-center">
+            <Card
+              className="p-4 text-white shadow-lg"
+              style={{ backgroundColor: "#1c1f24" }}
+            >
+              <h3>Inicio sesión CJ</h3>
 
-            <span className="bg-gray">
-              Ingresa tu usuario de 4 dígitos y tu contraseña
-            </span>
+              <span className="bg-gray">
+                Ingresa tu usuario de 4 dígitos y tu contraseña
+              </span>
 
-            <br />
-            {/* Usuario */}
-            <Form.Group className="mb-3" controlId="formBasicEmail">
-              <Form.Label>Usuario</Form.Label>
-              <InputGroup>
-                <InputGroup.Text>
-                  <PersonFillLock></PersonFillLock>
-                </InputGroup.Text>
-                <Form.Control
-                  type="text"
-                  placeholder="Teclea tu usuario"
-                  value={user}
-                  onChange={(e) => setUser(e.target.value)}
-                />
-              </InputGroup>
-            </Form.Group>
-            {/* Contraseña */}
-            <Form.Group className="mb-3" controlId="formBasicPassword">
-              <Form.Label>Contraseña</Form.Label>
-              <InputGroup>
-                <InputGroup.Text>
-                  <KeyFill></KeyFill>
-                </InputGroup.Text>
-                <Form.Control
-                  type="password"
-                  placeholder="Teclea tu contraseña"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </InputGroup>
-            </Form.Group>
-            {/* Cartera */}
-            <Form.Group className="mb-3">
-              <Form.Label>Cartera</Form.Label>
-              <Form.Select required>
-                <option value="">Selecciona una cartera...</option>
-                <option value="1">American Express</option>
-              </Form.Select>
-            </Form.Group>
+              <br />
+              {/* Usuario */}
+              <Form.Group className="mb-3" controlId="formBasicEmail">
+                <Form.Label>Usuario</Form.Label>
+                <InputGroup>
+                  <InputGroup.Text>
+                    <PersonFillLock></PersonFillLock>
+                  </InputGroup.Text>
+                  <Form.Control
+                    type="text"
+                    placeholder="Teclea tu usuario"
+                    value={user}
+                    onChange={(e) => setUser(e.target.value)}
+                  />
+                </InputGroup>
+              </Form.Group>
+              {/* Contraseña */}
+              <Form.Group className="mb-3" controlId="formBasicPassword">
+                <Form.Label>Contraseña</Form.Label>
+                <InputGroup>
+                  <InputGroup.Text>
+                    <KeyFill></KeyFill>
+                  </InputGroup.Text>
+                  <Form.Control
+                    type="password"
+                    placeholder="Teclea tu contraseña"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </InputGroup>
+              </Form.Group>
+              {/* Cartera */}
+              <Form.Group className="mb-3">
+                <Form.Label>Cartera</Form.Label>
+                <Form.Select required>
+                  <option value="">Selecciona una cartera...</option>
+                  <option value="1">American Express</option>
+                </Form.Select>
+              </Form.Group>
 
-            <Button variant="primary" type="submit" className="w-100">
-              Ingresar
-            </Button>
-          </Card>
+              <Button variant="primary" type="submit" className="w-100">
+                Ingresar
+              </Button>
+            </Card>
+          </Row>
         </Container>
       </Form>
       <Toaster richColors position="top-right" />{" "}
