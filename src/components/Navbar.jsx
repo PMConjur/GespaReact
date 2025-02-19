@@ -22,11 +22,12 @@ import {
   FaUser,
   FaFileAlt,
   FaCalendarCheck,
-  FaClipboardList
+  FaClipboardList,
 } from "react-icons/fa";
 import { ArrowRepeat, Search } from "react-bootstrap-icons";
 import { useLocation } from "react-router-dom";
 import DataCard from "./DataCard";
+import CerrarSesion from "./CierraSesion";
 
 function OffcanvasExample() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,6 +38,8 @@ function OffcanvasExample() {
   const [errorMessage, setErrorMessage] = useState("");
   const { state: responseData } = useLocation(); // Use useLocation to receive responseData
   console.log("Datos usuario", responseData);
+  const [user, setUser] = useState(""); // Estado para el usuario
+  const [password, setPassword] = useState(""); // Estado para la contraseña
 
   const token = responseData?.ejecutivo?.token; // Use the token from responseData
   const nombreEjecutivo =
@@ -56,8 +59,8 @@ function OffcanvasExample() {
         {
           params: { filtro: filter },
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
       console.log("Response for filter:", response.data);
@@ -74,8 +77,8 @@ function OffcanvasExample() {
         {
           params: { filtro: filter, ValorBusqueda: searchTerm },
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
       console.log("Response for search term:", response.data);
@@ -176,8 +179,8 @@ function OffcanvasExample() {
             {
               params: { filtro: filter, ValorBusqueda: value },
               headers: {
-                Authorization: `Bearer ${token}`
-              }
+                Authorization: `Bearer ${token}`,
+              },
             }
           );
           console.log(
@@ -286,7 +289,7 @@ function OffcanvasExample() {
             top: "0",
             position: "fixed",
             left: "0",
-            zIndex: "1000"
+            zIndex: "1000",
           }}
         >
           <Container fluid className="justify-content-between">
@@ -313,7 +316,7 @@ function OffcanvasExample() {
                 justifyContent: "center",
                 alignItems: "center",
                 marginLeft: "auto",
-                marginRight: "auto"
+                marginRight: "auto",
               }}
               onSubmit={(e) => {
                 e.preventDefault();
@@ -326,7 +329,7 @@ function OffcanvasExample() {
                     width: "100%",
                     backgroundColor: "white",
                     paddingLeft: "35px", // Ajustar para que el texto no cubra el icono
-                    color: "black"
+                    color: "black",
                   }}
                   type="search"
                   placeholder="Buscar"
@@ -346,7 +349,7 @@ function OffcanvasExample() {
                     top: "50%",
                     transform: "translateY(-50%)",
                     color: "black",
-                    pointerEvents: "none" // Para que no bloquee la entrada de texto
+                    pointerEvents: "none", // Para que no bloquee la entrada de texto
                   }}
                 />
                 {errorMessage && (
@@ -356,7 +359,7 @@ function OffcanvasExample() {
                       position: "absolute",
                       top: "100%",
                       left: "0",
-                      width: "100%"
+                      width: "100%",
                     }}
                   >
                     {errorMessage}
@@ -374,7 +377,7 @@ function OffcanvasExample() {
                       border: "1px solid #ddd",
                       maxHeight: "300px",
                       overflowY: "auto",
-                      zIndex: 1000
+                      zIndex: 1000,
                     }}
                   >
                     {suggestions.map((suggestion, index) => (
@@ -434,7 +437,7 @@ function OffcanvasExample() {
                 justifyContent: "center",
                 alignItems: "center",
                 marginRight: "10px",
-                gap: "5px"
+                gap: "5px",
               }}
             >
               <Col>
@@ -476,12 +479,11 @@ function OffcanvasExample() {
                   <Nav.Link href="/home">
                     <h5>Inicio</h5>
                   </Nav.Link>
-                  <Nav.Link href="/maintenance">
+                  <Nav.Link href="/managment">
                     <h5>Gestion</h5>
                   </Nav.Link>
-                  <Nav.Link href="/login">
-                    <h5>Cerrar Sesion</h5>
-                  </Nav.Link>
+                  <CerrarSesion setUser={setUser} setPassword={setPassword} />
+                  {/* se agregar el apartadp cioerrasesion */}
                   <br />
                   <div style={{ bottom: "0" }}>
                     <span>Grupo Consorcio</span>
