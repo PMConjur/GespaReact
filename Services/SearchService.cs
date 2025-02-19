@@ -66,28 +66,7 @@ namespace NoriAPI.Services
 
             return new ResultadoBusqueda(mensaje, listaBusquedaInfo);
 
-        }
-
-        public async Task<ResultadoProductividad> ValidateProductividad(int NumEmpeado)
-        {
-            string mensaje = null;
-
-            var validateProductividad = await _searchRepository.ValidateProductividad(NumEmpeado);
-
-            if (validateProductividad == null)
-            {
-                mensaje = "No se encontro informacion";
-                var resultadoProductividad = new ResultadoProductividad(mensaje);
-                return resultadoProductividad;
-            }
-            else
-            {
-                var resultadoProductividad = new ResultadoProductividad(mensaje);
-                return resultadoProductividad;
-            }
-
-        }
-
+        }        
         public async Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado)
         {
             string mensaje = null;
@@ -104,7 +83,6 @@ namespace NoriAPI.Services
             var resultadoAutomatico = new ResultadoAutomatico(mensaje, automatico);
             return resultadoAutomatico;
         }
-
         private static BusquedaInfo MapToInfoBusqueda(IDictionary<string, object> busq)
         {
             var busqueda = new BusquedaInfo();
@@ -136,7 +114,6 @@ namespace NoriAPI.Services
             return busqueda;
 
         }
-
         private static AutomaticoInfo MapInfoAutomatico(IDictionary<string, object> auto)
         {
             var automatico = new AutomaticoInfo();
@@ -153,8 +130,30 @@ namespace NoriAPI.Services
             return automatico;
         }
 
+        #region Productividad
 
-   
+        public async Task<ResultadoProductividad> ValidateProductividad(int NumEmpleado)
+        {
+            string mensaje = null;
+
+            var validateProductividad = await _searchRepository.ValidateProductividad(NumEmpleado);
+
+            if (validateProductividad == null)
+            {
+                mensaje = "No se encontro informacion";
+                var resultadoProductividad = new ResultadoProductividad(mensaje);
+                return resultadoProductividad;
+            }
+            else
+            {
+                var resultadoProductividad = new ResultadoProductividad(mensaje);
+                return resultadoProductividad;
+            }
+
+        }
+
+
+        #endregion
 
     }
 }
