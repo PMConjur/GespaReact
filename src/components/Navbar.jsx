@@ -22,12 +22,13 @@ import {
   FaUser,
   FaFileAlt,
   FaCalendarCheck,
-  FaClipboardList,
+  FaClipboardList
 } from "react-icons/fa";
 import { ArrowRepeat, Search } from "react-bootstrap-icons";
 import { useLocation } from "react-router-dom";
 import DataCard from "./DataCard";
 import CerrarSesion from "./CierraSesion";
+import { toast, Toaster } from "sonner"; // Import toast and Toaster
 
 function OffcanvasExample() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,7 +37,9 @@ function OffcanvasExample() {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const { state: responseData } = useLocation(); // Use useLocation to receive responseData
+  const location = useLocation();
+  const responseData =
+    location.state || JSON.parse(localStorage.getItem("responseData")); // Retrieve responseData from localStorage if not in location state
   console.log("Datos usuario", responseData);
   const [user, setUser] = useState(""); // Estado para el usuario
   const [password, setPassword] = useState(""); // Estado para la contraseña
@@ -59,14 +62,15 @@ function OffcanvasExample() {
         {
           params: { filtro: filter },
           headers: {
-            Authorization: `Bearer ${token}`,
-          },
+            Authorization: `Bearer ${token}`
+          }
         }
       );
       console.log("Response for filter:", response.data);
       setSearchResults(response.data.listaResultados || []);
     } catch (error) {
       console.error("Error fetching filter data:", error);
+      toast.error("Error al obtener datos del filtro");
     }
   };
 
@@ -77,14 +81,15 @@ function OffcanvasExample() {
         {
           params: { filtro: filter, ValorBusqueda: searchTerm },
           headers: {
-            Authorization: `Bearer ${token}`,
-          },
+            Authorization: `Bearer ${token}`
+          }
         }
       );
       console.log("Response for search term:", response.data);
       setSearchResults(response.data.listaResultados || []);
     } catch (error) {
       console.error("Error fetching search results:", error);
+      toast.error("Error al obtener resultados de búsqueda");
     }
   };
 
@@ -179,8 +184,8 @@ function OffcanvasExample() {
             {
               params: { filtro: filter, ValorBusqueda: value },
               headers: {
-                Authorization: `Bearer ${token}`,
-              },
+                Authorization: `Bearer ${token}`
+              }
             }
           );
           console.log(
@@ -192,6 +197,7 @@ function OffcanvasExample() {
         } catch (error) {
           console.error("Error fetching suggestions:", error);
           setShowSuggestions(false);
+          toast.error("Error al obtener sugerencias");
         }
       } else {
         setSuggestions([]);
@@ -209,47 +215,51 @@ function OffcanvasExample() {
     setShowSuggestions(false);
   };
 
-
   const handleAutomaticSearch = async () => {
     if (!idEjecutivo) {
       console.error("ID del ejecutivo no disponible");
+      toast.error("ID del ejecutivo no disponible");
       return;
     }
-  
-    if (typeof idEjecutivo !== 'number' && typeof idEjecutivo !== 'string') {
+
+    if (typeof idEjecutivo !== "number" && typeof idEjecutivo !== "string") {
       console.error("ID del ejecutivo no es un número o una cadena válida");
+      toast.error("ID del ejecutivo no es un número o una cadena válida");
       return;
     }
-  
+
     try {
       // Obtener la cuenta asociada al ejecutivo
       const responseEjecutivo = await axios.get(
         `http://192.168.7.33/api/search-customer/automatico-ejecutivo?numEmpleado=${idEjecutivo}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-  
+
       console.log("Response for automatic ejecutivo:", responseEjecutivo.data);
-  
+
       // Extraer idCuenta asegurándonos de eliminar espacios en blanco
       const idCuenta = responseEjecutivo.data.idCuenta?.trim();
-      
+
       if (!idCuenta) {
-        console.warn("idCuenta es nulo o indefinido en la respuesta del ejecutivo");
+        console.warn(
+          "idCuenta es nulo o indefinido en la respuesta del ejecutivo"
+        );
         setSearchResults([]);
+        toast.warning("No está asignado a ninguna campaña");
         return;
       }
-  
+
       // Obtener la información de la cuenta
       const responseCuenta = await axios.get(
         "http://192.168.7.33/api/search-customer/busqueda-cuenta",
         {
           params: { filtro: "Cuenta", ValorBusqueda: idCuenta },
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}` }
         }
       );
-  
+
       console.log("Response for account search:", responseCuenta.data);
-  
+
       // Validar que la respuesta contenga listaResultados con al menos un elemento
       const listaResultados = responseCuenta.data.listaResultados;
       if (Array.isArray(listaResultados) && listaResultados.length > 0) {
@@ -257,24 +267,29 @@ function OffcanvasExample() {
       } else {
         console.warn("No se encontraron resultados en la búsqueda de cuenta");
         setSearchResults([]);
+        toast.warning("No se encontraron resultados en la búsqueda de cuenta");
       }
     } catch (error) {
       if (error.response) {
         console.error("Error en la búsqueda automática:", error.response.data);
-        alert(`Error: ${error.response.data.errors}`);
+        toast.error(`Error: ${error.response.data.errors}`);
       } else if (error.request) {
         console.error("No se recibió respuesta del servidor:", error.request);
-        alert("No se recibió respuesta del servidor. Por favor, intente nuevamente.");
+        toast.error(
+          "No se recibió respuesta del servidor. Por favor, intente nuevamente."
+        );
       } else {
-        console.error("Error en la configuración de la solicitud:", error.message);
-        alert(`Error en la configuración de la solicitud: ${error.message}`);
+        console.error(
+          "Error en la configuración de la solicitud:",
+          error.message
+        );
+        toast.error(
+          `Error en la configuración de la solicitud: ${error.message}`
+        );
       }
     }
   };
-  
-  
 
-  
   return (
     <>
       {[false].map((expand) => (
@@ -289,7 +304,7 @@ function OffcanvasExample() {
             top: "0",
             position: "fixed",
             left: "0",
-            zIndex: "1000",
+            zIndex: "1000"
           }}
         >
           <Container fluid className="justify-content-between">
@@ -304,7 +319,6 @@ function OffcanvasExample() {
               className="d-none d-md-block"
             >
               <h3>GespaWeb</h3>
-              
             </Navbar.Brand>
 
             <form
@@ -316,7 +330,7 @@ function OffcanvasExample() {
                 justifyContent: "center",
                 alignItems: "center",
                 marginLeft: "auto",
-                marginRight: "auto",
+                marginRight: "auto"
               }}
               onSubmit={(e) => {
                 e.preventDefault();
@@ -329,7 +343,7 @@ function OffcanvasExample() {
                     width: "100%",
                     backgroundColor: "white",
                     paddingLeft: "35px", // Ajustar para que el texto no cubra el icono
-                    color: "black",
+                    color: "black"
                   }}
                   type="search"
                   placeholder="Buscar"
@@ -349,7 +363,7 @@ function OffcanvasExample() {
                     top: "50%",
                     transform: "translateY(-50%)",
                     color: "black",
-                    pointerEvents: "none", // Para que no bloquee la entrada de texto
+                    pointerEvents: "none" // Para que no bloquee la entrada de texto
                   }}
                 />
                 {errorMessage && (
@@ -359,7 +373,7 @@ function OffcanvasExample() {
                       position: "absolute",
                       top: "100%",
                       left: "0",
-                      width: "100%",
+                      width: "100%"
                     }}
                   >
                     {errorMessage}
@@ -377,7 +391,7 @@ function OffcanvasExample() {
                       border: "1px solid #ddd",
                       maxHeight: "300px",
                       overflowY: "auto",
-                      zIndex: 1000,
+                      zIndex: 1000
                     }}
                   >
                     {suggestions.map((suggestion, index) => (
@@ -417,14 +431,14 @@ function OffcanvasExample() {
                 </NavDropdown>
               </Button>
               <Button
-        className="d-none d-md-block"
-        variant="primary"
-        type="button"
-        onClick={handleAutomaticSearch} // Llamar a la nueva función
-      >
-        <ArrowRepeat />
-        <span>Automático ({idEjecutivo})</span>
-      </Button>
+                className="d-none d-md-block"
+                variant="primary"
+                type="button"
+                onClick={handleAutomaticSearch} // Llamar a la nueva función
+              >
+                <ArrowRepeat />
+                <span>Automático ({idEjecutivo})</span>
+              </Button>
             </form>
 
             <Dropdown
@@ -437,7 +451,7 @@ function OffcanvasExample() {
                 justifyContent: "center",
                 alignItems: "center",
                 marginRight: "10px",
-                gap: "5px",
+                gap: "5px"
               }}
             >
               <Col>
@@ -591,7 +605,8 @@ function OffcanvasExample() {
           ))}
         </Container>
       )}
-      <DataCard/>
+
+      <Toaster position="top-right" richColors reverseOrder={false} />
     </>
   );
 }

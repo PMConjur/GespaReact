@@ -1,6 +1,7 @@
 import Navbar from "../components/Navbar";
 import DataCard from "../components/DataCard";
 import Flow from "../components/Flow";
+import Telephones from "../components/Telephones";
 import InformationClient from "../components/InformationClient";
 import { Row, Col, Container } from "react-bootstrap";
 
@@ -34,6 +35,7 @@ const Managment = () => {
               <Row>
                 <Col xs={12} md={8}>
                   <h1>Telefonos</h1>
+                  <Telephones />
                 </Col>
                 <Col xs={12} md={4}>
                   <h1>Calculadora</h1>

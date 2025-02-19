@@ -1,4 +1,3 @@
-import React from "react";
 import Navbar from "../components/Navbar";
 import Maintenance from "../assets/img/maintenance.png";
 import Home1 from "../assets/img/user.svg";

@@ -6,7 +6,7 @@ import {
   Container,
   InputGroup,
   Row,
-
+  Image
 } from "react-bootstrap";
 import { toast, Toaster } from "sonner"; // Import the toast and Toaster components
 import axios from "axios"; // Import axios for API calls
@@ -14,8 +14,8 @@ import { PersonFillLock, KeyFill } from "react-bootstrap-icons";
 import "../index.css";
 import ModalChange from "../components/ModalChange"; // Import ModalChange component
 import ModalChangePassword from "../components/ModalChangePassword"; // Import ModalChangePassword component
-import Image from "react-bootstrap/Image";
 import logo from "../assets/img/logo-login.png";
+
 function Login() {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
@@ -73,6 +73,7 @@ function Login() {
 
         // Store the response data
         setResponseData(response.data);
+        localStorage.setItem("responseData", JSON.stringify(response.data)); // Save response data to localStorage
       }
     } catch (error) {
       console.error("There was a problem with the axios operation:", error);
