@@ -2,8 +2,8 @@ import React from "react";
 import Navbar from "../components/Navbar";
 import Maintenance from "../assets/img/maintenance.png";
 import Home1 from "../assets/img/user.svg";
-import SearchCustomer from "../components/SearchCustomer";
-import { fetchData } from '../js/apiAuto'; // Importa la función fetchData
+//import SearchCustomer from "../components/SearchCustomer";
+//import { fetchData } from '../js/apiAuto'; // Importa la función fetchData
 import { useState } from "react";
 
 const Home = () => {
@@ -18,7 +18,7 @@ const Home = () => {
   return (
     <>
     <Navbar handleFetchData={handleFetchData} loading={loading} />
-    <SearchCustomer data={data} loading={loading} error={error} />
+    {/*<SearchCustomer data={data} loading={loading} error={error} />*/}
     
     <main id="main"  data-bs-theme="dark">
         <div className="jumbotron"  style={{marginTop: "60px"}}>

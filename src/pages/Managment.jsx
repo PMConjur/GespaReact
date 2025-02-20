@@ -4,16 +4,22 @@ import Flow from "../components/Flow";
 import InformationClient from "../components/InformationClient";
 import { Row, Col } from "react-bootstrap";
 
+
 const Managment = () => {
+ 
+
+
   return (
     <>
       <Navbar />
       <Row>
         <Col xs={12} md={12}>
           <h1>Productividad / Recuperación / Tiempos/ Simulador</h1>
+        
+      <h2>Gestión de Productos</h2>
         </Col>
         <Col xs={12} md={12}>
-          <h1>Informacion Deudor</h1>
+       
         </Col>
         <Col xs={12} md={12}>
           <DataCard />

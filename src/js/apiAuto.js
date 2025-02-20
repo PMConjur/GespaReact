@@ -1,44 +1,84 @@
-import axios from 'axios';
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { useLocation } from "react-router-dom";
+const useSearchResults = () => {
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState("Cuenta");
+  const { state: responseData } = useLocation();
+  const token = responseData?.ejecutivo?.token;
+  const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
 
+  useEffect(() => {
+    if (filter && !searchTerm) {
+      fetchFilterData(filter);
+    }
+  }, [filter]);
 
-export const fetchData = async (token, setData, setLoading, setError) => {
+  const fetchFilterData = async (filter) => {
+    try {
+      const response = await axios.get(
+        "http://192.168.7.33/api/search-customer/busqueda-cuenta",
+        {
+          params: { filtro: filter },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setSearchResults(response.data.listaResultados || []);
+    } catch (error) {
+      console.error("Error fetching filter data:", error);
+    }
+  };
 
+  const handleSearch = async () => {
+    try {
+      const response = await axios.get(
+        "http://192.168.7.33/api/search-customer/busqueda-cuenta",
+        {
+          params: { filtro: filter, ValorBusqueda: searchTerm },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setSearchResults(response.data.listaResultados || []);
+    } catch (error) {
+      console.error("Error fetching search results:", error);
+    }
+  };
 
- 
-  try {
-    const response = await axios.get(
-      'http://192.168.7.33/api/search-customer/automatico-ejecutivo',
-      {
-        headers: {
-          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCR1JIIiwianRpIjoiMTgxNzMwMTYtYmM5ZS00NzNiLWFlNDEtZmUxZGZiNmIxOGJlIiwiVXN1YXJpbyI6IkJHUkgiLCJleHAiOjE3Mzk5MjAwOTAsImlzcyI6IjE5Mi4xNjguNy4zMyIsImF1ZCI6IjE5Mi4xNjguNS4zOCJ9.rCIy6gTIWWTB_iqaNHIrvikmWSuLPKcoT7Lzv8K8AZM`,
-        },
-      }
-    );
+  const handleAutomaticSearch = async () => {
+    if (!idEjecutivo) return;
+    try {
+      const responseEjecutivo = await axios.get(
+        `http://192.168.7.33/api/search-customer/automatico-ejecutivo?numEmpleado=${idEjecutivo}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    console.log('Respuesta completa:', response.data);
-    setData(response.data);
-  } catch (error) {
-    console.error('Error en la solicitud:', error);
-    setError(error.response?.data?.message || 'Error al obtener los datos');
-  } finally {
-    setLoading(false);
-  }
+      const idCuenta = responseEjecutivo.data.idCuenta?.trim();
+      if (!idCuenta) return;
+
+      const responseCuenta = await axios.get(
+        "http://192.168.7.33/api/search-customer/busqueda-cuenta",
+        {
+          params: { filtro: "Cuenta", ValorBusqueda: idCuenta },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setSearchResults(responseCuenta.data.listaResultados || []);
+    } catch (error) {
+      console.error("Error en la búsqueda automática:", error);
+    }
+  };
+
+  return {
+    searchResults,
+    handleSearch,
+    handleAutomaticSearch,
+    searchTerm,
+    setSearchTerm,
+    filter,
+    setFilter,
+  };
 };
 
-
-export const handleAcount = async () => {
-  
-  try {
-    const response = await axios.get('http://192.168.7.33/api/search-customer/busqueda-cuenta', {
-    
-      params: { filtro: idCuenta},
-      headers: {
-        Authorization:  `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJCR1JIIiwianRpIjoiMTgxNzMwMTYtYmM5ZS00NzNiLWFlNDEtZmUxZGZiNmIxOGJlIiwiVXN1YXJpbyI6IkJHUkgiLCJleHAiOjE3Mzk5MjAwOTAsImlzcyI6IjE5Mi4xNjguNy4zMyIsImF1ZCI6IjE5Mi4xNjguNS4zOCJ9.rCIy6gTIWWTB_iqaNHIrvikmWSuLPKcoT7Lzv8K8AZM`,
-      },
-    });
-    console.log('Response for search term:', response.data);
-    setSearchResults(response.data.listaResultados || []);
-  } catch (error) {
-    console.error('Error fetching search results:', error);
-  }
-};
+export default useSearchResults;
