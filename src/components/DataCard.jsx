@@ -6,7 +6,7 @@ import "../scss/styles.scss";
 const DataCard = () => {
   return (
     <Row className="dashboard">
-      <Col xs={12} md={3}>
+      <Col xxl={3} xl={6} md={6}>
         <Card
           className="warning-card text-light"
           style={{ backgroundColor: "#1d1f20" }}
@@ -37,7 +37,7 @@ const DataCard = () => {
         <br />
       </Col>
 
-      <Col xs={12} md={3}>
+      <Col xxl={3} xl={6} md={6}>
         <Card
           className="warning-card text-light"
           style={{ backgroundColor: "#1d1f20" }}
@@ -65,7 +65,7 @@ const DataCard = () => {
         </Card>
         <br />
       </Col>
-      <Col xs={12} md={3}>
+      <Col xxl={3} xl={6} md={6}>
         <Card
           className="warning-card text-light"
           style={{ backgroundColor: "#1d1f20" }}
@@ -95,7 +95,7 @@ const DataCard = () => {
         </Card>
         <br />
       </Col>
-      <Col xs={12} md={3}>
+      <Col xxl={3} xl={6} md={6}>
         <Card
           className="warning-card text-light"
           style={{ backgroundColor: "#1d1f20" }}

@@ -51,7 +51,7 @@ const SearchForm = ({
           </div>
         )}
       </div>
-
+       
       <Button variant="light">
         <NavDropdown title={`Seleccionar filtro: ${filter}`} id="filter-dropdown" onSelect={handleFilterSelect}>
           {["Cuenta", "Nombre", "RFC", "Numero de cliente", "Telefono", "Expediente"].map((item) => (

@@ -10,7 +10,9 @@ import {
 
 const SearchCustomer = ({ searchResults }) => {
   return (
+    
     <Container fluid className="mt-3">
+      <br />
       {searchResults.map((result, index) => (
         <Card key={index} className="mb-3 custom-card mt-5 bg-dark">
           <Card.Body>

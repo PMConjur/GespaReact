@@ -4,35 +4,20 @@ import Flow from "../components/Flow";
 import Telephones from "../components/Telephones";
 import InformationClient from "../components/InformationClient";
 import { Row, Col, Container } from "react-bootstrap";
-
+import DebtorInformation from "../components/DebtorInformation";
 
 const Managment = () => {
- 
-
-
   return (
     <>
-      <Navbar />
-      
-      <Row> 
-        
-        <Col xs={12} md={12}>
-          <h1>Productividad / Recuperación / Tiempos/ Simulador</h1>
-        
-      <h2>Gestión de Productos</h2>
-        </Col>
-        <Col xs={12} md={12}>
-       
-        </Col>
-        <Col xs={12} md={12}>
-          <DataCard />
-        </Col>
-        <Col xs={12} md={12}>
-        </Col>
+      <section>
+        <Navbar />
+
+        <Container fluid className="responsive">
           <Row>
             <Col xs={12} md={12}>
-              <h1>Productividad / Recuperación / Tiempos/ Simulador</h1>
+              <DebtorInformation />
             </Col>
+
             <Col xs={12} md={12}>
               <h1>Informacion Deudor</h1>
             </Col>
@@ -77,11 +62,9 @@ const Managment = () => {
               </Row>
             </Col>
           </Row>
-          
-   
-          </Row>
+        </Container>
+      </section>
     </>
-    
   );
 };
 

@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import NavbarComponent from "./NavbarComponent";
-import DebtorInformation from "./DebtorInformation";
-import DataCard from "./DataCard";
 import SearchCustomer from "./SearchCustomer";
 import { toast, Toaster } from "sonner";
 
@@ -16,7 +14,9 @@ function OffcanvasExample() {
   const [errorMessage, setErrorMessage] = useState("");
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
-  const { state: responseData } = useLocation();
+
+  const responseData =
+    location.state || JSON.parse(localStorage.getItem("responseData")); // Retrieve responseData from localStorage if not in location state
   const [showToast, setShowToast] = useState(false);
   const [telefono, setTelefono] = useState("");
 
@@ -204,15 +204,11 @@ function OffcanvasExample() {
         setPassword={setPassword}
       />
 
-      <DebtorInformation />
-
       {searchResults.length > 0 && (
         <SearchCustomer searchResults={searchResults} />
       )}
       {/* Toast para mostrar el número de teléfono */}
       <Toaster richColors position="top-right" />
-
-      <DataCard />
     </>
   );
 }
