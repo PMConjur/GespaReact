@@ -1,3 +1,36 @@
+$card-bg: #f8f9fa;
+$card-border-width: 0;
+$card-border-radius: 1rem;
+$card-cap-bg: transparent;
+$card-spacer-y: 1.5rem;
+$card-spacer-x: 2rem;
+
+.card {
+  margin-bottom: 30px;
+  border: #aeb6bf;
+  border-radius: 5px;
+  
+  word-wrap: break-word;
+  transition: transform 0.3s ease;
+  overflow-x: auto;
+  max-width: 100%;
+  padding: 5px;
+  background-color: #1d1f20;
+
+  &:hover {
+    transform: translateY(-10px);
+  }
+
+  .card-title {
+    padding: 20px 0 15px 0;
+    font-size: 17px;
+    font-weight: 500;
+    color: #ffffff;
+    font-family: "Poppins", sans-serif;
+    /* padding: 10px; */
+  }
+}
+
 .sidebar {
   transition: all 0.3s ease-in-out;
   width: 250px;
@@ -86,21 +119,17 @@
   max-width: 100%;
   padding: 5px;
   background-color: #1d1f20;
-}
-.card-body {
-  padding: 0 10px 10px 10px;
-  background-color: #1d1f20;
-}
-
-.card {
-  overflow-x: auto;
-  max-width: 100%;
-  padding: 5px;
-  background-color: #1d1f20;
+  border-radius: 25px;
 }
 
 #main {
   margin-top: 60px;
   padding: 20px 30px;
   transition: all 0.3s;
+}
+
+.card-body-custom {
+  padding: 0 10px 10px 10px;
+  background-color: #1d1f20;
+  border-radius: 25px;
 }

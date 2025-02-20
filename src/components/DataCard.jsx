@@ -1,10 +1,11 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Card, Row, Col } from "react-bootstrap";
 import { PersonFill, Cash, CurrencyDollar } from "react-bootstrap-icons";
+import "../scss/styles.scss";
 
 const DataCard = () => {
   return (
-    <Row>
+    <Row className="dashboard">
       <Col xs={12} md={3}>
         <Card
           className="warning-card text-light"
@@ -13,10 +14,7 @@ const DataCard = () => {
           <Card.Body>
             <Card.Title>Nombre:</Card.Title>
             <div className="d-flex align-items-center">
-              <div
-                className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light"
-                style={{ width: "70px", height: "70px" }}
-              >
+              <div className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light">
                 <PersonFill
                   style={{ fontSize: "32px", color: "#55b0d5" }}
                 ></PersonFill>
@@ -36,7 +34,9 @@ const DataCard = () => {
             </div>
           </Card.Body>
         </Card>
+        <br />
       </Col>
+
       <Col xs={12} md={3}>
         <Card
           className="warning-card text-light"
@@ -45,10 +45,7 @@ const DataCard = () => {
           <Card.Body>
             <Card.Title>Saldo Actual:</Card.Title>
             <div className="d-flex align-items-center">
-              <div
-                className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light"
-                style={{ width: "70px", height: "70px" }}
-              >
+              <div className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light">
                 <Cash style={{ fontSize: "32px", color: "#65f3a3" }}></Cash>
               </div>
               <div className="ps-3">
@@ -66,6 +63,7 @@ const DataCard = () => {
             </div>
           </Card.Body>
         </Card>
+        <br />
       </Col>
       <Col xs={12} md={3}>
         <Card
@@ -75,10 +73,7 @@ const DataCard = () => {
           <Card.Body>
             <Card.Title>Mínimo Mas Atrasado:</Card.Title>
             <div className="d-flex align-items-center">
-              <div
-                className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light"
-                style={{ width: "70px", height: "70px" }}
-              >
+              <div className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light">
                 <CurrencyDollar
                   style={{ fontSize: "32px", color: "#f1a441" }}
                 ></CurrencyDollar>
@@ -98,6 +93,7 @@ const DataCard = () => {
             </div>
           </Card.Body>
         </Card>
+        <br />
       </Col>
       <Col xs={12} md={3}>
         <Card
@@ -107,10 +103,7 @@ const DataCard = () => {
           <Card.Body>
             <Card.Title>Situación:</Card.Title>
             <div className="d-flex align-items-center">
-              <div
-                className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light"
-                style={{ width: "70px", height: "70px" }}
-              >
+              <div className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light">
                 <CurrencyDollar
                   style={{ fontSize: "32px", color: "#f14b41" }}
                 ></CurrencyDollar>
@@ -130,6 +123,7 @@ const DataCard = () => {
             </div>
           </Card.Body>
         </Card>
+        <br />
       </Col>
     </Row>
   );
