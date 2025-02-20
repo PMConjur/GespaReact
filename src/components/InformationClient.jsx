@@ -4,7 +4,7 @@ const InformationClient = () => {
     <Card className="overflow-auto bg-dark">
       <Card.Body>
         <h5 className="card-title text-white">Información</h5>
-        <Table striped bordered responsive="sm" variant="dark">
+        <Table hover className="table table-borderless" responsive="sm" variant="dark">
           <tbody>
             {[
               [

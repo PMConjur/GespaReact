@@ -1,6 +1,7 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Card, Row, Col } from "react-bootstrap";
 import { PersonFill, Cash, CurrencyDollar } from "react-bootstrap-icons";
+import "../scss/styles.scss";
 
 const DataCard = () => {
   return (

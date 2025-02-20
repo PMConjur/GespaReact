@@ -26,7 +26,6 @@ import {
 } from "react-icons/fa";
 import { ArrowRepeat, Search } from "react-bootstrap-icons";
 import { useLocation } from "react-router-dom";
-import DataCard from "./DataCard";
 import CerrarSesion from "./CierraSesion";
 import { toast, Toaster } from "sonner"; // Import toast and Toaster
 
