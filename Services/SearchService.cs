@@ -7,6 +7,7 @@ using NoriAPI.Models.Login;
 using System.Threading.Tasks;
 using NoriAPI.Models.Busqueda;
 using System.Linq;
+using NoriAPI.Models.Ejecutivo;
 
 namespace NoriAPI.Services
 {
@@ -14,7 +15,6 @@ namespace NoriAPI.Services
     {
         Task<ResultadoBusqueda> ValidateBusqueda(string filtro, string ValorBusqueda);
         Task<ResultadoProductividad> ValidateProductividad(int NumEmpleado);
-
     }
 
 
@@ -119,6 +119,7 @@ namespace NoriAPI.Services
             return busqueda;
 
         }
+
 
     }
 }
