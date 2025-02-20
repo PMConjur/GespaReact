@@ -22,6 +22,7 @@ namespace NoriAPI.Repositories
 
     public class SearchRepository : ISearchRepository
     {
+        #region Metodos_Productividad
         static string[] _NombreColumnasConteos = { "Titulares", "Conocidos", "Desconocidos", "SinContacto" };
         public static DataTable Cuentas;
         public static DataTable Tiempos;
@@ -32,6 +33,10 @@ namespace NoriAPI.Repositories
         static ArrayList _alNombreId;
         static Hashtable _htValoresCatálogo;
         static Hashtable _htNombreId;
+
+        #endregion
+
+
 
         private readonly IConfiguration _configuration;
         public SearchRepository(IConfiguration configuration)
@@ -311,10 +316,6 @@ namespace NoriAPI.Repositories
             ConteosGestiones();
 
             return Conteos;
-
-
-
-
         }     
         
         private static DataTable ConvertToDataTable(IEnumerable<dynamic> data, string tableName)
@@ -511,10 +512,7 @@ namespace NoriAPI.Repositories
             // Tiempos            
             return sNombreColumna;
         }
-
-        
-
-
+       
         #endregion
 
     }

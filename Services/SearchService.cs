@@ -7,6 +7,7 @@ using NoriAPI.Models.Login;
 using System.Threading.Tasks;
 using NoriAPI.Models.Busqueda;
 using System.Linq;
+using System.Data;
 
 namespace NoriAPI.Services
 {
@@ -16,8 +17,6 @@ namespace NoriAPI.Services
         Task<ResultadoProductividad> ValidateProductividad(int NumEmpleado);
         Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado);
     }
-
-
     public class SearchService : ISearchService
     {
 
@@ -82,7 +81,7 @@ namespace NoriAPI.Services
             var automatico = MapInfoAutomatico(dict);
             var resultadoAutomatico = new ResultadoAutomatico(mensaje, automatico);
             return resultadoAutomatico;
-        }
+        }        
         private static BusquedaInfo MapToInfoBusqueda(IDictionary<string, object> busq)
         {
             var busqueda = new BusquedaInfo();
@@ -129,31 +128,66 @@ namespace NoriAPI.Services
 
             return automatico;
         }
+        
 
         #region Productividad
-
         public async Task<ResultadoProductividad> ValidateProductividad(int NumEmpleado)
         {
             string mensaje = null;
 
-            var validateProductividad = await _searchRepository.ValidateProductividad(NumEmpleado);
+            var productividadInfo = await _searchRepository.ValidateProductividad(NumEmpleado);
+            //var prod = (IDictionary<string, object>)productividadInfo;
+            // Convertir productividadInfo a DataTable
+            DataTable dt = (DataTable)productividadInfo;
 
-            if (validateProductividad == null)
-            {
-                mensaje = "No se encontro informacion";
-                var resultadoProductividad = new ResultadoProductividad(mensaje);
-                return resultadoProductividad;
-            }
-            else
-            {
-                var resultadoProductividad = new ResultadoProductividad(mensaje);
-                return resultadoProductividad;
-            }
+            // Verificar que tenga al menos una fila
+            //if (dt.Rows.Count > 0)
+            //{
+            //    
+            //}
+
+            // Tomar la primera fila y convertirla en un diccionario
+            var prod = dt.Rows[0]
+                .Table.Columns.Cast<DataColumn>()
+                .ToDictionary(col => col.ColumnName, col => dt.Rows[0][col]);
+            // Ahora 'prod' es un Dictionary<string, object> con los valores de la primera fila
+
+            var productividad = MapToInfoProductividad(prod);
+            var resultadoProductividad = new ResultadoProductividad(mensaje, productividad);
+            return resultadoProductividad;
+        }
+        private static ProductividadInfo MapToInfoProductividad(IDictionary<string, object> prod)
+        {
+            var productividad = new ProductividadInfo();
+
+            if (prod.TryGetValue("Negociaciones", out var negociaciones) && negociaciones != null)
+                productividad.Negociaciones = negociaciones.ToString();
+
+            if (prod.TryGetValue("Cuentas", out var cuentas) && cuentas != null)
+                productividad.Cuentas = cuentas.ToString();
+
+            if (prod.TryGetValue("Titulares", out var titulares) && titulares != null)
+                productividad.Titulares = titulares.ToString();
+
+            if (prod.TryGetValue("Conocidos", out var conocidos) && conocidos != null)
+                productividad.Conocidos = conocidos.ToString();
+
+            if (prod.TryGetValue("Desconocidos", out var desconocidos) && desconocidos != null)
+                productividad.Desconocidos = desconocidos.ToString();
+
+            if (prod.TryGetValue("SinContacto", out var sincontacto) && sincontacto != null)
+                productividad.SinContacto = sincontacto.ToString();
+
+            return productividad;
 
         }
 
-
         #endregion
+
+
+
+
+
 
     }
 }

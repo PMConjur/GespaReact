@@ -16,7 +16,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/search-customer")]
-    [Authorize]
+    //[Authorize]
     public class CustomerSearchController : Controller
 
     {
@@ -51,9 +51,9 @@ namespace NoriAPI.Controllers
 
             if(!Productividad.Mensaje.IsNullOrEmpty()) 
             { 
-                return Ok(new { Productividad.Mensaje }); 
+                return Ok(new { Productividad.ProductividadInfo }); 
             }
-            return Ok(new { Productividad.Mensaje });
+            return Ok(new { Productividad.ProductividadInfo });
 
 
         }
