@@ -4,6 +4,8 @@ import Flow from "../components/Flow";
 import Telephones from "../components/Telephones";
 import InformationClient from "../components/InformationClient";
 import { Row, Col, Container } from "react-bootstrap";
+import { Calculator } from "../components/Widgets";
+import { Calendar } from "../components/Widgets";
 
 const Managment = () => {
   return (
@@ -39,6 +41,7 @@ const Managment = () => {
                 </Col>
                 <Col xs={12} md={4}>
                   <h1>Calculadora</h1>
+                  <Calculator></Calculator>
                 </Col>
               </Row>
               <Row>
@@ -47,6 +50,7 @@ const Managment = () => {
                 </Col>
                 <Col xs={12} md={4}>
                   <h1>Calendario</h1>
+                  <Calendar></Calendar>
                 </Col>
               </Row>
               <Row>

@@ -1,13 +1,9 @@
 import Navbar from "../components/Navbar";
 import Maintenance from "../assets/img/maintenance.png";
 import Home1 from "../assets/img/user.svg";
-<<<<<<< HEAD
-import { Calculator, Calendar } from "./Widgets";
-=======
 import SearchCustomer from "../components/SearchCustomer";
 import { fetchData } from '../js/apiAuto'; // Importa la función fetchData
 import { useState } from "react";
->>>>>>> HU4-Cards
 
 const Home = () => {
     const [data, setData] = useState(null);
