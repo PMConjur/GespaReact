@@ -9,7 +9,7 @@ $card-spacer-x: 2rem;
   margin-bottom: 30px;
   border: #aeb6bf;
   border-radius: 5px;
-  
+
   word-wrap: break-word;
   transition: transform 0.3s ease;
   overflow-x: auto;
@@ -18,7 +18,7 @@ $card-spacer-x: 2rem;
   background-color: #1d1f20;
 
   &:hover {
-    transform: translateY(-10px);
+    transform: translateY(-5px);
   }
 
   .card-title {
@@ -61,12 +61,6 @@ $card-spacer-x: 2rem;
 
 .form-select {
   border-radius: "3px";
-}
-
-.custom-card p {
-  margin-bottom: 5px;
-  font-size: 16px;
-  color: #fff; /* Texto blanco */
 }
 
 .custom-card strong {
