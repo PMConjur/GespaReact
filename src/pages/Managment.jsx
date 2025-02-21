@@ -5,7 +5,8 @@ import Telephones from "../components/Telephones";
 import InformationClient from "../components/InformationClient";
 import { Row, Col, Container } from "react-bootstrap";
 import DebtorInformation from "../components/DebtorInformation";
-
+import Calculator from "../components/Calculator";
+import Calendar from "../components/Calendar";
 const Managment = () => {
   return (
     <>
@@ -15,6 +16,7 @@ const Managment = () => {
         <Container fluid className="responsive">
           <Row>
             <Col xs={12} md={12}>
+              <h1>Productividad / Recuperación / Tiempos/ Simulador</h1>
               <DebtorInformation />
             </Col>
 
@@ -42,6 +44,7 @@ const Managment = () => {
                 </Col>
                 <Col xs={12} md={4}>
                   <h1>Calculadora</h1>
+                  <Calculator />
                 </Col>
               </Row>
               <Row>
@@ -50,6 +53,7 @@ const Managment = () => {
                 </Col>
                 <Col xs={12} md={4}>
                   <h1>Calendario</h1>
+                  <Calendar />
                 </Col>
               </Row>
               <Row>

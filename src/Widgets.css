@@ -1,0 +1,13 @@
+.btn:hover {
+  background-color: #777 !important;
+  color: white;
+}
+
+.btn:active {
+  background-color: #888 !important;
+  transform: scale(0.98);
+}
+
+.card {
+  color: #ffffff;
+}
