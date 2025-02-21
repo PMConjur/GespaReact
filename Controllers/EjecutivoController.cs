@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using NoriAPI.Models.Busqueda;
 using NoriAPI.Services;
+using System.Threading.Tasks;
 
 namespace NoriAPI.Controllers
 {
@@ -19,26 +22,17 @@ namespace NoriAPI.Controllers
 
         }
 
-        [HttpGet] // 🔹 Agregar esta anotación
-        public IActionResult Index()
+        [HttpGet("productividad-ejecutivo")]//Endpoint Padrino
+        public async Task<ActionResult<ResultadoProductividad>> Productividad([FromQuery] int numEmpleado)
         {
+            var Productividad = await _ejecutivoService.ValidateProductividad(numEmpleado);
 
-            //*
-            //Cesar 
-            //*//
+            if (!Productividad.Mensaje.IsNullOrEmpty())
+            {
+                return Ok(new { Productividad.ProductividadInfo });
+            }
+            return Ok(new { Productividad.ProductividadInfo });
 
-            /*
-             
-             Yoshi
-             */
-
-
-
-            /*
-             Padrino
-             */
-
-            return Ok("Hola desde EjecutivoController");
         }
 
 
