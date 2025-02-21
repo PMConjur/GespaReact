@@ -12,24 +12,29 @@ namespace NoriAPI.Repositories
 {
     public interface IEjecutivoRepository
     {
-        Task<dynamic> ValidateProductividad(int numEmpleado);
+        //Task<dynamic> ValidateProductividad(int numEmpleado);
+        Task<DataTable> VwCatalogos();
+        Task<DataTable> VwRelaciones();
+        Task<DataTable> TiemposEjecutivo(int numEmpleado);
+        Task<DataTable> MetasEjecutivo(int numEmpleado);
+        Task<DataTable> Gestiones(int numEmpleado);
 
     }
     public class EjecutivoRepository : IEjecutivoRepository
     {
         #region Metodos_Productividad
-        static string[] _NombreColumnasConteos = { "Titulares", "Conocidos", "Desconocidos", "SinContacto" };
-        public static DataTable Cuentas;
-        public static DataTable Tiempos;
-        public static DataTable Metas;
-        public static DataTable GestionesEjecutivo;
-        public static DataTable Conteos;
-        static DataSet _dsTablas = new DataSet();
-        static ArrayList _alNombreId;
-        static Hashtable _htValoresCatálogo;
-        static Hashtable _htNombreId;
-
+        //static string[] _NombreColumnasConteos = { "Titulares", "Conocidos", "Desconocidos", "SinContacto" };
+        //public static DataTable Cuentas;
+        //public static DataTable Tiempos;
+        //public static DataTable Metas;
+        //public static DataTable GestionesEjecutivo;
+        //public static DataTable Conteos;
+        //static DataSet _dsTablas = new DataSet();
+        //static ArrayList _alNombreId;
+        //static Hashtable _htValoresCatálogo;
+        //static Hashtable _htNombreId;
         #endregion
+
         private readonly IConfiguration _configuration;
 
         public EjecutivoRepository(IConfiguration configuration)
@@ -39,6 +44,133 @@ namespace NoriAPI.Repositories
 
 
         #region Productividad
+
+        public async Task<DataTable> VwCatalogos()
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string queryCatalogos = "SELECT * FROM vw_Catálogos";
+            var catalogos = (await connection.QueryAsync<dynamic>(
+                queryCatalogos,
+                commandType: CommandType.Text
+            ));
+
+            return ConvertToDataTable(catalogos, "Catalogos");
+
+        }        
+        
+        
+        public async Task<DataTable> VwRelaciones()
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string queryRelaciones = "SELECT * FROM vw_Relaciones";
+            var relaciones = (await connection.QueryAsync<dynamic>(
+                queryRelaciones,
+                commandType: CommandType.Text
+            ));
+
+            return ConvertToDataTable(relaciones, "Relaciones");
+
+        }
+        
+        public async Task<DataTable> TiemposEjecutivo(int numEmpleado)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string queryTiempos = "[dbMemory].[PS].[TiemposEjecutivo]";
+
+            var parametersT = new
+            {
+                idEjecutivo = numEmpleado
+            };
+            var tiempos = (await connection.QueryAsync<dynamic>(
+                queryTiempos,
+                parametersT,
+                commandType: CommandType.StoredProcedure
+            ));
+
+            return ConvertToDataTable(tiempos, "Tiempos");
+
+        }
+        
+        public async Task<DataTable> MetasEjecutivo(int numEmpleado)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string querysMetas = "SELECT * FROM MetasEjecutivo WHERE idEjecutivo = @IdEjecutivo";
+
+            var parameters = new
+            {
+                IdEjecutivo = numEmpleado
+            };
+
+            var metas = (await connection.QueryAsync<dynamic>(
+                querysMetas,
+                parameters,
+                commandType: CommandType.Text
+            ));
+
+            return ConvertToDataTable(metas, "Metas");
+
+        }       
+        
+        public async Task<DataTable> Gestiones(int numEmpleado)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string queryGestiones = "SELECT * FROM [dbo].[fn_GestionesTelDiaras](@idEjecutivo)";
+
+            var parameters = new
+            {
+                idEjecutivo = numEmpleado
+            };
+
+            var productividad = (await connection.QueryAsync<dynamic>(
+                queryGestiones,
+                parameters,
+                commandType: CommandType.Text
+            ));
+
+            return ConvertToDataTable(productividad, "Productividad");
+
+
+        }
+
+        private static DataTable ConvertToDataTable(IEnumerable<dynamic> data, string tableName)
+        {
+            DataTable table = new DataTable(tableName);
+
+            if (!data.Any())
+                return table; // Retorna tabla vacía si no hay datos
+
+            // 🔹 Crear columnas en el DataTable a partir de las claves del primer elemento
+            foreach (var key in ((IDictionary<string, object>)data.First()).Keys)
+            {
+                table.Columns.Add(key);
+            }
+
+            // 🔹 Agregar las filas al DataTable
+            foreach (var item in data)
+            {
+                var row = table.NewRow();
+                foreach (var key in ((IDictionary<string, object>)item).Keys)
+                {
+                    row[key] = ((IDictionary<string, object>)item)[key] ?? DBNull.Value;
+                }
+                table.Rows.Add(row);
+            }
+
+            return table;
+        }
+
+
+
+
+        #region ProductividadOld
+        /*
+        
+        
         public async Task<dynamic> ValidateProductividad(int numEmpleado)
         {
 
@@ -199,33 +331,8 @@ namespace NoriAPI.Repositories
             return Conteos;
         }
 
-        private static DataTable ConvertToDataTable(IEnumerable<dynamic> data, string tableName)
-        {
-            DataTable table = new DataTable(tableName);
-
-            if (!data.Any())
-                return table; // Retorna tabla vacía si no hay datos
-
-            // 🔹 Crear columnas en el DataTable a partir de las claves del primer elemento
-            foreach (var key in ((IDictionary<string, object>)data.First()).Keys)
-            {
-                table.Columns.Add(key);
-            }
-
-            // 🔹 Agregar las filas al DataTable
-            foreach (var item in data)
-            {
-                var row = table.NewRow();
-                foreach (var key in ((IDictionary<string, object>)item).Keys)
-                {
-                    row[key] = ((IDictionary<string, object>)item)[key] ?? DBNull.Value;
-                }
-                table.Rows.Add(row);
-            }
-
-            return table;
-        }
-        static void ConteosGestiones()
+          
+        public static void ConteosGestiones()
         {
             // Define tabla.
             //DataTable Conteos = new DataTable();
@@ -248,9 +355,6 @@ namespace NoriAPI.Repositories
             Hashtable htContestaciones = Relaciones("Contactos", "Contactos", "No le conoce");
             foreach (DataRow Gestión in GestionesEjecutivo.Rows)
                 ConteoGestión(Gestión, htContestaciones);
-
-
-
 
         }
         private static void CalculaTiempoPromedio(string Conteo)
@@ -384,7 +488,6 @@ namespace NoriAPI.Repositories
 
 
 
-
                 }
 
             }
@@ -392,6 +495,11 @@ namespace NoriAPI.Repositories
             // Tiempos            
             return sNombreColumna;
         }
+
+        */
+        #endregion
+
+
 
         #endregion
 

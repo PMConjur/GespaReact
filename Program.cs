@@ -85,13 +85,11 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IEjecutivoService, EjecutivoService>();
-builder.Services.AddScoped<IEjecutivoServiceRefactor, EjecutivoServiceRefactor>();
 
 // Registramos los Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISearchRepository, SearchRepository>();
 builder.Services.AddScoped<IEjecutivoRepository, EjecutivoRepository>();
-builder.Services.AddScoped<IEjecutivoRepositoryRefactor, EjecutivoRepositoryRefactor>();
 
 
 var app = builder.Build();
