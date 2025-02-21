@@ -1,23 +1,20 @@
 ﻿using Dapper;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using NoriAPI.Models.Busqueda;
-using NoriAPI.Models.Login;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace NoriAPI.Repositories
-{    
+{
     public interface ISearchRepository
     {
         Task<dynamic> ValidateBusqueda(string filtro, string ValorBusqueda);
-
         Task<dynamic> ValidateAutomatico(int numEmpleado);
+        Task<List<Phone>> GetPhones(string idCuenta, int idCartera);
     }
 
     public class SearchRepository : ISearchRepository
@@ -49,8 +46,8 @@ namespace NoriAPI.Repositories
                                     "    	INNER JOIN Productos P ON P.idProducto = C.idProducto \r\n" +
                                     "    	INNER JOIN Carteras CL ON CL.idCartera = C.idCartera \r\n" +
                                     "       INNER JOIN ValoresCatálogo V ON V.idValor = C.idSituación \r\n"
-                                    
-                                    ;            
+
+                                    ;
             switch (filtro)
             {
                 case "Cuenta":
@@ -61,7 +58,7 @@ namespace NoriAPI.Repositories
                 case "Nombre":
                     queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
                     queryBusqueda += " INNER JOIN Nombres N (NOLOCK) ON N.Expediente = C.Expediente ";
-                    
+
                     foreach (string sNombre in ValorBusqueda.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
                         queryBusqueda += " AND CONTAINS( N.NombreDeudor, '" + sNombre.Replace("'", "") + "') ";
                     queryBusqueda += "WHERE CuentaActiva = 1";
@@ -91,16 +88,16 @@ namespace NoriAPI.Repositories
                     break;
 
                 case "Expediente":     //El equipo Front debe validar que no tenga letras
-                                       
+
                     queryBusqueda += " WHERE CuentaActiva = 1 AND CL.Abreviación = '";
                     foreach (char Caracter in ValorBusqueda.Substring(0, 3))
                         if (char.IsLetter(Caracter))
                             queryBusqueda += Caracter;
                     queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
                     //quitar letras cuando se libere a todas las carteras
-                    queryBusqueda += "' AND C.Expediente = " + ValorBusqueda.Replace("AMX", "").Replace("amx", "").Replace(" ", "");                    
+                    queryBusqueda += "' AND C.Expediente = " + ValorBusqueda.Replace("AMX", "").Replace("amx", "").Replace(" ", "");
 
-                    
+
                     break;
 
                 default:
@@ -111,15 +108,15 @@ namespace NoriAPI.Repositories
             if (validacion == "Nombre")
             {
                 var busqueda = (await connection.QueryAsync<dynamic>(queryBusqueda, commandType: CommandType.Text));
-                return busqueda;                
+                return busqueda;
             }
             else
             {
                 var busqueda = (await connection.QueryFirstOrDefaultAsync<dynamic>(queryBusqueda, commandType: CommandType.Text));
                 return busqueda;
-            }                    
+            }
 
-        }        
+        }
         public async Task<dynamic> ValidateAutomatico(int numEmpleado)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -129,14 +126,30 @@ namespace NoriAPI.Repositories
             {
                 idEjecutivo = numEmpleado
             };
-            var Automatico = (await connection.QueryFirstOrDefaultAsync<dynamic>(
+            var automatico = (await connection.QueryFirstOrDefaultAsync<dynamic>(
                 storedAutomatico,
                 parameters,
-                commandType : CommandType.StoredProcedure                
+                commandType: CommandType.StoredProcedure
                 ));
-            return Automatico;
+            return automatico;
 
-        }      
+        }
+
+        public async Task<List<Phone>> GetPhones(string idCuenta, int idCartera)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string phonesQuery = "SELECT * FROM [dbo].[fn_TeléfonosLadasGMT](@idCartera, @idCuenta)";
+
+            var phoneList = await connection.QueryAsync<Phone>(
+                phonesQuery,
+                new { idCartera = idCartera, idCuenta = idCuenta },
+                commandType: CommandType.Text
+                );
+
+            return phoneList.ToList();
+        }
+
         private SqlConnection GetConnection(string connection)
         {
             return new SqlConnection(_configuration.GetConnectionString(connection));

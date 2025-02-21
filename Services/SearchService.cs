@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using NoriAPI.Models.Busqueda;
 using System.Linq;
 using System.Data;
+using Microsoft.AspNetCore.Mvc;
+using System.Numerics;
+using Microsoft.Data.SqlClient;
 
 namespace NoriAPI.Services
 {
@@ -15,6 +18,7 @@ namespace NoriAPI.Services
     {
         Task<ResultadoBusqueda> ValidateBusqueda(string filtro, string ValorBusqueda);
         Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado);
+        Task<List<Phone>> FetchPhones(string idCuenta);
     }
     public class SearchService : ISearchService
     {
@@ -64,14 +68,14 @@ namespace NoriAPI.Services
 
             return new ResultadoBusqueda(mensaje, listaBusquedaInfo);
 
-        }        
+        }
         public async Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado)
         {
             string mensaje = null;
             var automaticoInfo = await _searchRepository.ValidateAutomatico(numEmpleado);
             var dict = (IDictionary<string, object>)automaticoInfo;
-                      
-            if(dict.TryGetValue("Mensaje", out object mensajeAuto) && mensajeAuto != null)
+
+            if (dict.TryGetValue("Mensaje", out object mensajeAuto) && mensajeAuto != null)
             {
                 mensaje = mensajeAuto.ToString();
                 return new ResultadoAutomatico(mensaje, null);
@@ -80,7 +84,7 @@ namespace NoriAPI.Services
             var automatico = MapInfoAutomatico(dict);
             var resultadoAutomatico = new ResultadoAutomatico(mensaje, automatico);
             return resultadoAutomatico;
-        }        
+        }
         private static BusquedaInfo MapToInfoBusqueda(IDictionary<string, object> busq)
         {
             var busqueda = new BusquedaInfo();
@@ -116,7 +120,7 @@ namespace NoriAPI.Services
         {
             var automatico = new AutomaticoInfo();
 
-            if(auto.TryGetValue("idCartera", out var idcartera) && idcartera != null)
+            if (auto.TryGetValue("idCartera", out var idcartera) && idcartera != null)
                 automatico.idCartera = idcartera.ToString();
 
             if (auto.TryGetValue("idCuenta", out var idcuenta) && idcuenta != null)
@@ -124,12 +128,14 @@ namespace NoriAPI.Services
 
             if (auto.TryGetValue("NúmeroTelefónico", out var numerotelefonico) && numerotelefonico != null)
                 automatico.numeroTelefonico = numerotelefonico.ToString();
-
             return automatico;
         }
-        
+        public async Task<List<Phone>> FetchPhones(string idCuenta)
+        {
+            var phonesList = await _searchRepository.GetPhones(idCuenta, 1);
 
-
+            return phonesList;
+        }
 
 
     }

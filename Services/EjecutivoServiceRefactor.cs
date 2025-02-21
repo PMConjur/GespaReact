@@ -281,6 +281,36 @@ namespace NoriAPI.Services
 
             long lRowTicks = tiempoSpan.Ticks;
             Tiempos.Rows[1]["Tiempo" + Conteo] = new TimeSpan(Convert.ToInt64(lRowTicks / dConteo));
+        }                
+        private static void CalculaTiempoPromedioTest(DataTable tiempos, string Conteo)
+        {
+            if (!Conteos.Columns.Contains(Conteo) || !tiempos.Columns.Contains("Tiempo" + Conteo)
+                || tiempos.Rows[0]["Tiempo" + Conteo].ToString() == "")
+                return;
+
+            double dConteo = Convert.ToInt32(Conteos.Rows[0][Conteo]);
+            if (dConteo == 0)
+                return;
+
+            // 🔹 Convertir correctamente el valor a TimeSpan
+            TimeSpan tiempoSpan;
+            object tiempoValor = tiempos.Rows[0]["Tiempo" + Conteo];
+
+            if (tiempoValor is TimeSpan)
+            {
+                tiempoSpan = (TimeSpan)tiempoValor;  // ✅ Ya es TimeSpan, solo casteamos
+            }
+            else if (tiempoValor is string tiempoStr && TimeSpan.TryParse(tiempoStr, out TimeSpan parsedTime))
+            {
+                tiempoSpan = parsedTime;  // ✅ Se convierte desde string
+            }
+            else
+            {
+                return; // ❌ Si no se puede convertir, salimos del método
+            }
+
+            long lRowTicks = tiempoSpan.Ticks;
+            tiempos.Rows[1]["Tiempo" + Conteo] = new TimeSpan(Convert.ToInt64(lRowTicks / dConteo));
         }
 
         public static Hashtable Relaciones(string Catálogo1, string Catálogo2, params string[] Valor2)

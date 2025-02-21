@@ -57,5 +57,16 @@ namespace NoriAPI.Controllers
             return Ok(Automatico.Cuenta);
         }
 
+        [HttpGet("phones")]
+        public async Task<ActionResult<IEnumerable<Phone>>> GetPhones(string idCuenta)
+        {
+            var phones = await _searchService.FetchPhones(idCuenta);
+            if (phones == null || phones.Count == 0)
+            {
+                return NotFound();
+            }
+            return Ok(phones);
+        }
+
     }
 }
