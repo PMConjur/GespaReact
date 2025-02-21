@@ -14,10 +14,12 @@ namespace NoriAPI.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IEjecutivoService _ejecutivoService;
+        private readonly IEjecutivoServiceRefactor _ejecutivoServiceRefactor;
 
-        public EjecutivoController(IEjecutivoService ejecutivoService, IConfiguration configuration)
+        public EjecutivoController(IEjecutivoService ejecutivoService, IEjecutivoServiceRefactor ejecutivoServiceRefactor, IConfiguration configuration)
         {
             _ejecutivoService = ejecutivoService;
+            _ejecutivoServiceRefactor = ejecutivoServiceRefactor;
             _configuration = configuration;
 
         }
@@ -26,6 +28,19 @@ namespace NoriAPI.Controllers
         public async Task<ActionResult<ResultadoProductividad>> Productividad([FromQuery] int numEmpleado)
         {
             var Productividad = await _ejecutivoService.ValidateProductividad(numEmpleado);
+
+            if (!Productividad.Mensaje.IsNullOrEmpty())
+            {
+                return Ok(new { Productividad.ProductividadInfo });
+            }
+            return Ok(new { Productividad.ProductividadInfo });
+
+        }
+        
+        [HttpGet("productividad-ejecutivo-refactor")]//Endpoint Padrino
+        public async Task<ActionResult<ResultadoProductividad>> ProductividadRefactor([FromQuery] int numEmpleado)
+        {
+            var Productividad = await _ejecutivoServiceRefactor.ValidateProductividad(numEmpleado);
 
             if (!Productividad.Mensaje.IsNullOrEmpty())
             {
