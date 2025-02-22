@@ -1,6 +1,6 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { AppContext } from "../pages/Managment"; // Importa el contexto
-import { Container, Card, Row, Col } from "react-bootstrap";
+import { Card, Row, Col } from "react-bootstrap";
 import {
   FaRegCreditCard,
   FaUser,
