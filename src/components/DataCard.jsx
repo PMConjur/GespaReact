@@ -23,7 +23,7 @@ const DataCard = () => {
                 <h6
                   style={{
                     fontSize: "1.5rem",
-                    fontWeight: "bold",
+ 
                     color: "#55b0d5"
                   }}
                 >
@@ -52,9 +52,10 @@ const DataCard = () => {
                 <h6
                   style={{
                     fontSize: "1.5rem",
-                    fontWeight: "bold",
+
                     color: "#65f3a3"
                   }}
+                 
                 >
                   $31,479.83
                 </h6>
@@ -82,7 +83,7 @@ const DataCard = () => {
                 <h6
                   style={{
                     fontSize: "1.5rem",
-                    fontWeight: "bold",
+
                     color: "#f1a441"
                   }}
                 >
@@ -112,7 +113,7 @@ const DataCard = () => {
                 <h6
                   style={{
                     fontSize: "1.8rem",
-                    fontWeight: "bold",
+
                     color: "#f14b41"
                   }}
                 >

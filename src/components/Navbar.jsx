@@ -15,18 +15,17 @@ function OffcanvasExample() {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
 
-  const responseData =
+    const responseData =
     location.state || JSON.parse(localStorage.getItem("responseData")); // Retrieve responseData from localStorage if not in location state
   const [showToast, setShowToast] = useState(false);
   const [telefono, setTelefono] = useState("");
 
   const token = responseData?.ejecutivo?.token;
   console.log("Token recibido:", token);
-  const nombreEjecutivo =
-    responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
+  const nombreEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
 
-  useEffect(() => {
+  useEffect(() => { 
     if (filter && !searchTerm) fetchFilterData(filter);
   }, [filter]);
 
@@ -34,10 +33,7 @@ function OffcanvasExample() {
     try {
       const response = await axios.get(
         "http://192.168.7.33/api/search-customer/busqueda-cuenta",
-        {
-          params: { filtro: filter },
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { params: { filtro: filter }, headers: { Authorization: `Bearer ${token}` } }
       );
       setSearchResults(response.data.listaResultados || []);
     } catch (error) {
@@ -49,10 +45,7 @@ function OffcanvasExample() {
     try {
       const response = await axios.get(
         "http://192.168.7.33/api/search-customer/busqueda-cuenta",
-        {
-          params: { filtro: filter, ValorBusqueda: searchTerm },
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { params: { filtro: filter, ValorBusqueda: searchTerm }, headers: { Authorization: `Bearer ${token}` } }
       );
       setSearchResults(response.data.listaResultados || []);
     } catch (error) {
@@ -75,10 +68,7 @@ function OffcanvasExample() {
       try {
         const response = await axios.get(
           "http://192.168.7.33/api/search-customer/busqueda-cuenta",
-          {
-            params: { filtro: filter, ValorBusqueda: value },
-            headers: { Authorization: `Bearer ${token}` }
-          }
+          { params: { filtro: filter, ValorBusqueda: value }, headers: { Authorization: `Bearer ${token}` } }
         );
         setSuggestions(response.data.listaResultados || []);
         setShowSuggestions(true);
@@ -104,23 +94,21 @@ function OffcanvasExample() {
       console.error("ID del ejecutivo no disponible");
       return;
     }
-
+  
     try {
       const responseEjecutivo = await axios.get(
         `http://192.168.7.33/api/search-customer/automatico-ejecutivo?numEmpleado=${idEjecutivo}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+  
       console.log("Respuesta completa de la API:", responseEjecutivo.data);
-
+  
       // Validar si idCuenta está presente en la respuesta
       const idCuenta = responseEjecutivo.data.idCuenta?.trim();
       const numeroTelefonico = responseEjecutivo.data.numeroTelefonico;
 
       if (!idCuenta) {
-        console.warn(
-          "idCuenta es nulo o indefinido en la respuesta del ejecutivo"
-        );
+        console.warn("idCuenta es nulo o indefinido en la respuesta del ejecutivo");
         setSearchResults([]);
         return;
       }
@@ -129,16 +117,9 @@ function OffcanvasExample() {
         navigator.clipboard.writeText(numeroTelefonico);
         toast.success("Número copiado al portapapeles");
       };
-
+  
       toast.info(
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            backgroundColor: ""
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", backgroundColor: '' }}>
           <span>Número de Teléfono: {numeroTelefonico}</span>
           <button
             onClick={copyToClipboard}
@@ -148,25 +129,25 @@ function OffcanvasExample() {
               border: "none",
               padding: "5px 10px",
               borderRadius: "5px",
-              cursor: "pointer"
+              cursor: "pointer",
             }}
           >
             Copiar
           </button>
         </div>,
-        { duration: Infinity, closeButton: true }
+        {duration: Infinity, closeButton: true }
       );
+  
+     
+      
 
       const responseCuenta = await axios.get(
         "http://192.168.7.33/api/search-customer/busqueda-cuenta",
-        {
-          params: { filtro: "Cuenta", ValorBusqueda: idCuenta },
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { params: { filtro: "Cuenta", ValorBusqueda: idCuenta }, headers: { Authorization: `Bearer ${token}` } }
       );
-
+  
       console.log("Respuesta de la búsqueda de cuenta:", responseCuenta.data);
-
+  
       // Validar que la respuesta contenga listaResultados con al menos un elemento
       const listaResultados = responseCuenta.data.listaResultados;
       if (Array.isArray(listaResultados) && listaResultados.length > 0) {
@@ -176,10 +157,7 @@ function OffcanvasExample() {
         setSearchResults([]);
       }
     } catch (error) {
-      console.error(
-        "Error en la búsqueda automática:",
-        error.response?.data || error.message
-      );
+      console.error("Error en la búsqueda automática:", error.response?.data || error.message);
       alert(`Error: ${error.response?.data?.errors || error.message}`);
     }
   };
@@ -194,7 +172,7 @@ function OffcanvasExample() {
         showSuggestions={showSuggestions}
         setShowSuggestions={setShowSuggestions}
         suggestions={suggestions}
-        handleSuggestionClick={handleSuggestionClick}
+        handleSuggestionClick={handleSuggestionClick} 
         filter={filter}
         handleFilterSelect={handleFilterSelect}
         handleAutomaticSearch={handleAutomaticSearch}
@@ -204,11 +182,13 @@ function OffcanvasExample() {
         setPassword={setPassword}
       />
 
-      {searchResults.length > 0 && (
-        <SearchCustomer searchResults={searchResults} />
-      )}
-      {/* Toast para mostrar el número de teléfono */}
-      <Toaster richColors position="top-right" />
+   
+
+      {searchResults.length > 0 && <SearchCustomer searchResults={searchResults} />}
+       {/* Toast para mostrar el número de teléfono */}
+       <Toaster richColors position="top-right" />
+
+     
     </>
   );
 }

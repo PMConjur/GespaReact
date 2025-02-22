@@ -1,11 +1,11 @@
-import { Card, Row, Col } from "react-bootstrap";
+import { Row, Col } from "react-bootstrap";
 
 const DebtorInformation = () => {
   return (
     <Row>
-      
-      <h4 className="text-secondary">Cartera: <strong className="text-white">American Express</strong></h4>{" "}
-     
+      <h4 className="text-secondary">
+        Cartera: <strong className="text-white">American Express</strong>
+      </h4>{" "}
       <Col xs={12} md={6}>
         {[
           { href: "#", label: "Inicio", color: "lightgreen" },
