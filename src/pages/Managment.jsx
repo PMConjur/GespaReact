@@ -12,6 +12,8 @@ import axios from "axios";
 import { toast, Toaster } from "sonner";
 import SearchForm from "../components/SearchForm";
 import SearchCustomer from "../components/SearchCustomer";
+import CustomToast from "../components/CustomToast"
+
 // Crear el contexto
 export const AppContext = createContext();
 //Import automatico
@@ -28,7 +30,7 @@ const Managment = () => {
   const responseData =
     location.state || JSON.parse(localStorage.getItem("responseData")); // Retrieve responseData from localStorage if not in location state
   const [showToast, setShowToast] = useState(false);
-  const [telefono, setTelefono] = useState("");
+  const [numeroTelefonico, setNumeroTelefonico] = useState("");
 
   const token = responseData?.ejecutivo?.token;
   console.log("Token recibido:", token);
@@ -42,7 +44,7 @@ const Managment = () => {
         "http://192.168.7.33/api/search-customer/busqueda-cuenta",
         {
           params: { filtro: filter },
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       setSearchResults(response.data.listaResultados || []);
@@ -57,7 +59,7 @@ const Managment = () => {
         "http://192.168.7.33/api/search-customer/busqueda-cuenta",
         {
           params: { filtro: filter, ValorBusqueda: searchTerm },
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       setSearchResults(response.data.listaResultados || []);
@@ -83,7 +85,7 @@ const Managment = () => {
           "http://192.168.7.33/api/search-customer/busqueda-cuenta",
           {
             params: { filtro: filter, ValorBusqueda: value },
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
         setSuggestions(response.data.listaResultados || []);
@@ -131,43 +133,16 @@ const Managment = () => {
         return;
       }
 
-      const copyToClipboard = () => {
-        navigator.clipboard.writeText(numeroTelefonico);
-        toast.success("Número copiado al portapapeles");
-      };
+      setNumeroTelefonico(numeroTelefonico);
+      // Mostrar el toast
+      setShowToast(true);
 
-      toast.info(
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            backgroundColor: ""
-          }}
-        >
-          <span>Número de Teléfono: {numeroTelefonico}</span>
-          <button
-            onClick={copyToClipboard}
-            style={{
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              padding: "5px 10px",
-              borderRadius: "5px",
-              cursor: "pointer"
-            }}
-          >
-            Copiar
-          </button>
-        </div>,
-        { duration: Infinity, closeButton: true }
-      );
-
+      
       const responseCuenta = await axios.get(
         "http://192.168.7.33/api/search-customer/busqueda-cuenta",
         {
           params: { filtro: "Cuenta", ValorBusqueda: idCuenta },
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -189,6 +164,11 @@ const Managment = () => {
       alert(`Error: ${error.response?.data?.errors || error.message}`);
     }
   };
+
+     const copyToClipboard = () => {
+        navigator.clipboard.writeText(numeroTelefonico);
+        toast.success("Número copiado al portapapeles");
+      };
   // Valores que se compartirán a través del contexto
   const contextValue = {
     nombreEjecutivo,
@@ -213,16 +193,21 @@ const Managment = () => {
     handleFilterSelect,
     handleInputChange,
     handleSuggestionClick,
-    handleAutomaticSearch
+    handleAutomaticSearch,
   };
 
   return (
     <>
       <AppContext.Provider value={contextValue}>
         <section>
-          <Toaster richColors position="top-right" />
           <NavbarComponent />
-
+          <CustomToast
+          show={showToast}
+          onClose={() => setShowToast(false)}
+          numeroTelefonico={numeroTelefonico}
+          copyToClipboard={copyToClipboard}
+        />
+            <Toaster  richColors  position="top-center" style={{top: '60px'}}/> {/* Agregar Sonner aquí */}
           <Container fluid className="responsive mt-5">
             <Row>
               <Col xs={6} md={6}>

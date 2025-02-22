@@ -141,7 +141,7 @@ const SearchForm = () => {
           </Alert>
         )}
         {errorMessage && (
-          <Alert variant="danger" className="position-absolute w-100 mt-2">
+          <Alert variant="danger" className="position-absolute w-100 mt-2 z-index-50">
             {errorMessage}
           </Alert>
         )}
