@@ -32,18 +32,18 @@ const SearchCustomer = () => {
                 },
                 {
                   icon: <FaCalendarCheck />,
-                  label: "Activada",
-                  value: result.fechaActivacion || "N/A"
+                  label: "Fecha de Activacion",
+                  value: result.activada || "Ninguna"
                 },
                 {
                   icon: <FaFileAlt />,
-                  label: "Exp",
-                  value: result.expediente || "N/A"
+                  label: "Expediente",
+                  value: result.expediente || "Ninguna"
                 },
                 {
                   icon: <FaUser />,
                   label: "No. Cliente",
-                  value: result.numeroCliente || "N/A"
+                  value: result.numeroCliente || "Ninguna"
                 },
                 { icon: <FaFileAlt />, label: "RFC", value: result.rfc }
               ].map(({ icon, label, value }, i) => (

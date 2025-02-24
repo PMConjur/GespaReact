@@ -1,6 +1,6 @@
 import React from "react";
 import { Toast, Button } from "react-bootstrap";
-import { PhoneFill,Copy } from "react-bootstrap-icons";
+import { PhoneFill,Copy, Headset } from "react-bootstrap-icons";
 
 const CustomToast = ({ show, onClose, numeroTelefonico, copyToClipboard}) => {
     
@@ -23,7 +23,7 @@ const CustomToast = ({ show, onClose, numeroTelefonico, copyToClipboard}) => {
     <Toast.Header closeButton>
       <strong className="me-auto">Numero de Telefono</strong>
     </Toast.Header>
-    <Toast.Body className="">
+    <Toast.Body>
       <div
         style={{
           display: "flex",
@@ -31,8 +31,8 @@ const CustomToast = ({ show, onClose, numeroTelefonico, copyToClipboard}) => {
           justifyContent: 'space-between'
         }}
       >
-        <PhoneFill/> 
-        <span>{numeroTelefonico}</span>
+        <Headset style={{fontSize: '26px'}}/> 
+        <span style={{fontSize: '16px', fontWeight: 'bolder'}}>{numeroTelefonico}</span>
         <Button
           onClick={copyToClipboard}
           style={{

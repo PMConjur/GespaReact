@@ -207,6 +207,7 @@ const SearchForm = () => {
         variant="primary"
         type="button"
         onClick={handleAutomaticSearch}
+        style={{alignItems: 'center'}}
       >
         <ArrowRepeat className="me-2" />
         <span>Automático</span>
