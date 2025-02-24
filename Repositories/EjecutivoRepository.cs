@@ -1,62 +1,31 @@
 ﻿using System;
-<<<<<<< HEAD
-<<<<<<< HEAD
-using System.Collections.Generic;
-using System.Collections;
-=======
->>>>>>> Mark-10-Tiempos
 using System.Data;
-=======
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.Globalization;
->>>>>>> Mark-10-Recuperacion
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-<<<<<<< HEAD
-<<<<<<< HEAD
 using System.Linq;
-=======
 using NoriAPI.Models.Ejecutivo;
->>>>>>> Mark-10-Tiempos
-=======
-using NoriAPI.Models.Ejecutivo;
->>>>>>> Mark-10-Recuperacion
 
 namespace NoriAPI.Repositories
 {
     public interface IEjecutivoRepository
     {
-<<<<<<< HEAD
-<<<<<<< HEAD
         //Task<dynamic> ValidateProductividad(int numEmpleado);
         Task<DataTable> VwCatalogos();
         Task<DataTable> VwRelaciones();
         Task<DataTable> TiemposEjecutivo(int numEmpleado);
         Task<DataTable> MetasEjecutivo(int numEmpleado);
         Task<DataTable> Gestiones(int numEmpleado);
-=======
         Task<ResultadoTiempos> ValidateTimes(int numEmpleado);
         Task<dynamic> ValidatePasswordEjecutivo(int idEjecutivo, string contrasenia);
         Task ChangeEjecutivoMode(int idEjecutivo, string modo);
         Task Pausa210(int idEjecutivo, int idValorCausa, TimeSpan tiempo);
         Task IncreaseEjecutivoTime(int idEjecutivo, TimeSpan tiempo, string causa);
->>>>>>> Mark-10-Tiempos
-=======
-        Task<dynamic> TemplateMethod();
-        Task<IEnumerable<Negociacion>> Negociaciones(int idEjecutivo);
-        Task<Recuperacion> RecuperacionActual(int idEjecutivo);
-        Task<Recuperacion> RecuperacionAnterior(int idEjecutivo);
->>>>>>> Mark-10-Recuperacion
 
     }
     public class EjecutivoRepository : IEjecutivoRepository
     {
-<<<<<<< HEAD
-<<<<<<< HEAD
         #region Metodos_Productividad
         //static string[] _NombreColumnasConteos = { "Titulares", "Conocidos", "Desconocidos", "SinContacto" };
         //public static DataTable Cuentas;
@@ -70,10 +39,6 @@ namespace NoriAPI.Repositories
         //static Hashtable _htNombreId;
         #endregion
 
-=======
->>>>>>> Mark-10-Tiempos
-=======
->>>>>>> Mark-10-Recuperacion
         private readonly IConfiguration _configuration;
 
         public EjecutivoRepository(IConfiguration configuration)
@@ -81,8 +46,6 @@ namespace NoriAPI.Repositories
             _configuration = configuration;
         }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 
         #region Productividad
 
@@ -543,7 +506,6 @@ namespace NoriAPI.Repositories
 
 
         #endregion
-=======
         #region Tiempos
         public async Task<ResultadoTiempos> ValidateTimes(int numEmpleado)
         {
@@ -653,51 +615,6 @@ namespace NoriAPI.Repositories
             );
 
         }
->>>>>>> Mark-10-Tiempos
-=======
-
-        public Task<dynamic> TemplateMethod()
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<IEnumerable<Negociacion>> Negociaciones(int idEjecutivo)
-        {
-            using var connection = GetConnection("Piso2Amex");
-
-            var query = @"
-                SELECT 
-                    idCartera, idCuenta, Herramienta, idEstado, 
-                    FechaCreación AS FechaCreacion, FechaTérmino AS FechaTermino, 
-                    MontoNegociado, MontoPagado, Pagos, 
-                    _CartaConvenio AS CartaConvenio, MesActual
-                FROM fn_NegociacionesEjecutivo(@idEjecutivo)";
-
-            return await connection.QueryAsync<Negociacion>(query, new { idEjecutivo });
-        }
-
-        public async Task<Recuperacion> RecuperacionActual(int idEjecutivo)
-        {
-            using var connection = GetConnection("Piso2Amex");
-
-            string queryFunction = "SELECT * FROM fn_RecuperacionActualEjecutivo(@idEjecutivo)";
-            var parameters = new { idEjecutivo = idEjecutivo };
-            var actualResult = await connection.QueryFirstOrDefaultAsync<Recuperacion>(queryFunction, parameters);
-
-            return actualResult;
-        }
-        public async Task<Recuperacion> RecuperacionAnterior(int idEjecutivo)
-        {
-            using var connection = GetConnection("Piso2Amex");
-
-            string queryFunction = "SELECT * FROM fn_RecuperaciónEjecutivo(@idEjecutivo)";
-            var parameters = new { idEjecutivo = idEjecutivo };
-            var previousResult = await connection.QueryFirstOrDefaultAsync<Recuperacion>(queryFunction, parameters);
-
-            return previousResult;
-        }
-
->>>>>>> Mark-10-Recuperacion
 
         private SqlConnection GetConnection(string connection)
         {

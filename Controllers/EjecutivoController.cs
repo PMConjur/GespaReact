@@ -1,18 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-<<<<<<< HEAD
-<<<<<<< HEAD
 using Microsoft.IdentityModel.Tokens;
-using NoriAPI.Models.Busqueda;
-=======
 using NoriAPI.Models.Busqueda;
 using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Models.Login;
->>>>>>> Mark-10-Tiempos
-=======
-using NoriAPI.Models.Ejecutivo;
->>>>>>> Mark-10-Recuperacion
 using NoriAPI.Services;
 using System.Threading.Tasks;
 
@@ -32,8 +24,6 @@ namespace NoriAPI.Controllers
 
         }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         [HttpGet("productividad-ejecutivo")]//Endpoint Padrino
         public async Task<ActionResult<ResultadoProductividad>> Productividad([FromQuery] int numEmpleado)
         {
@@ -48,7 +38,6 @@ namespace NoriAPI.Controllers
         }
 
 
-=======
         [HttpGet("tiempos-ejecutivo")]//Endpoint C#
         public async Task<ActionResult<TiemposEjecutivo>> Tiempos([FromQuery] int numEmpleado)
         {
@@ -66,36 +55,5 @@ namespace NoriAPI.Controllers
         }
 
         
->>>>>>> Mark-10-Tiempos
-=======
-
-        [HttpGet("get-negociaciones")]
-        public async Task<IActionResult> GetNegociaciones([FromQuery] int idEjecutivo)
-        {
-            var negociaciones = await _ejecutivoService.GetNegociaciones(idEjecutivo);
-
-            if (negociaciones.ConteoHoy == null)
-            {
-                return BadRequest(new { Mensaje = "No se encontraron negociaciones." });
-            }
-
-            return Ok( negociaciones );
-        }
-
-        [HttpGet("get-recuperacion")]
-        public async Task<IActionResult> GetRecuperacion([FromQuery] int idEjecutivo, [FromQuery] int actual)
-        {
-            var recuperacion = await _ejecutivoService.GetRecuperacion(idEjecutivo, actual);
-
-            if (recuperacion == null)
-            {
-                return BadRequest(new { Mensaje = "No se pudo obtener la recuperación del ejecutivo." });
-            }
-
-            return Ok(recuperacion);
-        }
-      
-
->>>>>>> Mark-10-Recuperacion
     }
 }

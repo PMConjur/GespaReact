@@ -1,39 +1,22 @@
 ﻿using Microsoft.Extensions.Configuration;
 using NoriAPI.Models.Busqueda;
-<<<<<<< HEAD
-<<<<<<< HEAD
 using NoriAPI.Repositories;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-=======
-=======
->>>>>>> Mark-10-Recuperacion
 using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Repositories;
 using System;
 using System.Collections.Generic;
-<<<<<<< HEAD
->>>>>>> Mark-10-Tiempos
-=======
-using System.Linq;
->>>>>>> Mark-10-Recuperacion
 using System.Threading.Tasks;
 
 namespace NoriAPI.Services
 {
     public interface IEjecutivoService
     {
-<<<<<<< HEAD
-<<<<<<< HEAD
         Task<ResultadoProductividad> ValidateProductividad(int numEmpleado);
-
-    }
-
-=======
-
         Task<TiemposEjecutivo> ValidateTimes(int numEmpleado);
         Task<string> PauseUnpause(InfoPausa pausa);
 
@@ -41,22 +24,11 @@ namespace NoriAPI.Services
 
 
 
->>>>>>> Mark-10-Tiempos
-=======
-
-        Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo);
-        Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
-
-    }
-
->>>>>>> Mark-10-Recuperacion
     public class EjecutivoService : IEjecutivoService
     {
         private readonly IConfiguration _configuration;
         private readonly IEjecutivoRepository _ejecutivoRepository;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         #region Metodos_Productividad
         public static string[] _NombreColumnasConteos = { "Titulares", "Conocidos", "Desconocidos", "SinContacto" };
         public static DataTable Cuentas;
@@ -458,19 +430,6 @@ namespace NoriAPI.Services
         }
 
         #endregion
-
-
-    }
-
-=======
-        public EjecutivoService(IEjecutivoRepository ejecutivoRepository)
-        {
-            _ejecutivoRepository = ejecutivoRepository;
-
-        }
-
-
-
         public async Task<TiemposEjecutivo> ValidateTimes(int numEmpleado)
         {
             ResultadoTiempos tiempos = null;
@@ -544,81 +503,4 @@ namespace NoriAPI.Services
 
 
     }
->>>>>>> Mark-10-Tiempos
 }
-=======
-        public EjecutivoService(IEjecutivoRepository ejecutivoRepository)
-        {
-            _ejecutivoRepository = ejecutivoRepository;
-        }
-
-        public async Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo)
-        {
-            var negociaciones = (await _ejecutivoRepository.Negociaciones(idEjecutivo)).ToList();
-
-            if (negociaciones.Count == 0)
-            {
-                return new NegociacionesResponse
-                {
-                    Negociaciones = new List<Negociacion>(),
-                    ConteoHoy = 0,
-                    TiempoPromedio = null
-                };
-            }
-
-            // ConteoHoy de negociaciones del día actual
-            int conteo = negociaciones.Count(n => n.FechaCreacion == DateTime.Today);
-
-            // Calcular tiempo promedio con base en FechaCreacion y FechaTermino
-            TimeSpan? tiempoPromedio = CalculateAverageTime(negociaciones);
-
-            return new NegociacionesResponse
-            {
-                Negociaciones = negociaciones,
-                ConteoHoy = conteo,
-                TiempoPromedio = tiempoPromedio.HasValue
-                    ? new TiempoPromedioResponse
-                    {
-                        Horas = (int)tiempoPromedio.Value.TotalHours,
-                        Minutos = tiempoPromedio.Value.Minutes,
-                        Segundos = tiempoPromedio.Value.Seconds,
-                        TotalMinutos = (int)tiempoPromedio.Value.TotalMinutes,
-                        TotalSegundos = (int)tiempoPromedio.Value.TotalSeconds
-                    }
-                    : new TiempoPromedioResponse()
-            };
-        }
-        private static TimeSpan? CalculateAverageTime(IEnumerable<Negociacion> negociaciones)
-        {
-            var tiempos = negociaciones
-                .Where(n => n.FechaCreacion.HasValue && n.FechaTermino.HasValue) // Asegura que ambos valores existen
-                .Select(n => (n.FechaTermino.Value - n.FechaCreacion.Value).Ticks) // Aquí ya no hay `null`
-                .ToList();
-
-            if (tiempos.Count == 0 || tiempos.Sum() == 0) return null;  // Evita divisiones por cero
-
-            long totalTicks = tiempos.Sum();
-            return new TimeSpan(totalTicks / tiempos.Count);
-        }
-
-        public async Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual)
-        {
-            if (actual == 1)
-            {
-                return await _ejecutivoRepository.RecuperacionActual(idEjecutivo);
-            }
-            else
-            {
-                return await _ejecutivoRepository.RecuperacionAnterior(idEjecutivo);
-            }
-        }
-
-    }
-}
-
-
-
-
-
-
->>>>>>> Mark-10-Recuperacion

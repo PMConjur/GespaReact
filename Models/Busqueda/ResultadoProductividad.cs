@@ -11,12 +11,8 @@
             Mensaje = mensaje;
             ProductividadInfo = infoProductividad;
         }
-<<<<<<< HEAD
-        
-=======
         public string Mensaje { get; set; }
 
 
->>>>>>> Mark-10-Tiempos
     }
 }

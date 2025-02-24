@@ -16,18 +16,8 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/search-customer")]
-<<<<<<< HEAD
-<<<<<<< HEAD
-    //[Authorize]
+    //[Authorize]   
     public class CustomerSearchController : ControllerBase
-=======
-    [Authorize]
-    public class CustomerSearchController : Controller
->>>>>>> Mark-10-Tiempos
-=======
-    [Authorize]
-    public class CustomerSearchController : ControllerBase
->>>>>>> Mark-10-Recuperacion
 
     {
         private readonly IConfiguration _configuration;
@@ -43,7 +33,7 @@ namespace NoriAPI.Controllers
         [HttpGet("busqueda-cuenta")]//Endpoint Padrino
         //public async Task<ActionResult<ResultadoBusqueda>> Busqueda([FromBody] Busqueda request)
         public async Task<ActionResult<ResultadoBusqueda>> Busqueda([FromQuery] string filtro, string ValorBusqueda)
-        {
+        {            
             var Busqueda = await _searchService.ValidateBusqueda(filtro, ValorBusqueda);
 
             if (!Busqueda.Mensaje.IsNullOrEmpty())
@@ -54,13 +44,10 @@ namespace NoriAPI.Controllers
             return Ok(new { Busqueda.ListaResultados });
         }
 
-<<<<<<< HEAD
         [HttpGet("automatico-ejecutivo")]//Endpoint Padrino
         public async Task<ActionResult<ResultadoAutomatico>> Automatico([FromQuery] int numEmpleado)
-=======
         [HttpGet("productividad-ejecutivo")]//Endpoint Padrino
         public async Task<ActionResult<ResultadoProductividad>> Productividad([FromQuery] int NumEmpleado)
->>>>>>> Mark-10-Tiempos
         {
             var Automatico = await _searchService.ValidateAutomatico(numEmpleado);
 
@@ -68,18 +55,9 @@ namespace NoriAPI.Controllers
             {
                 return Ok(new { Automatico.Mensaje });
 
-<<<<<<< HEAD
-=======
-            if (!Productividad.Mensaje.IsNullOrEmpty())
-            {
-                return BadRequest(new { Productividad.Mensaje });
->>>>>>> Mark-10-Recuperacion
             }
-<<<<<<< HEAD
             return Ok(Automatico.Cuenta);
-=======
             return Ok(new { Productividad.Mensaje });
->>>>>>> Mark-10-Tiempos
         }
 
         [HttpGet("phones")]

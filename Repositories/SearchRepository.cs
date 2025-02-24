@@ -108,36 +108,19 @@ namespace NoriAPI.Repositories
             if (validacion == "Nombre")
             {
                 var busqueda = (await connection.QueryAsync<dynamic>(queryBusqueda, commandType: CommandType.Text));
-<<<<<<< HEAD
-<<<<<<< HEAD
                 return busqueda;
-=======
-                return busqueda;                
->>>>>>> Mark-10-Tiempos
-=======
-                return busqueda;                
->>>>>>> Mark-10-Recuperacion
             }
             else
             {
                 var busqueda = (await connection.QueryFirstOrDefaultAsync<dynamic>(queryBusqueda, commandType: CommandType.Text));
                 return busqueda;
-<<<<<<< HEAD
-<<<<<<< HEAD
-            }
-=======
             }                    
->>>>>>> Mark-10-Tiempos
-=======
-            }                    
->>>>>>> Mark-10-Recuperacion
 
         }
         public async Task<dynamic> ValidateAutomatico(int numEmpleado)
         {
             using var connection = GetConnection("Piso2Amex");
 
-<<<<<<< HEAD
             string storedAutomatico = "[dbMemory].[AMS].[ObtieneCuenta]";
             var parameters = new
             {
@@ -149,20 +132,10 @@ namespace NoriAPI.Repositories
                 commandType: CommandType.StoredProcedure
                 ));
             return automatico;
-=======
-            string queryProductividad = "";
-
-            var productividad = (await connection.QueryAsync<dynamic>(
-                queryProductividad,
-                //parameters,
-                commandType: CommandType.Text
-            )).ToList();
-
-            return productividad;
->>>>>>> Mark-10-Tiempos
 
         }
 
+        
         public async Task<List<Phone>> GetPhones(string idCuenta, int idCartera)
         {
             using var connection = GetConnection("Piso2Amex");
