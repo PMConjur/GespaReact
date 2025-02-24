@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using NoriAPI.Models.Ejecutivo;
 using System.Threading.Tasks;
 
 namespace NoriAPI.Services
@@ -14,13 +15,34 @@ namespace NoriAPI.Services
     public interface IEjecutivoService
     {
         Task<ResultadoProductividad> ValidateProductividad(int numEmpleado);
+        Task<TiemposEjecutivo> ValidateTimes(int numEmpleado);
+        Task<string> PauseUnpause(InfoPausa pausa);
+        Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo);
+        Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
 
     }
 
     public class EjecutivoService : IEjecutivoService
     {
         private readonly IConfiguration _configuration;
+<<<<<<< HEAD
         private readonly IEjecutivoRepository _ejecutivoRepository;        
+=======
+        private readonly IEjecutivoRepository _ejecutivoRepository;
+
+        #region PropiedadesProductividad
+        private static string[] _NombreColumnasConteos = { "Titulares", "Conocidos", "Desconocidos", "SinContacto" };
+        private static DataTable Cuentas;
+        private static DataTable Tiempos;
+        private static DataTable Metas;
+        private static DataTable GestionesEjecutivo;
+        private static DataTable Conteos;
+        private static DataSet _dsTablas = new DataSet();
+        private static ArrayList _alNombreId;
+        private static Hashtable _htValoresCatálogo;
+        private static Hashtable _htNombreId;
+        #endregion
+>>>>>>> Mark-12-Soluciones
 
 
         public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository)
@@ -34,6 +56,7 @@ namespace NoriAPI.Services
         public async Task<ResultadoProductividad> ValidateProductividad(int numEmpleado)
         {
             // Limpiar las variables estáticas al comienzo del método
+<<<<<<< HEAD
             ClasesGespa.Cuentas = new DataTable();
             ClasesGespa.Tiempos = new DataTable();
             ClasesGespa.Metas = new DataTable();
@@ -43,6 +66,17 @@ namespace NoriAPI.Services
             ClasesGespa._alNombreId = new ArrayList();
             ClasesGespa._htValoresCatálogo = new Hashtable();
             ClasesGespa._htNombreId = new Hashtable();
+=======
+            Cuentas = new DataTable();
+            Tiempos = new DataTable();
+            Metas = new DataTable();
+            GestionesEjecutivo = new DataTable();
+            Conteos = new DataTable();
+            _dsTablas = new DataSet();
+            _alNombreId = new ArrayList();
+            _htValoresCatálogo = new Hashtable();
+            _htNombreId = new Hashtable();
+>>>>>>> Mark-12-Soluciones
             string mensaje = null;
 
             //Comentada la vieja llamada al método
@@ -64,10 +98,34 @@ namespace NoriAPI.Services
 
 
             //---------------------------------------Relaciones --------------------------------------------//
+<<<<<<< HEAD
             
             ClasesGespa.dtRelaciones = await _ejecutivoRepository.VwRelaciones();
             ClasesGespa.Relaciones();            
             //------------------------------------Tiempos----------------------------------------------// 
+=======
+            DataTable dtRelaciones = new DataTable();
+
+            dtRelaciones = await _ejecutivoRepository.VwRelaciones();
+
+            // Crea llave primaria.
+            dtRelaciones.PrimaryKey = new DataColumn[] { dtRelaciones.Columns["idValor1"], dtRelaciones.Columns["idValor2"] };
+
+            dtRelaciones.TableName = "Relaciones";
+            if (_dsTablas.Tables.Contains("Relaciones"))
+                _dsTablas.Tables.Remove("Relaciones");
+
+            _dsTablas.Tables.Add(dtRelaciones);
+
+            _dsTablas.Relations.Add(
+                "FK_CatálogosRelaciones1",
+                _dsTablas.Tables["Catálogos"].Columns["idValor"],
+                _dsTablas.Tables["Relaciones"].Columns["idValor1"],
+                false);
+
+
+            //------------------------------------Tiempos----------------------------------------------//
+>>>>>>> Mark-12-Soluciones
 
             ClasesGespa.Tiempos = await _ejecutivoRepository.TiemposEjecutivo(numEmpleado);
             ClasesGespa.ObtieneTiempos();            
@@ -119,6 +177,7 @@ namespace NoriAPI.Services
 
             return productividad;
 
+<<<<<<< HEAD
         }               
         private static void CalculaTiempoPromedioTest(DataTable tiempos, string Conteo)
         {
@@ -127,12 +186,53 @@ namespace NoriAPI.Services
                 return;
 
             double dConteo = Convert.ToInt32(ClasesGespa.Conteos.Rows[0][Conteo]);
+=======
+        }
+
+        private static void ConteosGestiones()
+        {
+            // Define tabla.
+            //DataTable Conteos = new DataTable();
+            Conteos = new DataTable();
+            Conteos.Columns.Add("Negociaciones", typeof(int));
+            Conteos.Columns.Add("Cuentas", typeof(int));
+            foreach (string sColumna in _NombreColumnasConteos)
+                Conteos.Columns.Add(sColumna, typeof(int));
+
+            Conteos.Rows.Add();
+
+            // Cuentas
+            Conteos.Rows[0]["Cuentas"] = Cuentas.Rows.Count;
+            CalculaTiempoPromedio("Cuentas");
+
+            //Negociaciones
+            Conteos.Rows[0]["Negociaciones"] = 0;
+
+            //Gestiones
+            Hashtable htContestaciones = Relaciones("Contactos", "Contactos", "No le conoce");
+            foreach (DataRow Gestión in GestionesEjecutivo.Rows)
+                ConteoGestión(Gestión, htContestaciones);
+
+        }
+
+        private static void CalculaTiempoPromedio(string Conteo)
+        {
+            if (!Conteos.Columns.Contains(Conteo) || !Tiempos.Columns.Contains("Tiempo" + Conteo)
+                || Tiempos.Rows[0]["Tiempo" + Conteo].ToString() == "")
+                return;
+
+            double dConteo = Convert.ToInt32(Conteos.Rows[0][Conteo]);
+>>>>>>> Mark-12-Soluciones
             if (dConteo == 0)
                 return;
 
             // 🔹 Convertir correctamente el valor a TimeSpan
             TimeSpan tiempoSpan;
+<<<<<<< HEAD
             object tiempoValor = tiempos.Rows[0]["Tiempo" + Conteo];
+=======
+            object tiempoValor = Tiempos.Rows[0]["Tiempo" + Conteo];
+>>>>>>> Mark-12-Soluciones
 
             if (tiempoValor is TimeSpan)
             {
@@ -148,13 +248,257 @@ namespace NoriAPI.Services
             }
 
             long lRowTicks = tiempoSpan.Ticks;
+<<<<<<< HEAD
             tiempos.Rows[1]["Tiempo" + Conteo] = new TimeSpan(Convert.ToInt64(lRowTicks / dConteo));
         }
                 
+=======
+            Tiempos.Rows[1]["Tiempo" + Conteo] = new TimeSpan(Convert.ToInt64(lRowTicks / dConteo));
+        }
+
+        public static Hashtable Relaciones(string Catálogo1, string Catálogo2, params string[] Valor2)
+        {
+
+            Hashtable htRelaciones = new Hashtable();
+
+            string sSelectValor2 = "";
+            string sValores = "''";
+            foreach (string sValor in Valor2)
+                sValores += ",'" + sValor + "'";
+            if (Valor2.Length > 0)
+                sSelectValor2 = " AND Valor2 IN (" + sValores + ") ";
+
+            DataRow[] drFilas = _dsTablas.Tables["Relaciones"].Select("Catálogo1 = '" + Catálogo1 + "' AND Catálogo2 = '" + Catálogo2 + "' " + sSelectValor2);
+            foreach (DataRow fila in drFilas)
+                htRelaciones.Add(fila["idValor1"].ToString(), fila["idValor2"].ToString());
+
+
+            return htRelaciones;
+        }
+
+        public static string ConteoGestión(DataRow Gestión, Hashtable idContestaciones = null)
+        {
+
+            int[] iConteos = { 0, 0, 0, 0 };
+            int iConteoAnterior = 0;
+            string sIdContacto = Gestión["idContacto"].ToString();
+            string sNombreColumna = "";
+
+            if (idContestaciones == null)
+                idContestaciones = Relaciones("Contactos", "Contactos", "No le conoce");
+
+            // Contacto - Marcaciones
+            iConteos[0] = sIdContacto == "1101" ? 1 : 0;  // #idCatálogo
+            iConteos[1] = sIdContacto == "1102" ? 1 : 0;
+            iConteos[2] = idContestaciones.ContainsKey(sIdContacto) ? 1 : 0;
+            iConteos[3] = iConteos[0] + iConteos[1] + iConteos[2] == 0 ? 1 : 0;
+
+            DataRow drFila = Conteos.Rows[0];
+
+            for (int iCol = 0; iCol < iConteos.Length; iCol++)
+            {
+                iConteoAnterior = 0;
+                int.TryParse(drFila[_NombreColumnasConteos[iCol]].ToString(), out iConteoAnterior);
+                drFila[_NombreColumnasConteos[iCol]] = iConteoAnterior + iConteos[iCol];
+
+                if (iConteos[iCol] > 0)
+                {
+                    sNombreColumna = _NombreColumnasConteos[iCol];
+
+                    // Tíempos
+                    //if (Tiempos != null && Tiempos.Rows.Count > 1 && Gestión["Duración"].ToString() != "")
+                    //{
+                    //    long lTicks = ((TimeSpan)Gestión["Duración"]).Ticks;
+                    //    long lRowTicks = ((TimeSpan)Tiempos.Rows[0]["Tiempo" + sNombreColumna]).Ticks + lTicks;
+                    //    Tiempos.Rows[0]["Tiempo" + sNombreColumna] = new TimeSpan(lRowTicks);
+                    //    Tiempos.Rows[1]["Tiempo" + sNombreColumna] = new TimeSpan(Convert.ToInt64(lRowTicks / (double)(iConteoAnterior + iConteos[iCol])));
+                    //}
+                    if (Tiempos != null && Tiempos.Rows.Count > 1 && !string.IsNullOrEmpty(Gestión["Duración"].ToString()))
+                    {
+                        // 🔹 Convertir `Gestión["Duración"]` a `TimeSpan`
+                        TimeSpan duracion = TimeSpan.Zero;
+                        if (Gestión["Duración"] is TimeSpan)
+                        {
+                            duracion = (TimeSpan)Gestión["Duración"];  // ✅ Ya es TimeSpan
+                        }
+                        else if (TimeSpan.TryParse(Gestión["Duración"].ToString(), out TimeSpan parsedDuracion))
+                        {
+                            duracion = parsedDuracion;  // ✅ Convertido desde string
+                        }
+                        else
+                        {
+                            //return;  // ❌ Si no se puede convertir, salir del método
+                        }
+
+                        // 🔹 Convertir `Tiempos.Rows[0]["Tiempo" + sNombreColumna]` a `TimeSpan`
+                        TimeSpan tiempoAnterior = TimeSpan.Zero;
+                        object tiempoValor = Tiempos.Rows[0]["Tiempo" + sNombreColumna];
+
+                        if (tiempoValor is TimeSpan)
+                        {
+                            tiempoAnterior = (TimeSpan)tiempoValor;  // ✅ Ya es TimeSpan
+                        }
+                        else if (TimeSpan.TryParse(tiempoValor.ToString(), out TimeSpan parsedTiempo))
+                        {
+                            tiempoAnterior = parsedTiempo;  // ✅ Convertido desde string
+                        }
+                        else
+                        {
+                            //return;  // ❌ Si no se puede convertir, salir del método
+                        }
+
+                        // 🔹 Calcular el nuevo tiempo
+                        long lTicks = duracion.Ticks;
+                        long lRowTicks = tiempoAnterior.Ticks + lTicks;
+
+                        // 🔹 Asignar valores convertidos correctamente
+                        Tiempos.Rows[0]["Tiempo" + sNombreColumna] = new TimeSpan(lRowTicks);
+                        Tiempos.Rows[1]["Tiempo" + sNombreColumna] = new TimeSpan(Convert.ToInt64(lRowTicks / (double)(iConteoAnterior + iConteos[iCol])));
+                    }
+
+                }
+
+            }
+
+            // Tiempos
+            return sNombreColumna;
+        }
+>>>>>>> Mark-12-Soluciones
 
         #endregion
 
 
-    }
+        public async Task<TiemposEjecutivo> ValidateTimes(int numEmpleado)
+        {
+            ResultadoTiempos tiempos = null;
 
+            try
+            {
+                var validateTimes = await _ejecutivoRepository.ValidateTimes(numEmpleado);
+                tiempos = validateTimes;
+
+            }
+            catch (Exception ex)
+            {
+                return new TiemposEjecutivo($"Hubo un problema al obtener los tiempos del ejecutivo: {ex.Message} ", null);
+            }
+
+            return new TiemposEjecutivo(null, tiempos);
+
+
+
+            // var resultadoTiempos = new TiemposEjecutivo(mensaje);
+            //return validateTimes;
+
+
+        }
+
+        public async Task<string> PauseUnpause(InfoPausa pausa)
+        {
+            try
+            {
+                // Intenta despausar al ejecutivo validando su contraseña.
+                // Si la contraseña es incorrecta, retorna un mensaje de error.
+                if (!await Despausar(pausa))
+                {
+                    return "Contraseña Incorrecta.";
+                }
+
+                // Cambia el modo del ejecutivo a "Consulta".
+                await _ejecutivoRepository.ChangeEjecutivoMode(pausa.IdEjecutivo, "Consulta");
+
+                // Registra la pausa del ejecutivo en la base de datos con el idCatálogo1 3001 y la duración especificada.
+                // TODO: Asignar propiamente los valores del idCatalogo según el valor de PeCausa.
+                await _ejecutivoRepository.Pausa210(pausa.IdEjecutivo, 3001, pausa.Duracion);
+
+                // Aumenta el tiempo de actividad del ejecutivo con la duración de la pausa y la causa asociada.
+                await _ejecutivoRepository.IncreaseEjecutivoTime(pausa.IdEjecutivo, pausa.Duracion, pausa.PeCausa);
+            }
+            catch
+            {
+                // Si ocurre un error en cualquier parte del proceso, devuelve un mensaje de error.
+                return "Ocurrió un error al reanudar la sesión.";
+            }
+
+            // Retorna una cadena vacía si todo el proceso se ejecutó correctamente.
+            return "";
+        }
+
+        private async Task<bool> Despausar(InfoPausa tiempos)
+        {
+            // Valida la contraseña del ejecutivo en la base de datos.
+            var validatePass = await _ejecutivoRepository.ValidatePasswordEjecutivo(tiempos.IdEjecutivo, tiempos.Contrasenia);
+
+            // Si la validación falla (es nula), retorna false indicando que la contraseña es incorrecta.
+            if (validatePass is null)
+            {
+                return false;
+            }
+
+            // Si la validación es exitosa, retorna true.
+            return true;
+        }
+
+        public async Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo)
+        {
+            var negociaciones = (await _ejecutivoRepository.Negociaciones(idEjecutivo)).ToList();
+
+            if (negociaciones.Count == 0)
+            {
+                return new NegociacionesResponse
+                {
+                    Negociaciones = new List<Negociacion>(),
+                    ConteoHoy = 0,
+                    TiempoPromedio = null
+                };
+            }
+
+            // ConteoHoy de negociaciones del día actual
+            int conteo = negociaciones.Count(n => n.FechaCreacion == DateTime.Today);
+
+            // Calcular tiempo promedio con base en FechaCreacion y FechaTermino
+            TimeSpan? tiempoPromedio = CalculateAverageTime(negociaciones);
+
+            return new NegociacionesResponse
+            {
+                Negociaciones = negociaciones,
+                ConteoHoy = conteo,
+                TiempoPromedio = tiempoPromedio.HasValue
+                    ? new TiempoPromedioResponse
+                    {
+                        Horas = (int)tiempoPromedio.Value.TotalHours,
+                        Minutos = tiempoPromedio.Value.Minutes,
+                        Segundos = tiempoPromedio.Value.Seconds,
+                        TotalMinutos = (int)tiempoPromedio.Value.TotalMinutes,
+                        TotalSegundos = (int)tiempoPromedio.Value.TotalSeconds
+                    }
+                    : new TiempoPromedioResponse()
+            };
+        }
+        private static TimeSpan? CalculateAverageTime(IEnumerable<Negociacion> negociaciones)
+        {
+            var tiempos = negociaciones
+                .Where(n => n.FechaCreacion.HasValue && n.FechaTermino.HasValue) // Asegura que ambos valores existen
+                .Select(n => (n.FechaTermino.Value - n.FechaCreacion.Value).Ticks) // Aquí ya no hay `null`
+                .ToList();
+
+            if (tiempos.Count == 0 || tiempos.Sum() == 0) return null;  // Evita divisiones por cero
+
+            long totalTicks = tiempos.Sum();
+            return new TimeSpan(totalTicks / tiempos.Count);
+        }
+
+        public async Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual)
+        {
+            if (actual == 1)
+            {
+                return await _ejecutivoRepository.RecuperacionActual(idEjecutivo);
+            }
+            else
+            {
+                return await _ejecutivoRepository.RecuperacionAnterior(idEjecutivo);
+            }
+        }
+
+    }
 }
