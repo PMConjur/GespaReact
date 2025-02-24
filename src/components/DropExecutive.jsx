@@ -14,16 +14,18 @@ const DropExecutive = () => {
       className="me-3"
       style={{ alignItems: "center" }}
     >
-      <Col>
-        <Image src={User} roundedCircle style={{ width: "36px" }} />
-      </Col>
-      <Dropdown.Toggle split variant="dark" id="dropdown-split-basic" />
-      <Dropdown.Menu className="text-center">
+      <span className=" text-white me-1 ms-1">{nombreEjecutivo}</span>
+         <Dropdown.Toggle split variant="dark" id="dropdown-split-basic" />
+      <Dropdown.Menu className="text-center" align="start" style={{left: '0', right: 'auto'}}>
         <p>{nombreEjecutivo}</p>
         <p>{idEjecutivo}</p>
         <Dropdown.Item href="/maintenance">Ejecutivo Telefonico</Dropdown.Item>
       </Dropdown.Menu>
-      <span className="d-none d-lg-block text-white">{nombreEjecutivo}</span>
+      
+      <Col>
+        <Image src={User} roundedCircle style={{ width: "36px" }} />
+      </Col>
+     
     </Dropdown>
   );
 };

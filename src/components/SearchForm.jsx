@@ -99,21 +99,15 @@ const SearchForm = () => {
 
   return (
     <form
-      className="d-flex"
+      className="d-block d-md-flex "
       style={{ gap: "10px", alignItems: "center", margin: "0 auto" }}
       onSubmit={(e) => {
         e.preventDefault();
         handleSearch();
       }}
     >
-      <div style={{ position: "relative", width: "300px" }}>
+      <div style={{ position: "relative", width: "300px", color: "black"}}>
         <FormControl
-          style={{
-            width: "100%",
-            backgroundColor: "white",
-            paddingLeft: "35px",
-            color: "black"
-          }}
           type="search"
           placeholder="Buscar"
           className="custom-placeholder me-2"
@@ -122,6 +116,12 @@ const SearchForm = () => {
           onChange={handleChange} // Usar handleChange en lugar de handleInputChange
           onFocus={() => setShowSuggestions(true)}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+          style={{
+            width: "100%",
+            backgroundColor: "white",
+            paddingLeft: "35px",
+            color: "black"
+          }}
         />
         <Search
           style={{
@@ -191,7 +191,7 @@ const SearchForm = () => {
       </Button>
 
       <Button
-        className="d-none d-md-block"
+        className="d-flex"
         variant="primary"
         type="button"
         onClick={handleAutomaticSearch}
