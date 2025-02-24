@@ -1,79 +1,43 @@
 ﻿using System;
-<<<<<<< HEAD
-<<<<<<< HEAD
-using System.Collections.Generic;
-using System.Collections;
-=======
->>>>>>> Mark-10-Tiempos
-using System.Data;
-=======
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
-using System.Globalization;
->>>>>>> Mark-10-Recuperacion
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-<<<<<<< HEAD
-<<<<<<< HEAD
 using System.Linq;
-=======
 using NoriAPI.Models.Ejecutivo;
->>>>>>> Mark-10-Tiempos
-=======
-using NoriAPI.Models.Ejecutivo;
->>>>>>> Mark-10-Recuperacion
 
 namespace NoriAPI.Repositories
 {
     public interface IEjecutivoRepository
     {
-<<<<<<< HEAD
-<<<<<<< HEAD
-        //Task<dynamic> ValidateProductividad(int numEmpleado);
+        #region Productividad
         Task<DataTable> VwCatalogos();
         Task<DataTable> VwRelaciones();
         Task<DataTable> TiemposEjecutivo(int numEmpleado);
         Task<DataTable> MetasEjecutivo(int numEmpleado);
         Task<DataTable> Gestiones(int numEmpleado);
-=======
+        #endregion
+
+        #region Tiempos
         Task<ResultadoTiempos> ValidateTimes(int numEmpleado);
         Task<dynamic> ValidatePasswordEjecutivo(int idEjecutivo, string contrasenia);
         Task ChangeEjecutivoMode(int idEjecutivo, string modo);
         Task Pausa210(int idEjecutivo, int idValorCausa, TimeSpan tiempo);
         Task IncreaseEjecutivoTime(int idEjecutivo, TimeSpan tiempo, string causa);
->>>>>>> Mark-10-Tiempos
-=======
-        Task<dynamic> TemplateMethod();
+        #endregion
+
+        #region Recuperacion
         Task<IEnumerable<Negociacion>> Negociaciones(int idEjecutivo);
         Task<Recuperacion> RecuperacionActual(int idEjecutivo);
         Task<Recuperacion> RecuperacionAnterior(int idEjecutivo);
->>>>>>> Mark-10-Recuperacion
+        #endregion
 
     }
     public class EjecutivoRepository : IEjecutivoRepository
     {
-<<<<<<< HEAD
-<<<<<<< HEAD
-        #region Metodos_Productividad
-        //static string[] _NombreColumnasConteos = { "Titulares", "Conocidos", "Desconocidos", "SinContacto" };
-        //public static DataTable Cuentas;
-        //public static DataTable Tiempos;
-        //public static DataTable Metas;
-        //public static DataTable GestionesEjecutivo;
-        //public static DataTable Conteos;
-        //static DataSet _dsTablas = new DataSet();
-        //static ArrayList _alNombreId;
-        //static Hashtable _htValoresCatálogo;
-        //static Hashtable _htNombreId;
-        #endregion
 
-=======
->>>>>>> Mark-10-Tiempos
-=======
->>>>>>> Mark-10-Recuperacion
         private readonly IConfiguration _configuration;
 
         public EjecutivoRepository(IConfiguration configuration)
@@ -81,8 +45,6 @@ namespace NoriAPI.Repositories
             _configuration = configuration;
         }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 
         #region Productividad
 
@@ -98,9 +60,9 @@ namespace NoriAPI.Repositories
 
             return ConvertToDataTable(catalogos, "Catalogos");
 
-        }        
-        
-        
+        }
+
+
         public async Task<DataTable> VwRelaciones()
         {
             using var connection = GetConnection("Piso2Amex");
@@ -114,7 +76,7 @@ namespace NoriAPI.Repositories
             return ConvertToDataTable(relaciones, "Relaciones");
 
         }
-        
+
         public async Task<DataTable> TiemposEjecutivo(int numEmpleado)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -134,7 +96,7 @@ namespace NoriAPI.Repositories
             return ConvertToDataTable(tiempos, "Tiempos");
 
         }
-        
+
         public async Task<DataTable> MetasEjecutivo(int numEmpleado)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -154,8 +116,8 @@ namespace NoriAPI.Repositories
 
             return ConvertToDataTable(metas, "Metas");
 
-        }       
-        
+        }
+
         public async Task<DataTable> Gestiones(int numEmpleado)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -543,7 +505,7 @@ namespace NoriAPI.Repositories
 
 
         #endregion
-=======
+
         #region Tiempos
         public async Task<ResultadoTiempos> ValidateTimes(int numEmpleado)
         {
@@ -589,6 +551,27 @@ namespace NoriAPI.Repositories
             return passwordValidate;
         }
 
+        public async Task ChangeEjecutivoMode(int idEjecutivo, string modo)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string queryPass = "[dbMemory].[PS].[ModoEjecutivo]";
+
+            var parameters = new
+            {
+                idEjecutivo = idEjecutivo,
+                Modo = modo,
+            };
+
+            var mode = await connection.ExecuteAsync(
+                queryPass,
+                parameters,
+                commandType: CommandType.StoredProcedure
+
+            );
+        }
+
+
         public async Task Pausa210(int idEjecutivo, int idValorCausa, TimeSpan tiempo)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -603,28 +586,6 @@ namespace NoriAPI.Repositories
             };
 
             var pausa = await connection.ExecuteAsync(
-                queryPass,
-                parameters,
-                commandType: CommandType.StoredProcedure
-
-            );
-        }
-
-        #endregion
-
-        public async Task ChangeEjecutivoMode(int idEjecutivo, string modo)
-        {
-            using var connection = GetConnection("Piso2Amex");
-
-            string queryPass = "[dbMemory].[PS].[ModoEjecutivo]";
-
-            var parameters = new
-            {
-                idEjecutivo = idEjecutivo,
-                Modo = modo,
-            };
-
-            var mode = await connection.ExecuteAsync(
                 queryPass,
                 parameters,
                 commandType: CommandType.StoredProcedure
@@ -653,23 +614,23 @@ namespace NoriAPI.Repositories
             );
 
         }
->>>>>>> Mark-10-Tiempos
-=======
 
-        public Task<dynamic> TemplateMethod()
-        {
-            throw new NotImplementedException();
-        }
+
+
+
+        #endregion
+
+        #region NegociacionesRecuperacion
 
         public async Task<IEnumerable<Negociacion>> Negociaciones(int idEjecutivo)
         {
             using var connection = GetConnection("Piso2Amex");
 
             var query = @"
-                SELECT 
-                    idCartera, idCuenta, Herramienta, idEstado, 
-                    FechaCreación AS FechaCreacion, FechaTérmino AS FechaTermino, 
-                    MontoNegociado, MontoPagado, Pagos, 
+                SELECT
+                    idCartera, idCuenta, Herramienta, idEstado,
+                    FechaCreación AS FechaCreacion, FechaTérmino AS FechaTermino,
+                    MontoNegociado, MontoPagado, Pagos,
                     _CartaConvenio AS CartaConvenio, MesActual
                 FROM fn_NegociacionesEjecutivo(@idEjecutivo)";
 
@@ -696,8 +657,7 @@ namespace NoriAPI.Repositories
 
             return previousResult;
         }
-
->>>>>>> Mark-10-Recuperacion
+        #endregion
 
         private SqlConnection GetConnection(string connection)
         {

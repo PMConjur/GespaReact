@@ -10,6 +10,7 @@ using NoriAPI.Repositories;
 using NoriAPI.Services;
 using System.Linq;
 using System.Text;
+using static NoriAPI.Services.ISearchService;
 
 var builder = WebApplication.CreateBuilder(args);
 var additionalIssuers = builder.Configuration.GetSection("JwtSettings:AdditionalIssuers").Exists()

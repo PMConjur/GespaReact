@@ -1,73 +1,42 @@
 ﻿using Microsoft.Extensions.Configuration;
 using NoriAPI.Models.Busqueda;
-<<<<<<< HEAD
-<<<<<<< HEAD
 using NoriAPI.Repositories;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-=======
-=======
->>>>>>> Mark-10-Recuperacion
 using NoriAPI.Models.Ejecutivo;
-using NoriAPI.Repositories;
-using System;
-using System.Collections.Generic;
-<<<<<<< HEAD
->>>>>>> Mark-10-Tiempos
-=======
-using System.Linq;
->>>>>>> Mark-10-Recuperacion
 using System.Threading.Tasks;
 
 namespace NoriAPI.Services
 {
     public interface IEjecutivoService
     {
-<<<<<<< HEAD
-<<<<<<< HEAD
         Task<ResultadoProductividad> ValidateProductividad(int numEmpleado);
-
-    }
-
-=======
-
         Task<TiemposEjecutivo> ValidateTimes(int numEmpleado);
         Task<string> PauseUnpause(InfoPausa pausa);
-
-    }
-
-
-
->>>>>>> Mark-10-Tiempos
-=======
-
         Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo);
         Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
 
     }
 
->>>>>>> Mark-10-Recuperacion
     public class EjecutivoService : IEjecutivoService
     {
         private readonly IConfiguration _configuration;
         private readonly IEjecutivoRepository _ejecutivoRepository;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-        #region Metodos_Productividad
-        public static string[] _NombreColumnasConteos = { "Titulares", "Conocidos", "Desconocidos", "SinContacto" };
-        public static DataTable Cuentas;
-        public static DataTable Tiempos;
-        public static DataTable Metas;
-        public static DataTable GestionesEjecutivo;
-        public static DataTable Conteos;
-        public static DataSet _dsTablas = new DataSet();
-        public static ArrayList _alNombreId;
-        public static Hashtable _htValoresCatálogo;
-        public static Hashtable _htNombreId;
+        #region PropiedadesProductividad
+        private static string[] _NombreColumnasConteos = { "Titulares", "Conocidos", "Desconocidos", "SinContacto" };
+        private static DataTable Cuentas;
+        private static DataTable Tiempos;
+        private static DataTable Metas;
+        private static DataTable GestionesEjecutivo;
+        private static DataTable Conteos;
+        private static DataSet _dsTablas = new DataSet();
+        private static ArrayList _alNombreId;
+        private static Hashtable _htValoresCatálogo;
+        private static Hashtable _htNombreId;
         #endregion
 
 
@@ -89,7 +58,7 @@ namespace NoriAPI.Services
             Conteos = new DataTable();
             _dsTablas = new DataSet();
             _alNombreId = new ArrayList();
-            _htValoresCatálogo = new Hashtable(); 
+            _htValoresCatálogo = new Hashtable();
             _htNombreId = new Hashtable();
             string mensaje = null;
 
@@ -147,7 +116,7 @@ namespace NoriAPI.Services
                 false);
 
 
-            //------------------------------------Tiempos----------------------------------------------// 
+            //------------------------------------Tiempos----------------------------------------------//
 
             Tiempos = await _ejecutivoRepository.TiemposEjecutivo(numEmpleado);
 
@@ -317,36 +286,6 @@ namespace NoriAPI.Services
 
             long lRowTicks = tiempoSpan.Ticks;
             Tiempos.Rows[1]["Tiempo" + Conteo] = new TimeSpan(Convert.ToInt64(lRowTicks / dConteo));
-        }                
-        private static void CalculaTiempoPromedioTest(DataTable tiempos, string Conteo)
-        {
-            if (!Conteos.Columns.Contains(Conteo) || !tiempos.Columns.Contains("Tiempo" + Conteo)
-                || tiempos.Rows[0]["Tiempo" + Conteo].ToString() == "")
-                return;
-
-            double dConteo = Convert.ToInt32(Conteos.Rows[0][Conteo]);
-            if (dConteo == 0)
-                return;
-
-            // 🔹 Convertir correctamente el valor a TimeSpan
-            TimeSpan tiempoSpan;
-            object tiempoValor = tiempos.Rows[0]["Tiempo" + Conteo];
-
-            if (tiempoValor is TimeSpan)
-            {
-                tiempoSpan = (TimeSpan)tiempoValor;  // ✅ Ya es TimeSpan, solo casteamos
-            }
-            else if (tiempoValor is string tiempoStr && TimeSpan.TryParse(tiempoStr, out TimeSpan parsedTime))
-            {
-                tiempoSpan = parsedTime;  // ✅ Se convierte desde string
-            }
-            else
-            {
-                return; // ❌ Si no se puede convertir, salimos del método
-            }
-
-            long lRowTicks = tiempoSpan.Ticks;
-            tiempos.Rows[1]["Tiempo" + Conteo] = new TimeSpan(Convert.ToInt64(lRowTicks / dConteo));
         }
 
         public static Hashtable Relaciones(string Catálogo1, string Catálogo2, params string[] Valor2)
@@ -453,22 +392,11 @@ namespace NoriAPI.Services
 
             }
 
-            // Tiempos            
+            // Tiempos
             return sNombreColumna;
         }
 
         #endregion
-
-
-    }
-
-=======
-        public EjecutivoService(IEjecutivoRepository ejecutivoRepository)
-        {
-            _ejecutivoRepository = ejecutivoRepository;
-
-        }
-
 
 
         public async Task<TiemposEjecutivo> ValidateTimes(int numEmpleado)
@@ -542,16 +470,6 @@ namespace NoriAPI.Services
             return true;
         }
 
-
-    }
->>>>>>> Mark-10-Tiempos
-}
-=======
-        public EjecutivoService(IEjecutivoRepository ejecutivoRepository)
-        {
-            _ejecutivoRepository = ejecutivoRepository;
-        }
-
         public async Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo)
         {
             var negociaciones = (await _ejecutivoRepository.Negociaciones(idEjecutivo)).ToList();
@@ -615,10 +533,3 @@ namespace NoriAPI.Services
 
     }
 }
-
-
-
-
-
-
->>>>>>> Mark-10-Recuperacion

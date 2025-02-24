@@ -1,18 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-<<<<<<< HEAD
-<<<<<<< HEAD
 using Microsoft.IdentityModel.Tokens;
-using NoriAPI.Models.Busqueda;
-=======
 using NoriAPI.Models.Busqueda;
 using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Models.Login;
->>>>>>> Mark-10-Tiempos
-=======
-using NoriAPI.Models.Ejecutivo;
->>>>>>> Mark-10-Recuperacion
+
 using NoriAPI.Services;
 using System.Threading.Tasks;
 
@@ -20,6 +13,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/ejecutivo")]
+    [Authorize]
     public class EjecutivoController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -32,8 +26,6 @@ namespace NoriAPI.Controllers
 
         }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         [HttpGet("productividad-ejecutivo")]//Endpoint Padrino
         public async Task<ActionResult<ResultadoProductividad>> Productividad([FromQuery] int numEmpleado)
         {
@@ -47,8 +39,6 @@ namespace NoriAPI.Controllers
 
         }
 
-
-=======
         [HttpGet("tiempos-ejecutivo")]//Endpoint C#
         public async Task<ActionResult<TiemposEjecutivo>> Tiempos([FromQuery] int numEmpleado)
         {
@@ -65,10 +55,6 @@ namespace NoriAPI.Controllers
             return Ok(new { mensaje });
         }
 
-        
->>>>>>> Mark-10-Tiempos
-=======
-
         [HttpGet("get-negociaciones")]
         public async Task<IActionResult> GetNegociaciones([FromQuery] int idEjecutivo)
         {
@@ -79,7 +65,7 @@ namespace NoriAPI.Controllers
                 return BadRequest(new { Mensaje = "No se encontraron negociaciones." });
             }
 
-            return Ok( negociaciones );
+            return Ok(negociaciones);
         }
 
         [HttpGet("get-recuperacion")]
@@ -94,8 +80,5 @@ namespace NoriAPI.Controllers
 
             return Ok(recuperacion);
         }
-      
-
->>>>>>> Mark-10-Recuperacion
     }
 }
