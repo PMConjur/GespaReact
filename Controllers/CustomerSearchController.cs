@@ -16,8 +16,13 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/search-customer")]
+<<<<<<< HEAD
     //[Authorize]
     public class CustomerSearchController : ControllerBase
+=======
+    [Authorize]
+    public class CustomerSearchController : Controller
+>>>>>>> Mark-10-Tiempos
 
     {
         private readonly IConfiguration _configuration;
@@ -44,8 +49,13 @@ namespace NoriAPI.Controllers
             return Ok(new { Busqueda.ListaResultados });
         }
 
+<<<<<<< HEAD
         [HttpGet("automatico-ejecutivo")]//Endpoint Padrino
         public async Task<ActionResult<ResultadoAutomatico>> Automatico([FromQuery] int numEmpleado)
+=======
+        [HttpGet("productividad-ejecutivo")]//Endpoint Padrino
+        public async Task<ActionResult<ResultadoProductividad>> Productividad([FromQuery] int NumEmpleado)
+>>>>>>> Mark-10-Tiempos
         {
             var Automatico = await _searchService.ValidateAutomatico(numEmpleado);
 
@@ -54,7 +64,11 @@ namespace NoriAPI.Controllers
                 return Ok(new { Automatico.Mensaje });
 
             }
+<<<<<<< HEAD
             return Ok(Automatico.Cuenta);
+=======
+            return Ok(new { Productividad.Mensaje });
+>>>>>>> Mark-10-Tiempos
         }
 
         [HttpGet("phones")]
