@@ -126,8 +126,8 @@ const Managment = () => {
       const numeroTelefonico = responseEjecutivo.data.numeroTelefonico;
 
       if (!idCuenta) {
-        console.warn(
-          "idCuenta es nulo o indefinido en la respuesta del ejecutivo"
+        toast.warning(
+          "idCuenta es nulo, solicita cargar a tu administrador"
         );
         setSearchResults([]);
         return;
@@ -153,7 +153,7 @@ const Managment = () => {
       if (Array.isArray(listaResultados) && listaResultados.length > 0) {
         setSearchResults(listaResultados);
       } else {
-        console.warn("No se encontraron resultados en la búsqueda de cuenta");
+        toast.warning("No se encontraron resultados en la búsqueda de cuenta");
         setSearchResults([]);
       }
     } catch (error) {
