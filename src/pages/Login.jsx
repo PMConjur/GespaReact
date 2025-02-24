@@ -189,7 +189,6 @@ function Login() {
         />
       )}{" "}
       {/* Render ModalChangePassword */}
-      <CerrarSesion setUser={setUser} setPassword={setPassword} />
     </>
   );
 }

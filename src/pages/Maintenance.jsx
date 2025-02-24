@@ -1,11 +1,12 @@
-import Navbar from "../components/Navbar";
+
 import Maintenance from "../assets/img/maintenance.png";
+import NavbarComponent from "../components/NavbarComponent";
 
 const MaintenancePage = () => {
   return (
     <>
-      <Navbar />
-   
+      <NavbarComponent />
+
       <main id="main" data-bs-theme="dark">
         <div className="row" style={{ marginTop: "60px" }}>
           <div className="pagetitle col-lg-12">
