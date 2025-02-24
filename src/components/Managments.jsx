@@ -1,7 +1,7 @@
-import { auto } from "@popperjs/core";
 import { Row, Col, Card } from "react-bootstrap";
 import Maintenance from "../assets/img/maintenance.png";
-const Flow = () => {
+import { auto } from "@popperjs/core";
+const Managments = () => {
   return (
     <Row xs={auto} md={auto} className="g-2">
       {Array.from({ length: 1 }).map((_, idx) => (
@@ -18,7 +18,7 @@ const Flow = () => {
               }}
             />
             <Card.Body>
-              <Card.Title>Flujo</Card.Title>
+              <Card.Title>Gestiones</Card.Title>
               <Card.Text>Estamos trabajando en ello...</Card.Text>
             </Card.Body>
           </Card>
@@ -28,4 +28,4 @@ const Flow = () => {
   );
 };
 
-export default Flow;
+export default Managments;

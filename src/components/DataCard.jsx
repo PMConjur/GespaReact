@@ -58,108 +58,103 @@ const DataCard = () => {
     );
   };
 
-  return (
-    <>
-      {searchResults.map((result, index) => (
-        <Row key={index} className="dashboard">
-          <Col xxl={3} xl={6} md={6}>
-            <Card
-              className="warning-card text-light"
-              style={{ backgroundColor: "#1d1f20" }}
-            >
-              <Card.Body>
-                <Card.Title>Nombre:</Card.Title>
-                <div className="d-flex align-items-center">
-                  <div className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light">
-                    <PersonFill
-                      style={{ fontSize: "32px", color: "#55b0d5" }}
-                    ></PersonFill>
-                  </div>
-                  <div className="ps-3">
-                    <h6
-                      style={{
-                        fontSize: "1.2rem",
-                        color: "#55b0d5"
-                      }}
-                      id="nombreDeudor"
-                    >
-                      {result?.nombreDeudor || "N/A"}
-                    </h6>
-                    <span className="small pt-1 fw-bold">Deudor</span>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-            <br />
-          </Col>
+  const defaultData = {
+    nombreDeudor: "-",
+    saldo: "-",
+    minimoAtrasado: "-",
+    situacion: "-"
+  };
 
-          <Col xxl={3} xl={6} md={6}>
-            <Card
-              className="warning-card text-light"
-              style={{ backgroundColor: "#1d1f20" }}
-            >
-              <Card.Body>
-                <Card.Title>Saldo Actual:</Card.Title>
-                <div className="d-flex align-items-center">
-                  <div className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light">
-                    <Cash style={{ fontSize: "32px", color: "#65f3a3" }}></Cash>
-                  </div>
-                  <div className="ps-3">
-                    <h6
-                      style={{
-                        fontSize: "1.5rem",
-                        color: "#65f3a3"
-                      }}
-                    >
-                      {"$" + result?.saldo || "-"}
-                    </h6>
-                    <span className="small pt-1 fw-bold">Saldo registrado</span>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-            <br />
-          </Col>
-          <Col xxl={3} xl={6} md={6}>
-            <Card
-              className="warning-card text-light"
-              style={{ backgroundColor: "#1d1f20" }}
-            >
-              <Card.Body>
-                <Card.Title>Mínimo Mas Atrasado:</Card.Title>
-                <div className="d-flex align-items-center">
-                  <div className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light">
-                    <CurrencyDollar
-                      style={{ fontSize: "32px", color: "#f1a441" }}
-                    ></CurrencyDollar>
-                  </div>
-                  <div className="ps-3">
-                    <h6
-                      style={{
-                        fontSize: "1.5rem",
-                        color: "#f1a441"
-                      }}
-                    >
-                      {result?.minimoAtrasado || "$0.00"}
-                    </h6>
-                    <span className="small pt-1 fw-bold">Monto reflejado</span>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-            <br />
-          </Col>
-          <Col xxl={3} xl={6} md={6}>
-            <Card
-              className="warning-card text-light"
-              style={{ backgroundColor: "#1d1f20" }}
-            >
-              {renderSituacion(result?.situacion)}
-            </Card>
-          </Col>
-        </Row>
-      ))}
-    </>
+  const result = searchResults[0] || defaultData;
+
+  return (
+    <Row className="dashboard">
+      <Col xxl={3} xl={6} md={6}>
+        <Card className="warning-card text-light">
+          <Card.Body>
+            <Card.Title>Nombre:</Card.Title>
+            <div className="d-flex align-items-center">
+              <div className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light">
+                <PersonFill
+                  style={{ fontSize: "32px", color: "#55b0d5" }}
+                ></PersonFill>
+              </div>
+              <div className="ps-3">
+                <h6
+                  style={{
+                    fontSize: "1.2rem",
+                    color: "#55b0d5"
+                  }}
+                  id="nombreDeudor"
+                >
+                  {result.nombreDeudor}
+                </h6>
+                <span className="small pt-1 fw-bold">Deudor</span>
+              </div>
+            </div>
+          </Card.Body>
+        </Card>
+        <br />
+      </Col>
+
+      <Col xxl={3} xl={6} md={6}>
+        <Card className="warning-card text-light">
+          <Card.Body>
+            <Card.Title>Saldo Actual:</Card.Title>
+            <div className="d-flex align-items-center">
+              <div className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light">
+                <Cash style={{ fontSize: "32px", color: "#65f3a3" }}></Cash>
+              </div>
+              <div className="ps-3">
+                <h6
+                  style={{
+                    fontSize: "1.5rem",
+                    color: "#65f3a3"
+                  }}
+                >
+                  {"$" + result.saldo}
+                </h6>
+                <span className="small pt-1 fw-bold">Saldo registrado</span>
+              </div>
+            </div>
+          </Card.Body>
+        </Card>
+        <br />
+      </Col>
+      <Col xxl={3} xl={6} md={6}>
+        <Card className="warning-card text-light">
+          <Card.Body>
+            <Card.Title>Mínimo Mas Atrasado:</Card.Title>
+            <div className="d-flex align-items-center">
+              <div className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light">
+                <CurrencyDollar
+                  style={{ fontSize: "32px", color: "#f1a441" }}
+                ></CurrencyDollar>
+              </div>
+              <div className="ps-3">
+                <h6
+                  style={{
+                    fontSize: "1.5rem",
+                    color: "#f1a441"
+                  }}
+                >
+                  {result.minimoAtrasado != null
+                    ? "$" + result.minimoAtrasado
+                    : "-"}
+                </h6>
+                <span className="small pt-1 fw-bold">Monto reflejado</span>
+              </div>
+            </div>
+          </Card.Body>
+        </Card>
+        <br />
+      </Col>
+      <Col xxl={3} xl={6} md={6}>
+        <Card className="warning-card text-light">
+          {renderSituacion(result.situacion)}
+        </Card>
+      </Col>
+    </Row>
   );
 };
 

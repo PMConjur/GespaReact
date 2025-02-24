@@ -13,7 +13,8 @@ import { toast, Toaster } from "sonner";
 import SearchForm from "../components/SearchForm";
 import SearchCustomer from "../components/SearchCustomer";
 import CustomToast from "../components/CustomToast";
-
+import Managments from "../components/Managments";
+import Reminder from "../components/Reminder";
 // Crear el contexto
 export const AppContext = createContext();
 //Import automatico
@@ -193,12 +194,12 @@ const Managment = () => {
           {/* Agregar Sonner aquí */}
           <Container fluid className="responsive mt-5">
             <Row>
-              <Col xs={6} md={6}>
+              <Col xs={12} md={4}>
                 <br />
 
                 <DebtorInformation />
               </Col>
-              <Col xs={6} md={6}>
+              <Col xs={12} md={8}>
                 <br />
 
                 <SearchForm />
@@ -230,6 +231,7 @@ const Managment = () => {
                 <Row>
                   <Col xs={12} md={8}>
                     <h1>Gestiones</h1>
+                    <Managments />
                   </Col>
                   <Col xs={12} md={4}>
                     <h1>Calendario</h1>
@@ -242,6 +244,7 @@ const Managment = () => {
                   </Col>
                   <Col xs={12} md={4}>
                     <h1>Recordatorios</h1>
+                    <Reminder />
                   </Col>
                 </Row>
               </Col>

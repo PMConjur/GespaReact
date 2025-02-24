@@ -1,7 +1,7 @@
 import { Card, Table } from "react-bootstrap";
 const InformationClient = () => {
   return (
-    <Card className="overflow-auto bg-dark">
+    <Card className="overflow-auto">
       <Card.Body>
         <h5 className="card-title text-white">Información</h5>
         <Table hover className="table table-borderless" variant="dark">
