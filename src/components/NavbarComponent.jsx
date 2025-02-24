@@ -8,7 +8,7 @@ import CerrarSesion from "./CierraSesion";
 
 const NavbarComponent = () => {
   // Consume el contexto
-  //const { setPassword, setUser} = useContext(AppContext);
+  const { setPassword, setUser } = useContext(AppContext);
 
   return (
     <Navbar
@@ -40,7 +40,7 @@ const NavbarComponent = () => {
             <Nav.Link href="/managment">
               <h5>Gestion</h5>
             </Nav.Link>
-            <CerrarSesion />
+            <CerrarSesion setUser={setUser} setPassword={setPassword} />
             <div className="mt-auto">Grupo Consorcio</div>
           </Nav>
         </Offcanvas.Body>

@@ -212,41 +212,41 @@ const Managment = () => {
             <Row>
               <Col xs={6} md={6}>
                 <br />
-                <h1>Modals</h1>
+
                 <DebtorInformation />
               </Col>
               <Col xs={6} md={6}>
                 <br />
-                <h1>Filtros</h1>
+              
                 <SearchForm />
               </Col>
 
               <Col xs={12} md={12}>
-                <h1>Informacion Deudor</h1>
+               
                 <SearchCustomer />
               </Col>
               <Col xs={12} md={12}>
-                <h1>Cards</h1>
+               
                 <DataCard />
               </Col>
               <Col xs={12} md={12}>
-                <Row>
-                  <Col xs={12} md={8}>
-                    <h1>Información</h1>
+                <Row className="recent-sales">
+                  <Col xs={12} md={8} lg={8}>
+                   
                     <InformationClient />
                   </Col>
                   <Col xs={12} md={4}>
-                    <h1>Flujo</h1>
+                    
                     <Flow />
                   </Col>
                 </Row>
                 <Row>
                   <Col xs={12} md={8}>
-                    <h1>Telefonos</h1>
+                  
                     <Telephones />
                   </Col>
                   <Col xs={12} md={4}>
-                    <h1>Calculadora</h1>
+                    
                     <Calculator />
                   </Col>
                 </Row>

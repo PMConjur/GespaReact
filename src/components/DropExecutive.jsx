@@ -5,6 +5,8 @@ const responseData =
   location.state || JSON.parse(localStorage.getItem("responseData")); // Retrieve responseData from localStorage if not in location state
 const nombreEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
 const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+console.log(nombreEjecutivo);
+console.log(idEjecutivo);
 const DropExecutive = () => {
   return (
     <Dropdown
