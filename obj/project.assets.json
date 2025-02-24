@@ -1867,19 +1867,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Yoshua Rodriguez\\.nuget\\packages\\": {}
+    "C:\\Users\\César Rodríguez\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Users\\Yoshi\\Documentos\\Repos\\GespaReact-BACK\\GespaReact\\GespaReact\\NoriAPI.csproj",
+      "projectUniqueName": "D:\\CésarRdz\\1 Gespa Web React\\NoriAPI.csproj",
       "projectName": "NoriAPI",
-      "projectPath": "D:\\Users\\Yoshi\\Documentos\\Repos\\GespaReact-BACK\\GespaReact\\GespaReact\\NoriAPI.csproj",
-      "packagesPath": "C:\\Users\\Yoshua Rodriguez\\.nuget\\packages\\",
-      "outputPath": "D:\\Users\\Yoshi\\Documentos\\Repos\\GespaReact-BACK\\GespaReact\\GespaReact\\obj\\",
+      "projectPath": "D:\\CésarRdz\\1 Gespa Web React\\NoriAPI.csproj",
+      "packagesPath": "C:\\Users\\César Rodríguez\\.nuget\\packages\\",
+      "outputPath": "D:\\CésarRdz\\1 Gespa Web React\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "C:\\Users\\Yoshua Rodriguez\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\César Rodríguez\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -1958,7 +1963,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.404/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.202/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
