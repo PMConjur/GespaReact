@@ -71,11 +71,21 @@ namespace NoriAPI.Controllers
         [HttpGet("get-recuperacion")]
         public async Task<IActionResult> GetRecuperacion([FromQuery] int idEjecutivo, [FromQuery] int actual)
         {
+            if (idEjecutivo <= 0)
+            {
+                return BadRequest(new { Mensaje = "El ID del ejecutivo debe ser un número positivo." });
+            }
+
+            if (actual != 0 && actual != 1)
+            {
+                return BadRequest(new { Mensaje = "El parámetro 'actual' debe ser 0 (anterior) o 1 (actual)." });
+            }
+
             var recuperacion = await _ejecutivoService.GetRecuperacion(idEjecutivo, actual);
 
             if (recuperacion == null)
             {
-                return BadRequest(new { Mensaje = "No se pudo obtener la recuperación del ejecutivo." });
+                return BadRequest(new { Mensaje = "Parámetros inválidos o no se encontró información de recuperación del ejecutivo." });
             }
 
             return Ok(recuperacion);

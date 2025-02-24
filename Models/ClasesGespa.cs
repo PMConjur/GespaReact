@@ -28,7 +28,7 @@ namespace NoriAPI.Models
 
 
         public static void CargaCatalogos()
-        {            
+        {
             _htValoresCatálogo = new Hashtable();
             _htNombreId = new Hashtable();
             foreach (DataRow rowCatalog in dtCatalogos.Rows)

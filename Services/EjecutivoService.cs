@@ -25,9 +25,7 @@ namespace NoriAPI.Services
     public class EjecutivoService : IEjecutivoService
     {
         private readonly IConfiguration _configuration;
-<<<<<<< HEAD
-        private readonly IEjecutivoRepository _ejecutivoRepository;        
-=======
+
         private readonly IEjecutivoRepository _ejecutivoRepository;
 
         #region PropiedadesProductividad
@@ -42,7 +40,6 @@ namespace NoriAPI.Services
         private static Hashtable _htValoresCatálogo;
         private static Hashtable _htNombreId;
         #endregion
->>>>>>> Mark-12-Soluciones
 
 
         public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository)
@@ -56,7 +53,6 @@ namespace NoriAPI.Services
         public async Task<ResultadoProductividad> ValidateProductividad(int numEmpleado)
         {
             // Limpiar las variables estáticas al comienzo del método
-<<<<<<< HEAD
             ClasesGespa.Cuentas = new DataTable();
             ClasesGespa.Tiempos = new DataTable();
             ClasesGespa.Metas = new DataTable();
@@ -66,73 +62,30 @@ namespace NoriAPI.Services
             ClasesGespa._alNombreId = new ArrayList();
             ClasesGespa._htValoresCatálogo = new Hashtable();
             ClasesGespa._htNombreId = new Hashtable();
-=======
-            Cuentas = new DataTable();
-            Tiempos = new DataTable();
-            Metas = new DataTable();
-            GestionesEjecutivo = new DataTable();
-            Conteos = new DataTable();
-            _dsTablas = new DataSet();
-            _alNombreId = new ArrayList();
-            _htValoresCatálogo = new Hashtable();
-            _htNombreId = new Hashtable();
->>>>>>> Mark-12-Soluciones
+
             string mensaje = null;
 
-            //Comentada la vieja llamada al método
-            //var productividadInfo = await _ejecutivoRepository.ValidateProductividad(numEmpleado);
-            //var prod = (IDictionary<string, object>)productividadInfo;
-            // Convertir productividadInfo a DataTable
 
-            //---------------------------------CargaCatalogos---------------------------------//            
+
+            //---------------------------------CargaCatalogos---------------------------------//
             ClasesGespa._alNombreId = new ArrayList();
             // NUEVA LLAMADA AL REPOSITORY
             ClasesGespa.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
-            ClasesGespa.CargaCatalogos();           
-            //---------------------------------------------IdValor----------------------------------------//
-
-
-
-
-
-
+            ClasesGespa.CargaCatalogos();
 
             //---------------------------------------Relaciones --------------------------------------------//
-<<<<<<< HEAD
-            
+
             ClasesGespa.dtRelaciones = await _ejecutivoRepository.VwRelaciones();
-            ClasesGespa.Relaciones();            
+            ClasesGespa.Relaciones();
             //------------------------------------Tiempos----------------------------------------------// 
-=======
-            DataTable dtRelaciones = new DataTable();
 
-            dtRelaciones = await _ejecutivoRepository.VwRelaciones();
-
-            // Crea llave primaria.
-            dtRelaciones.PrimaryKey = new DataColumn[] { dtRelaciones.Columns["idValor1"], dtRelaciones.Columns["idValor2"] };
-
-            dtRelaciones.TableName = "Relaciones";
-            if (_dsTablas.Tables.Contains("Relaciones"))
-                _dsTablas.Tables.Remove("Relaciones");
-
-            _dsTablas.Tables.Add(dtRelaciones);
-
-            _dsTablas.Relations.Add(
-                "FK_CatálogosRelaciones1",
-                _dsTablas.Tables["Catálogos"].Columns["idValor"],
-                _dsTablas.Tables["Relaciones"].Columns["idValor1"],
-                false);
-
-
-            //------------------------------------Tiempos----------------------------------------------//
->>>>>>> Mark-12-Soluciones
 
             ClasesGespa.Tiempos = await _ejecutivoRepository.TiemposEjecutivo(numEmpleado);
-            ClasesGespa.ObtieneTiempos();            
+            ClasesGespa.ObtieneTiempos();
             //-----------------------------------------Metas-----------------------------------------------------//
 
             ClasesGespa.Metas = await _ejecutivoRepository.MetasEjecutivo(numEmpleado);
-            ClasesGespa.ObtieneMetas();            
+            ClasesGespa.ObtieneMetas();
             //----------------------------------------Gestiones-------------------------------------------------------//
 
             ClasesGespa.tblDelDía = await _ejecutivoRepository.Gestiones(numEmpleado);
@@ -177,8 +130,8 @@ namespace NoriAPI.Services
 
             return productividad;
 
-<<<<<<< HEAD
-        }               
+
+        }
         private static void CalculaTiempoPromedioTest(DataTable tiempos, string Conteo)
         {
             if (!ClasesGespa.Conteos.Columns.Contains(Conteo) || !tiempos.Columns.Contains("Tiempo" + Conteo)
@@ -186,53 +139,14 @@ namespace NoriAPI.Services
                 return;
 
             double dConteo = Convert.ToInt32(ClasesGespa.Conteos.Rows[0][Conteo]);
-=======
-        }
 
-        private static void ConteosGestiones()
-        {
-            // Define tabla.
-            //DataTable Conteos = new DataTable();
-            Conteos = new DataTable();
-            Conteos.Columns.Add("Negociaciones", typeof(int));
-            Conteos.Columns.Add("Cuentas", typeof(int));
-            foreach (string sColumna in _NombreColumnasConteos)
-                Conteos.Columns.Add(sColumna, typeof(int));
-
-            Conteos.Rows.Add();
-
-            // Cuentas
-            Conteos.Rows[0]["Cuentas"] = Cuentas.Rows.Count;
-            CalculaTiempoPromedio("Cuentas");
-
-            //Negociaciones
-            Conteos.Rows[0]["Negociaciones"] = 0;
-
-            //Gestiones
-            Hashtable htContestaciones = Relaciones("Contactos", "Contactos", "No le conoce");
-            foreach (DataRow Gestión in GestionesEjecutivo.Rows)
-                ConteoGestión(Gestión, htContestaciones);
-
-        }
-
-        private static void CalculaTiempoPromedio(string Conteo)
-        {
-            if (!Conteos.Columns.Contains(Conteo) || !Tiempos.Columns.Contains("Tiempo" + Conteo)
-                || Tiempos.Rows[0]["Tiempo" + Conteo].ToString() == "")
-                return;
-
-            double dConteo = Convert.ToInt32(Conteos.Rows[0][Conteo]);
->>>>>>> Mark-12-Soluciones
             if (dConteo == 0)
                 return;
 
             // 🔹 Convertir correctamente el valor a TimeSpan
             TimeSpan tiempoSpan;
-<<<<<<< HEAD
+
             object tiempoValor = tiempos.Rows[0]["Tiempo" + Conteo];
-=======
-            object tiempoValor = Tiempos.Rows[0]["Tiempo" + Conteo];
->>>>>>> Mark-12-Soluciones
 
             if (tiempoValor is TimeSpan)
             {
@@ -248,122 +162,9 @@ namespace NoriAPI.Services
             }
 
             long lRowTicks = tiempoSpan.Ticks;
-<<<<<<< HEAD
+
             tiempos.Rows[1]["Tiempo" + Conteo] = new TimeSpan(Convert.ToInt64(lRowTicks / dConteo));
         }
-                
-=======
-            Tiempos.Rows[1]["Tiempo" + Conteo] = new TimeSpan(Convert.ToInt64(lRowTicks / dConteo));
-        }
-
-        public static Hashtable Relaciones(string Catálogo1, string Catálogo2, params string[] Valor2)
-        {
-
-            Hashtable htRelaciones = new Hashtable();
-
-            string sSelectValor2 = "";
-            string sValores = "''";
-            foreach (string sValor in Valor2)
-                sValores += ",'" + sValor + "'";
-            if (Valor2.Length > 0)
-                sSelectValor2 = " AND Valor2 IN (" + sValores + ") ";
-
-            DataRow[] drFilas = _dsTablas.Tables["Relaciones"].Select("Catálogo1 = '" + Catálogo1 + "' AND Catálogo2 = '" + Catálogo2 + "' " + sSelectValor2);
-            foreach (DataRow fila in drFilas)
-                htRelaciones.Add(fila["idValor1"].ToString(), fila["idValor2"].ToString());
-
-
-            return htRelaciones;
-        }
-
-        public static string ConteoGestión(DataRow Gestión, Hashtable idContestaciones = null)
-        {
-
-            int[] iConteos = { 0, 0, 0, 0 };
-            int iConteoAnterior = 0;
-            string sIdContacto = Gestión["idContacto"].ToString();
-            string sNombreColumna = "";
-
-            if (idContestaciones == null)
-                idContestaciones = Relaciones("Contactos", "Contactos", "No le conoce");
-
-            // Contacto - Marcaciones
-            iConteos[0] = sIdContacto == "1101" ? 1 : 0;  // #idCatálogo
-            iConteos[1] = sIdContacto == "1102" ? 1 : 0;
-            iConteos[2] = idContestaciones.ContainsKey(sIdContacto) ? 1 : 0;
-            iConteos[3] = iConteos[0] + iConteos[1] + iConteos[2] == 0 ? 1 : 0;
-
-            DataRow drFila = Conteos.Rows[0];
-
-            for (int iCol = 0; iCol < iConteos.Length; iCol++)
-            {
-                iConteoAnterior = 0;
-                int.TryParse(drFila[_NombreColumnasConteos[iCol]].ToString(), out iConteoAnterior);
-                drFila[_NombreColumnasConteos[iCol]] = iConteoAnterior + iConteos[iCol];
-
-                if (iConteos[iCol] > 0)
-                {
-                    sNombreColumna = _NombreColumnasConteos[iCol];
-
-                    // Tíempos
-                    //if (Tiempos != null && Tiempos.Rows.Count > 1 && Gestión["Duración"].ToString() != "")
-                    //{
-                    //    long lTicks = ((TimeSpan)Gestión["Duración"]).Ticks;
-                    //    long lRowTicks = ((TimeSpan)Tiempos.Rows[0]["Tiempo" + sNombreColumna]).Ticks + lTicks;
-                    //    Tiempos.Rows[0]["Tiempo" + sNombreColumna] = new TimeSpan(lRowTicks);
-                    //    Tiempos.Rows[1]["Tiempo" + sNombreColumna] = new TimeSpan(Convert.ToInt64(lRowTicks / (double)(iConteoAnterior + iConteos[iCol])));
-                    //}
-                    if (Tiempos != null && Tiempos.Rows.Count > 1 && !string.IsNullOrEmpty(Gestión["Duración"].ToString()))
-                    {
-                        // 🔹 Convertir `Gestión["Duración"]` a `TimeSpan`
-                        TimeSpan duracion = TimeSpan.Zero;
-                        if (Gestión["Duración"] is TimeSpan)
-                        {
-                            duracion = (TimeSpan)Gestión["Duración"];  // ✅ Ya es TimeSpan
-                        }
-                        else if (TimeSpan.TryParse(Gestión["Duración"].ToString(), out TimeSpan parsedDuracion))
-                        {
-                            duracion = parsedDuracion;  // ✅ Convertido desde string
-                        }
-                        else
-                        {
-                            //return;  // ❌ Si no se puede convertir, salir del método
-                        }
-
-                        // 🔹 Convertir `Tiempos.Rows[0]["Tiempo" + sNombreColumna]` a `TimeSpan`
-                        TimeSpan tiempoAnterior = TimeSpan.Zero;
-                        object tiempoValor = Tiempos.Rows[0]["Tiempo" + sNombreColumna];
-
-                        if (tiempoValor is TimeSpan)
-                        {
-                            tiempoAnterior = (TimeSpan)tiempoValor;  // ✅ Ya es TimeSpan
-                        }
-                        else if (TimeSpan.TryParse(tiempoValor.ToString(), out TimeSpan parsedTiempo))
-                        {
-                            tiempoAnterior = parsedTiempo;  // ✅ Convertido desde string
-                        }
-                        else
-                        {
-                            //return;  // ❌ Si no se puede convertir, salir del método
-                        }
-
-                        // 🔹 Calcular el nuevo tiempo
-                        long lTicks = duracion.Ticks;
-                        long lRowTicks = tiempoAnterior.Ticks + lTicks;
-
-                        // 🔹 Asignar valores convertidos correctamente
-                        Tiempos.Rows[0]["Tiempo" + sNombreColumna] = new TimeSpan(lRowTicks);
-                        Tiempos.Rows[1]["Tiempo" + sNombreColumna] = new TimeSpan(Convert.ToInt64(lRowTicks / (double)(iConteoAnterior + iConteos[iCol])));
-                    }
-
-                }
-
-            }
-
-            // Tiempos
-            return sNombreColumna;
-        }
->>>>>>> Mark-12-Soluciones
 
         #endregion
 
@@ -488,17 +289,18 @@ namespace NoriAPI.Services
             return new TimeSpan(totalTicks / tiempos.Count);
         }
 
-        public async Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual)
+        public async Task<Recuperacion?> GetRecuperacion(int idEjecutivo, int actual)
         {
-            if (actual == 1)
+            if (idEjecutivo <= 0 || (actual != 0 && actual != 1))
             {
-                return await _ejecutivoRepository.RecuperacionActual(idEjecutivo);
+                return null;
             }
-            else
-            {
-                return await _ejecutivoRepository.RecuperacionAnterior(idEjecutivo);
-            }
+
+            return actual == 1
+                ? await _ejecutivoRepository.RecuperacionActual(idEjecutivo)
+                : await _ejecutivoRepository.RecuperacionAnterior(idEjecutivo);
         }
+
 
     }
 }
