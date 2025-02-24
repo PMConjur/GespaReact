@@ -36,21 +36,6 @@ const Managment = () => {
     responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
 
-  const fetchFilterData = async (filter) => {
-    try {
-      const response = await axios.get(
-        "http://192.168.7.33/api/search-customer/busqueda-cuenta",
-        {
-          params: { filtro: filter },
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      setSearchResults(response.data.listaResultados || []);
-    } catch (error) {
-      console.error("Error fetching filter data:", error);
-    }
-  };
-
   const handleSearch = async () => {
     try {
       const response = await axios.get(
@@ -223,45 +208,45 @@ const Managment = () => {
           <Toaster richColors position="top-right" />
           <NavbarComponent />
 
-          <Container fluid className="responsive mt-5">
-            <Row>
+          <Container fluid className="responsive mt-5 ">
+            <Row className="dashboard">
               <Col xs={6} md={6}>
                 <br />
-                <h1>Modals</h1>
+
                 <DebtorInformation />
               </Col>
               <Col xs={6} md={6}>
                 <br />
-                <h1>Filtros</h1>
+              
                 <SearchForm />
               </Col>
 
               <Col xs={12} md={12}>
-                <h1>Informacion Deudor</h1>
+               
                 <SearchCustomer />
               </Col>
               <Col xs={12} md={12}>
-                <h1>Cards</h1>
+               
                 <DataCard />
               </Col>
               <Col xs={12} md={12}>
-                <Row>
-                  <Col xs={12} md={8}>
-                    <h1>Información</h1>
+                <Row className="recent-sales">
+                  <Col xs={12} md={8} lg={8}>
+                   
                     <InformationClient />
                   </Col>
                   <Col xs={12} md={4}>
-                    <h1>Flujo</h1>
+                    
                     <Flow />
                   </Col>
                 </Row>
                 <Row>
                   <Col xs={12} md={8}>
-                    <h1>Telefonos</h1>
+                  
                     <Telephones />
                   </Col>
                   <Col xs={12} md={4}>
-                    <h1>Calculadora</h1>
+                    
                     <Calculator />
                   </Col>
                 </Row>

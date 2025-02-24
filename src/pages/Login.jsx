@@ -15,6 +15,7 @@ import { PersonFillLock, KeyFill } from "react-bootstrap-icons";
 import "../index.css";
 import ModalChange from "../components/ModalChange"; // Import ModalChange component
 import ModalChangePassword from "../components/ModalChangePassword"; // Import ModalChangePassword component
+import CerrarSesion from "../components/CierraSesion"; // Import CerrarSesion component
 import logo from "../assets/img/logo-login.png";
 
 function Login() {
@@ -24,7 +25,7 @@ function Login() {
   const [showPasswordModal, setShowPasswordModal] = useState(false); // State to control ModalChangePassword visibility
   const [days, setDays] = useState(""); // State to store days value
   const [expire, setExpire] = useState(null);
-  const [responseData, setResponseData] = useState(null); // State to store response data
+  const [responseData, setResponseData] = useState(""); // State to store response data
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -188,6 +189,7 @@ function Login() {
         />
       )}{" "}
       {/* Render ModalChangePassword */}
+      <CerrarSesion setUser={setUser} setPassword={setPassword} />
     </>
   );
 }
