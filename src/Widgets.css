@@ -9,5 +9,10 @@
 }
 
 .card {
+<<<<<<< HEAD
   color: #ffffff;
+=======
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  color: #e6e4e4;
+>>>>>>> HU5-Widtgets
 }
