@@ -1,17 +1,17 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import Nav from "react-bootstrap/Nav";
+import PropTypes from "prop-types"; // Import PropTypes for prop validation
 
-const CerrarSesion = ({ setUser, setPassword }) => {
+const CerrarSesion = ({ setUser, setIdEjecutivo }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
     // Limpiar los datos de usuario
-    setUser("");
-    setPassword("");
+    if (typeof setUser === "function") setUser("");
+    if (typeof setIdEjecutivo === "function") setIdEjecutivo("");
 
     // Limpiar localStorage
-    localStorage.removeItem("token");
+    localStorage.removeItem("responseData");
 
     // Limpiar sessionStorage
     sessionStorage.clear();
@@ -32,8 +32,8 @@ const CerrarSesion = ({ setUser, setPassword }) => {
       });
     }
 
-    // Redirigir a la página
-    window.location.replace("http://192.168.7.33:90/");
+    // Redirigir a la página de login
+    navigate("/");
   };
 
   return (
@@ -42,4 +42,10 @@ const CerrarSesion = ({ setUser, setPassword }) => {
     </Nav.Link>
   );
 };
+
+CerrarSesion.propTypes = {
+  setUser: PropTypes.func.isRequired,
+  setIdEjecutivo: PropTypes.func.isRequired
+};
+
 export default CerrarSesion;

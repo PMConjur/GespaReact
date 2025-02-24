@@ -1,14 +1,20 @@
-import { useContext } from "react";
-import { AppContext } from "../pages/Managment"; // Importa el contexto
 import { Navbar, Nav } from "react-bootstrap";
 import DropExecutive from "./DropExecutive";
 import NavContainer from "./NavContainer";
 import { Offcanvas } from "react-bootstrap";
 import CerrarSesion from "./CierraSesion";
+import { useLocation } from "react-router-dom";
 
 const NavbarComponent = () => {
-  // Consume el contexto
-  //const { setPassword, setUser } = useContext(AppContext);
+  const location = useLocation();
+  const responseData =
+    location.state || JSON.parse(localStorage.getItem("responseData"));
+  const setUser = (user) => {
+    responseData.ejecutivo.infoEjecutivo.usuario = user;
+  };
+  const setIdEjecutivo = (idEjecutivo) => {
+    responseData.ejecutivo.infoEjecutivo.idEjecutivo = idEjecutivo;
+  };
 
   return (
     <Navbar
@@ -40,7 +46,7 @@ const NavbarComponent = () => {
             <Nav.Link href="/managment">
               <h5>Gestion</h5>
             </Nav.Link>
-
+            <CerrarSesion setUser={setUser} setIdEjecutivo={setIdEjecutivo} />
             <div className="mt-auto">Grupo Consorcio</div>
           </Nav>
         </Offcanvas.Body>

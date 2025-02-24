@@ -12,7 +12,7 @@ import axios from "axios";
 import { toast, Toaster } from "sonner";
 import SearchForm from "../components/SearchForm";
 import SearchCustomer from "../components/SearchCustomer";
-import CustomToast from "../components/CustomToast"
+import CustomToast from "../components/CustomToast";
 
 // Crear el contexto
 export const AppContext = createContext();
@@ -38,28 +38,13 @@ const Managment = () => {
     responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
 
-  const fetchFilterData = async (filter) => {
-    try {
-      const response = await axios.get(
-        "http://192.168.7.33/api/search-customer/busqueda-cuenta",
-        {
-          params: { filtro: filter },
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setSearchResults(response.data.listaResultados || []);
-    } catch (error) {
-      console.error("Error fetching filter data:", error);
-    }
-  };
-
   const handleSearch = async () => {
     try {
       const response = await axios.get(
         "http://192.168.7.33/api/search-customer/busqueda-cuenta",
         {
           params: { filtro: filter, ValorBusqueda: searchTerm },
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}` }
         }
       );
       setSearchResults(response.data.listaResultados || []);
@@ -85,7 +70,7 @@ const Managment = () => {
           "http://192.168.7.33/api/search-customer/busqueda-cuenta",
           {
             params: { filtro: filter, ValorBusqueda: value },
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${token}` }
           }
         );
         setSuggestions(response.data.listaResultados || []);
@@ -126,9 +111,7 @@ const Managment = () => {
       const numeroTelefonico = responseEjecutivo.data.numeroTelefonico;
 
       if (!idCuenta) {
-        toast.warning(
-          "idCuenta es nulo, solicita cargar a tu administrador"
-        );
+        toast.warning("idCuenta es nulo, solicita cargar a tu administrador");
         setSearchResults([]);
         return;
       }
@@ -137,12 +120,11 @@ const Managment = () => {
       // Mostrar el toast
       setShowToast(true);
 
-      
       const responseCuenta = await axios.get(
         "http://192.168.7.33/api/search-customer/busqueda-cuenta",
         {
           params: { filtro: "Cuenta", ValorBusqueda: idCuenta },
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}` }
         }
       );
 
@@ -165,10 +147,10 @@ const Managment = () => {
     }
   };
 
-     const copyToClipboard = () => {
-        navigator.clipboard.writeText(numeroTelefonico);
-        toast.success("Número copiado al portapapeles");
-      };
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(numeroTelefonico);
+    toast.success("Número copiado al portapapeles");
+  };
   // Valores que se compartirán a través del contexto
   const contextValue = {
     nombreEjecutivo,
@@ -193,7 +175,7 @@ const Managment = () => {
     handleFilterSelect,
     handleInputChange,
     handleSuggestionClick,
-    handleAutomaticSearch,
+    handleAutomaticSearch
   };
 
   return (
@@ -202,12 +184,13 @@ const Managment = () => {
         <section>
           <NavbarComponent />
           <CustomToast
-          show={showToast}
-          onClose={() => setShowToast(false)}
-          numeroTelefonico={numeroTelefonico}
-          copyToClipboard={copyToClipboard}
-        />
-            <Toaster  richColors  position="top-center" style={{top: '60px'}}/> {/* Agregar Sonner aquí */}
+            show={showToast}
+            onClose={() => setShowToast(false)}
+            numeroTelefonico={numeroTelefonico}
+            copyToClipboard={copyToClipboard}
+          />
+          <Toaster richColors position="top-center" style={{ top: "60px" }} />{" "}
+          {/* Agregar Sonner aquí */}
           <Container fluid className="responsive mt-5">
             <Row>
               <Col xs={6} md={6}>
@@ -217,36 +200,30 @@ const Managment = () => {
               </Col>
               <Col xs={6} md={6}>
                 <br />
-              
+
                 <SearchForm />
               </Col>
 
               <Col xs={12} md={12}>
-               
                 <SearchCustomer />
               </Col>
               <Col xs={12} md={12}>
-               
                 <DataCard />
               </Col>
               <Col xs={12} md={12}>
                 <Row className="recent-sales">
                   <Col xs={12} md={8} lg={8}>
-                   
                     <InformationClient />
                   </Col>
                   <Col xs={12} md={4}>
-                    
                     <Flow />
                   </Col>
                 </Row>
                 <Row>
                   <Col xs={12} md={8}>
-                  
                     <Telephones />
                   </Col>
                   <Col xs={12} md={4}>
-                    
                     <Calculator />
                   </Col>
                 </Row>

@@ -15,7 +15,6 @@ import { PersonFillLock, KeyFill } from "react-bootstrap-icons";
 import "../index.css";
 import ModalChange from "../components/ModalChange"; // Import ModalChange component
 import ModalChangePassword from "../components/ModalChangePassword"; // Import ModalChangePassword component
-import CerrarSesion from "../components/CierraSesion"; // Import CerrarSesion component
 import logo from "../assets/img/logo-login.png";
 
 function Login() {
@@ -75,6 +74,7 @@ function Login() {
 
         // Store the response data
         setResponseData(response.data);
+
         localStorage.setItem("responseData", JSON.stringify(response.data)); // Save response data to localStorage
       }
     } catch (error) {

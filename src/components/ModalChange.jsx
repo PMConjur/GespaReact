@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Button, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner"; // Import toast and Toaster
@@ -20,6 +20,25 @@ function ModalChange({
     setShow(false);
     onClose(); // Call the onClose prop function to reset the showModal state in the parent component
   };
+  useEffect(() => {
+    const loggedUserJSON = window.localStorage.getItem(responseData);
+    if (loggedUserJSON) {
+      const loggedUser = JSON.parse(loggedUserJSON);
+      if (loggedUser.ejecutivo.token) {
+        const token = loggedUser.ejecutivo.token;
+        console.log("Token recibido:", token);
+        const nombreEjecutivo =
+          loggedUser.ejecutivo.infoEjecutivo.nombreEjecutivo;
+        const idEjecutivo = loggedUser.ejecutivo.infoEjecutivo.idEjecutivo;
+        const user = loggedUser.ejecutivo.infoEjecutivo.user;
+        console.log("Nombre ejecutivo:", nombreEjecutivo);
+        console.log("ID ejecutivo:", idEjecutivo);
+        console.log("Usuario:", user);
+      } else {
+        console.error("Token no encontrado");
+      }
+    }
+  }, []);
 
   const handleNoClick = async () => {
     if (expire === true) {
