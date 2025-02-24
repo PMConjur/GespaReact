@@ -20,7 +20,7 @@ const SearchForm = () => {
     handleFilterSelect,
     handleInputChange,
     handleSuggestionClick,
-    handleAutomaticSearch
+    handleAutomaticSearch,
   } = useContext(AppContext);
 
   const [inputError, setInputError] = useState(""); // Estado para el mensaje de error
@@ -97,16 +97,25 @@ const SearchForm = () => {
     }
   };
 
+  // Función para manejar el evento de presionar Enter
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); // Evitar el comportamiento por defecto del formulario
+      if (suggestions.length === 0) {
+        setErrorMessage("No hay sugerencias disponibles.");
+      } else {
+        setShowSuggestions(true); // Mostrar sugerencias solo si hay coincidencias
+      }
+    }
+  };
+
   return (
     <form
-      className="d-block d-md-flex "
+      className="d-block d-md-flex"
       style={{ gap: "10px", alignItems: "center", margin: "0 auto" }}
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSearch();
-      }}
+      onSubmit={(e) => e.preventDefault()} // Evitar el envío del formulario
     >
-      <div style={{ position: "relative", width: "300px", color: "black"}}>
+      <div style={{ position: "relative", width: "300px", color: "black" }}>
         <FormControl
           type="search"
           placeholder="Buscar"
@@ -116,11 +125,12 @@ const SearchForm = () => {
           onChange={handleChange} // Usar handleChange en lugar de handleInputChange
           onFocus={() => setShowSuggestions(true)}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+          onKeyDown={handleKeyDown} // Manejar el evento de presionar Enter
           style={{
             width: "100%",
             backgroundColor: "white",
             paddingLeft: "35px",
-            color: "black"
+            color: "black",
           }}
         />
         <Search
@@ -129,19 +139,21 @@ const SearchForm = () => {
             right: "10px",
             top: "50%",
             transform: "translateY(-50%)",
-            color: "black"
+            color: "black",
           }}
         />
         {inputError && (
           <Alert
             variant="danger"
-            className="position-absolute w-100 mt-2 z-index-50"
+            className="position-absolute w-100 mt-2"
+            style={{zIndex: "50"}}
           >
             {inputError}
           </Alert>
         )}
         {errorMessage && (
-          <Alert variant="danger" className="position-absolute w-100 mt-2 z-index-50">
+          <Alert variant="danger" className="position-absolute w-100 mt-2"
+          style={{zIndex: "50"}}>
             {errorMessage}
           </Alert>
         )}
@@ -153,7 +165,7 @@ const SearchForm = () => {
               overflowY: "auto",
               zIndex: 1000,
               color: "black",
-              fontSize: "13px"
+              fontSize: "13px",
             }}
           >
             {suggestions.map((suggestion, index) => (
@@ -181,7 +193,7 @@ const SearchForm = () => {
             "RFC",
             "Numero de cliente",
             "Telefono",
-            "Expediente"
+            "Expediente",
           ].map((item) => (
             <NavDropdown.Item key={item} eventKey={item}>
               {item}

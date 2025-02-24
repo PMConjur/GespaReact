@@ -16,6 +16,7 @@ import CustomToast from "../components/CustomToast"
 
 // Crear el contexto
 export const AppContext = createContext();
+const apiUrl = import.meta.env.VITE_API_URL;
 //Import automatico
 //immport Filtro Busqueda
 const Managment = () => {
@@ -41,7 +42,7 @@ const Managment = () => {
   const fetchFilterData = async (filter) => {
     try {
       const response = await axios.get(
-        "http://192.168.7.33/api/search-customer/busqueda-cuenta",
+        `${apiUrl}/search-customer/busqueda-cuenta`,
         {
           params: { filtro: filter },
           headers: { Authorization: `Bearer ${token}` },
@@ -56,7 +57,7 @@ const Managment = () => {
   const handleSearch = async () => {
     try {
       const response = await axios.get(
-        "http://192.168.7.33/api/search-customer/busqueda-cuenta",
+        {apiUrl}`$search-customer/busqueda-cuenta`,
         {
           params: { filtro: filter, ValorBusqueda: searchTerm },
           headers: { Authorization: `Bearer ${token}` },
@@ -82,7 +83,7 @@ const Managment = () => {
     if (value.length > 0) {
       try {
         const response = await axios.get(
-          "http://192.168.7.33/api/search-customer/busqueda-cuenta",
+          `${apiUrl}/search-customer/busqueda-cuenta`,
           {
             params: { filtro: filter, ValorBusqueda: value },
             headers: { Authorization: `Bearer ${token}` },
@@ -115,7 +116,7 @@ const Managment = () => {
 
     try {
       const responseEjecutivo = await axios.get(
-        `http://192.168.7.33/api/search-customer/automatico-ejecutivo?numEmpleado=${idEjecutivo}`,
+        `${apiUrl}/search-customer/automatico-ejecutivo?numEmpleado=${idEjecutivo}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -139,7 +140,7 @@ const Managment = () => {
 
       
       const responseCuenta = await axios.get(
-        "http://192.168.7.33/api/search-customer/busqueda-cuenta",
+        `${apiUrl}/search-customer/busqueda-cuenta`,
         {
           params: { filtro: "Cuenta", ValorBusqueda: idCuenta },
           headers: { Authorization: `Bearer ${token}` },
