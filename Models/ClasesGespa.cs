@@ -19,16 +19,23 @@ namespace NoriAPI.Models
         public static ArrayList _alNombreId;
         public static Hashtable _htValoresCatálogo;
         public static Hashtable _htNombreId;
-        #endregion
         public static DataTable dtCatalogos = new DataTable();
         public static DataTable dtRelaciones = new DataTable();
         public static DataTable tblDelDía = new DataTable();
+        #endregion
+
+        #region Metodos_Calculadora
+
+
+        #endregion
+
+
 
         private readonly IEjecutivoRepository _ejecutivoRepository;
 
-
+        #region Productividad
         public static void CargaCatalogos()
-        {            
+        {
             _htValoresCatálogo = new Hashtable();
             _htNombreId = new Hashtable();
             foreach (DataRow rowCatalog in dtCatalogos.Rows)
@@ -68,7 +75,6 @@ namespace NoriAPI.Models
                 _dsTablas.Tables["Relaciones"].Columns["idValor1"],
                 false);
         }
-
         public static void ObtieneTiempos()
         {
             foreach (string sColumna in _NombreColumnasConteos)
@@ -80,7 +86,6 @@ namespace NoriAPI.Models
             _dsTablas.Tables.Add(Tiempos);
 
         }
-
         public static void ObtieneMetas()
         {
             Metas.TableName = "Metas";
@@ -299,6 +304,14 @@ namespace NoriAPI.Models
             // Tiempos            
             return sNombreColumna;
         }
+
+        #endregion
+
+        #region Calculadora
+
+
+        #endregion
+
 
 
     }

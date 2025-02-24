@@ -75,15 +75,25 @@ namespace NoriAPI.Services
             var automaticoInfo = await _searchRepository.ValidateAutomatico(numEmpleado);
             var dict = (IDictionary<string, object>)automaticoInfo;
 
-            if (dict.TryGetValue("Mensaje", out object mensajeAuto) && mensajeAuto != null)
+            if (dict == null)
             {
-                mensaje = mensajeAuto.ToString();
+                mensaje = "Sin información.";
                 return new ResultadoAutomatico(mensaje, null);
             }
-
-            var automatico = MapInfoAutomatico(dict);
-            var resultadoAutomatico = new ResultadoAutomatico(mensaje, automatico);
-            return resultadoAutomatico;
+            else
+            {
+                if (dict.TryGetValue("Mensaje", out object mensajeAuto) && mensajeAuto != null)//
+                {
+                    mensaje = mensajeAuto.ToString();
+                    return new ResultadoAutomatico(mensaje, null);
+                }
+                else 
+                {
+                    var automatico = MapInfoAutomatico(dict);
+                    var resultadoAutomatico = new ResultadoAutomatico(mensaje, automatico);
+                    return resultadoAutomatico;
+                }
+            }                        
         }
         private static BusquedaInfo MapToInfoBusqueda(IDictionary<string, object> busq)
         {

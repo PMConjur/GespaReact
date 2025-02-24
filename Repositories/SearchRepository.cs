@@ -130,7 +130,7 @@ namespace NoriAPI.Repositories
                 storedAutomatico,
                 parameters,
                 commandType: CommandType.StoredProcedure
-                ));
+                ));           
             return automatico;
 
         }
