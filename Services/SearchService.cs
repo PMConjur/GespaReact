@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using NoriAPI.Models.Busqueda;
 using System.Linq;
 <<<<<<< HEAD
+<<<<<<< HEAD
 using System.Data;
 using Microsoft.AspNetCore.Mvc;
 using System.Numerics;
@@ -15,6 +16,8 @@ using Microsoft.Data.SqlClient;
 =======
 using NoriAPI.Models.Ejecutivo;
 >>>>>>> Mark-10-Tiempos
+=======
+>>>>>>> Mark-10-Recuperacion
 
 namespace NoriAPI.Services
 {
@@ -22,11 +25,16 @@ namespace NoriAPI.Services
     {
         Task<ResultadoBusqueda> ValidateBusqueda(string filtro, string ValorBusqueda);
 <<<<<<< HEAD
+<<<<<<< HEAD
         Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado);
         Task<List<Phone>> FetchPhones(string idCuenta);
 =======
         Task<ResultadoProductividad> ValidateProductividad(int NumEmpleado);
 >>>>>>> Mark-10-Tiempos
+=======
+        Task<ResultadoProductividad> ValidateProductividad(int numEmpleado);
+
+>>>>>>> Mark-10-Recuperacion
     }
     public class SearchService : ISearchService
     {
@@ -78,17 +86,28 @@ namespace NoriAPI.Services
 
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
         public async Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado)
 =======
 
         public async Task<ResultadoProductividad> ValidateProductividad(int NumEmpeado)
 >>>>>>> Mark-10-Tiempos
+=======
+
+        public async Task<ResultadoProductividad> ValidateProductividad(int numEmpleado)
+>>>>>>> Mark-10-Recuperacion
         {
             string mensaje = null;
             var automaticoInfo = await _searchRepository.ValidateAutomatico(numEmpleado);
             var dict = (IDictionary<string, object>)automaticoInfo;
 
+<<<<<<< HEAD
             if (dict.TryGetValue("Mensaje", out object mensajeAuto) && mensajeAuto != null)
+=======
+            var validateProductividad = await _searchRepository.ValidateProductividad(numEmpleado);
+
+            if (validateProductividad == null)
+>>>>>>> Mark-10-Recuperacion
             {
                 mensaje = mensajeAuto.ToString();
                 return new ResultadoAutomatico(mensaje, null);

@@ -109,20 +109,28 @@ namespace NoriAPI.Repositories
             {
                 var busqueda = (await connection.QueryAsync<dynamic>(queryBusqueda, commandType: CommandType.Text));
 <<<<<<< HEAD
+<<<<<<< HEAD
                 return busqueda;
 =======
                 return busqueda;                
 >>>>>>> Mark-10-Tiempos
+=======
+                return busqueda;                
+>>>>>>> Mark-10-Recuperacion
             }
             else
             {
                 var busqueda = (await connection.QueryFirstOrDefaultAsync<dynamic>(queryBusqueda, commandType: CommandType.Text));
                 return busqueda;
 <<<<<<< HEAD
+<<<<<<< HEAD
             }
 =======
             }                    
 >>>>>>> Mark-10-Tiempos
+=======
+            }                    
+>>>>>>> Mark-10-Recuperacion
 
         }
         public async Task<dynamic> ValidateAutomatico(int numEmpleado)
