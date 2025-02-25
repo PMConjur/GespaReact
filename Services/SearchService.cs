@@ -129,6 +129,13 @@ namespace NoriAPI.Services
             if (busq.TryGetValue("idCartera", out var idCartera) && idCartera != null)
                 busqueda.IdCartera = idCartera.ToString();
 
+            if (busq.TryGetValue("Saldo", out var saldo) && saldo != null)
+                busqueda.Saldo = saldo.ToString();
+
+            if (busq.TryGetValue("Fecha_CambioActivación", out var activada) && activada != null)
+                busqueda.FechaActivacion = activada.ToString();
+
+
             return busqueda;
 
         }

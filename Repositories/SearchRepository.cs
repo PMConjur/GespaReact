@@ -39,9 +39,10 @@ namespace NoriAPI.Repositories
                                     "   C.NombreDeudor Nombre, \r\n" +
                                     "   C.RFC, \r\n" +
                                     "   C.NúmeroCliente, \r\n" +
-                                    "   V.Valor Situación, \r\n" +
-                                    //"   C.Saldo, \r\n" +
-                                    "   C.idCartera \r\n" +
+                                    "   V.Valor Situación, \r\n" +                                    
+                                    "   C.idCartera, \r\n" +
+                                    "   C.Saldo, \r\n" +
+                                    "   C. Fecha_CambioActivación \r\n" +
                                     "FROM Cuentas C \r\n" +
                                     "    	INNER JOIN Productos P ON P.idProducto = C.idProducto \r\n" +
                                     "    	INNER JOIN Carteras CL ON CL.idCartera = C.idCartera \r\n" +
