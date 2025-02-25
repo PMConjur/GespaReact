@@ -65,8 +65,6 @@ namespace NoriAPI.Services
 
             string mensaje = null;
 
-
-
             //---------------------------------CargaCatalogos---------------------------------//
             ClasesGespa._alNombreId = new ArrayList();
             // NUEVA LLAMADA AL REPOSITORY

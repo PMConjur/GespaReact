@@ -44,10 +44,6 @@ namespace NoriAPI.Controllers
         {
             var Tiempos = await _ejecutivoService.ValidateTimes(numEmpleado);
 
-<<<<<<< HEAD
-
-
-=======
             return Ok(new { Tiempos.ResultadosTiempos });
         }
 
@@ -94,6 +90,5 @@ namespace NoriAPI.Controllers
 
             return Ok(recuperacion);
         }
->>>>>>> cffc593e5b0bfaafd17c6bde5ff2db0968a81043
     }
 }
