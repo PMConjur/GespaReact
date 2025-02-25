@@ -9,9 +9,10 @@
   --bs-breakpoint-xxl: 1400px;
 
   font-family: "Open Sans", sans-serif;
-
   font-weight: 400;
 
+  color-scheme: lithg dark;
+  color: rgba(255, 255, 255, 1);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
