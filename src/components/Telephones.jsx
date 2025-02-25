@@ -82,67 +82,69 @@ const Telephones = ({
             </tr>
           </thead>
         </Table>
-        <Table striped bordered hover variant="dark">
-          <thead>
-            <tr>
-              <th>T</th>
-              <th>C</th>
-              <th>D</th>
-              <th>S</th>
-              <th>IntentoViciDial</th>
-              <th>ID</th>
-              <th>Telefono</th>
-              <th>Telefonia</th>
-              <th>Origen</th>
-              <th>Clase</th>
-              <th>Estado</th>
-              <th>Municipio</th>
-              <th>HusoHorario</th>
-              <th>HorarioContacto</th>
-              <th>Extensión</th>
-              <th>Confirmado</th>
-              <th>FechaActivada</th>
-              <th>Calificacion</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
+        <div style={{ maxHeight: "300px", overflowY: "auto" }}> {/* Contenedor con scroll */}
+          <Table striped bordered hover variant="dark">
+            <thead>
               <tr>
-                <td colSpan="14" className="text-center">
-                  Cargando...
-                </td>
+                <th>T</th>
+                <th>C</th>
+                <th>D</th>
+                <th>S</th>
+                <th>IntentoViciDial</th>
+                <th>ID</th>
+                <th>Telefono</th>
+                <th>Telefonia</th>
+                <th>Origen</th>
+                <th>Clase</th>
+                <th>Estado</th>
+                <th>Municipio</th>
+                <th>HusoHorario</th>
+                <th>HorarioContacto</th>
+                <th>Extensión</th>
+                <th>Confirmado</th>
+                <th>FechaActivada</th>
+                <th>Calificacion</th>
               </tr>
-            ) : (
-              data.map((row, index) => (
-                <tr key={index}>
-                  <td>{row.titulares}</td>
-                  <td>{row.conocidos}</td>
-                  <td>{row.desconocidos}</td>
-                  <td>{row.sinContacto}</td>
-                  <td>{row.intentoViciDial}</td>
-                  <td>{row.id}</td>
-                  <td>
-                    <a href="#" className="text-primary">
-                      {row.númeroTelefónico}
-                    </a>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan="18" className="text-center">
+                    Cargando...
                   </td>
-                  <td>{row.idTelefonía}</td>
-                  <td>{row.idOrigen}</td>
-                  <td>{row.idClase}</td>
-                  <td>{row.estado}</td>
-                  <td>{row.municipio}</td>
-                  <td>{row.husoHorario}</td>
-                  <td>{row.segHorarioContacto}</td>
-                  <td>{row.extensión}</td>
-                  <td>{row._Confirmado}</td>
-                  <td>{row.fecha_Insert}</td>
-                  <td>{row.calificacion}</td>
-                  <td>{row.activo}</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
+              ) : (
+                data.map((row, index) => (
+                  <tr key={index}>
+                    <td>{row.titulares}</td>
+                    <td>{row.conocidos}</td>
+                    <td>{row.desconocidos}</td>
+                    <td>{row.sinContacto}</td>
+                    <td>{row.intentoViciDial}</td>
+                    <td>{row.id}</td>
+                    <td>
+                      <a href="#" className="text-primary">
+                        {row.númeroTelefónico}
+                      </a>
+                    </td>
+                    <td>{row.idTelefonía}</td>
+                    <td>{row.idOrigen}</td>
+                    <td>{row.idClase}</td>
+                    <td>{row.estado}</td>
+                    <td>{row.municipio}</td>
+                    <td>{row.husoHorario}</td>
+                    <td>{row.segHorarioContacto}</td>
+                    <td>{row.extensión}</td>
+                    <td>{row._Confirmado}</td>
+                    <td>{row.fecha_Insert}</td>
+                    <td>{row.calificacion}</td>
+                    <td>{row.activo}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </Table>
+        </div>
       </Card.Body>
     </Card>
   );

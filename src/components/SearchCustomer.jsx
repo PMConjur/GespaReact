@@ -12,7 +12,7 @@ import {
 
 const SearchCustomer = () => {
   // Consume el contexto
-  const { searchResults} = useContext(AppContext);
+  const {searchResults} = useContext(AppContext);
  
   return (
     <>
