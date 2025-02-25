@@ -6,7 +6,7 @@ const DebtorInformation = () => {
       <h4 className="text-secondary">
         Cartera: <strong className="text-white">American Express</strong>
       </h4>{" "}
-      <Col xs={12} md={6} className="d-block d-md-flex ">
+      <Col xs={12} md={6} className="d-block d-md-flex">
         {[
           { href: "#", label: "Inicio", color: "lightgreen" },
           { href: "#", label: "Productividad", color: "lightblue" },
