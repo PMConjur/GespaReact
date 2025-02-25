@@ -3,6 +3,7 @@ import { Modal, Button, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner"; // Import toast and Toaster
 import PropTypes from "prop-types"; // Import PropTypes for prop validation
+import servicio from "../services/axiosServices"; // Import axios service
 
 function ModalChange({
   user,
@@ -20,13 +21,15 @@ function ModalChange({
     setShow(false);
     onClose(); // Call the onClose prop function to reset the showModal state in the parent component
   };
+
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem(responseData);
+    const loggedUserJSON = window.localStorage.getItem("responseData");
     if (loggedUserJSON) {
       const loggedUser = JSON.parse(loggedUserJSON);
       if (loggedUser.ejecutivo.token) {
         const token = loggedUser.ejecutivo.token;
         console.log("Token recibido:", token);
+        servicio.defaults.headers.common["Authorization"] = `Bearer ${token}`; // Set token in axios service
         const nombreEjecutivo =
           loggedUser.ejecutivo.infoEjecutivo.nombreEjecutivo;
         const idEjecutivo = loggedUser.ejecutivo.infoEjecutivo.idEjecutivo;

@@ -10,7 +10,8 @@ const servicio = axios.create({
 // Interceptor to add the token to the headers
 servicio.interceptors.request.use(
   (config) => {
- const token = config.headers.Authorization; // Use the token set in Login.jsx
+    const token = servicio.defaults.headers.common["Authorization"];
+    console.log("Token en interceptor:", token); // Log the token to ensure it is set
     if (token) {
       config.headers.Authorization = token;
     }
@@ -24,7 +25,5 @@ servicio.interceptors.request.use(
 servicio.interceptors.response.use(null, (error) => {
   return Promise.reject(error);
 });
-
-
 
 export default servicio;
