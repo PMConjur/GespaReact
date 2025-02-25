@@ -1,6 +1,9 @@
 import axios from "axios";
+import { AppContext } from "../pages/Managment";
 
-
+const responseData =
+location.state || JSON.parse(localStorage.getItem("responseData")); 
+const token = responseData?.ejecutivo?.token;
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const servicio = axios.create({
@@ -32,16 +35,12 @@ export default servicio;
 
 //Endpoint Telefonos
 export const fetchPhones = async (idCuenta) => {
-   
-  const responseData =
-  location.state || JSON.parse(localStorage.getItem("responseData")); 
-  const token = responseData?.ejecutivo?.token;
   try {
     console.log("Iniciando llamada a la API...");
-    console.log("URL de la API:", `${apiUrl}/search-customer/phones?idCuenta=370700000000004`);
+    console.log("URL de la API:", `${apiUrl}/search-customer/phones?idCuenta=${idCuenta}`);
 
     const response = await fetch(
-      `${apiUrl}/search-customer/phones?idCuenta=370700000000004`,
+      `${apiUrl}/search-customer/phones?idCuenta=${idCuenta}`,
       {
         method: "GET", // Método HTTP (GET, POST, etc.)
         headers: {

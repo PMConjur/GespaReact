@@ -2,45 +2,40 @@ import React, { useEffect, useState } from "react";
 import { Card, Table, Button, InputGroup, FormControl } from "react-bootstrap";
 import { Whatsapp, ChatDots } from "react-bootstrap-icons";
 import { fetchPhones } from "../services/axiosServices"; // Importa el servicio
+import { useContext } from "react";
+import { AppContext } from "../pages/Managment"; // Importa el contexto DEL PADRE 
 
-const Telephones = ({
-  idCuenta,               // ID de la cuenta para buscar los teléfonos
-  onWhatsAppClick,        // Función para el botón de WhatsApp
-  onCallClick,            // Función para el botón de Llamada de entrada
-  onValidateClick,        // Función para el botón de Validar
-}) => {
+const Telephones = () => {
   const [data, setData] = useState([]); // Estado para los datos de la tabla
   const [isLoading, setIsLoading] = useState(false); // Estado para manejar la carga
   const [phoneNumber, setPhoneNumber] = useState(""); // Estado para el número de teléfono
-
+  const { searchResults } = useContext(AppContext);
   // Cargar datos desde la API al montar el componente
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        const phones = await fetchPhones(idCuenta); // Usar el servicio para obtener los datos
-        setData(phones); // Actualizar el estado con los datos de la API
+        const phones = await Promise.all(
+          searchResults.map(async (result, index) => {
+            const phones = await fetchPhones(result.idCuenta); // Usar result.idCuenta
+            return phones;
+          })
+        );
+        setData(phones.flat()); // Actualizar el estado con los datos de la API
       } catch (error) {
-        console.error("Error al cargar los teléfonos:", error);
+        //console.error("Error al cargar los teléfonos:", error);
+        toast.warning(
+          "La cuenta no tiene cargado telefonos"
+        );
       } finally {
         setIsLoading(false);
       }
     };
 
     loadData();
-  }, [idCuenta]); // Dependencia: cuando `idCuenta` cambie, se ejecuta este efecto
+  }, [searchResults]); // Dependencia: cuando `searchResults` cambie, se ejecuta este efecto
 
   // Manejar el cambio en el input del número de teléfono
-  const handlePhoneNumberChange = (e) => {
-    setPhoneNumber(e.target.value);
-  };
-
-  // Manejar la validación del número de teléfono
-  const handleValidate = () => {
-    if (onValidateClick) {
-      onValidateClick(phoneNumber); // Pasar el número de teléfono a la función de validación
-    }
-  };
 
   return (
     <Card className="overflow-auto bg-dark">
@@ -55,7 +50,7 @@ const Telephones = ({
                     variant="success"
                     className="me-2"
                     style={{ width: "20%" }}
-                    onClick={onWhatsAppClick} // Función para WhatsApp
+                     // Función para WhatsApp
                   >
                     <Whatsapp /> WhatsApp
                   </Button>
@@ -63,7 +58,7 @@ const Telephones = ({
                     variant="primary"
                     className="me-2"
                     style={{ width: "25%" }}
-                    onClick={onCallClick} // Función para Llamada de entrada
+                    // Función para Llamada de entrada
                   >
                     Llamada de entrada
                   </Button>
@@ -71,9 +66,9 @@ const Telephones = ({
                     <FormControl
                       placeholder="_____-_____-_____"
                       value={phoneNumber}
-                      onChange={handlePhoneNumberChange} // Manejar cambio en el input
+                    // Manejar cambio en el input
                     />
-                    <Button variant="secondary" onClick={handleValidate}>
+                    <Button variant="secondary">
                       Validar
                     </Button>
                   </InputGroup>
@@ -124,7 +119,7 @@ const Telephones = ({
                     <td>{row.id}</td>
                     <td>
                       <a href="#" className="text-primary">
-                        {row.númeroTelefónico}
+                        {"xxxxxx" + row.númeroTelefónico.slice(6)}
                       </a>
                     </td>
                     <td>{row.idTelefonía}</td>

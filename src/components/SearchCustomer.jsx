@@ -1,4 +1,3 @@
- // Importa el contexto
 import { Card, Row, Col } from "react-bootstrap";
 import { AppContext } from "../pages/Managment";
 import { useContext } from "react";
