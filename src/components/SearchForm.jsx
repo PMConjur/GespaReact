@@ -3,15 +3,12 @@ import {
   FormControl,
   Alert,
   Button,
-  NavDropdown,
-  Row,
-  Form,
-  Col
+  Dropdown,
+  InputGroup
 } from "react-bootstrap";
-import { Search, ArrowRepeat } from "react-bootstrap-icons";
+import { Search, ArrowRepeat, FunnelFill } from "react-bootstrap-icons";
 import React, { useContext } from "react";
 import { AppContext } from "../pages/Managment"; // Importa el contexto
-import { auto } from "@popperjs/core";
 
 const SearchForm = () => {
   const {
@@ -113,38 +110,31 @@ const SearchForm = () => {
         handleSearch();
       }}
     >
-      <br />
-      <Row>
-        <Col xs={12} md={6}>
+      <span>Busqueda de información:</span>
+
+      <div className="mx-auto ">
+        <InputGroup className="col-5">
+          <InputGroup.Text id="btnGroupAddon">
+            <Search />
+          </InputGroup.Text>
           <FormControl
             type="search"
             placeholder="Buscar"
-            className="custom-placeholder me-2"
             aria-label="Search"
             value={searchTerm}
             onChange={handleChange} // Usar handleChange en lugar de handleInputChange
             onFocus={() => setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             style={{
-              width: "100%",
               backgroundColor: "white",
+              color: "black"
+            }}
+          />
 
-              color: "black"
-            }}
-          />
-          <Search
-            style={{
-              position: "absolute",
-              right: "10px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: "black"
-            }}
-          />
           {inputError && (
             <Alert
               variant="danger"
-              className="position-absolute w-auto mt-2 "
+              className="position-absolute w-auto mt-5"
               style={{
                 zIndex: 2000
               }}
@@ -155,7 +145,7 @@ const SearchForm = () => {
           {errorMessage && (
             <Alert
               variant="danger"
-              className="position-absolute w-auto mt-2"
+              className="position-absolute w-auto mt-5"
               style={{
                 zIndex: 2000
               }}
@@ -165,7 +155,7 @@ const SearchForm = () => {
           )}
           {showSuggestions && suggestions.length > 0 && (
             <div
-              className="position-absolute w-auto bg-white border border-secondary"
+              className="position-absolute w-auto bg-white mt-5"
               style={{
                 maxHeight: "300px",
                 overflowY: "auto",
@@ -185,39 +175,37 @@ const SearchForm = () => {
               ))}
             </div>
           )}
-        </Col>
-        <Col xs={6} md={2} className="text-right">
-          <NavDropdown
-            title={`Seleccionar filtro: ${filter}`}
-            id="filter-dropdown"
-            onSelect={handleFilterSelect}
-          >
-            {[
-              "Cuenta",
-              "Nombre",
-              "RFC",
-              "Numero de cliente",
-              "Telefono",
-              "Expediente"
-            ].map((item) => (
-              <NavDropdown.Item key={item} eventKey={item}>
-                {item}
-              </NavDropdown.Item>
-            ))}
-          </NavDropdown>
-        </Col>
-        <Col xs={6} md={2}>
+          <Dropdown onSelect={handleFilterSelect}>
+            <Dropdown.Toggle variant="success" id="filter-dropdown">
+              <FunnelFill className="d-block d-md-none"></FunnelFill>
+              <span className="d-none d-md-inline">Filtro: {filter}</span>
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              {[
+                "Cuenta",
+                "Nombre",
+                "RFC",
+                "Numero de cliente",
+                "Telefono",
+                "Expediente"
+              ].map((item) => (
+                <Dropdown.Item key={item} eventKey={item}>
+                  {item}
+                </Dropdown.Item>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown>
           <Button
-            className="d-flex"
+            className="align-center"
             variant="primary"
             type="button"
             onClick={handleAutomaticSearch}
           >
-            <ArrowRepeat />
-            <span>Automático</span>
+            <ArrowRepeat className="d-block d-md-none"></ArrowRepeat>
+            <span className="d-none d-md-inline">Automático</span>
           </Button>
-        </Col>
-      </Row>
+        </InputGroup>
+      </div>
     </form>
   );
 };

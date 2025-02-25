@@ -194,12 +194,12 @@ const Managment = () => {
           {/* Agregar Sonner aquí */}
           <Container fluid className="responsive mt-5">
             <Row>
-              <Col xs={12} md={4}>
+              <Col xs={12} md={12} lg={6} >
                 <br />
 
                 <DebtorInformation />
               </Col>
-              <Col xs={12} md={8}>
+              <Col xs={12} md={12} lg={6} className="mx-auto">
                 <br />
 
                 <SearchForm />
