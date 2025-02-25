@@ -116,11 +116,11 @@ namespace NoriAPI.Repositories
                 return busqueda;
             }
 
+
         }
         public async Task<dynamic> ValidateAutomatico(int numEmpleado)
         {
             using var connection = GetConnection("Piso2Amex");
-
             string storedAutomatico = "[dbMemory].[AMS].[ObtieneCuenta]";
             var parameters = new
             {

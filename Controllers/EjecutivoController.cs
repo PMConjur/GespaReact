@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using NoriAPI.Models.Busqueda;
+using NoriAPI.Models.Ejecutivo;
+using NoriAPI.Models.Login;
+
 using NoriAPI.Services;
 using System.Threading.Tasks;
 
@@ -10,6 +13,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/ejecutivo")]
+    [Authorize]
     public class EjecutivoController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -35,8 +39,61 @@ namespace NoriAPI.Controllers
 
         }
 
+        [HttpGet("tiempos-ejecutivo")]//Endpoint C#
+        public async Task<ActionResult<TiemposEjecutivo>> Tiempos([FromQuery] int numEmpleado)
+        {
+            var Tiempos = await _ejecutivoService.ValidateTimes(numEmpleado);
+
+<<<<<<< HEAD
 
 
+=======
+            return Ok(new { Tiempos.ResultadosTiempos });
+        }
 
+        [HttpPost("pause-ejecutivo")]
+        public async Task<ActionResult> ManagePause([FromBody] InfoPausa pauseRequest)
+        {
+            string mensaje = await _ejecutivoService.PauseUnpause(pauseRequest);
+
+            return Ok(new { mensaje });
+        }
+
+        [HttpGet("get-negociaciones")]
+        public async Task<IActionResult> GetNegociaciones([FromQuery] int idEjecutivo)
+        {
+            var negociaciones = await _ejecutivoService.GetNegociaciones(idEjecutivo);
+
+            if (negociaciones.ConteoHoy == null)
+            {
+                return BadRequest(new { Mensaje = "No se encontraron negociaciones." });
+            }
+
+            return Ok(negociaciones);
+        }
+
+        [HttpGet("get-recuperacion")]
+        public async Task<IActionResult> GetRecuperacion([FromQuery] int idEjecutivo, [FromQuery] int actual)
+        {
+            if (idEjecutivo <= 0)
+            {
+                return BadRequest(new { Mensaje = "El ID del ejecutivo debe ser un número positivo." });
+            }
+
+            if (actual != 0 && actual != 1)
+            {
+                return BadRequest(new { Mensaje = "El parámetro 'actual' debe ser 0 (anterior) o 1 (actual)." });
+            }
+
+            var recuperacion = await _ejecutivoService.GetRecuperacion(idEjecutivo, actual);
+
+            if (recuperacion == null)
+            {
+                return BadRequest(new { Mensaje = "Parámetros inválidos o no se encontró información de recuperación del ejecutivo." });
+            }
+
+            return Ok(recuperacion);
+        }
+>>>>>>> cffc593e5b0bfaafd17c6bde5ff2db0968a81043
     }
 }
