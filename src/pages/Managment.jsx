@@ -244,7 +244,8 @@ const Managment = () => {
                 <Row>
                   <Col xs={12} md={8}>
                   
-                    <Telephones />
+                    <Telephones 
+                     />
                   </Col>
                   <Col xs={12} md={4}>
                     

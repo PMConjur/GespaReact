@@ -14,7 +14,7 @@ const DebtorInformation = () => {
           { href: "#", label: "Tiempos", color: "orange" },
           { href: "#", label: "Simulador", color: "lightblue" }
         ].map(({ href, label, color }, index) => (
-          <div>
+          <div key={index}>
           <a
             key={index}
             href={href}

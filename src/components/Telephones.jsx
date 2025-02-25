@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Card, Table, Button, InputGroup, FormControl } from "react-bootstrap";
 import { Whatsapp, ChatDots } from "react-bootstrap-icons";
-import { fetchPhones } from "../services/axiosServices"; 
+import { fetchPhones } from "../services/axiosServices"; // Importa el servicio
 
 const Telephones = ({
   idCuenta,               // ID de la cuenta para buscar los teléfonos
   onWhatsAppClick,        // Función para el botón de WhatsApp
-  onMailClick,            // Función para el botón de Mail
   onCallClick,            // Función para el botón de Llamada de entrada
   onValidateClick,        // Función para el botón de Validar
 }) => {
@@ -102,9 +101,8 @@ const Telephones = ({
               <th>HorarioContacto</th>
               <th>Extensión</th>
               <th>Confirmado</th>
-              <th>Fecha</th>
+              <th>FechaActivada</th>
               <th>Calificacion</th>
-              <th>Activo</th>
             </tr>
           </thead>
           <tbody>
