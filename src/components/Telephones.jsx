@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Card, Table, Button, InputGroup, FormControl, Spinner } from "react-bootstrap"; // Importar Spinner
 import { Whatsapp, ChatDots } from "react-bootstrap-icons";
-import { fetchPhones } from "../services/axiosServices"; // Importa el servicio
+import { fetchPhones } from "../services/gespawebServices"; // Importa el servicio
 import { useContext } from "react";
 import { AppContext } from "../pages/Managment"; // Importa el contexto DEL PADRE 
 import { toast, Toaster } from "sonner";
@@ -11,6 +11,8 @@ const Telephones = () => {
   const [isLoading, setIsLoading] = useState(false); // Estado para manejar la carga
   const [phoneNumber, setPhoneNumber] = useState(""); // Estado para el número de teléfono
   const { searchResults } = useContext(AppContext);
+  const [toastShown, setToastShown] = useState(false); // Estado para controlar si el toast ya se mostró
+
   // Cargar datos desde la API al montar el componente
   useEffect(() => {
     const loadData = async () => {
@@ -24,10 +26,11 @@ const Telephones = () => {
         );
         const flatPhones = phones.flat();
         setData(flatPhones); // Actualizar el estado con los datos de la API
-        if (flatPhones.length === 0) {
+        if (flatPhones.length === 0 && !toastShown) {
           toast.error("No hay carga de telefonos", {
             position: "top-right" // Mostrar toast en el lado derecho
           });
+          setToastShown(true); // Marcar que el toast ya se mostró
         }
       } catch (error) {
         console.error("Error al cargar los teléfonos:", error);
@@ -37,7 +40,7 @@ const Telephones = () => {
     };
 
     loadData();
-  }, [searchResults]); // Dependencia: cuando `searchResults` cambie, se ejecuta este efecto
+  }, [searchResults, toastShown]); // Dependencia: cuando `searchResults` cambie, se ejecuta este efecto
 
   // Manejar el cambio en el input del número de teléfono
   const handlePhoneNumberChange = (e) => {
@@ -59,7 +62,7 @@ const Telephones = () => {
                     style={{ width: "20%" }}
                      // Función para WhatsApp
                   >
-                    <Whatsapp /> WhatsApp
+                    <Whatsapp />WhatsApp
                   </Button>
                   <Button
                     variant="primary"
@@ -84,7 +87,7 @@ const Telephones = () => {
             </tr>
           </thead>
         </Table>
-        <div style={{ maxHeight: "300px", overflowY: "auto" }}> {/* Contenedor con scroll */}
+        <div style={{ maxHeight: "300px", overflowY: "auto" }}>
           <Table striped bordered hover variant="dark">
             <thead>
               <tr>
@@ -136,7 +139,7 @@ const Telephones = () => {
                     <td>{row.estado}</td>
                     <td>{row.municipio}</td>
                     <td>{row.husoHorario}</td>
-                    <td>{row.segHorarioContacto}</td> {/* Mostrar segHorarioContacto directamente */}
+                    <td>{row.segHorarioContacto}</td>
                     <td>{row.extensión}</td>
                     <td>{row._Confirmado ? "Sí" : "No"}</td>
                     <td>{new Date(row.fecha_Insert).toLocaleDateString()}</td>
@@ -148,7 +151,6 @@ const Telephones = () => {
             </tbody>
           </Table>
         </div>
-        <Toaster position="top-right" /> {/* Posicionar el toast en el lado derecho */}
       </Card.Body>
     </Card>
   );
