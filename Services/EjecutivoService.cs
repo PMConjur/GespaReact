@@ -9,9 +9,13 @@ using System.Data;
 using System.Linq;
 using NoriAPI.Models.Ejecutivo;
 using System.Threading.Tasks;
+using NoriAPI.Models.Login;
+using System.Diagnostics;
+using static NoriAPI.Models.ClasesGespa;
 
 namespace NoriAPI.Services
 {
+
     public interface IEjecutivoService
     {
         Task<ResultadoProductividad> ValidateProductividad(int numEmpleado);
@@ -19,7 +23,7 @@ namespace NoriAPI.Services
         Task<string> PauseUnpause(InfoPausa pausa);
         Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo);
         Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
-
+        Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
     }
 
     public class EjecutivoService : IEjecutivoService
@@ -41,14 +45,16 @@ namespace NoriAPI.Services
         private static Hashtable _htNombreId;
         #endregion
 
+        #region preguntas_respuestas
+        
+        #endregion
+
 
         public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository)
         {
             _configuration = configuration;
             _ejecutivoRepository = ejecutivoRepository;
         }
-
-
         #region Productividad
         public async Task<ResultadoProductividad> ValidateProductividad(int numEmpleado)
         {
@@ -76,7 +82,6 @@ namespace NoriAPI.Services
             ClasesGespa.dtRelaciones = await _ejecutivoRepository.VwRelaciones();
             ClasesGespa.Relaciones();
             //------------------------------------Tiempos----------------------------------------------// 
-
 
             ClasesGespa.Tiempos = await _ejecutivoRepository.TiemposEjecutivo(numEmpleado);
             ClasesGespa.ObtieneTiempos();
@@ -130,6 +135,20 @@ namespace NoriAPI.Services
 
 
         }
+        #endregion
+
+        #region Preguntas_Respuestas
+        public async Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas()
+        {                       
+            var validatePreg_Resp_list = await _ejecutivoRepository.ValidatePreguntas_Respuestas();
+
+            return validatePreg_Resp_list;
+        }
+
+
+        #endregion
+
+
         private static void CalculaTiempoPromedioTest(DataTable tiempos, string Conteo)
         {
             if (!ClasesGespa.Conteos.Columns.Contains(Conteo) || !tiempos.Columns.Contains("Tiempo" + Conteo)
@@ -163,10 +182,6 @@ namespace NoriAPI.Services
 
             tiempos.Rows[1]["Tiempo" + Conteo] = new TimeSpan(Convert.ToInt64(lRowTicks / dConteo));
         }
-
-        #endregion
-
-
         public async Task<TiemposEjecutivo> ValidateTimes(int numEmpleado)
         {
             ResultadoTiempos tiempos = null;
@@ -191,7 +206,6 @@ namespace NoriAPI.Services
 
 
         }
-
         public async Task<string> PauseUnpause(InfoPausa pausa)
         {
             try
@@ -222,7 +236,6 @@ namespace NoriAPI.Services
             // Retorna una cadena vacía si todo el proceso se ejecutó correctamente.
             return "";
         }
-
         private async Task<bool> Despausar(InfoPausa tiempos)
         {
             // Valida la contraseña del ejecutivo en la base de datos.
@@ -237,7 +250,6 @@ namespace NoriAPI.Services
             // Si la validación es exitosa, retorna true.
             return true;
         }
-
         public async Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo)
         {
             var negociaciones = (await _ejecutivoRepository.Negociaciones(idEjecutivo)).ToList();
@@ -286,7 +298,6 @@ namespace NoriAPI.Services
             long totalTicks = tiempos.Sum();
             return new TimeSpan(totalTicks / tiempos.Count);
         }
-
         public async Task<Recuperacion?> GetRecuperacion(int idEjecutivo, int actual)
         {
             if (idEjecutivo <= 0 || (actual != 0 && actual != 1))
@@ -301,4 +312,5 @@ namespace NoriAPI.Services
 
 
     }
+    
 }
