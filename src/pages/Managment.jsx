@@ -234,7 +234,7 @@ const Managment = () => {
                     <Managments />
                   </Col>
                   <Col xs={12} md={4}>
-                    <h1>Calendario</h1>
+                  
                     <Calendar />
                   </Col>
                 </Row>
