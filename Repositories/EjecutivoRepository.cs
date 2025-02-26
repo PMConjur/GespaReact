@@ -18,6 +18,8 @@ namespace NoriAPI.Repositories
         Task<DataTable> TiemposEjecutivo(int numEmpleado);
         Task<DataTable> MetasEjecutivo(int numEmpleado);
         Task<DataTable> Gestiones(int numEmpleado);
+        Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
+
         #endregion
 
         #region Tiempos
@@ -61,8 +63,6 @@ namespace NoriAPI.Repositories
             return ConvertToDataTable(catalogos, "Catalogos");
 
         }
-
-
         public async Task<DataTable> VwRelaciones()
         {
             using var connection = GetConnection("Piso2Amex");
@@ -76,7 +76,6 @@ namespace NoriAPI.Repositories
             return ConvertToDataTable(relaciones, "Relaciones");
 
         }
-
         public async Task<DataTable> TiemposEjecutivo(int numEmpleado)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -96,7 +95,6 @@ namespace NoriAPI.Repositories
             return ConvertToDataTable(tiempos, "Tiempos");
 
         }
-
         public async Task<DataTable> MetasEjecutivo(int numEmpleado)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -117,7 +115,6 @@ namespace NoriAPI.Repositories
             return ConvertToDataTable(metas, "Metas");
 
         }
-
         public async Task<DataTable> Gestiones(int numEmpleado)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -139,7 +136,6 @@ namespace NoriAPI.Repositories
 
 
         }
-
         private static DataTable ConvertToDataTable(IEnumerable<dynamic> data, string tableName)
         {
             DataTable table = new DataTable(tableName);
@@ -166,9 +162,6 @@ namespace NoriAPI.Repositories
 
             return table;
         }
-
-
-
 
         #region ProductividadOld
         /*
@@ -501,10 +494,39 @@ namespace NoriAPI.Repositories
 
         */
         #endregion
-
-
-
         #endregion
+
+        public async Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas()
+        {
+            using var connection = GetConnection("Piso2Amex");
+            string preg_resp_Query = "select FP.[idPregunta],\r\n" +
+                "FP.[Pregunta],\r\n" +
+                "FR.[idRespuesta],\r\n" +                
+                "FR.[idValor],\r\n" +
+                "FR.[Respuesta],\r\n" +
+                "FR.[idSiguientePregunta],\r\n" +
+                "FR.[Seguimiento],\r\n" +
+                "FR.[Negociación],\r\n" +
+                "FR.[Identificador],\r\n" +                            
+                "VC.[Valor],\r\n" +                
+                "VC.[ValorActivo]\r\n" +               
+                "from FlujoPreguntas FP\r\n" +
+                "inner join FlujoRespuestas FR\r\n" +
+                "on FR.idPregunta = FP.idPregunta \r\n" +
+                "left join ValoresCatálogo VC\r\n" +
+                "on VC.idValor = FR.idValor \r\n" +
+                "order by fr.idPregunta";
+
+            var preg_resp_list = await connection.QueryAsync<Preguntas_Respuestas_info>(
+                preg_resp_Query,
+                commandType: CommandType.Text);
+
+            return preg_resp_list.ToList();
+
+        }
+
+
+
 
         #region Tiempos
         public async Task<ResultadoTiempos> ValidateTimes(int numEmpleado)

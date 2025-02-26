@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Data;
+using System.Diagnostics;
 using System.Net.NetworkInformation;
 using NoriAPI.Repositories;
 
@@ -24,11 +25,11 @@ namespace NoriAPI.Models
         public static DataTable tblDelDía = new DataTable();
         #endregion
 
-        #region Metodos_Calculadora
+        #region preguntas_respuestas
+        
 
 
         #endregion
-
 
 
         private readonly IEjecutivoRepository _ejecutivoRepository;
@@ -307,12 +308,14 @@ namespace NoriAPI.Models
 
         #endregion
 
-        #region Calculadora
+        #region Preguntas_Respuestas        
+
 
 
         #endregion
 
-
-
     }
+
+
+
 }

@@ -90,5 +90,19 @@ namespace NoriAPI.Controllers
 
             return Ok(recuperacion);
         }
+
+        [HttpGet("flujo-preguntas-respuestas")]
+        public async Task<ActionResult<Preguntas_Respuestas_info>> Preguntas_Respuestas()////Cambiar el del resultado
+        {
+            var preguntas_respuestas = await _ejecutivoService.ValidatePreguntas_Respuestas();
+
+            return Ok(preguntas_respuestas);
+
+        }
+
+
+
+
+
     }
 }

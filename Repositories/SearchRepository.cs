@@ -135,7 +135,6 @@ namespace NoriAPI.Repositories
             return automatico;
 
         }
-
         public async Task<List<Phone>> GetPhones(string idCuenta, int idCartera)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -150,7 +149,6 @@ namespace NoriAPI.Repositories
 
             return phoneList.ToList();
         }
-
         private SqlConnection GetConnection(string connection)
         {
             return new SqlConnection(_configuration.GetConnectionString(connection));
