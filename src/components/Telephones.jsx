@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Card, Table, Button, InputGroup, FormControl } from "react-bootstrap";
+import { Card, Table, Button, InputGroup, FormControl, Spinner } from "react-bootstrap"; // Importar Spinner
 import { Whatsapp, ChatDots } from "react-bootstrap-icons";
 import { fetchPhones } from "../services/axiosServices"; // Importa el servicio
 import { useContext } from "react";
 import { AppContext } from "../pages/Managment"; // Importa el contexto DEL PADRE 
+import { toast, Toaster } from "sonner";
 
 const Telephones = () => {
   const [data, setData] = useState([]); // Estado para los datos de la tabla
@@ -21,12 +22,15 @@ const Telephones = () => {
             return phones;
           })
         );
-        setData(phones.flat()); // Actualizar el estado con los datos de la API
+        const flatPhones = phones.flat();
+        setData(flatPhones); // Actualizar el estado con los datos de la API
+        if (flatPhones.length === 0) {
+          toast.error("No hay carga de telefonos", {
+            position: "top-right" // Mostrar toast en el lado derecho
+          });
+        }
       } catch (error) {
-        //console.error("Error al cargar los teléfonos:", error);
-        toast.warning(
-          "La cuenta no tiene cargado telefonos"
-        );
+        console.error("Error al cargar los teléfonos:", error);
       } finally {
         setIsLoading(false);
       }
@@ -36,6 +40,9 @@ const Telephones = () => {
   }, [searchResults]); // Dependencia: cuando `searchResults` cambie, se ejecuta este efecto
 
   // Manejar el cambio en el input del número de teléfono
+  const handlePhoneNumberChange = (e) => {
+    setPhoneNumber(e.target.value);
+  };
 
   return (
     <Card className="overflow-auto bg-dark">
@@ -66,7 +73,7 @@ const Telephones = () => {
                     <FormControl
                       placeholder="_____-_____-_____"
                       value={phoneNumber}
-                    // Manejar cambio en el input
+                      onChange={handlePhoneNumberChange} // Manejar cambio en el input
                     />
                     <Button variant="secondary">
                       Validar
@@ -94,18 +101,19 @@ const Telephones = () => {
                 <th>Estado</th>
                 <th>Municipio</th>
                 <th>HusoHorario</th>
-                <th>HorarioContacto</th>
+                <th>SEGHorarioContacto</th>
                 <th>Extensión</th>
                 <th>Confirmado</th>
-                <th>FechaActivada</th>
+                <th>Fecha_INSERT</th>
                 <th>Calificacion</th>
+                <th>ACTIVO</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
                   <td colSpan="18" className="text-center">
-                    Cargando...
+                    <Spinner animation="border" /> {/* Mostrar Spinner */}
                   </td>
                 </tr>
               ) : (
@@ -115,7 +123,7 @@ const Telephones = () => {
                     <td>{row.conocidos}</td>
                     <td>{row.desconocidos}</td>
                     <td>{row.sinContacto}</td>
-                    <td>{row.intentoViciDial}</td>
+                    <td>{row.intentosViciDial}</td>
                     <td>{row.id}</td>
                     <td>
                       <a href="#" className="text-primary">
@@ -128,18 +136,19 @@ const Telephones = () => {
                     <td>{row.estado}</td>
                     <td>{row.municipio}</td>
                     <td>{row.husoHorario}</td>
-                    <td>{row.segHorarioContacto}</td>
+                    <td>{row.segHorarioContacto}</td> {/* Mostrar segHorarioContacto directamente */}
                     <td>{row.extensión}</td>
-                    <td>{row._Confirmado}</td>
-                    <td>{row.fecha_Insert}</td>
+                    <td>{row._Confirmado ? "Sí" : "No"}</td>
+                    <td>{new Date(row.fecha_Insert).toLocaleDateString()}</td>
                     <td>{row.calificacion}</td>
-                    <td>{row.activo}</td>
+                    <td>{row.activo ? "Activo" : "Inactivo"}</td>
                   </tr>
                 ))
               )}
             </tbody>
           </Table>
         </div>
+        <Toaster position="top-right" /> {/* Posicionar el toast en el lado derecho */}
       </Card.Body>
     </Card>
   );

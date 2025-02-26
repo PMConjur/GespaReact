@@ -12,7 +12,8 @@ import {
 const SearchCustomer = () => {
   // Consume el contexto
   const {searchResults} = useContext(AppContext);
- 
+
+ {/*result.producto*/}
   return (
     <>
       <br />
@@ -24,29 +25,29 @@ const SearchCustomer = () => {
                 {
                   icon: <FaRegCreditCard />,
                   label: "Producto",
-                  value: result.producto
+                  value: "AMEX"
                 },
                 {
                   icon: <FaClipboardList />,
                   label: "Cuenta",
-                  value: result.idCuenta
+                  value: result.idCuenta || "—"
                 },
                 {
                   icon: <FaCalendarCheck />,
                   label: "Fecha de Activacion",
-                  value: result.activada || "Ninguna"
+                  value: result.fechaActivacion || "—"
                 },
                 {
                   icon: <FaFileAlt />,
                   label: "Expediente",
-                  value: result.expediente || "Ninguna"
+                  value: result.expediente || "—"
                 },
                 {
                   icon: <FaUser />,
                   label: "No. Cliente",
-                  value: result.numeroCliente || "Ninguna"
+                  value: result.numeroCliente || "—"
                 },
-                { icon: <FaFileAlt />, label: "RFC", value: result.rfc }
+                { icon: <FaFileAlt />, label: "RFC", value: result.rfc || "—" }
               ].map(({ icon, label, value }, i) => (
                 <Col key={i} md={4}>
                   <p>

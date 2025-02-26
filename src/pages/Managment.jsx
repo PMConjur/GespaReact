@@ -128,7 +128,9 @@ const Managment = () => {
 
       if (!idCuenta) {
         toast.warning(
-          "idCuenta es nulo, solicita cargar a tu administrador"
+          "idCuenta es nulo, solicita cargar a tu administrador", {
+            position: "top-right" // Mostrar toast en el lado derecho
+          }
         );
         setSearchResults([]);
         return;
