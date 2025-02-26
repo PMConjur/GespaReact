@@ -2,10 +2,12 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using NoriAPI.Models.Busqueda;
+using NoriAPI.Models.Busqueda.InfoProducto;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace NoriAPI.Repositories
@@ -15,6 +17,8 @@ namespace NoriAPI.Repositories
         Task<dynamic> ValidateBusqueda(string filtro, string ValorBusqueda);
         Task<dynamic> ValidateAutomatico(int numEmpleado);
         Task<List<Phone>> GetPhones(string idCuenta, int idCartera);
+        Task<List<CamposPantalla>> GetCamposPantalla(int idCartera, int idProducto);
+        Task<dynamic> GetProducto(string idCuenta);
     }
 
     public class SearchRepository : ISearchRepository
@@ -150,6 +154,45 @@ namespace NoriAPI.Repositories
 
             return phoneList.ToList();
         }
+
+        public async Task<List<CamposPantalla>> GetCamposPantalla(int idCartera, int idProducto)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string fieldsQuery = "SELECT " +
+                    "CP.Posición AS Posicion," +
+                    "CP.AliasCampo," +
+                    "CP.NombreCampo," +
+                    "CP.idFormatoCampo AS IdFormatoCampo " +
+                "FROM CamposPantalla CP(NOLOCK) INNER JOIN Productos P(NOLOCK) ON CP.idProducto = P.idProducto " +
+                "WHERE P.idCartera = @idCartera AND P.idProducto = @idProducto";
+
+            var fieldsList = await connection.QueryAsync<CamposPantalla>(
+                fieldsQuery,
+                new { idCartera = idCartera, idProducto = idProducto },
+                commandType: CommandType.Text
+                );
+
+            return fieldsList.ToList();
+        }
+
+        public async Task<dynamic> GetProducto(string idCuenta)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string productQuery = "WAITFOR DELAY '00:00:00';" +
+                                 "SELECT * FROM Y.Producto_1 (NOLOCK) " +
+                                 "WHERE idCuenta = @IdCuenta";
+
+            var product = await connection.QueryFirstOrDefaultAsync<dynamic>(
+                productQuery,
+                new { IdCuenta = idCuenta },
+                commandType: CommandType.Text
+                );
+
+            return product;
+        }
+
         private SqlConnection GetConnection(string connection)
         {
             return new SqlConnection(_configuration.GetConnectionString(connection));

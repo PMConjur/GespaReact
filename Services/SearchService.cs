@@ -13,6 +13,7 @@ using System.Numerics;
 using Microsoft.Data.SqlClient;
 using NoriAPI.Models.Ejecutivo;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 
 namespace NoriAPI.Services
@@ -22,6 +23,7 @@ namespace NoriAPI.Services
         Task<ResultadoBusqueda> ValidateBusqueda(string filtro, string ValorBusqueda);
         Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado);
         Task<List<Phone>> FetchPhones(string idCuenta);
+        Task<Dictionary<string, object>> CalculateProductData(string idCuenta);
     }
 
     public class SearchService : ISearchService
@@ -167,9 +169,184 @@ namespace NoriAPI.Services
             return phonesList;
         }
 
-        public async Task<dynamic> 
+        public async Task<Dictionary<string, object>> CalculateProductData(string idCuenta)
+        {
+            var resultado = new Dictionary<string, object>();
+
+            var camposPantalla = await _searchRepository.GetCamposPantalla(1, 1);
+            var producto = await _searchRepository.GetProducto(idCuenta);
+
+            DateTime? limitDay = null;
+            if (((IDictionary<string, object>)producto).ContainsKey("batchdate"))
+            {
+                limitDay = Convert.ToDateTime(producto.batchdate);
+                resultado["Dif_diasTotales"] = (DateTime.Now - limitDay.Value).Days;
+            }
+
+            foreach (var campo in camposPantalla)
+            {
+                string nombreCampo = campo.NombreCampo;
+
+                // ✅ Asegurar que el resultado de CampoCalculado se espere correctamente
+                object valorCampo = await CampoCalculado(producto, nombreCampo, idCuenta);
+                object valorFormateado = Formato(valorCampo, campo.IdFormatoCampo);
+
+                resultado[nombreCampo] = valorFormateado;
+            }
+
+            return resultado;
+        }
 
 
+
+
+        public async Task<object> CampoCalculado(dynamic producto, string expresion, string idCuenta)
+        {
+            // Obtener los valores del producto desde la base de datos
+            //var producto = await _searchRepository.GetProducto(idCuenta);
+            if (producto == null)
+                return "";
+
+            // Convertir el resultado en un diccionario (clave: nombre del campo, valor: contenido del campo)
+            var valoresProducto = ((IDictionary<string, object>)producto)
+                .ToDictionary(k => k.Key, v => v.Value ?? "");
+
+            string[] campos = expresion.Split(new char[] { '[', ']' }, StringSplitOptions.RemoveEmptyEntries);
+            string resultado = expresion;
+
+            foreach (var campo in campos)
+            {
+                if (valoresProducto.ContainsKey(campo))
+                {
+                    resultado = resultado.Replace("[" + campo + "]", valoresProducto[campo].ToString().Trim());
+                }
+            }
+
+            if (expresion.StartsWith("#"))
+            {
+                return EvaluateDate(resultado.Replace("#", ""));
+            }
+            else if (campos.Length > 1 && (expresion.Contains("+") || expresion.Contains("-") || expresion.Contains("*") || expresion.Contains("/") || expresion.Contains("^")))
+            {
+                return Evaluate(resultado);
+            }
+
+            return resultado;
+        }
+
+        /// <summary>
+        /// Cambia el formato del texto
+        /// </summary>
+        /// <param name="Texto">Texto que va cambiar el formato.</param>
+        /// <param name="Formato">1 Texto, 2 Número, 3 Moneda, 4 Fecha</param>
+        static public string Formato(object Texto, object Formato)
+        {
+
+            if (Texto == null)
+                return "";
+
+            string sTexto = Texto.ToString();
+
+            switch (Formato.ToString())
+            {
+                case "2":
+                    double fTexto;
+                    sTexto = double.TryParse(sTexto, out fTexto) ? fTexto.ToString("#,#") : sTexto;
+                    break;
+
+                case "3":
+                    double dTexto;
+                    sTexto = double.TryParse(sTexto, out dTexto) ? dTexto.ToString("$ #,#.00") : sTexto; //C2
+                    break;
+
+                case "4":
+                    sTexto = sTexto.Replace("12:00:00 a.m.", "");
+                    DateTime dtTexto = new DateTime();
+                    if (TryParseDate(sTexto, out dtTexto))
+                        sTexto = dtTexto.ToString("dd/MM/yyyy");
+                    break;
+
+                case "5":
+                    double pTexto;
+                    sTexto = double.TryParse(sTexto, out pTexto) ? Math.Round(pTexto * 100, 0) + " %" : sTexto;
+                    break;
+            }
+
+            return sTexto;
+        }
+
+        /// <summary>
+        /// Evalua una expresión aritmética y devuelve el resultado, 0 si fue incorrecta.
+        /// </summary>
+        /// <param name="Tabla">Expresión aritmética.</param>  
+        /// <param name="Número">Indica si se va a devolver un número</param>
+        /// <param name="Fecha">Indica si se va a evaluar una fecha</param>
+        static public double Evaluate(string expression)
+        {
+
+            if (Regex.Matches(expression, @"[a-zA-Z]").Count > 0)
+                return 0;
+
+            DataTable dtExpression = new DataTable();
+            double dEvaluation = 0;
+            expression = expression.Replace("%", "/100");
+
+            try
+            {
+                dtExpression.Columns.Add(new DataColumn("Eval", typeof(double), expression));
+                dtExpression.Rows.Add(dtExpression.NewRow());
+                double.TryParse(dtExpression.Rows[0]["Eval"].ToString(), out dEvaluation);
+            }
+            catch (Exception)
+            {
+                //ErrorLogClass.LogError("Evaluate", expression);
+            }
+
+            return dEvaluation;
+        }
+
+        static public object EvaluateDate(string expression)
+        {
+
+            if (Regex.Matches(expression, @"[a-zA-Z]").Count > 0)
+                return new DateTime(0);
+
+            DateTime dtPrimero = new DateTime();
+            DateTime dtSegundo = new DateTime();
+            int iDías = 0;
+
+            string[] sExpresión = expression.Trim().Split(' ');
+
+
+            if (sExpresión.Length != 3 || !TryParseDate(sExpresión[0], out dtPrimero))
+                return "";
+
+            switch (sExpresión[1])
+            {
+
+                case "+":
+                    if (int.TryParse(sExpresión[2], out iDías))
+                        return dtPrimero.AddDays(iDías);
+                    break;
+
+                case "-":
+                    if (TryParseDate(sExpresión[2], out dtSegundo))
+                        return (dtPrimero - dtSegundo).TotalDays;
+                    else if (int.TryParse(sExpresión[2], out iDías))
+                        return dtPrimero.AddDays(-iDías);
+                    break;
+            }
+
+            return sExpresión[0];
+        }
+
+        static public bool TryParseDate(string Text, out DateTime Date)
+        {
+            if (DateTime.TryParse(Text, out Date) ||
+                        DateTime.TryParseExact(Text, new string[] { "yyyyMMdd" }, null, System.Globalization.DateTimeStyles.None, out Date))
+                return true;
+            return false;
+        }
 
     }
 }

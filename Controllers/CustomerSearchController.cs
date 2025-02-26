@@ -65,5 +65,13 @@ namespace NoriAPI.Controllers
             return Ok(phones);
         }
 
+        [HttpGet("products-info")]
+        public async Task<IActionResult> GetProductData(string idCuenta)
+        {
+            var datos = await _searchService.CalculateProductData(idCuenta);
+            return Ok(datos);
+        }
+
+
     }
 }
