@@ -2,6 +2,9 @@ import Maintenance from "../assets/img/maintenance.png";
 import Home1 from "../assets/img/CallCenter.svg"; // Asegúrate de que la imagen está correctamente importada
 
 import NavbarComponent from "../components/NavbarComponent";
+import Productivity from "../components/Productivity";
+import { Modal } from "react-bootstrap";
+import ProductivityModal from "../components/ProductivityModal";
 
 const Home = () => {
   return (
@@ -31,11 +34,19 @@ const Home = () => {
               </span>
             </div>
 
-            <div className="col-md-8" style={{ backgroundColor: "white", color: "black", height: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+            <div className="col-md-8" style={{ backgroundColor: "black", color: "black", height: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
               <div className="card-body" style={{ textAlign: "center" }}>
-                <span className="pagetitle-max-size">
-                  <i className="bi bi-exclamation-triangle"></i> Oops!
-                </span>
+              <span 
+  className="pagetitle-max-size" 
+  style={{ 
+    color: 'White',
+    fontSize: '50px', 
+    textAlign: 'center', 
+    display: 'block' // Asegura que el span ocupe todo el ancho
+  }}
+>
+  <i className="bi bi-exclamation-triangle"></i> Tus Metas Mes Son
+</span>
                 <br />
                 <span className="pagetitle-max">
                   <i className="bi bi-plug"></i> Página en mantenimiento
@@ -43,6 +54,8 @@ const Home = () => {
                 <p className="card-text">
                   Actualmente estamos realizando mejoras a nuestro portal, disculpe las molestias.
                 </p>
+
+                <Productivity />  {/* Se ha agregado el componente Productivity */}
               </div>
             </div>
           </div>

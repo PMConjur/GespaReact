@@ -240,9 +240,10 @@ const Managment = () => {
                 </Row>
                 <Row>
                   <Col xs={12} md={8}>
-        
+                    <h1>Prueba</h1>
                   </Col>
                   <Col xs={12} md={4}>
+
                     <Reminder />
                   </Col>
                 </Row>
