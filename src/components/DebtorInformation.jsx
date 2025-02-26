@@ -1,30 +1,29 @@
-import { Row, Col } from "react-bootstrap";
+import { useState } from "react";
+import { Row, Breadcrumb } from "react-bootstrap";
+import ProductivityModal from "./ProductivityModal"; // Import ProductivityModal component
 
 const DebtorInformation = () => {
+  const [showModal, setShowModal] = useState(false);
+
+  const handleShowModal = () => setShowModal(true);
+  const handleCloseModal = () => setShowModal(false);
+
   return (
     <Row>
       <h4 className="text-secondary">
         Cartera: <strong className="text-white">American Express</strong>
       </h4>{" "}
-      <Col xs={12} md={6} className="d-block d-md-flex ">
-        {[
-          { href: "#", label: "Inicio", color: "lightgreen" },
-          { href: "#", label: "Productividad", color: "lightblue" },
-          { href: "#", label: "Recuperación", color: "#6495ED" },
-          { href: "#", label: "Tiempos", color: "orange" },
-          { href: "#", label: "Simulador", color: "lightblue" }
-        ].map(({ href, label, color }, index) => (
-          <div>
-          <a
-            key={index}
-            href={href}
-            style={{ color, textDecoration: "none", marginRight: "5px" }}
-          >     
-            {label}
-          </a>
-          </div>
-        ))}
-      </Col>
+      <Breadcrumb>
+        <Breadcrumb.Item href="#" onClick={handleShowModal}>
+          Productividad
+        </Breadcrumb.Item>
+        <Breadcrumb.Item href="#">Recuperación</Breadcrumb.Item>
+        <Breadcrumb.Item href="#">Tiempos</Breadcrumb.Item>
+        <Breadcrumb.Item href="#">Simulador</Breadcrumb.Item>
+      </Breadcrumb>
+      {showModal && (
+        <ProductivityModal show={showModal} onHide={handleCloseModal} />
+      )}
     </Row>
   );
 };
