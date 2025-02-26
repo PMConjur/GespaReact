@@ -5,6 +5,7 @@ const Calendar = () => {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [selectedDay, setSelectedDay] = useState(null); // Estado para el día seleccionado
 
   // Obtener días del mes actual
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
@@ -35,7 +36,13 @@ const Calendar = () => {
   }
   for (let day = 1; day <= daysInMonth; day++) {
     days.push(
-      <td key={day} className={`calendar-day ${day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear() ? "bg-primary text-white" : ""}`}>
+      <td
+        key={day}
+        className={`calendar-day ${
+          selectedDay === day ? "bg-info text-white" : ""
+        }`} // Aplicar estilo si está seleccionado
+        onClick={() => setSelectedDay(day)} // Manejador de clic para seleccionar el día
+      >
         {day}
       </td>
     );
@@ -49,16 +56,29 @@ const Calendar = () => {
   return (
     <div className="container mt-4 text-center">
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <button className="btn btn-secondary" onClick={prevMonth}>Anterior</button>
+        <button className="btn btn-secondary" onClick={prevMonth}>
+          Anterior
+        </button>
         <h3 className="text-white">
-          {new Date(currentYear, currentMonth).toLocaleString("default", { month: "long", year: "numeric" })}
+          {new Date(currentYear, currentMonth).toLocaleString("default", {
+            month: "long",
+            year: "numeric",
+          })}
         </h3>
-        <button className="btn btn-secondary" onClick={nextMonth}>Siguiente</button>
+        <button className="btn btn-secondary" onClick={nextMonth}>
+          Siguiente
+        </button>
       </div>
       <table className="table table-bordered table-dark text-center">
         <thead>
           <tr>
-            <th>Dom</th><th>Lun</th><th>Mar</th><th>Mié</th><th>Jue</th><th>Vie</th><th>Sáb</th>
+            <th>Dom</th>
+            <th>Lun</th>
+            <th>Mar</th>
+            <th>Mié</th>
+            <th>Jue</th>
+            <th>Vie</th>
+            <th>Sáb</th>
           </tr>
         </thead>
         <tbody>{weeks}</tbody>
