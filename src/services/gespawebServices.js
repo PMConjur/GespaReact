@@ -39,11 +39,11 @@ export async function userProductivity(numEmpleado) {
   }
 }
 
-export async function userRecuperation(numEmpleado) {
+export async function userRecovery(idEjecutivo, actual) {
   try {
-    console.log(numEmpleado);
+    console.log(idEjecutivo, actual);
     const response = await servicio.get(
-      `/ejecutivo/productividad-ejecutivo?numEmpleado=${numEmpleado}`
+      `/ejecutivo/get-recuperacion?idEjecutivo=${idEjecutivo}&actual=${actual}`
     );
     const data = response.data;
     console.log(data);
@@ -51,10 +51,10 @@ export async function userRecuperation(numEmpleado) {
   } catch (error) {
     if (error.response) {
       const errorMessage =
-        error.response.data?.mensaje || "Error al recibir la productividad";
+        error.response.data?.mensaje || "Error al recibir la recuperacion";
       throw new Error(errorMessage);
     } else {
-      throw new Error("Error al recibir la productividad.");
+      throw new Error("Sin respuesta del servidor.");
     }
   }
 }
