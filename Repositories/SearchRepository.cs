@@ -152,6 +152,15 @@ namespace NoriAPI.Repositories
             return phoneList.ToList();
         }
 
+
+        public async Task<List<dynamic>> FetchCamposPantalla(int idCarteraEjecutivo, int idProducto)
+        {
+            string sqlCampos = "SELECT CP.* FROM CamposPantalla CP(NOLOCK) " +
+                                "INNER JOIN Productos P(NOLOCK) ON CP.idProducto = P.idProducto " +
+                                "WHERE P.idCartera = @idCarteraEjecutivo" +
+                                "AND P.idProducto = @idProducto";
+        }
+
         private SqlConnection GetConnection(string connection)
         {
             return new SqlConnection(_configuration.GetConnectionString(connection));
