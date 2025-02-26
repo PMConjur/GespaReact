@@ -256,33 +256,35 @@ export function Calculator() {
   );
 }
 
+import { useState } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+
 const Calendar = () => {
+  // 📌 Estados para manejar la fecha seleccionada, el mes y el año
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(0);
   const [selectedYear, setSelectedYear] = useState(2025);
 
+  // 📌 Calcula la cantidad de días en el mes actual
   const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
   const firstDay = new Date(selectedYear, selectedMonth, 1).getDay();
 
-  const handleDateClick = (day) => {
-    setSelectedDate(day);
-  };
-
+  // 📌 Funciones para manejar eventos
+  const handleDateClick = (day) => setSelectedDate(day);
   const handleMonthChange = (event) => {
     setSelectedMonth(parseInt(event.target.value));
     setSelectedDate(null);
   };
-
   const handleYearChange = (event) => {
     setSelectedYear(parseInt(event.target.value));
     setSelectedDate(null);
   };
 
+  // 📌 Generar la estructura de la tabla del calendario
   const calendarDays = [];
   for (let i = 0; i < firstDay; i++) {
     calendarDays.push(<td key={`empty-${i}`} className="empty"></td>);
   }
-
   for (let day = 1; day <= daysInMonth; day++) {
     calendarDays.push(
       <td
@@ -295,6 +297,7 @@ const Calendar = () => {
     );
   }
 
+  // 📌 Organizar los días en semanas
   const weeks = [];
   for (let i = 0; i < calendarDays.length; i += 7) {
     weeks.push(<tr key={i}>{calendarDays.slice(i, i + 7)}</tr>);
@@ -302,57 +305,85 @@ const Calendar = () => {
 
   return (
     <div
-      className="card-body"
+      className="container-fluid d-flex justify-content-center align-items-center"
       style={{
-        maxWidth: "350px",
-        width: "20%",
-        height: "100%",
+        width: "10vw",
+        height: "10vh",
         backgroundColor: "#212529",
-        border: "1px solid #444",
+        color: "white",
       }}
     >
-      <div className="d-flex justify-content-between mb-3">
-        <select value={selectedMonth} onChange={handleMonthChange}>
-          {Array.from({ length: 12 }, (_, i) => (
-            <option key={i} value={i}>
-              {new Date(0, i).toLocaleString("default", { month: "long" })}
-            </option>
-          ))}
-        </select>
-        <input
-          type="number"
-          value={selectedYear}
-          onChange={handleYearChange}
-          min="1900"
-          max="2100"
-        />
+      <div
+        className="card p-4"
+        style={{
+          maxWidth: "900px",
+          width: "90%",
+          backgroundColor: "#212529",
+          border: "1px solid #444",
+          color: "white",
+        }}
+      >
+        {/* 📌 Controles de selección de mes y año */}
+        <div className="d-flex justify-content-between mb-3">
+          <select
+            value={selectedMonth}
+            onChange={handleMonthChange}
+            className="form-select"
+            style={{
+              flex: 1,
+              marginRight: "1000px",
+              fontSize: "200px", // 🔹 Tamaño más grande del nombre del mes
+              fontWeight: "Bold",
+            }}
+          >
+            {Array.from({ length: 12 }, (_, i) => (
+              <option key={i} value={i}>
+                {new Date(0, i).toLocaleString("default", { month: "long" })}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="number"
+            value={selectedYear}
+            onChange={handleYearChange}
+            min="1900"
+            max="2100"
+            className="form-control"
+            style={{ width: "120px" }}
+          />
+        </div>
+
+        {/* 📌 Tabla del calendario */}
+        <table className="table table-bordered text-center table-dark">
+          <thead className="table-light">
+            <tr>
+              <th>Dom</th>
+              <th>Lun</th>
+              <th>Mar</th>
+              <th>Mié</th>
+              <th>Jue</th>
+              <th>Vie</th>
+              <th>Sáb</th>
+            </tr>
+          </thead>
+          <tbody>{weeks}</tbody>
+        </table>
+
+        {/* 📌 Muestra la fecha seleccionada */}
+        {selectedDate && (
+          <p className="text-center mt-3">
+            Fecha seleccionada:{" "}
+            <strong>
+              {selectedDate} de{" "}
+              {new Date(selectedYear, selectedMonth).toLocaleString("default", {
+                month: "long",
+              })}{" "}
+              del año {selectedYear}
+            </strong>
+          </p>
+        )}
       </div>
-      <table className="table table-bordered text-center">
-        <thead className="table-light">
-          <tr>
-            <th>Dom</th>
-            <th>Lun</th>
-            <th>Mar</th>
-            <th>Mié</th>
-            <th>Jue</th>
-            <th>Vie</th>
-            <th>Sáb</th>
-          </tr>
-        </thead>
-        <tbody>{weeks}</tbody>
-      </table>
-      {selectedDate && (
-        <p className="text-center mt-3" style={{ color: "white" }}>
-          Fecha seleccionada:{" "}
-          <strong>
-            {selectedDate} de{" "}
-            {new Date(selectedYear, selectedMonth).toLocaleString("default", {
-              month: "long",
-            })}{" "}
-            del año {selectedYear}
-          </strong>
-        </p>
-      )}
     </div>
   );
 };
