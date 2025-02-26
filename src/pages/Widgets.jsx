@@ -329,10 +329,12 @@ const Calendar = () => {
             value={selectedMonth}
             onChange={handleMonthChange}
             className="form-select"
-            calendar-month {
-              font-size: 22px !important;
-              color: #f8f9fa !important;
-            }
+            style={{
+              flex: 1,
+              marginRight: "1000px",
+              fontSize: "200px", // 🔹 Tamaño más grande del nombre del mes
+              fontWeight: "Bold",
+            }}
           >
             {Array.from({ length: 12 }, (_, i) => (
               <option key={i} value={i}>
