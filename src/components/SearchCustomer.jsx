@@ -34,29 +34,29 @@ const SearchCustomer = () => {
               {
                 icon: <FaRegCreditCard />,
                 label: "Producto",
-                value: result.producto
+                value:  "Amex"
               },
               {
                 icon: <FaClipboardList />,
                 label: "Cuenta",
-                value: result.idCuenta
+                value: result.idCuenta  || "--"
               },
               {
                 icon: <FaCalendarCheck />,
                 label: "Activada",
-                value: result.fechaActivacion || "N/A"
+                value: result.fechaActivacion || "--"
               },
               {
                 icon: <FaFileAlt />,
-                label: "Exp",
-                value: result.expediente || "N/A"
+                label: "Expediente",
+                value: result.expediente || "--"
               },
               {
                 icon: <FaUser />,
                 label: "No. Cliente",
-                value: result.numeroCliente || "N/A"
+                value: result.numeroCliente || "--"
               },
-              { icon: <FaFileAlt />, label: "RFC", value: result.rfc }
+              { icon: <FaFileAlt />, label: "RFC", value: result.rfc  ||  "--" }
             ].map(({ icon, label, value }, i) => (
               <Col key={i} md={4}>
                 <p>
