@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Numerics;
 using Microsoft.Data.SqlClient;
 using NoriAPI.Models.Ejecutivo;
+using System.Reflection;
 
 
 namespace NoriAPI.Services
@@ -21,6 +22,7 @@ namespace NoriAPI.Services
         Task<ResultadoBusqueda> ValidateBusqueda(string filtro, string ValorBusqueda);
         Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado);
         Task<List<Phone>> FetchPhones(string idCuenta);
+        //Task<List<dynamic>> FetchCamposPantalla(int idCarteraEjecutivo);
     }
 
     public class SearchService : ISearchService
@@ -132,8 +134,13 @@ namespace NoriAPI.Services
             if (busq.TryGetValue("Saldo", out var saldo) && saldo != null)
                 busqueda.Saldo = saldo.ToString();
 
-            if (busq.TryGetValue("Fecha_CambioActivación", out var activada) && activada != null)
-                busqueda.FechaActivacion = activada.ToString();
+            if (busq.TryGetValue("Fecha_CambioActivación", out var activada) && activada != null && activada is DateTime dateTime)
+            {
+                busqueda.FechaActivacion = DateOnly.FromDateTime(dateTime);
+            }
+
+            if (busq.TryGetValue("Expediente", out var expediente) && expediente != null)
+                busqueda.Expediente = expediente.ToString();
 
 
             return busqueda;
@@ -153,12 +160,21 @@ namespace NoriAPI.Services
                 automatico.numeroTelefonico = numerotelefonico.ToString();
             return automatico;
         }
+
         public async Task<List<Phone>> FetchPhones(string idCuenta)
         {
             var phonesList = await _searchRepository.GetPhones(idCuenta, 1);
 
             return phonesList;
         }
+
+        //public Task<List<dynamic>> FetchCamposPantalla(int idCarteraEjecutivo, int idProducto)
+        //{
+        //    string sqlCampos = "SELECT CP.* FROM CamposPantalla CP(NOLOCK) " +
+        //                        "INNER JOIN Productos P(NOLOCK) ON CP.idProducto = P.idProducto " +
+        //                        "WHERE P.idCartera = @idCarteraEjecutivo" +
+        //                        "AND P.idProducto = @idProducto";
+        //}
 
     }
 }
