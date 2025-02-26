@@ -38,3 +38,23 @@ export async function userProductivity(numEmpleado) {
     }
   }
 }
+
+export async function userRecuperation(numEmpleado) {
+  try {
+    console.log(numEmpleado);
+    const response = await servicio.get(
+      `/ejecutivo/productividad-ejecutivo?numEmpleado=${numEmpleado}`
+    );
+    const data = response.data;
+    console.log(data);
+    return data;
+  } catch (error) {
+    if (error.response) {
+      const errorMessage =
+        error.response.data?.mensaje || "Error al recibir la productividad";
+      throw new Error(errorMessage);
+    } else {
+      throw new Error("Error al recibir la productividad.");
+    }
+  }
+}
