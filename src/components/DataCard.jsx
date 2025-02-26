@@ -37,7 +37,7 @@ const DataCard = () => {
       <Card.Body>
         <Card.Title>Situación:</Card.Title>
         <div className="d-flex align-items-center">
-          <div className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light">
+          <div className="card-icon rounded-circle d-flex align-items-center justify-content-center">
             <CurrencyDollar
               style={{ fontSize: "32px", color }}
             ></CurrencyDollar>
@@ -74,16 +74,16 @@ const DataCard = () => {
           <Card.Body>
             <Card.Title>Nombre:</Card.Title>
             <div className="d-flex align-items-center">
-              <div className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light">
+              <div className="card-icon rounded-circle d-flex align-items-center justify-content-center">
                 <PersonFill
-                  style={{ fontSize: "32px", color: "#55b0d5" }}
+                  style={{ fontSize: "32px", color: "#6dd6ff" }}
                 ></PersonFill>
               </div>
               <div className="ps-3">
                 <h6
                   style={{
                     fontSize: "1.2rem",
-                    color: "#55b0d5"
+                    color: "#6dd6ff"
                   }}
                   id="nombreDeudor"
                 >
@@ -102,14 +102,14 @@ const DataCard = () => {
           <Card.Body>
             <Card.Title>Saldo Actual:</Card.Title>
             <div className="d-flex align-items-center">
-              <div className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light">
-                <Cash style={{ fontSize: "32px", color: "#65f3a3" }}></Cash>
+              <div className="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                <Cash style={{ fontSize: "32px", color: "#39FC8D" }}></Cash>
               </div>
               <div className="ps-3">
                 <h6
                   style={{
                     fontSize: "1.5rem",
-                    color: "#65f3a3"
+                    color: "#39FC8D"
                   }}
                 >
                   {"$" + result.saldo}
@@ -126,7 +126,7 @@ const DataCard = () => {
           <Card.Body>
             <Card.Title>Mínimo Mas Atrasado:</Card.Title>
             <div className="d-flex align-items-center">
-              <div className="card-icon rounded-circle d-flex align-items-center justify-content-center bg-light">
+              <div className="card-icon rounded-circle d-flex align-items-center justify-content-center">
                 <CurrencyDollar
                   style={{ fontSize: "32px", color: "#f1a441" }}
                 ></CurrencyDollar>

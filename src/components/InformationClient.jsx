@@ -3,7 +3,9 @@ const InformationClient = () => {
   return (
     <Card className="overflow-auto">
       <Card.Body>
-        <h5 className="card-title text-white">Información</h5>
+        <h5 className="card-title text-white">
+          Información: Estamos trabajando en ello...
+        </h5>
         <Table hover className="table table-borderless" variant="dark">
           <tbody>
             {[

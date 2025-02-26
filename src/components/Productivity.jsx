@@ -3,7 +3,7 @@ import { userProductivity } from "../services/gespawebServices";
 import { useEffect, useState } from "react";
 
 const Productivity = () => {
-  const idEjecutivo = 38410;
+  const idEjecutivo = 38316;
   //const location = useLocation();
   //const responseData =
   //location.state || JSON.parse(localStorage.getItem("responseData"));
@@ -49,9 +49,40 @@ const Productivity = () => {
         horizontal: true
       }
     },
-    dataLabels: {
-      enabled: false
+    tooltip: {
+      theme: "dark",
+      y: {
+        formatter: (value) => `${value}`,
+        title: {
+          formatter: () => "Cantidad:"
+        }
+      },
+      style: {
+        fontSize: "14px",
+        colors: ["#ffff"]
+      },
+      background: "#ffffff",
+      border: {
+        color: "#e5e7eb",
+        width: 1
+      },
+      marker: {
+        show: true,
+        fillColors: ["#3B82F6"]
+      }
     },
+    dataLabels: {
+      enabled: true
+    },
+    yaxis: {
+      labels: {
+        style: {
+          colors: "#ffffff", // Color de las etiquetas del eje Y
+          fontSize: "14px"
+        }
+      }
+    },
+    // Opcional: Personalizar la leyenda
     xaxis: {
       categories: categories,
       labels: {

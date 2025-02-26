@@ -105,6 +105,7 @@ $card-spacer-x: 2rem;
   height: 64px;
   flex-shrink: 0;
   flex-grow: 0;
+  background-color: #000000;
 }
 
 .card-title {
@@ -149,7 +150,7 @@ $breadcrumb-bg: rgba(#c5c5c5, 0.8);
 $breadcrumb-border-radius: 1rem;
 
 // Colores
-$breadcrumb-divider-color: #f9fad2;
+$breadcrumb-divider-color: #feffbb;
 $breadcrumb-active-color: #f8d86a;
 $breadcrumb-divider: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24'%3E%3Cpath fill='%236c757d' d='M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z'/%3E%3C/svg%3E");
 
