@@ -1,15 +1,7 @@
 import { useState, useEffect } from "react";
-import {
-  Modal,
-  Button,
-  Form,
-  ListGroup,
-  Table,
-  Card,
-  Placeholder
-} from "react-bootstrap";
-import { userRecovery } from "../services/gespawebServices";
-
+import { Modal, Button, Form, ListGroup, Placeholder } from "react-bootstrap";
+import { userRecovery, userNegotiations } from "../services/gespawebServices";
+import NegotiationsMonth from "./NegotiationsMonth.jsx";
 const Recovery = ({ show, handleClose }) => {
   const [mes, setMes] = useState("actual");
   const [data, setData] = useState({
@@ -20,6 +12,7 @@ const Recovery = ({ show, handleClose }) => {
     metaCumplimiento: 0
   });
   const [loading, setLoading] = useState(true);
+  const [negotiations, setNegotiations] = useState([]);
   const responseData = JSON.parse(localStorage.getItem("responseData"));
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo; // Get idEjecutivo from respo
   const fetchData = async (selectedMes) => {
@@ -35,6 +28,10 @@ const Recovery = ({ show, handleClose }) => {
         montoCumplido: response.montoCumplido,
         metaCumplimiento: response.metaCumplimiento
       });
+      if (actual === 1) {
+        const negotiationsResponse = await userNegotiations(idEjecutivo);
+        setNegotiations(negotiationsResponse.negociaciones);
+      }
       setLoading(false);
     } catch (error) {
       console.error("Error fetching recovery data:", error);
@@ -291,65 +288,12 @@ const Recovery = ({ show, handleClose }) => {
                 </div>
               </ListGroup.Item>
             </ListGroup>
+            {/* Negociaciones del mes */}
+            <NegotiationsMonth negotiations={negotiations} />
           </div>
         </div>
 
         <hr />
-
-        {/* Negociaciones del mes */}
-        <h5>Negociaciones del mes</h5>
-        <ListGroup>
-          <ListGroup.Item variant="dark">
-            <div className="row text-center">
-              <div className="col">
-                <h2>0%</h2>
-                <span>Alcance</span>
-              </div>
-              <div className="col">
-                <h2>+</h2>
-              </div>
-              <div className="col">
-                <h2>0%</h2>
-                <span>Logro</span>
-              </div>
-              <div className="col">
-                <h2>=</h2>
-              </div>
-              <div className="col">
-                <h2>0%</h2>
-                <span>Avance</span>
-              </div>
-            </div>
-          </ListGroup.Item>
-        </ListGroup>
-
-        <Card className="mt-3 bg-secondary text-white">
-          <Card.Body>
-            <div className="table-responsive">
-              <Table striped bordered hover variant="dark">
-                <thead>
-                  <tr>
-                    <th>Cuenta</th>
-                    <th>Herramienta</th>
-                    <th>Estado</th>
-                    <th>Fecha Creación</th>
-                    <th>Fecha Término</th>
-                    <th>Negociado</th>
-                    <th>Pagado</th>
-                    <th>Pagos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td colSpan="8" className="text-center">
-                      Sin datos
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
-            </div>
-          </Card.Body>
-        </Card>
       </Modal.Body>
 
       <Modal.Footer className="bg-dark text-white">

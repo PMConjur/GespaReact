@@ -65,6 +65,26 @@ export async function userRecovery(idEjecutivo, actual) {
   }
 }
 
+export async function userNegotiations(idEjecutivo) {
+  try {
+    console.log(idEjecutivo);
+    const response = await servicio.get(
+      `/ejecutivo/get-negociaciones?idEjecutivo=${idEjecutivo}`
+    );
+    const data = response.data;
+    console.log(data);
+    return data;
+  } catch (error) {
+    if (error.response) {
+      const errorMessage =
+        error.response.data?.mensaje || "Error al recibir la productividad";
+      throw new Error(errorMessage);
+    } else {
+      throw new Error("Error al recibir la productividad.");
+    }
+  }
+}
+
 //Endpoint Telefonos
 export const fetchPhones = async (idCuenta) => {
   try {
