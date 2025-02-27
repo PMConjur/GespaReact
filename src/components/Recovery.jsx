@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
-import { Modal, Button, Form, ListGroup, Table, Card } from "react-bootstrap";
+import {
+  Modal,
+  Button,
+  Form,
+  ListGroup,
+  Table,
+  Card,
+  Placeholder
+} from "react-bootstrap";
 import { userRecovery } from "../services/gespawebServices";
 
 const Recovery = ({ show, handleClose }) => {
@@ -11,10 +19,13 @@ const Recovery = ({ show, handleClose }) => {
     montoCumplido: 0,
     metaCumplimiento: 0
   });
-
+  const [loading, setLoading] = useState(true);
+  const responseData = JSON.parse(localStorage.getItem("responseData"));
+  const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo; // Get idEjecutivo from respo
   const fetchData = async (selectedMes) => {
     try {
-      const idEjecutivo = 14126;
+      setLoading(true);
+
       const actual = selectedMes === "actual" ? 1 : 0;
       const response = await userRecovery(idEjecutivo, actual);
       setData({
@@ -24,8 +35,10 @@ const Recovery = ({ show, handleClose }) => {
         montoCumplido: response.montoCumplido,
         metaCumplimiento: response.metaCumplimiento
       });
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching recovery data:", error);
+      setLoading(false);
     }
   };
 
@@ -58,7 +71,7 @@ const Recovery = ({ show, handleClose }) => {
   };
 
   const formatPorcent = (number) => {
-    return `${number.toFixed(2)}%`;
+    return `${Math.round(number * 100)}%`;
   };
 
   return (
@@ -96,26 +109,47 @@ const Recovery = ({ show, handleClose }) => {
               <ListGroup.Item variant="dark">
                 <div className="row text-center">
                   <div className="col">
-                    <h2>{formatNumber(data.montoNegociado)}</h2>
+                    {loading ? (
+                      <Placeholder as="h2" animation="glow">
+                        <Placeholder xs={6} />
+                      </Placeholder>
+                    ) : (
+                      <h2>{formatNumber(data.montoNegociado)}</h2>
+                    )}
                     <span>Negociado</span>
                   </div>
                   <div className="col">
                     <h2>/</h2>
                   </div>
                   <div className="col">
-                    <h2>{data.negociaciones}</h2>
+                    {loading ? (
+                      <Placeholder as="h2" animation="glow">
+                        <Placeholder xs={6} />
+                      </Placeholder>
+                    ) : (
+                      <h2>{data.negociaciones}</h2>
+                    )}
                     <span>Negociaciones</span>
                   </div>
                   <div className="col">
                     <h2>=</h2>
                   </div>
                   <div className="col">
-                    <h2>
-                      {data.negociaciones > 0
-                        ? formatNumber(data.montoNegociado / data.negociaciones)
-                        : "0"}
-                    </h2>
+                    {loading ? (
+                      <Placeholder as="h2" animation="glow">
+                        <Placeholder xs={6} />
+                      </Placeholder>
+                    ) : (
+                      <h2>
+                        {data.negociaciones > 0
+                          ? formatNumber(
+                              data.montoNegociado / data.negociaciones
+                            )
+                          : "0"}
+                      </h2>
+                    )}
                     <span>Promedio</span>
+                    <span></span>
                   </div>
                 </div>
               </ListGroup.Item>
@@ -123,39 +157,76 @@ const Recovery = ({ show, handleClose }) => {
               <ListGroup.Item variant="dark">
                 <div className="row text-center">
                   <div className="col">
-                    <h2>
-                      {data.montoCumplido + data.negociaciones > 0
-                        ? formatPorcent(
-                            data.montoParcial /
-                              (data.montoCumplido + data.montoParcial)
-                          )
-                        : data.montoParcial}
-                    </h2>
+                    {loading ? (
+                      <Placeholder as="h2" animation="glow">
+                        <Placeholder xs={6} />
+                      </Placeholder>
+                    ) : (
+                      <h2>{formatNumber(data.montoParcial)}</h2>
+                    )}
                     <span>Parcial</span>
+                    <br />
+                    {loading ? (
+                      <Placeholder as="h6" animation="glow">
+                        <Placeholder xs={6} />
+                      </Placeholder>
+                    ) : (
+                      <h6>
+                        {data.montoCumplido + data.negociaciones > 0
+                          ? formatPorcent(
+                              data.montoParcial /
+                                (data.montoCumplido + data.montoParcial)
+                            )
+                          : "0"}
+                      </h6>
+                    )}
                   </div>
                   <div className="col">
                     <h2>/</h2>
                   </div>
                   <div className="col">
-                    <h2>
-                      {data.montoCumplido + data.montoParcial > 0
-                        ? formatNumber(
-                            data.montoParcial /
-                              (data.montoCumplido + data.montoParcial)
-                          )
-                        : formatNumber(data.montoCumplido)}
-                    </h2>
+                    {loading ? (
+                      <Placeholder as="h2" animation="glow">
+                        <Placeholder xs={6} />
+                      </Placeholder>
+                    ) : (
+                      <h2>{formatNumber(data.montoCumplido)}</h2>
+                    )}
                     <span>Cumplido</span>
+                    <br />
+                    {loading ? (
+                      <Placeholder as="h6" animation="glow">
+                        <Placeholder xs={6} />
+                      </Placeholder>
+                    ) : (
+                      <h6>
+                        {" "}
+                        {data.montoCumplido + data.montoParcial > 0
+                          ? formatPorcent(
+                              data.montoCumplido /
+                                (data.montoCumplido + data.montoParcial)
+                            )
+                          : "0"}
+                      </h6>
+                    )}
                   </div>
                   <div className="col">
                     <h2>=</h2>
                   </div>
                   <div className="col">
-                    <h2>
-                      {data.montoCumplido + data.montoParcial > 0
-                        ? "100%"
-                        : formatNumber(data.montoCumplido + data.montoParcial)}
-                    </h2>
+                    {loading ? (
+                      <Placeholder as="h2" animation="glow">
+                        <Placeholder xs={6} />
+                      </Placeholder>
+                    ) : (
+                      <h2>
+                        {data.montoCumplido + data.montoParcial > 0
+                          ? "100%"
+                          : formatNumber(
+                              data.montoCumplido + data.montoParcial
+                            )}
+                      </h2>
+                    )}
                     <span>Pagado</span>
                   </div>
                 </div>
@@ -163,32 +234,58 @@ const Recovery = ({ show, handleClose }) => {
               <ListGroup.Item variant="dark">
                 <div className="row text-center">
                   <div className="col">
-                    <h2>
-                      {formatPorcent(data.montoParcial / data.metaCumplimiento)}
-                    </h2>
+                    {loading ? (
+                      <Placeholder as="h2" animation="glow">
+                        <Placeholder xs={6} />
+                      </Placeholder>
+                    ) : (
+                      <h2>
+                        {data.montoParcial > 0
+                          ? formatPorcent(
+                              data.montoParcial / data.metaCumplimiento
+                            )
+                          : "0"}
+                      </h2>
+                    )}
                     <span>Alcance</span>
                   </div>
                   <div className="col">
                     <h2>/</h2>
                   </div>
                   <div className="col">
-                    <h2>
-                      {formatPorcent(
-                        data.montoCumplido / data.metaCumplimiento
-                      )}
-                    </h2>
+                    {loading ? (
+                      <Placeholder as="h2" animation="glow">
+                        <Placeholder xs={6} />
+                      </Placeholder>
+                    ) : (
+                      <h2>
+                        {data.montoCumplido > 0
+                          ? formatPorcent(
+                              data.montoCumplido / data.metaCumplimiento
+                            )
+                          : "0"}
+                      </h2>
+                    )}
                     <span>Logro</span>
                   </div>
                   <div className="col">
                     <h2>=</h2>
                   </div>
                   <div className="col">
-                    <h2>
-                      {formatPorcent(
-                        (data.montoCumplido + data.montoParcial) /
-                          data.metaCumplimiento
-                      )}
-                    </h2>
+                    {loading ? (
+                      <Placeholder as="h2" animation="glow">
+                        <Placeholder xs={6} />
+                      </Placeholder>
+                    ) : (
+                      <h2>
+                        {data.montoCumplido > 0
+                          ? formatPorcent(
+                              (data.montoCumplido + data.montoParcial) /
+                                data.metaCumplimiento
+                            )
+                          : "0"}
+                      </h2>
+                    )}
                     <span>Avance</span>
                   </div>
                 </div>
@@ -256,7 +353,6 @@ const Recovery = ({ show, handleClose }) => {
       </Modal.Body>
 
       <Modal.Footer className="bg-dark text-white">
-        <h6>Ninguna negociación se ha realizado a lo largo del mes</h6>
         <Button variant="secondary" onClick={handleClose}>
           Cerrar
         </Button>

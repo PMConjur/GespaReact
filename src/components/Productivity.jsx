@@ -3,11 +3,10 @@ import { userProductivity } from "../services/gespawebServices";
 import { useEffect, useState } from "react";
 
 const Productivity = () => {
-  const idEjecutivo = 38316;
-  //const location = useLocation();
-  //const responseData =
-  //location.state || JSON.parse(localStorage.getItem("responseData"));
-  //const idEjecutivo = 38410//responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo || ""; // Get idEjecutivo from respo
+  //const idEjecutivo = 38316;
+  const responseData = JSON.parse(localStorage.getItem("responseData"));
+
+  const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo || ""; // Get idEjecutivo from respo
   const [series, setSeries] = useState([
     {
       data: []
