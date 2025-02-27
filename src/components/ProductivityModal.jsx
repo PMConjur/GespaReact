@@ -1,5 +1,4 @@
 import { Modal, Button } from "react-bootstrap";
-
 import Productivity from "./Productivity";
 
 const ProductivityModal = ({ show, onHide }) => {

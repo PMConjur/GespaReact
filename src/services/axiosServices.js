@@ -1,7 +1,5 @@
 import axios from "axios";
 
-const apiUrl = import.meta.env.VITE_API_URL;
-
 const servicio = axios.create({
   baseURL: "http://192.168.7.33/api",
   headers: {

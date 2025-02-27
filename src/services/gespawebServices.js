@@ -1,7 +1,7 @@
 import servicio from "./axiosServices";
 
 const responseData =
-location.state || JSON.parse(localStorage.getItem("responseData")); 
+  location.state || JSON.parse(localStorage.getItem("responseData"));
 const token = responseData?.ejecutivo?.token;
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -45,13 +45,31 @@ export async function userProductivity(numEmpleado) {
   }
 }
 
-//Endpoint Recuperación
-
-export async function userRecuperation(numEmpleado) {
+export async function userRecovery(idEjecutivo, actual) {
   try {
-    console.log(numEmpleado);
+    console.log(idEjecutivo, actual);
     const response = await servicio.get(
-      `/ejecutivo/productividad-ejecutivo?numEmpleado=${numEmpleado}`
+      `/ejecutivo/get-recuperacion?idEjecutivo=${idEjecutivo}&actual=${actual}`
+    );
+    const data = response.data;
+    console.log(data);
+    return data;
+  } catch (error) {
+    if (error.response) {
+      const errorMessage =
+        error.response.data?.mensaje || "Error al recibir la recuperacion";
+      throw new Error(errorMessage);
+    } else {
+      throw new Error("Sin respuesta del servidor.");
+    }
+  }
+}
+
+export async function userNegotiations(idEjecutivo) {
+  try {
+    console.log(idEjecutivo);
+    const response = await servicio.get(
+      `/ejecutivo/get-negociaciones?idEjecutivo=${idEjecutivo}`
     );
     const data = response.data;
     console.log(data);
@@ -71,22 +89,28 @@ export async function userRecuperation(numEmpleado) {
 export const fetchPhones = async (idCuenta) => {
   try {
     console.log("Iniciando llamada a la API...");
-    console.log("URL de la API:", `${apiUrl}/search-customer/phones?idCuenta=${idCuenta}`);
+    console.log(
+      "URL de la API:",
+      `${apiUrl}/search-customer/phones?idCuenta=${idCuenta}`
+    );
 
     const response = await fetch(
       `${apiUrl}/search-customer/phones?idCuenta=${idCuenta}`,
       {
         method: "GET", // Método HTTP (GET, POST, etc.)
         headers: {
-          "Authorization": `Bearer ${token}`, // Incluye el token en el header
-          "Content-Type": "application/json", // Tipo de contenido
-        },
+          Authorization: `Bearer ${token}`, // Incluye el token en el header
+          "Content-Type": "application/json" // Tipo de contenido
+        }
       }
     );
     console.log("Respuesta de la API recibida. Estado:", response.status);
 
     if (!response.ok) {
-      console.error("Error en la respuesta de la API. Estado:", response.status);
+      console.error(
+        "Error en la respuesta de la API. Estado:",
+        response.status
+      );
       throw new Error("Error al obtener los datos de teléfonos");
     }
 
@@ -99,6 +123,7 @@ export const fetchPhones = async (idCuenta) => {
     throw error;
   }
 };
+<<<<<<< HEAD
 
 //Endpoint Información del Cliente
 
@@ -133,3 +158,5 @@ export const fetchInformation = async (idCuenta) => {
     throw error;
   }
 };
+=======
+>>>>>>> origin/HU6.2-Negociaciones
