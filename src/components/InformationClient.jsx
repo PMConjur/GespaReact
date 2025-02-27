@@ -1,4 +1,4 @@
-import { Card, Table } from "react-bootstrap";
+import { Card, Table, Placeholder } from "react-bootstrap";
 import { fetchInformation } from "../services/gespawebServices"; // Importa el servicio
 import { useContext, useState, useEffect } from "react";
 import { AppContext } from "../pages/Managment"; // Importa el contexto DEL PADRE 
@@ -33,12 +33,15 @@ const InformationClient = () => {
       } catch (error) {
         console.error("Error al cargar la información:", error);
       } finally {
-        setIsLoading(false);
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500); // Tiempo de carga simulado
       }
     };
 
     loadData();
   }, [searchResults, toastShown]); 
+
   const renderRow = (item) => (
     <React.Fragment>
       <tr>
@@ -86,25 +89,39 @@ const InformationClient = () => {
 
   return (
     <Card className="overflow-auto bg-dark">
-    <Card.Body>
-      <h5 className="card-title text-white">Información</h5>
-      <div className="table-container">
-        <Table hover className="table table-borderless table-custom2" variant="dark">
-          <tbody>
-            {data.length === 0 ? (
-              renderRow({})
-            ) : (
-              data.map((item, index) => (
-                <React.Fragment key={index}>
-                  {renderRow(item)}
-                </React.Fragment>
-              ))
-            )}
-          </tbody>
-        </Table>
-      </div>
-    </Card.Body>
-  </Card>
+      <Card.Body>
+        <h5 className="card-title text-white">Información</h5>
+        <div className="table-container">
+          <Table hover className="table table-borderless table-custom2" variant="dark">
+            <tbody>
+              {isLoading ? (
+                [...Array(4)].map((_, i) => (
+                  <tr key={i}>
+                    {[...Array(8)].map((_, j) => (
+                      <td key={j}>
+                        <Placeholder as="span" animation="glow">
+                          <Placeholder xs={12} />
+                        </Placeholder>
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : (
+                data.length === 0 ? (
+                  renderRow({})
+                ) : (
+                  data.map((item, index) => (
+                    <React.Fragment key={index}>
+                      {renderRow(item)}
+                    </React.Fragment>
+                  ))
+                )
+              )}
+            </tbody>
+          </Table>
+        </div>
+      </Card.Body>
+    </Card>
   );
 };
 

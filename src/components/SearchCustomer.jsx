@@ -26,13 +26,14 @@ const SearchCustomer = () => {
   const result = searchResults[0] || defaultData;
 
   useEffect(() => {
-    // Simula una carga de datos
+    setIsLoading(true); // Reinicia el estado a "cargando"
+    
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1000); // Cambia el tiempo según sea necesario
-
+    }, 500); // Tiempo de carga simulado
+    
     return () => clearTimeout(timer);
-  }, [searchResults]);
+  }, [searchResults]); // Se ejecuta cada vez que searchResults cambia
 
   return (
     <>

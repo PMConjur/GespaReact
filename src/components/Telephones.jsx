@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Table, Button, InputGroup, FormControl, Spinner } from "react-bootstrap"; // Importar Spinner
+import { Card, Table, Button, InputGroup, FormControl, Spinner, Placeholder } from "react-bootstrap"; // Importar Spinner y Placeholder
 import { fetchPhones } from "../services/gespawebServices"; // Importa el servicio
 import { useContext } from "react";
 import { AppContext } from "../pages/Managment"; // Importa el contexto DEL PADRE 
@@ -34,7 +34,9 @@ const Telephones = () => {
     } catch (error) {
       console.error("Error al cargar los teléfonos:", error);
     } finally {
-      setIsLoading(false);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500); // Tiempo de carga simulado
     }
   };
 
@@ -115,11 +117,17 @@ const Telephones = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td colSpan="18" className="text-center">
-                    <Spinner animation="border" /> {/* Mostrar Spinner */}
-                  </td>
-                </tr>
+                [...Array(4)].map((_, i) => (
+                  <tr key={i}>
+                    {[...Array(18)].map((_, j) => (
+                      <td key={j}>
+                        <Placeholder as="span" animation="glow">
+                          <Placeholder xs={12} />
+                        </Placeholder>
+                      </td>
+                    ))}
+                  </tr>
+                ))
               ) : (
                 data.map((row, index) => (
                   <tr key={index}>
