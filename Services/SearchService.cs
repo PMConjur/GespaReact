@@ -2,18 +2,12 @@
 using System.Collections.Generic;
 using NoriAPI.Repositories;
 using System;
-using NoriAPI.Models;
-using NoriAPI.Models.Login;
 using System.Threading.Tasks;
 using NoriAPI.Models.Busqueda;
 using System.Linq;
 using System.Data;
-using Microsoft.AspNetCore.Mvc;
-using System.Numerics;
-using Microsoft.Data.SqlClient;
-using NoriAPI.Models.Ejecutivo;
-using System.Reflection;
 using System.Text.RegularExpressions;
+using NoriAPI.Models.Phones;
 
 
 namespace NoriAPI.Services
@@ -24,6 +18,10 @@ namespace NoriAPI.Services
         Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado);
         Task<List<Phone>> FetchPhones(string idCuenta);
         Task<Dictionary<string, object>> CalculateProductData(string idCuenta);
+        Task<bool> ValidatePhone(string telefono, string idCuenta);
+        Task<NewPhone> SaveNewPhone(NewPhoneRequest newPhoneData);
+        Task<int> GetIdValor(string catalogo, object valor);
+
     }
 
     public class SearchService : ISearchService
@@ -31,11 +29,13 @@ namespace NoriAPI.Services
 
         private readonly IConfiguration _configuration;
         private readonly ISearchRepository _searchRepository;
+        private readonly IEjecutivoRepository _ejecutivoRepository;
 
-        public SearchService(IConfiguration configuration, ISearchRepository searchRepository)
+        public SearchService(IConfiguration configuration, ISearchRepository searchRepository, IEjecutivoRepository ejecutivoRepository)
         {
             _configuration = configuration;
             _searchRepository = searchRepository;
+            _ejecutivoRepository = ejecutivoRepository;
         }
 
         public async Task<ResultadoBusqueda> ValidateBusqueda(string filtro, string ValorBusqueda)
@@ -162,6 +162,8 @@ namespace NoriAPI.Services
             return automatico;
         }
 
+        #region Phones
+
         public async Task<List<Phone>> FetchPhones(string idCuenta)
         {
             var phonesList = await _searchRepository.GetPhones(idCuenta, 1);
@@ -169,6 +171,50 @@ namespace NoriAPI.Services
             return phonesList;
         }
 
+        public async Task<bool> ValidatePhone(string telefono, string idCuenta)
+        {
+            // Obtiene la lista de teléfonos asociados a la cuenta
+            var phonesListValidate = await FetchPhones(idCuenta);
+
+            // Retorna true solo si:
+            // 1. La lista de teléfonos no es nula
+            // 2. La lista contiene al menos un teléfono
+            // 3. El número proporcionado tiene al menos 10 caracteres después de eliminar espacios en blanco
+            // 4. El número proporcionado existe dentro de la lista de teléfonos obtenidos
+            return
+                phonesListValidate != null
+                && phonesListValidate.Count > 0
+                && telefono.Trim().Length >= 10
+                && phonesListValidate.Any(p => p.NúmeroTelefónico == telefono);
+        }
+
+        public async Task<NewPhone> SaveNewPhone(NewPhoneRequest newPhoneData)
+        {
+            //Obtener los idValor para el constructor del nuevo teléfono.
+            int idTelefonia = await GetIdValor("Telefonía", newPhoneData.Telefonia);
+            int idOrigen = await GetIdValor("Orígenes", "Gestión");
+            int idClase = await GetIdValor("Clases", newPhoneData.ClaseTelefono);
+
+            NewPhone newPhone = new NewPhone(
+                numeroTelefonico: newPhoneData.PhoneNumber,
+                idTelefonia,
+                idOrigen,
+                idClase,
+                newPhoneData.HorarioContacto,
+                estado: "",
+                newPhoneData.Extension
+                );
+
+            return newPhone;
+        }
+
+
+
+        #endregion
+
+
+
+        #region InfoProductos
         public async Task<Dictionary<string, object>> CalculateProductData(string idCuenta)
         {
             var resultado = new Dictionary<string, object>();
@@ -196,9 +242,6 @@ namespace NoriAPI.Services
 
             return resultado;
         }
-
-
-
 
         public async Task<object> CampoCalculado(dynamic producto, string expresion, string idCuenta)
         {
@@ -278,7 +321,7 @@ namespace NoriAPI.Services
         /// <summary>
         /// Evalua una expresión aritmética y devuelve el resultado, 0 si fue incorrecta.
         /// </summary>
-        /// <param name="Tabla">Expresión aritmética.</param>  
+        /// <param name="Tabla">Expresión aritmética.</param>
         /// <param name="Número">Indica si se va a devolver un número</param>
         /// <param name="Fecha">Indica si se va a evaluar una fecha</param>
         static public double Evaluate(string expression)
@@ -346,6 +389,28 @@ namespace NoriAPI.Services
                         DateTime.TryParseExact(Text, new string[] { "yyyyMMdd" }, null, System.Globalization.DateTimeStyles.None, out Date))
                 return true;
             return false;
+        }
+
+        #endregion
+
+
+        public async Task<int> GetIdValor(string catalogo, object valor)
+        {
+            if (valor == null)
+                return 0;
+
+            DataTable catalogosTable = await _ejecutivoRepository.VwCatalogos();
+
+            // Verifica que la DataTable no sea nula y contenga filas
+            if (catalogosTable == null || catalogosTable.Rows.Count == 0)
+                return 0;
+
+            // Filtra las filas que coincidan con el catálogo y el valor buscado
+            DataRow[] drFilas = catalogosTable.Select($"Catálogo = '{catalogo}' AND Valor = '{valor}'");
+
+            // Si hay coincidencias, retorna el idValor, de lo contrario, retorna 0
+            return drFilas.Length > 0 ? Convert.ToInt32(drFilas[0]["idValor"]) : 0;
+
         }
 
     }

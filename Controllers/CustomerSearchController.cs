@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using NoriAPI.Models.Busqueda;
 using Microsoft.AspNetCore.Authorization;
+using NoriAPI.Models.Phones;
 
 namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/search-customer")]
-    [Authorize]
+    //[Authorize]
     public class CustomerSearchController : ControllerBase
 
     {
@@ -55,7 +56,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("phones")]
-        public async Task<ActionResult<IEnumerable<Phone>>> GetPhones(string idCuenta)
+        public async Task<ActionResult<IEnumerable<Phone>>> GetPhones([FromQuery] string idCuenta)
         {
             var phones = await _searchService.FetchPhones(idCuenta);
             if (phones == null || phones.Count == 0)
@@ -66,10 +67,32 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("products-info")]
-        public async Task<IActionResult> GetProductData(string idCuenta)
+        public async Task<IActionResult> GetProductData([FromQuery] string idCuenta)
         {
             var datos = await _searchService.CalculateProductData(idCuenta);
             return Ok(datos);
+        }
+
+        [HttpPost("validate-phone")]
+        public async Task<IActionResult> ValidatePhone([FromBody] string telefono, string idCuenta)
+        {
+            var phoneValidation = await _searchService.ValidatePhone(telefono.Trim(), idCuenta);
+            if (!phoneValidation)
+            {
+                return NotFound(new { exists = phoneValidation });
+            }
+            return Ok(new { exists = phoneValidation });
+        }
+
+        [HttpPost("save-new-phone")]
+        public async Task<ActionResult<NewPhone>> SaveNewPhone([FromBody] NewPhoneRequest newPhoneData)
+        {
+            var phone = await _searchService.SaveNewPhone(newPhoneData);
+            if (phone == null)
+            {
+                return BadRequest();
+            }
+            return Ok(phone);
         }
 
 
