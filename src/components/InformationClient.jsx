@@ -86,8 +86,9 @@ const InformationClient = () => {
 
   return (
     <Card className="overflow-auto bg-dark">
-      <Card.Body>
-        <h5 className="card-title text-white">Información</h5>
+    <Card.Body>
+      <h5 className="card-title text-white">Información</h5>
+      <div className="table-container">
         <Table hover className="table table-borderless table-custom2" variant="dark">
           <tbody>
             {data.length === 0 ? (
@@ -101,8 +102,9 @@ const InformationClient = () => {
             )}
           </tbody>
         </Table>
-      </Card.Body>
-    </Card>
+      </div>
+    </Card.Body>
+  </Card>
   );
 };
 

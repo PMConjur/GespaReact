@@ -400,9 +400,9 @@ $table-border-radius:     8px;
   tbody {
     tr {
       font-size: 14px;
-      text-align: center;
+      vertical-align: none;
     }
-   
+   vertical-align: middle;
   }
 
   // Celda personalizada
@@ -421,13 +421,30 @@ $table-border-radius:     8px;
   }
 }
 
+.button-phones{
+  justify-content: flex-start;
+  width: auto;
+  margin: auto;
+  display: flex; // Por defecto en pantallas grandes
+
+  @media (max-width: 768px) { 
+    display: block; // En pantallas pequeñas
+  }
+
+ .input-phone{
+   width: auto !important;
+   margin-bottom: 5px;
+   margin-right: 0 !important;
+ }
+}
+
 .table-custom2 {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 1px 0px;
+  border-spacing: 0px 1px;
   background-color: #6c757d;
   padding: 1px;
-
+  border-radius: 5px;
   thead {
     background-color: #343a40;
     th {
@@ -441,9 +458,9 @@ $table-border-radius:     8px;
     font-size: 14px;
     font-weight: 400;
     text-align: center;
-
+    border-radius: 5px;
     tr {
-
+   
       td {
         color: #adb5bd;
         text-align: center;
@@ -462,13 +479,27 @@ $table-border-radius:     8px;
   th {
     color: #ffffff;
     font-weight: bolder;
-    padding: 10px 5px;
+    padding: 10px 10px;
     text-align: left;
+    background-color:#1d1f20
   }
 
   td {
     color: #28a745; // Color verde para valores
-    padding: 5px;
+    padding: 10px;
+    background-color: #232629;
   }
+  .card-info{
+    background-color: #1d1f20;
+  }
+  
+  .card-phones{
+    background-color: #1d1f20;
+  }
+  
 }
 
+.table-container {
+  overflow-x: auto;
+  white-space: nowrap;
+}

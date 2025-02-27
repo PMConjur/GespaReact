@@ -56,27 +56,28 @@ const Telephones = () => {
   }, [searchResults]);
 
   return (
-    <Card className="overflow-auto bg-dark">
+    <Card className="overflow-auto card-phones">
       <Card.Body>
         <h5 className="card-title text-white">Telefonos</h5>
         <Table hover variant="dark" className="table" responsive="sm">
           <thead>
             <tr>
               <th colSpan="3">
-                <div className="d-flex">
+                <div className="button-phones">
                   <Button
                     variant="primary"
-                    className="me-2"
+                    className="me-2 input-phone"
                     style={{ width: "25%" }}
                     onClick={handleSearch} // Llamar a handleSearch al hacer clic
                   >
                     Llamada de entrada
                   </Button>
-                  <InputGroup style={{ width: "35%" }}>
+                  <InputGroup style={{ width: "35%" }} className="input-phone">
                     <FormControl
                       placeholder="_____-_____-_____"
                       value={phoneNumber}
                       onChange={handlePhoneNumberChange} // Manejar cambio en el input
+                      className=" input-validation"
                     />
                     <Button variant="secondary" onClick={handleSearch}>
                       Validar
