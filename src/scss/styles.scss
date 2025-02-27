@@ -362,3 +362,113 @@ $modal-transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-weight: 600;
   color: #ffc400;
 }
+
+$table-bg:                #ffffff;
+$table-color:             #2d3439;
+$table-border-color:      rgba(0, 0, 0, 0.08);
+
+// Encabezados
+$table-head-bg:           #f8f9fa;
+$table-head-color:        #6c757d;
+
+// Variantes
+$table-hover-bg:          rgba(#4a9dff, 0.03);
+$table-striped-bg:        rgba(#e9ecef, 0.3);
+
+// Espaciado y bordes
+$table-cell-padding-y:    1rem;
+$table-cell-padding-x:    1rem;
+$table-border-width:      1px;
+$table-border-radius:     8px;
+
+.table {
+  // Borde redondeado para la tabla
+  border-collapse: separate;
+  border-spacing: 0;
+  padding: .2rem .2rem;
+  thead {
+    th {
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.85rem;
+      padding: 1rem 1rem;
+      
+    }
+  }
+
+  tbody {
+    tr {
+      font-size: 14px;
+      text-align: center;
+    }
+   
+  }
+
+  // Celda personalizada
+  td {
+    vertical-align: middle;
+    border-top: $table-border-width solid $table-border-color;
+  }
+
+  // Variante especial
+  &.table-custom {
+    thead th {
+      background: linear-gradient(45deg, #4a9dff, #6c5ce7);
+      color: white;
+      
+    }
+  }
+}
+
+.table-custom2 {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 1px 0px;
+  background-color: #6c757d;
+  padding: 1px;
+
+  thead {
+    background-color: #343a40;
+    th {
+      color: #fff;
+      text-align: center;
+      background-color: #2b6bbe;
+    }
+  }
+
+  tbody {
+    font-size: 14px;
+    font-weight: 400;
+    text-align: center;
+
+    tr {
+
+      td {
+        color: #adb5bd;
+        text-align: center;
+        border-right: #6c757d;
+      }
+
+      a {
+        color: #17a2b8;
+        &:hover {
+          color: #138496;
+        }
+      }
+    }
+  }
+
+  th {
+    color: #ffffff;
+    font-weight: bolder;
+    padding: 10px 5px;
+    text-align: left;
+  }
+
+  td {
+    color: #28a745; // Color verde para valores
+    padding: 5px;
+  }
+}
+

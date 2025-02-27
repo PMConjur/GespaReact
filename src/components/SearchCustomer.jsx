@@ -14,12 +14,12 @@ const SearchCustomer = () => {
   const { searchResults } = useContext(AppContext);
 
   const defaultData = {
-    producto: "-",
-    idCuenta: "-",
-    fechaActivacion: "-",
-    expediente: "-",
-    numeroCliente: "-",
-    rfc: "-"
+    producto: "--",
+    idCuenta: "--",
+    fechaActivacion: "--",
+    expediente: "--",
+    numeroCliente: "--",
+    rfc: "--"
   };
 
   const result = searchResults[0] || defaultData;
@@ -49,7 +49,7 @@ const SearchCustomer = () => {
               {
                 icon: <FaFileAlt />,
                 label: "Expediente",
-                value: result.expediente || "--"
+                value:  `AMX${result.expediente}` || "--"
               },
               {
                 icon: <FaUser />,

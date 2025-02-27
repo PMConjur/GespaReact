@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Card, Table, Button, InputGroup, FormControl, Spinner } from "react-bootstrap"; // Importar Spinner
-import { Whatsapp, ChatDots } from "react-bootstrap-icons";
 import { fetchPhones } from "../services/gespawebServices"; // Importa el servicio
 import { useContext } from "react";
 import { AppContext } from "../pages/Managment"; // Importa el contexto DEL PADRE 
 import { toast, Toaster } from "sonner";
+import "../scss/styles.scss"
 
 const Telephones = () => {
   const [data, setData] = useState([]); // Estado para los datos de la tabla
@@ -13,39 +13,47 @@ const Telephones = () => {
   const { searchResults } = useContext(AppContext);
   const [toastShown, setToastShown] = useState(false); // Estado para controlar si el toast ya se mostró
 
-  // Cargar datos desde la API al montar el componente
-  useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      try {
-        const phones = await Promise.all(
-          searchResults.map(async (result, index) => {
-            const phones = await fetchPhones(result.idCuenta); // Usar result.idCuenta
-            return phones;
-          })
-        );
-        const flatPhones = phones.flat();
-        setData(flatPhones); // Actualizar el estado con los datos de la API
-        if (flatPhones.length === 0 && !toastShown) {
-          toast.error("No hay carga de telefonos", {
-            position: "top-right" // Mostrar toast en el lado derecho
-          });
-          setToastShown(true); // Marcar que el toast ya se mostró
-        }
-      } catch (error) {
-        console.error("Error al cargar los teléfonos:", error);
-      } finally {
-        setIsLoading(false);
+  // Función para cargar datos desde la API
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const phones = await Promise.all(
+        searchResults.map(async (result, index) => {
+          const phones = await fetchPhones(result.idCuenta); // Usar result.idCuenta
+          return phones;
+        })
+      );
+      const flatPhones = phones.flat();
+      setData(flatPhones); // Actualizar el estado con los datos de la API
+      if (flatPhones.length === 0 && !toastShown) {
+        toast.error("No hay carga de telefonos", {
+          position: "top-right" // Mostrar toast en el lado derecho
+        });
+        setToastShown(true); // Marcar que el toast ya se mostró
       }
-    };
-
-    loadData();
-  }, [searchResults, toastShown]); // Dependencia: cuando `searchResults` cambie, se ejecuta este efecto
+    } catch (error) {
+      console.error("Error al cargar los teléfonos:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Manejar el cambio en el input del número de teléfono
   const handlePhoneNumberChange = (e) => {
     setPhoneNumber(e.target.value);
   };
+
+  // Función para manejar la búsqueda o la acción del botón
+  const handleSearch = () => {
+    setToastShown(false); // Resetear el estado del toast
+    loadData(); // Cargar los datos
+  };
+
+  useEffect(() => {
+    if (searchResults.length > 0) {
+      loadData();
+    }
+  }, [searchResults]);
 
   return (
     <Card className="overflow-auto bg-dark">
@@ -57,18 +65,10 @@ const Telephones = () => {
               <th colSpan="3">
                 <div className="d-flex">
                   <Button
-                    variant="success"
-                    className="me-2"
-                    style={{ width: "20%" }}
-                     // Función para WhatsApp
-                  >
-                    <Whatsapp />WhatsApp
-                  </Button>
-                  <Button
                     variant="primary"
                     className="me-2"
                     style={{ width: "25%" }}
-                    // Función para Llamada de entrada
+                    onClick={handleSearch} // Llamar a handleSearch al hacer clic
                   >
                     Llamada de entrada
                   </Button>
@@ -78,7 +78,7 @@ const Telephones = () => {
                       value={phoneNumber}
                       onChange={handlePhoneNumberChange} // Manejar cambio en el input
                     />
-                    <Button variant="secondary">
+                    <Button variant="secondary" onClick={handleSearch}>
                       Validar
                     </Button>
                   </InputGroup>
@@ -122,29 +122,29 @@ const Telephones = () => {
               ) : (
                 data.map((row, index) => (
                   <tr key={index}>
-                    <td>{row.titulares}</td>
-                    <td>{row.conocidos}</td>
-                    <td>{row.desconocidos}</td>
-                    <td>{row.sinContacto}</td>
-                    <td>{row.intentosViciDial}</td>
-                    <td>{row.id}</td>
+                    <td>{row.titulares || '--'}</td>
+                    <td>{row.conocidos || '--'}</td>
+                    <td>{row.desconocidos || '--'}</td>
+                    <td>{row.sinContacto || '--'}</td>
+                    <td>{row.intentosViciDial || '--'}</td>
+                    <td>{row.id || '--'}</td>
                     <td>
                       <a href="#" className="text-primary">
-                        {"xxxxxx" + row.númeroTelefónico.slice(6)}
+                        {"xxxxxx" + row.númeroTelefónico.slice(6) || '--'}
                       </a>
                     </td>
-                    <td>{row.idTelefonía}</td>
-                    <td>{row.idOrigen}</td>
-                    <td>{row.idClase}</td>
-                    <td>{row.estado}</td>
-                    <td>{row.municipio}</td>
-                    <td>{row.husoHorario}</td>
-                    <td>{row.segHorarioContacto}</td>
-                    <td>{row.extensión}</td>
-                    <td>{row._Confirmado ? "Sí" : "No"}</td>
-                    <td>{new Date(row.fecha_Insert).toLocaleDateString()}</td>
-                    <td>{row.calificacion}</td>
-                    <td>{row.activo ? "Activo" : "Inactivo"}</td>
+                    <td>{row.idTelefonía || '--'}</td>
+                    <td>{row.idOrigen || '--'}</td>
+                    <td>{row.idClase || '--'}</td>
+                    <td>{row.estado || '--'}</td>
+                    <td>{row.municipio || '--'}</td>
+                    <td>{row.husoHorario || '--'}</td>
+                    <td>{row.segHorarioContacto || '--'}</td>
+                    <td>{row.extensión || '--'}</td>
+                    <td>{row._Confirmado ? "Sí" : "No" || '--'}</td>
+                    <td>{new Date(row.fecha_Insert).toLocaleDateString() || '--'}</td>
+                    <td>{row.calificacion || '--'}</td>
+                    <td>{row.activo ? "Activo" : "Inactivo" || '--'}</td>
                   </tr>
                 ))
               )}
