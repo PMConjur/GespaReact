@@ -46,7 +46,7 @@ namespace NoriAPI.Services
         #endregion
 
         #region preguntas_respuestas
-        
+
         #endregion
 
 
@@ -139,7 +139,7 @@ namespace NoriAPI.Services
 
         #region Preguntas_Respuestas
         public async Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas()
-        {                       
+        {
             var validatePreg_Resp_list = await _ejecutivoRepository.ValidatePreguntas_Respuestas();
 
             return validatePreg_Resp_list;
@@ -312,5 +312,5 @@ namespace NoriAPI.Services
 
 
     }
-    
+
 }

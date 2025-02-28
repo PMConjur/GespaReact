@@ -165,8 +165,8 @@ namespace NoriAPI.Repositories
 
         #region ProductividadOld
         /*
-        
-        
+
+
         public async Task<dynamic> ValidateProductividad(int numEmpleado)
         {
 
@@ -225,7 +225,7 @@ namespace NoriAPI.Repositories
                 _dsTablas.Tables["Relaciones"].Columns["idValor1"],
                 false);
 
-            //------------------------------------Tiempos----------------------------------------------// 
+            //------------------------------------Tiempos----------------------------------------------//
             string queryTiempos = "[dbMemory].[PS].[TiemposEjecutivo]";
 
             var parametersT = new
@@ -327,7 +327,7 @@ namespace NoriAPI.Repositories
             return Conteos;
         }
 
-          
+
         public static void ConteosGestiones()
         {
             // Define tabla.
@@ -488,7 +488,7 @@ namespace NoriAPI.Repositories
 
             }
 
-            // Tiempos            
+            // Tiempos
             return sNombreColumna;
         }
 
@@ -501,15 +501,15 @@ namespace NoriAPI.Repositories
             using var connection = GetConnection("Piso2Amex");
             string preg_resp_Query = "select FP.[idPregunta],\r\n" +
                 "FP.[Pregunta],\r\n" +
-                "FR.[idRespuesta],\r\n" +                
+                "FR.[idRespuesta],\r\n" +
                 "FR.[idValor],\r\n" +
                 "FR.[Respuesta],\r\n" +
                 "FR.[idSiguientePregunta],\r\n" +
                 "FR.[Seguimiento],\r\n" +
                 "FR.[Negociación],\r\n" +
-                "FR.[Identificador],\r\n" +                            
-                "VC.[Valor],\r\n" +                
-                "VC.[ValorActivo]\r\n" +               
+                "FR.[Identificador],\r\n" +
+                "VC.[Valor],\r\n" +
+                "VC.[ValorActivo]\r\n" +
                 "from FlujoPreguntas FP\r\n" +
                 "inner join FlujoRespuestas FR\r\n" +
                 "on FR.idPregunta = FP.idPregunta \r\n" +
