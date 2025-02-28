@@ -12,7 +12,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/search-customer")]
-    [Authorize]
+    //[Authorize]
     public class CustomerSearchController : ControllerBase
 
     {
