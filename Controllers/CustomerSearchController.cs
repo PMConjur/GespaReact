@@ -12,7 +12,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/search-customer")]
-    //[Authorize]
+    [Authorize]
     public class CustomerSearchController : ControllerBase
 
     {
@@ -84,15 +84,16 @@ namespace NoriAPI.Controllers
             return Ok(new { exists = phoneValidation });
         }
 
-        [HttpPost("save-new-phone")]
-        public async Task<ActionResult<NewPhone>> SaveNewPhone([FromBody] NewPhoneRequest newPhoneData)
+        [HttpPut("save-new-phone")]
+        public async Task<IActionResult> SaveNewPhone([FromBody] NewPhoneRequest newPhoneData)
         {
             var phone = await _searchService.SaveNewPhone(newPhoneData);
+
             if (phone == null)
             {
                 return BadRequest();
             }
-            return Ok(phone);
+            return Ok(new { mensaje = phone });
         }
 
 

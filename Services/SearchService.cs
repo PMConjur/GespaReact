@@ -19,8 +19,7 @@ namespace NoriAPI.Services
         Task<List<Phone>> FetchPhones(string idCuenta);
         Task<Dictionary<string, object>> CalculateProductData(string idCuenta);
         Task<bool> ValidatePhone(string telefono, string idCuenta);
-        Task<NewPhone> SaveNewPhone(NewPhoneRequest newPhoneData);
-        Task<int> GetIdValor(string catalogo, object valor);
+        Task<string> SaveNewPhone(NewPhoneRequest newPhoneData);
 
     }
 
@@ -188,12 +187,14 @@ namespace NoriAPI.Services
                 && phonesListValidate.Any(p => p.NúmeroTelefónico == telefono);
         }
 
-        public async Task<NewPhone> SaveNewPhone(NewPhoneRequest newPhoneData)
+        public async Task<string> SaveNewPhone(NewPhoneRequest newPhoneData)
         {
+            DataTable catalogosTable = await _ejecutivoRepository.VwCatalogos();
+
             //Obtener los idValor para el constructor del nuevo teléfono.
-            int idTelefonia = await GetIdValor("Telefonía", newPhoneData.Telefonia);
-            int idOrigen = await GetIdValor("Orígenes", "Gestión");
-            int idClase = await GetIdValor("Clases", newPhoneData.ClaseTelefono);
+            int idTelefonia = await GetIdValor(catalogosTable, "Telefonía", newPhoneData.Telefonia);
+            int idOrigen = await GetIdValor(catalogosTable, "Orígenes", "Gestión");
+            int idClase = await GetIdValor(catalogosTable, "Clases", newPhoneData.ClaseTelefono);
 
             NewPhone newPhone = new NewPhone(
                 numeroTelefonico: newPhoneData.PhoneNumber,
@@ -202,11 +203,115 @@ namespace NoriAPI.Services
                 idClase,
                 newPhoneData.HorarioContacto,
                 estado: "",
-                newPhoneData.Extension
+                newPhoneData.Extension,
+                1,
+                newPhoneData.Cuenta,
+                newPhoneData.IdEjecutivo
                 );
 
-            return newPhone;
+            string savePhoneResult = await ValidateNewPhone(catalogosTable, newPhone, false);
+
+
+            return savePhoneResult;
         }
+
+        /// <summary>
+        /// Inserta en la base de datos un nuevo teléfono de la cuenta.
+        /// </summary>
+        /// <param name="Cuenta">Cuenta a la que corresponde el nuevo teléfono.</param>
+        /// <param name="TeléfonoCuenta">Nuevo teléfono que se guardará.</param>
+        /// <param name="OmiteDuplicidad">Indica si existió duplicidad con los teléfonos de la cuenta.</param>
+        /// <returns>Mensaje de error.</returns>
+        private async Task<string> ValidateNewPhone(DataTable dtCatalogos, NewPhone telefonoCuenta, bool omitirDuplicidad)
+        {
+            int idTelefonía = telefonoCuenta.IdTelefonia;
+            int idClase = telefonoCuenta.IdClase;
+            int idOrigen = telefonoCuenta.IdOrigen;
+
+            long lNumeroTelefonico = 0;
+            object segHorarioContacto = null;
+
+            if (!long.TryParse(telefonoCuenta.NumeroTelefonico, out lNumeroTelefonico))
+            {
+                return "Ingrese un número telefónico válido (" + telefonoCuenta.NumeroTelefonico + ").";
+            }
+
+            bool phoneExists = await ValidatePhone(telefonoCuenta.NumeroTelefonico, telefonoCuenta.IdCuenta);
+
+            if (phoneExists)
+            {
+                if (omitirDuplicidad)
+                {
+                    return "";
+                }
+                else
+                {
+                    return "El teléfono (" + telefonoCuenta.NumeroTelefonico + ") ya es parte de la cuenta.";
+                }
+
+            }
+
+            string phoneResult;
+
+            if (!telefonoCuenta.ValidacionNumeroTelefonico(out phoneResult))
+            {
+                return phoneResult;
+            }
+
+            var nombresId = ObtenerNombresId(dtCatalogos);
+
+            if (idOrigen == 0 || !nombresId.ContainsKey(idOrigen.ToString()) || nombresId[idOrigen.ToString()] != "idOrigen")
+            {
+                return "El orígen del teléfono es inválido.";
+            }
+            if (idClase == 0 || !nombresId.ContainsKey(idClase.ToString()) || nombresId[idClase.ToString()] != "idClase")
+            {
+                return "La clase de teléfono es inválida.";
+            }
+
+            if (!(telefonoCuenta.HorarioContacto?.Hours > 6 && telefonoCuenta.HorarioContacto?.Hours < 23))
+            {
+                telefonoCuenta.HorarioContacto = null;
+            }
+
+            var newPhoneResult = _searchRepository.RegisterNewPhone(telefonoCuenta);
+
+            if (newPhoneResult != null)
+            {
+                return "Fallo al guardar el teléfono en la base de datos";
+            }
+
+            var phoneResultDict = (IDictionary<string, object>)newPhoneResult;
+
+            // Si la propiedad "Expiró" existe, extraemos su valor
+            if (phoneResultDict.TryGetValue("Resultado", out object resultadoObj) && resultadoObj != null)
+            {
+                // Puede venir como bool, int, etc. Se recomienda convertirlo a bool
+                return Convert.ToString(resultadoObj);
+            }
+
+            return "Éxito";
+        }
+
+
+        private static Dictionary<string, string> ObtenerNombresId(DataTable dtCatalogos)
+        {
+            var nombresId = new Dictionary<string, string>();
+
+            foreach (DataRow row in dtCatalogos.Rows)
+            {
+                string idValor = row["idValor"].ToString();
+                string nombreId = row["NombreId"].ToString();
+
+                nombresId.TryAdd(idValor, nombreId);
+            }
+
+            return nombresId;
+        }
+
+
+
+
 
 
 
@@ -394,19 +499,16 @@ namespace NoriAPI.Services
         #endregion
 
 
-        public async Task<int> GetIdValor(string catalogo, object valor)
+        public async Task<int> GetIdValor(DataTable catalogos, string catalogo, object valor)
         {
             if (valor == null)
                 return 0;
-
-            DataTable catalogosTable = await _ejecutivoRepository.VwCatalogos();
-
             // Verifica que la DataTable no sea nula y contenga filas
-            if (catalogosTable == null || catalogosTable.Rows.Count == 0)
+            if (catalogos == null || catalogos.Rows.Count == 0)
                 return 0;
 
             // Filtra las filas que coincidan con el catálogo y el valor buscado
-            DataRow[] drFilas = catalogosTable.Select($"Catálogo = '{catalogo}' AND Valor = '{valor}'");
+            DataRow[] drFilas = catalogos.Select($"Catálogo = '{catalogo}' AND Valor = '{valor}'");
 
             // Si hay coincidencias, retorna el idValor, de lo contrario, retorna 0
             return drFilas.Length > 0 ? Convert.ToInt32(drFilas[0]["idValor"]) : 0;

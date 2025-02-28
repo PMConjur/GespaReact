@@ -81,7 +81,7 @@ namespace NoriAPI.Services
 
             ClasesGespa.dtRelaciones = await _ejecutivoRepository.VwRelaciones();
             ClasesGespa.Relaciones();
-            //------------------------------------Tiempos----------------------------------------------// 
+            //------------------------------------Tiempos----------------------------------------------//
 
             ClasesGespa.Tiempos = await _ejecutivoRepository.TiemposEjecutivo(numEmpleado);
             ClasesGespa.ObtieneTiempos();

@@ -12,25 +12,31 @@ namespace NoriAPI.Models.Phones
         /// <param name="idOrigen">Id del orígen del teléfono.</param>
         /// <param name="idClase">Id de la clase de teléfono.</param>
         /// <param name=horarioContacto">Horario de contacto del teléfon.</param>
-        public NewPhone(string numeroTelefonico, int idTelefonía, int idOrigen, int idClase, TimeSpan horarioContacto, string estado, int extension)
+        public NewPhone(string numeroTelefonico, int idTelefonia, int idOrigen, int idClase, TimeSpan horarioContacto, string estado, int extension, int idCartera, string idCuenta, int idEjecutivo)
         {
 
             NumeroTelefonico = numeroTelefonico;
-            IdTelefonía = idTelefonía;
+            IdTelefonia = idTelefonia;
             IdClase = idClase;
             IdOrigen = idOrigen;
             HorarioContacto = horarioContacto;
             Estado = estado;
             Extension = extension;
+            IdCartera = idCartera;
+            IdCuenta = idCuenta;
+            IdEjecutivo = idEjecutivo;
         }
 
         public string NumeroTelefonico { get; set; }
-        public int IdTelefonía { get; set; }
+        public int IdTelefonia { get; set; }
         public int IdClase { get; set; }
         public int IdOrigen { get; set; }
-        public TimeSpan HorarioContacto { get; set; }
+        public TimeSpan? HorarioContacto { get; set; }
         public string Estado { get; set; }
         public int Extension { get; set; }
+        public int? IdCartera { get; set; }
+        public string? IdCuenta { get; set; }
+        public int? IdEjecutivo { get; set; }
 
         /// <summary>
         /// Valida y limpia el número telefónico, regresa el mensaje de error.
