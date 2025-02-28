@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Card, Table, Button, InputGroup, FormControl, Spinner, Placeholder } from "react-bootstrap"; // Importar Spinner y Placeholder
-import { fetchPhones } from "../services/gespawebServices"; // Importa el servicio
+import { fetchPhones, fetchValidationTel } from "../services/gespawebServices"; // Importa el servicio
 import { useContext } from "react";
 import { AppContext } from "../pages/Managment"; // Importa el contexto DEL PADRE 
 import { toast, Toaster } from "sonner";
@@ -81,7 +81,7 @@ const Telephones = () => {
                       onChange={handlePhoneNumberChange} // Manejar cambio en el input
                       className=" input-validation"
                     />
-                    <Button variant="secondary" onClick={handleSearch}>
+                    <Button variant="secondary" onClick={''}>
                       Validar
                     </Button>
                   </InputGroup>

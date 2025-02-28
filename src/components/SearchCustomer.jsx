@@ -2,12 +2,12 @@ import { useContext, useState, useEffect } from "react";
 import { AppContext } from "../pages/Managment"; // Importa el contexto
 import { Card, Row, Col, Placeholder } from "react-bootstrap";
 import {
-  FaRegCreditCard,
-  FaUser,
-  FaFileAlt,
-  FaCalendarCheck,
-  FaClipboardList
-} from "react-icons/fa";
+  CreditCard,
+  Person,
+  FileText,
+  CalendarCheck,
+  Clipboard
+} from "react-bootstrap-icons";
 
 const SearchCustomer = () => {
   // Consume el contexto
@@ -54,31 +54,31 @@ const SearchCustomer = () => {
             <Row style={{ color: "white" }}>
               {[
                 {
-                  icon: <FaRegCreditCard />,
+                  icon: <CreditCard />,
                   label: "Producto",
                   value: "Amex"
                 },
                 {
-                  icon: <FaClipboardList />,
+                  icon: <Clipboard />,
                   label: "Cuenta",
                   value: result.idCuenta || "--"
                 },
                 {
-                  icon: <FaCalendarCheck />,
+                  icon: <CalendarCheck />,
                   label: "Activada",
                   value: result.fechaActivacion || "--"
                 },
                 {
-                  icon: <FaFileAlt />,
+                  icon: <FileText />,
                   label: "Expediente",
                   value: `AMX${result.expediente}` || "--"
                 },
                 {
-                  icon: <FaUser />,
+                  icon: <Person />,
                   label: "No. Cliente",
                   value: result.numeroCliente || "--"
                 },
-                { icon: <FaFileAlt />, label: "RFC", value: result.rfc || "--" }
+                { icon: <FileText />, label: "RFC", value: result.rfc || "--" }
               ].map(({ icon, label, value }, i) => (
                 <Col key={i} md={4}>
                   <p>

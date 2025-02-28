@@ -157,3 +157,35 @@ export const fetchInformation = async (idCuenta) => {
     throw error;
   }
 };
+
+export const fetchValidationTel = async (idCuenta) => {
+  try {
+    console.log("Iniciando llamada a la API...");
+    console.log("URL de la API:", `${apiUrl}/search-customer/validate-phone?idCuenta${idCuenta}`);
+
+    const response = await fetch(
+      `${apiUrl}/search-customer/products-info?idCuenta=${idCuenta}`,
+      {
+        method: "GET", // Método HTTP (GET, POST, etc.)
+        headers: {
+          "Authorization": `Bearer ${token}`, // Incluye el token en el header
+          "Content-Type": "application/json", // Tipo de contenido
+        },
+      }
+    );
+    console.log("Respuesta de la API recibida. Estado:", response.status);
+
+    if (!response.ok) {
+      console.error("Error en la respuesta de la API. Estado:", response.status);
+      throw new Error("Error al obtener los datos de informacion");
+    }
+
+    const data = await response.json();
+    console.log("Datos obtenidos de la API:", data);
+
+    return data;
+  } catch (error) {
+    console.error("Error en fetchInformation:", error);
+    throw error;
+  }
+};
