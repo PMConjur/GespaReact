@@ -15,6 +15,7 @@ import SearchCustomer from "../components/SearchCustomer";
 import CustomToast from "../components/CustomToast";
 import Managments from "../components/Managments";
 import Reminder from "../components/Reminder";
+import { searchCustomer } from "../services/gespawebServices";
 // Crear el contexto
 export const AppContext = createContext();
 //Import automatico
@@ -33,22 +34,15 @@ const Managment = () => {
   const [showToast, setShowToast] = useState(false);
   const [numeroTelefonico, setNumeroTelefonico] = useState("");
 
-  const token = responseData?.ejecutivo?.token;
-  console.log("Token recibido:", token);
+  //console.log("Token recibido:", token);
   const nombreEjecutivo =
     responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
 
   const handleSearch = async () => {
     try {
-      const response = await axios.get(
-        "http://192.168.7.33/api/search-customer/busqueda-cuenta",
-        {
-          params: { filtro: filter, ValorBusqueda: searchTerm },
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      setSearchResults(response.data.listaResultados || []);
+      const response = await searchCustomer(filter, searchTerm);
+      setSearchResults(response.listaResultados || []);
     } catch (error) {
       console.error("Error fetching search results:", error);
     }
@@ -67,14 +61,8 @@ const Managment = () => {
 
     if (value.length > 0) {
       try {
-        const response = await axios.get(
-          "http://192.168.7.33/api/search-customer/busqueda-cuenta",
-          {
-            params: { filtro: filter, ValorBusqueda: value },
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
-        setSuggestions(response.data.listaResultados || []);
+        const response = await searchCustomer(filter, value);
+        setSuggestions(response.listaResultados || []);
         setShowSuggestions(true);
       } catch (error) {
         console.error("Error fetching suggestions:", error);
@@ -101,8 +89,7 @@ const Managment = () => {
 
     try {
       const responseEjecutivo = await axios.get(
-        `http://192.168.7.33/api/search-customer/automatico-ejecutivo?numEmpleado=${idEjecutivo}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        `http://192.168.7.33/api/search-customer/automatico-ejecutivo?numEmpleado=${idEjecutivo}`
       );
 
       console.log("Respuesta completa de la API:", responseEjecutivo.data);
@@ -121,18 +108,12 @@ const Managment = () => {
       // Mostrar el toast
       setShowToast(true);
 
-      const responseCuenta = await axios.get(
-        "http://192.168.7.33/api/search-customer/busqueda-cuenta",
-        {
-          params: { filtro: "Cuenta", ValorBusqueda: idCuenta },
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      const responseCuenta = await searchCustomer("Cuenta", idCuenta);
 
-      console.log("Respuesta de la búsqueda de cuenta:", responseCuenta.data);
+      console.log("Respuesta de la búsqueda de cuenta:", responseCuenta);
 
       // Validar que la respuesta contenga listaResultados con al menos un elemento
-      const listaResultados = responseCuenta.data.listaResultados;
+      const listaResultados = responseCuenta.listaResultados;
       if (Array.isArray(listaResultados) && listaResultados.length > 0) {
         setSearchResults(listaResultados);
       } else {
@@ -194,7 +175,7 @@ const Managment = () => {
           {/* Agregar Sonner aquí */}
           <Container fluid className="responsive mt-5">
             <Row>
-              <Col xs={12} md={12} lg={6} >
+              <Col xs={12} md={12} lg={6}>
                 <br />
 
                 <DebtorInformation />
@@ -234,7 +215,6 @@ const Managment = () => {
                     <Managments />
                   </Col>
                   <Col xs={12} md={4}>
-                  
                     <Calendar />
                   </Col>
                 </Row>
@@ -243,7 +223,6 @@ const Managment = () => {
                     <h1>Prueba</h1>
                   </Col>
                   <Col xs={12} md={4}>
-
                     <Reminder />
                   </Col>
                 </Row>
