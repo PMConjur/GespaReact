@@ -123,7 +123,6 @@ export const fetchPhones = async (idCuenta) => {
     throw error;
   }
 };
-<<<<<<< HEAD
 
 //Endpoint Información del Cliente
 
@@ -158,5 +157,3 @@ export const fetchInformation = async (idCuenta) => {
     throw error;
   }
 };
-=======
->>>>>>> origin/HU6.2-Negociaciones
