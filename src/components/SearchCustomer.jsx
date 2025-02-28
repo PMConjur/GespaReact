@@ -12,8 +12,9 @@ import {
 const SearchCustomer = () => {
   // Consume el contexto
   const { searchResults } = useContext(AppContext);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // Estado para manejar la carga
 
+  // Datos por defecto en caso de que no haya resultados de búsqueda
   const defaultData = {
     producto: "--",
     idCuenta: "--",
@@ -23,11 +24,13 @@ const SearchCustomer = () => {
     rfc: "--"
   };
 
+  // Obtener el primer resultado de búsqueda o usar los datos por defecto
   const result = searchResults[0] || defaultData;
 
   useEffect(() => {
     setIsLoading(true); // Reinicia el estado a "cargando"
     
+    // Simula un tiempo de carga
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 500); // Tiempo de carga simulado
@@ -41,6 +44,7 @@ const SearchCustomer = () => {
       <Card className="mb-3 custom-card">
         <Card.Body>
           {isLoading ? (
+            // Mostrar placeholders mientras se cargan los datos
             <Row style={{ color: "white" }}>
               {[...Array(6)].map((_, i) => (
                 <Col key={i} md={4}>
@@ -51,6 +55,7 @@ const SearchCustomer = () => {
               ))}
             </Row>
           ) : (
+            // Mostrar los datos del cliente una vez cargados
             <Row style={{ color: "white" }}>
               {[
                 {

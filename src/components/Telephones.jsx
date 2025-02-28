@@ -1,56 +1,82 @@
 import React, { useEffect, useState } from "react";
-import { Card, Table, Button, InputGroup, FormControl, Spinner, Placeholder } from "react-bootstrap"; // Importar Spinner y Placeholder
-import { fetchPhones, fetchValidationTel } from "../services/gespawebServices"; // Importa el servicio
+import { Card, Table, Button, InputGroup, FormControl, Placeholder } from "react-bootstrap";
+import { fetchPhones, fetchValidationTel } from "../services/gespawebServices";
 import { useContext } from "react";
-import { AppContext } from "../pages/Managment"; // Importa el contexto DEL PADRE 
-import { toast, Toaster } from "sonner";
-import "../scss/styles.scss"
+import { AppContext } from "../pages/Managment";
+import { toast } from "sonner";
+import "../scss/styles.scss";
 
 const Telephones = () => {
-  const [data, setData] = useState([]); // Estado para los datos de la tabla
-  const [isLoading, setIsLoading] = useState(false); // Estado para manejar la carga
-  const [phoneNumber, setPhoneNumber] = useState(""); // Estado para el número de teléfono
+  const [data, setData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
   const { searchResults } = useContext(AppContext);
-  const [toastShown, setToastShown] = useState(false); // Estado para controlar si el toast ya se mostró
+  const [toastShown, setToastShown] = useState(false);
 
-  // Función para cargar datos desde la API
+  // Cargar datos desde la API
   const loadData = async () => {
     setIsLoading(true);
     try {
       const phones = await Promise.all(
-        searchResults.map(async (result, index) => {
-          const phones = await fetchPhones(result.idCuenta); // Usar result.idCuenta
-          return phones;
+        searchResults.map(async (result) => {
+          return await fetchPhones(result.idCuenta);
         })
       );
       const flatPhones = phones.flat();
-      setData(flatPhones); // Actualizar el estado con los datos de la API
+      setData(flatPhones);
       if (flatPhones.length === 0 && !toastShown) {
-        toast.error("No hay carga de telefonos", {
-          position: "top-right" // Mostrar toast en el lado derecho
-        });
-        setToastShown(true); // Marcar que el toast ya se mostró
+        toast.error("No hay carga de teléfonos", { position: "top-right" });
+        setToastShown(true);
       }
     } catch (error) {
       console.error("Error al cargar los teléfonos:", error);
     } finally {
       setTimeout(() => {
         setIsLoading(false);
-      }, 500); // Tiempo de carga simulado
+      }, 500);
     }
   };
 
-  // Manejar el cambio en el input del número de teléfono
+  // Manejo del input de teléfono
   const handlePhoneNumberChange = (e) => {
-    setPhoneNumber(e.target.value);
+    const input = e.target.value.replace(/\D/g, ""); // Elimina caracteres no numéricos
+    if (input.length <= 10) {
+      setPhoneNumber(input);
+    }
   };
 
-  // Función para manejar la búsqueda o la acción del botón
-  const handleSearch = () => {
-    setToastShown(false); // Resetear el estado del toast
-    loadData(); // Cargar los datos
-  };
+  // Validar número de teléfono
+  const handleValidatePhone = async () => {
+    if (!phoneNumber.trim()) {
+      toast.warning("Ingrese un número de teléfono", { position: "top-right" });
+      return;
+    }
+    if (phoneNumber.length !== 10) {
+      toast.warning("El número de teléfono debe tener 10 dígitos", { position: "top-right" });
+      return;
+    }
+    if (searchResults.length === 0 || !searchResults[0].idCuenta) {
+      toast.warning("No hay una cuenta válida seleccionada", { position: "top-right" });
+      return;
+    }
+  
+    const idCuenta = searchResults[0].idCuenta; 
+  
+    try {
+      const response = await fetchValidationTel({ telefono: phoneNumber, idCuenta });
+  
+      if (response.exists) {
+        toast.success("El número de telefono existe en la cuenta", { position: "top-right" });
+      } else {
+        toast.error("El número de telefono no existe en la cuenta", { position: "top-right" });
+      }
+    } catch (error) {
+      console.error("Error al validar el teléfono:", error);
+      toast.error("El número de telefono no existe en la cuenta", { position: "top-right" });
+    }
+  };  
 
+  // Buscar datos cuando haya cambios en searchResults
   useEffect(() => {
     if (searchResults.length > 0) {
       loadData();
@@ -60,28 +86,23 @@ const Telephones = () => {
   return (
     <Card className="overflow-auto card-phones">
       <Card.Body>
-        <h5 className="card-title text-white">Telefonos</h5>
+        <h5 className="card-title text-white">Teléfonos</h5>
         <Table hover variant="dark" className="table" responsive="sm">
           <thead>
             <tr>
               <th colSpan="3">
                 <div className="button-phones">
-                  <Button
-                    variant="primary"
-                    className="me-2 input-phone"
-                    style={{ width: "25%" }}
-                    onClick={handleSearch} // Llamar a handleSearch al hacer clic
-                  >
+                  <Button variant="primary" className="me-2 input-phone" style={{ width: "25%" }} onClick={loadData}>
                     Llamada de entrada
                   </Button>
                   <InputGroup style={{ width: "35%" }} className="input-phone">
                     <FormControl
-                      placeholder="_____-_____-_____"
+                      placeholder="Numero de telefono"
                       value={phoneNumber}
-                      onChange={handlePhoneNumberChange} // Manejar cambio en el input
-                      className=" input-validation"
+                      onChange={handlePhoneNumberChange}
+                      className="input-validation"
                     />
-                    <Button variant="secondary" onClick={''}>
+                    <Button variant="secondary" onClick={handleValidatePhone}>
                       Validar
                     </Button>
                   </InputGroup>
@@ -100,19 +121,19 @@ const Telephones = () => {
                 <th>S</th>
                 <th>IntentoViciDial</th>
                 <th>ID</th>
-                <th>Telefono</th>
-                <th>Telefonia</th>
+                <th>Teléfono</th>
+                <th>Telefonía</th>
                 <th>Origen</th>
                 <th>Clase</th>
                 <th>Estado</th>
                 <th>Municipio</th>
-                <th>HusoHorario</th>
-                <th>SEGHorarioContacto</th>
+                <th>Huso Horario</th>
+                <th>SEG Horario Contacto</th>
                 <th>Extensión</th>
                 <th>Confirmado</th>
-                <th>Fecha_INSERT</th>
-                <th>Calificacion</th>
-                <th>ACTIVO</th>
+                <th>Fecha INSERT</th>
+                <th>Calificación</th>
+                <th>Activo</th>
               </tr>
             </thead>
             <tbody>
@@ -131,29 +152,29 @@ const Telephones = () => {
               ) : (
                 data.map((row, index) => (
                   <tr key={index}>
-                    <td>{row.titulares || '--'}</td>
-                    <td>{row.conocidos || '--'}</td>
-                    <td>{row.desconocidos || '--'}</td>
-                    <td>{row.sinContacto || '--'}</td>
-                    <td>{row.intentosViciDial || '--'}</td>
-                    <td>{row.id || '--'}</td>
+                    <td>{row.titulares || "--"}</td>
+                    <td>{row.conocidos || "--"}</td>
+                    <td>{row.desconocidos || "--"}</td>
+                    <td>{row.sinContacto || "--"}</td>
+                    <td>{row.intentosViciDial || "--"}</td>
+                    <td>{row.id || "--"}</td>
                     <td>
                       <a href="#" className="text-primary">
-                        {"xxxxxx" + row.númeroTelefónico.slice(6) || '--'}
+                        {"xxxxxx" + row.númeroTelefónico.slice(6) || "--"}
                       </a>
                     </td>
-                    <td>{row.idTelefonía || '--'}</td>
-                    <td>{row.idOrigen || '--'}</td>
-                    <td>{row.idClase || '--'}</td>
-                    <td>{row.estado || '--'}</td>
-                    <td>{row.municipio || '--'}</td>
-                    <td>{row.husoHorario || '--'}</td>
-                    <td>{row.segHorarioContacto || '--'}</td>
-                    <td>{row.extensión || '--'}</td>
-                    <td>{row._Confirmado ? "Sí" : "No" || '--'}</td>
-                    <td>{new Date(row.fecha_Insert).toLocaleDateString() || '--'}</td>
-                    <td>{row.calificacion || '--'}</td>
-                    <td>{row.activo ? "Activo" : "Inactivo" || '--'}</td>
+                    <td>{row.idTelefonía || "--"}</td>
+                    <td>{row.idOrigen || "--"}</td>
+                    <td>{row.idClase || "--"}</td>
+                    <td>{row.estado || "--"}</td>
+                    <td>{row.municipio || "--"}</td>
+                    <td>{row.husoHorario || "--"}</td>
+                    <td>{row.segHorarioContacto || "--"}</td>
+                    <td>{row.extensión || "--"}</td>
+                    <td>{row._Confirmado ? "Sí" : "No" || "--"}</td>
+                    <td>{new Date(row.fecha_Insert).toLocaleDateString() || "--"}</td>
+                    <td>{row.calificacion || "--"}</td>
+                    <td>{row.activo ? "Activo" : "Inactivo" || "--"}</td>
                   </tr>
                 ))
               )}

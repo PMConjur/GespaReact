@@ -1,10 +1,12 @@
 import servicio from "./axiosServices";
 
+// Obtiene token de inicio de sesión
 const responseData =
   location.state || JSON.parse(localStorage.getItem("responseData"));
 const token = responseData?.ejecutivo?.token;
 const apiUrl = import.meta.env.VITE_API_URL;
 
+//endpoint login
 export async function userReset(dataUserReset) {
   try {
     const response = await servicio.post(
@@ -125,7 +127,6 @@ export const fetchPhones = async (idCuenta) => {
 };
 
 //Endpoint Información del Cliente
-
 export const fetchInformation = async (idCuenta) => {
   try {
     console.log("Iniciando llamada a la API...");
@@ -158,34 +159,26 @@ export const fetchInformation = async (idCuenta) => {
   }
 };
 
-export const fetchValidationTel = async (idCuenta) => {
+//Endpoint Validación de Teléfono
+export const fetchValidationTel = async (data) => {
   try {
-    console.log("Iniciando llamada a la API...");
-    console.log("URL de la API:", `${apiUrl}/search-customer/validate-phone?idCuenta${idCuenta}`);
-
-    const response = await fetch(
-      `${apiUrl}/search-customer/products-info?idCuenta=${idCuenta}`,
-      {
-        method: "GET", // Método HTTP (GET, POST, etc.)
-        headers: {
-          "Authorization": `Bearer ${token}`, // Incluye el token en el header
-          "Content-Type": "application/json", // Tipo de contenido
-        },
-      }
-    );
-    console.log("Respuesta de la API recibida. Estado:", response.status);
+    const response = await fetch(`${apiUrl}/search-customer/validate-phone`, {
+      method: "POST", // Asegurar que sea POST
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data), // Enviar datos correctamente en el body
+    });
 
     if (!response.ok) {
-      console.error("Error en la respuesta de la API. Estado:", response.status);
-      throw new Error("Error al obtener los datos de informacion");
+      throw new Error(`Error en la respuesta de la API. Estado: ${response.status}`);
     }
 
-    const data = await response.json();
-    console.log("Datos obtenidos de la API:", data);
-
-    return data;
+    const result = await response.json();
+    console.log("Validación recibida:", result);
+    return result;
   } catch (error) {
-    console.error("Error en fetchInformation:", error);
+    console.error("Error en fetchValidationTel:", error);
     throw error;
   }
 };
