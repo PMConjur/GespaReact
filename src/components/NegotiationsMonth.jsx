@@ -1,13 +1,5 @@
-import React, { useEffect, useState } from "react";
-import {
-  Modal,
-  Button,
-  Form,
-  ListGroup,
-  Table,
-  Card,
-  Placeholder
-} from "react-bootstrap";
+import { useEffect, useState } from "react";
+import { Table, Card } from "react-bootstrap";
 import { userNegotiations } from "../services/gespawebServices";
 
 const NegotiationsMonth = () => {
@@ -27,8 +19,9 @@ const NegotiationsMonth = () => {
   return (
     <>
       {/* Negociaciones del mes */}
+      <br />
       <h5>Negociaciones del mes</h5>
-      <Card className="mt-3 bg-secondary text-white">
+      <Card className="mt-3 text-white scroll">
         <Card.Body>
           <div className="table-responsive">
             <Table striped bordered hover variant="dark">

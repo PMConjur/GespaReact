@@ -14,7 +14,7 @@ const Recovery = ({ show, handleClose }) => {
   const [loading, setLoading] = useState(true);
   const [negotiations, setNegotiations] = useState([]);
   const responseData = JSON.parse(localStorage.getItem("responseData"));
-  const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo; // Get idEjecutivo from respo
+  const idEjecutivo = 14126; //responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo; // Get idEjecutivo from respo
   const fetchData = async (selectedMes) => {
     try {
       setLoading(true);
@@ -73,13 +73,13 @@ const Recovery = ({ show, handleClose }) => {
 
   return (
     <Modal show={show} onHide={handleClose} size="xl" centered>
-      <Modal.Header closeButton className="bg-dark text-white">
+      <Modal.Header closeButton className="text-white">
         <Modal.Title>
           <i className="bi bi-calendar-plus"> Recuperación</i>
         </Modal.Title>
       </Modal.Header>
 
-      <Modal.Body className="bg-dark text-white">
+      <Modal.Body className="text-white">
         <div className="row">
           {/* Selección de Mes */}
           <div className="col-sm-2">
@@ -103,7 +103,7 @@ const Recovery = ({ show, handleClose }) => {
           {/* Resumen */}
           <div className="col-sm-10">
             <ListGroup>
-              <ListGroup.Item variant="dark">
+              <ListGroup.Item>
                 <div className="row text-center">
                   <div className="col">
                     {loading ? (
@@ -292,11 +292,9 @@ const Recovery = ({ show, handleClose }) => {
             <NegotiationsMonth negotiations={negotiations} />
           </div>
         </div>
-
-        <hr />
       </Modal.Body>
 
-      <Modal.Footer className="bg-dark text-white">
+      <Modal.Footer className="text-white">
         <Button variant="secondary" onClick={handleClose}>
           Cerrar
         </Button>

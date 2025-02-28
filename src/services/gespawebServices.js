@@ -123,3 +123,22 @@ export const fetchPhones = async (idCuenta) => {
     throw error;
   }
 };
+
+export async function clientAccount(dataClient) {
+  try {
+    const response = await servicio.post(
+      "/search-customer/busqueda-cuenta",
+      dataClient
+    );
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      const errorMessage =
+        error.response.data?.resetea?.mensaje ||
+        "Error al obtener datos de cuenta.";
+      throw new Error(errorMessage);
+    } else {
+      throw new Error("El servidor no responde.");
+    }
+  }
+}
