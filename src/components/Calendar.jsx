@@ -43,7 +43,7 @@ const Calendar = () => {
           selectedDay === day ? "bg-info text-white" : ""
         }`} // Aplicar estilo si está seleccionado
         onClick={() => setSelectedDay(day)} // Manejador de clic para seleccionar el día+
-        style={{ cursor: "pointer", hover: "pointer" }} 
+        style={{ cursor: "pointer"}} 
       >
         {day}
       </td>
@@ -57,9 +57,10 @@ const Calendar = () => {
 
   return (
     <Container className="mt-4 text-center">
-      <Row className="d-flex justify-content-between align-items-center mb-3">
+      <Row className="d-flex justify-content-between align-items-center mb-1">
         <Col xs="auto">
-          <Button variant="secondary" onClick={prevMonth}>
+          <Button variant="secondary" onClick={prevMonth}
+          style={{padding: "0.1rem 1rem"}}>
             <span>{'<'}</span>
           </Button>
         </Col>
@@ -72,7 +73,8 @@ const Calendar = () => {
           </h4>
         </Col>
         <Col xs="auto">
-          <Button variant="secondary" onClick={nextMonth}>
+          <Button variant="secondary" onClick={nextMonth}
+          style={{padding: "0.1rem 1rem"}}>
           <span>{'>'}</span>
           </Button>
         </Col>
