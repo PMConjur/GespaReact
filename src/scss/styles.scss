@@ -389,6 +389,7 @@ $table-border-radius:     8px;
   border-spacing: 0;
   padding: .2rem .2rem;
   thead {
+    vertical-align: middle;
     th {
       font-weight: bold;
       text-transform: uppercase;
@@ -402,7 +403,8 @@ $table-border-radius:     8px;
   tbody {
     tr {
       font-size: 14px;
-      vertical-align: none;
+      vertical-align: middle;
+      text-align: center;
     }
    vertical-align: middle;
   }
@@ -449,8 +451,8 @@ $table-border-radius:     8px;
 
 .table-custom2 {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0px 1px;
+  border-collapse: initial;
+  border-spacing: 0px 2px;
   background-color: #6c757d;
   padding: 1px;
   border-radius: 5px;
@@ -508,3 +510,7 @@ $table-border-radius:     8px;
 }
 //termina informacion
 
+.calendar-day:hover {
+  background-color: #047f92; /* Cambia el color de fondo al hacer hover */
+  color: white; /* Cambia el color del texto al hacer hover */
+}

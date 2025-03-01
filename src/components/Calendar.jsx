@@ -42,7 +42,8 @@ const Calendar = () => {
         className={`calendar-day ${
           selectedDay === day ? "bg-info text-white" : ""
         }`} // Aplicar estilo si está seleccionado
-        onClick={() => setSelectedDay(day)} // Manejador de clic para seleccionar el día
+        onClick={() => setSelectedDay(day)} // Manejador de clic para seleccionar el día+
+        style={{ cursor: "pointer", hover: "pointer" }} 
       >
         {day}
       </td>
@@ -59,20 +60,20 @@ const Calendar = () => {
       <Row className="d-flex justify-content-between align-items-center mb-3">
         <Col xs="auto">
           <Button variant="secondary" onClick={prevMonth}>
-            Anterior
+            <span>{'<'}</span>
           </Button>
         </Col>
         <Col xs="auto">
-          <h3 className="text-white">
+          <h4 className="text-white">
             {new Date(currentYear, currentMonth).toLocaleString("default", {
               month: "long",
               year: "numeric",
             })}
-          </h3>
+          </h4>
         </Col>
         <Col xs="auto">
           <Button variant="secondary" onClick={nextMonth}>
-            Siguiente
+          <span>{'>'}</span>
           </Button>
         </Col>
       </Row>

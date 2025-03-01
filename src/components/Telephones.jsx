@@ -40,7 +40,7 @@ const Telephones = () => {
   // Manejo del input de teléfono
   const handlePhoneNumberChange = (e) => {
     const input = e.target.value.replace(/\D/g, ""); // Elimina caracteres no numéricos
-    if (input.length <= 10) {
+    if (input.length <= 11) {
       setPhoneNumber(input);
     }
   };
@@ -51,7 +51,7 @@ const Telephones = () => {
       toast.warning("Ingrese un número de teléfono", { position: "top-right" });
       return;
     }
-    if (phoneNumber.length !== 10) {
+    if (phoneNumber.length !== 10 && phoneNumber.length !== 11) {
       toast.warning("El número de teléfono debe tener 10 dígitos", { position: "top-right" });
       return;
     }
@@ -66,13 +66,19 @@ const Telephones = () => {
       const response = await fetchValidationTel({ telefono: phoneNumber, idCuenta });
   
       if (response.exists) {
-        toast.success("El número de telefono existe en la cuenta", { position: "top-right" });
+        toast.success("El número de teléfono existe en la cuenta", {
+          position: "top-right",
+          style: { transform: "translateY(20vh)" }, // Ajusta verticalmente
+        });
       } else {
-        toast.error("El número de telefono no existe en la cuenta", { position: "top-right" });
+        toast.error("El número de telefono no existe en la cuenta", { position: "center-right"});
       }
     } catch (error) {
       console.error("Error al validar el teléfono:", error);
-      toast.error("El número de telefono no existe en la cuenta", { position: "top-right" });
+      toast.error("El número de teléfono no existe en la cuenta", {
+        position: "top-right",
+        style: { transform: "translateY(20vh)" }, // Ajusta verticalmente
+      });
     }
   };  
 
@@ -159,8 +165,8 @@ const Telephones = () => {
                     <td>{row.intentosViciDial || "--"}</td>
                     <td>{row.id || "--"}</td>
                     <td>
-                      <a href="#" className="text-primary">
-                        {"xxxxxx" + row.númeroTelefónico.slice(6) || "--"}
+                      <a>
+                        {"XXXXXX" + row.númeroTelefónico.slice(6) || "--"}
                       </a>
                     </td>
                     <td>{row.idTelefonía || "--"}</td>
