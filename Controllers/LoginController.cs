@@ -15,7 +15,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/login")]
-    [Authorize]
+    //[Authorize]
     public class LoginController : ControllerBase
     {
         private readonly IConfiguration _configuration;

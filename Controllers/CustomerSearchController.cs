@@ -53,7 +53,6 @@ namespace NoriAPI.Controllers
 
 
             return Ok(Automatico.Cuenta);
-
         }
 
         [HttpGet("phones")]
@@ -75,9 +74,9 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost("validate-phone")]
-        public async Task<IActionResult> ValidatePhone([FromBody] string telefono, string idCuenta)
+        public async Task<IActionResult> ValidatePhone([FromBody] ValidatePhoneRequest validate)
         {
-            var phoneValidation = await _searchService.ValidatePhone(telefono.Trim(), idCuenta);
+            var phoneValidation = await _searchService.ValidatePhone(validate.Telefono, validate.IdCuenta);
             if (!phoneValidation)
             {
                 return NotFound(new { exists = phoneValidation });
@@ -94,7 +93,11 @@ namespace NoriAPI.Controllers
             {
                 return BadRequest();
             }
-            return Ok(new { mensaje = phone });
+            if (phone.ToString() != "")
+            {
+                return BadRequest(new { result = phone.ToString() });
+            }
+            return Ok(new { result = "Teléfono insertado con éxito" });
         }
 
 

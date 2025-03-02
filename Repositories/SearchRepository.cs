@@ -175,13 +175,32 @@ namespace NoriAPI.Repositories
                 Extensión = newPhoneToRegister.Extension
             };
 
-            var newPhoneQueryResult = (await connection.QueryFirstOrDefaultAsync<dynamic>(
+            var result = await connection.QueryFirstOrDefaultAsync<dynamic>(
                 newPhoneQuery,
                 parameters,
-                commandType: CommandType.StoredProcedure ));
+                commandType: CommandType.StoredProcedure
+            );
 
-            return newPhoneQueryResult;
+            if (result == null)
+            {
+                return new { Success = false, Message = "No se recibió respuesta del procedimiento almacenado." };
+            }
+
+            // Convertimos a IDictionary para acceder a los valores sin errores
+            var dict = result as IDictionary<string, object>;
+
+            if (dict != null && dict.ContainsKey("Resultado"))
+            {
+                return new Dictionary<string, object>
+                {
+                    { "Success", false },
+                    { "Resultado", dict["Resultado"].ToString() }
+                };
+            }
+
+            return new Dictionary<string, object> { { "Success", true }, { "Data ", result } };
         }
+
 
         public async Task<List<CamposPantalla>> GetCamposPantalla(int idCartera, int idProducto)
         {
