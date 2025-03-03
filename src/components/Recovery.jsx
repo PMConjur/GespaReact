@@ -14,7 +14,7 @@ const Recovery = ({ show, handleClose }) => {
   const [loading, setLoading] = useState(true);
   const [negotiations, setNegotiations] = useState([]);
   const responseData = JSON.parse(localStorage.getItem("responseData"));
-  const idEjecutivo = 14126; //responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo; // Get idEjecutivo from respo
+  const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo; // Get idEjecutivo from respo
   const fetchData = async (selectedMes) => {
     try {
       setLoading(true);

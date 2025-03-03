@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Row, Breadcrumb } from "react-bootstrap";
-import ProductivityModal from "./ProductivityModal"; // Import ProductivityModal component
+import ProductivityModal from "./ProductivityModal";
 import Recovery from "./Recovery";
+import Times from "./Times";
 const DebtorInformation = () => {
   const [showModal, setShowModal] = useState(false);
 
@@ -12,6 +13,11 @@ const DebtorInformation = () => {
 
   const handleShowModalR = () => setShowModalR(true);
   const handleCloseModalR = () => setShowModalR(false);
+
+  const [showModalTim, setShowModalTim] = useState(false);
+
+  const handleShowModalTim = () => setShowModalTim(true);
+  const handleCloseModalTim = () => setShowModalTim(false);
   return (
     <Row>
       <h4 className="text-secondary">
@@ -24,7 +30,9 @@ const DebtorInformation = () => {
         <Breadcrumb.Item href="#" onClick={handleShowModalR}>
           Recuperación
         </Breadcrumb.Item>
-        <Breadcrumb.Item href="#">Tiempos</Breadcrumb.Item>
+        <Breadcrumb.Item href="#" onClick={handleShowModalTim}>
+        Tiempos
+        </Breadcrumb.Item>
         <Breadcrumb.Item href="#">Simulador</Breadcrumb.Item>
       </Breadcrumb>
       {showModal && (
@@ -33,6 +41,10 @@ const DebtorInformation = () => {
       {showModalR && (
         <Recovery show={showModalR} handleClose={handleCloseModalR} />
       )}
+       {showModalTim && (
+        <Times show={showModalTim} handleClose={handleCloseModalTim} />
+      )}
+  
     </Row>
   );
 };
