@@ -11,7 +11,14 @@ export async function userReset(dataUserReset) {
       "/login/resetea-password",
       dataUserReset
     );
-    return response.data;
+    const { mensaje, exito } = response.data.resetea;
+    if (exito === "1") {
+      return { success: true, message: "Contraseña actualizada correctamente" };
+    } else if (mensaje) {
+      return { success: false, message: mensaje };
+    } else {
+      throw new Error("Error desconocido al actualizar la contraseña.");
+    }
   } catch (error) {
     if (error.response) {
       const errorMessage =
@@ -140,3 +147,22 @@ export const fetchPhones = async (idCuenta) => {
     throw error;
   }
 };
+
+export async function userFlow() {
+  try {
+    const response = await servicio.get(
+      `/ejecutivo/flujo-preguntas-respuestas`
+    );
+    const data = response.data;
+    console.log(data);
+    return data;
+  } catch (error) {
+    if (error.response) {
+      const errorMessage =
+        error.response.data?.mensaje || "Error al recibir el flujo";
+      throw new Error(errorMessage);
+    } else {
+      throw new Error("Error en la respuesta del endpoint.");
+    }
+  }
+}

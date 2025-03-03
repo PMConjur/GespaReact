@@ -30,13 +30,9 @@ function ModalChange({
         const token = loggedUser.ejecutivo.token;
         console.log("Token recibido:", token);
         servicio.defaults.headers.common["Authorization"] = `Bearer ${token}`; // Set token in axios service
-        const nombreEjecutivo =
-          loggedUser.ejecutivo.infoEjecutivo.nombreEjecutivo;
-        const idEjecutivo = loggedUser.ejecutivo.infoEjecutivo.idEjecutivo;
-        const user = loggedUser.ejecutivo.infoEjecutivo.user;
-        console.log("Nombre ejecutivo:", nombreEjecutivo);
-        console.log("ID ejecutivo:", idEjecutivo);
-        console.log("Usuario:", user);
+      
+      
+      
       } else {
         console.error("Token no encontrado");
       }
@@ -65,7 +61,7 @@ function ModalChange({
   };
 
   const getExpireMessage = () => {
-    if (days > 1 && expire === false) {
+    if (days >= 1 && expire === false) {
       return (
         <>
           Su contraseña expira en <Badge bg="primary">{days}</Badge> días

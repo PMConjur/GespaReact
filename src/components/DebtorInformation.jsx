@@ -12,6 +12,7 @@ const DebtorInformation = () => {
 
   const handleShowModalR = () => setShowModalR(true);
   const handleCloseModalR = () => setShowModalR(false);
+  
   return (
     <Row>
       <h4 className="text-secondary">
