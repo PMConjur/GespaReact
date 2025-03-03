@@ -93,6 +93,7 @@ builder.Services.AddScoped<ISearchRepository, SearchRepository>();
 builder.Services.AddScoped<IEjecutivoRepository, EjecutivoRepository>();
 
 
+
 var app = builder.Build();
 
 // Configurar Middleware

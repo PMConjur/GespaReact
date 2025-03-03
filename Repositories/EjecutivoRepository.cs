@@ -34,6 +34,8 @@ namespace NoriAPI.Repositories
         Task<IEnumerable<Negociacion>> Negociaciones(int idEjecutivo);
         Task<Recuperacion> RecuperacionActual(int idEjecutivo);
         Task<Recuperacion> RecuperacionAnterior(int idEjecutivo);
+        Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo);
+
         #endregion
 
     }
@@ -41,10 +43,33 @@ namespace NoriAPI.Repositories
     {
 
         private readonly IConfiguration _configuration;
+        private readonly string _connectionString;
 
         public EjecutivoRepository(IConfiguration configuration)
         {
             _configuration = configuration;
+            _connectionString = configuration.GetConnectionString("Piso2Amex");
+        }
+        public async Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo)
+        {
+            DataTable recordatorios = new DataTable();
+            string query = "SELECT * FROM fn_SeguimientosEjecutivo(@idEjecutivo)"; // Evita inyección SQL
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(recordatorios);
+                    }
+                }
+            }
+
+            return recordatorios;
         }
 
 

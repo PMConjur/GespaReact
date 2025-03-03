@@ -7,6 +7,10 @@ using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Models.Login;
 
 using NoriAPI.Services;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace NoriAPI.Controllers
@@ -99,10 +103,53 @@ namespace NoriAPI.Controllers
             return Ok(preguntas_respuestas);
 
         }
+        [HttpGet("recordatorios/{idEjecutivo}")]
+        public async Task<IActionResult> GetRecordatorios(int idEjecutivo)
+        {
+            try
+            {
+                DataSet dsTablas = new DataSet();
+                DataTable ejecutivosTable = dsTablas.Tables.Add("Ejecutivos");
+                ejecutivosTable.Columns.Add("idEjecutivo", typeof(int));
+                DataRow drDatos = ejecutivosTable.NewRow();
+                drDatos["idEjecutivo"] = idEjecutivo;
 
+                await _ejecutivoService.ObtieneRecordatoriosAsync(drDatos, dsTablas);
 
+                if (!dsTablas.Tables.Contains("Seguimientos") || dsTablas.Tables["Seguimientos"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron recordatorios para este ejecutivo.");
+                }
 
+                // Convertimos el DataTable a una lista de diccionarios
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Seguimientos"]);
 
+                // Serializamos la lista a JSON
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
 
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        private List<Dictionary<string, object>> ConvertDataTableToList(DataTable dataTable)
+        {
+            var list = new List<Dictionary<string, object>>();
+
+            foreach (DataRow row in dataTable.Rows)
+            {
+                var dict = new Dictionary<string, object>();
+                foreach (DataColumn column in dataTable.Columns)
+                {
+                    dict[column.ColumnName] = row[column];
+                }
+                list.Add(dict);
+            }
+
+            return list;
+        }
     }
 }
