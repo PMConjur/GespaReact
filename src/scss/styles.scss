@@ -426,7 +426,7 @@ $table-border-radius:     8px;
 }
 
 .button-phones{
-  justify-content: flex-start;
+  justify-content: flex-end;
   width: auto;
   margin: auto;
   display: flex; // Por defecto en pantallas grandes
@@ -440,6 +440,10 @@ $table-border-radius:     8px;
    margin-bottom: 5px;
    margin-right: 0 !important;
  }
+}
+
+.card-body-phones{
+  height: 500px;
 }
 //termina telefonos
 
@@ -510,7 +514,21 @@ $table-border-radius:     8px;
 }
 //termina informacion
 
+//calendario
 .calendar-day:hover {
   background-color: #047f92; /* Cambia el color de fondo al hacer hover */
   color: white; /* Cambia el color del texto al hacer hover */
+}
+
+//flujo de trabajo
+.row-flow{
+  height: 315px;
+}
+
+//calculadora
+
+
+//Recordatorio
+.card-reminder {
+  max-height: 400px;
 }

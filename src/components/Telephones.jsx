@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { Card, Table, Button, InputGroup, FormControl, Placeholder } from "react-bootstrap";
 import { fetchPhones, fetchValidationTel } from "../services/gespawebServices";
-import { useContext } from "react";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 import "../scss/styles.scss";
@@ -10,7 +9,7 @@ const Telephones = () => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
-  const { searchResults } = useContext(AppContext);
+  const { searchResults, setFlowMessage } = useContext(AppContext);
   const [toastShown, setToastShown] = useState(false);
 
   // Cargar datos desde la API
@@ -52,7 +51,7 @@ const Telephones = () => {
       return;
     }
     if (phoneNumber.length !== 10 && phoneNumber.length !== 11) {
-      toast.warning("El número de teléfono debe tener 10 dígitos", { position: "top-right" });
+      toast.warning("El número de teléfono debe tener 10 o 11 dígitos", { position: "top-right" });
       return;
     }
     if (searchResults.length === 0 || !searchResults[0].idCuenta) {
@@ -91,14 +90,22 @@ const Telephones = () => {
 
   return (
     <Card className="overflow-auto card-phones">
-      <Card.Body>
+      <Card.Body className="card-body-phones">
         <h5 className="card-title text-white">Teléfonos</h5>
-        <Table hover variant="dark" className="table" responsive="sm">
+        <Table hover variant="dark" className="table " responsive="sm">
           <thead>
             <tr>
               <th colSpan="3">
                 <div className="button-phones">
-                  <Button variant="primary" className="me-2 input-phone" style={{ width: "25%" }} onClick={loadData}>
+                  <Button
+                    variant="primary"
+                    className="me-2 input-phone"
+                    style={{ width: "25%" }}
+                    onClick={() => {
+                      
+                      setFlowMessage("Inicia flujo");
+                    }}
+                  >
                     Llamada de entrada
                   </Button>
                   <InputGroup style={{ width: "35%" }} className="input-phone">
@@ -118,7 +125,7 @@ const Telephones = () => {
           </thead>
         </Table>
         <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-          <Table striped bordered hover variant="dark">
+          <Table striped bordered hover variant="dark" className="">
             <thead>
               <tr>
                 <th>T</th>

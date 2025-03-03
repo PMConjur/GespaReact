@@ -80,7 +80,7 @@ const Calendar = () => {
         </Col>
       </Row>
       <div className="table-responsive">
-        <Table bordered variant="dark" className="text-center">
+        <Table bordered variant="dark" className="text-center p-0">
           <thead>
             <tr>
               <th>Dom</th>

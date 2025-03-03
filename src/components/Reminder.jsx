@@ -8,7 +8,7 @@ const Reminder = () => {
     <Row xs={auto} md={auto} className="g-2">
       {Array.from({ length: 1 }).map((_, idx) => (
         <Col key={idx} md={12}>
-          <Card>
+          <Card className="card-reminder">
             <div style={{ display: 'flex', justifyContent: 'center' }}> {/* Contenedor para centrar la imagen */}
               <Card.Img
                 variant="top"
