@@ -46,7 +46,7 @@ function ModalChange({
   const handleNoClick = async () => {
     if (expire === true) {
       console.log(expire);
-      toast.error("Su contraseña ha expirado", {
+      toast.error("Error 401: Su contraseña ha expirado", {
         description:
           "por favor cambie su contraseña, da click en el botón de sí para cambiarla"
       });
@@ -65,7 +65,7 @@ function ModalChange({
   };
 
   const getExpireMessage = () => {
-    if (days > 1 && expire === false) {
+    if (days >= 1 && expire === false) {
       return (
         <>
           Su contraseña expira en <Badge bg="primary">{days}</Badge> días

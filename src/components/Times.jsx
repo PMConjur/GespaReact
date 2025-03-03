@@ -39,7 +39,7 @@ const Times = ({ show, handleClose }) => {
             }, 1000);
             setIntervalId(newIntervalId);
         } else {
-            toast.error('Por favor seleccione una razón válida.');
+            toast.error('Error 400: Por favor seleccione una razón válida.');
         }
     };
 
@@ -47,9 +47,9 @@ const Times = ({ show, handleClose }) => {
         console.log(`Intentando detener temporizador para: ${selectedReason}`);
         const correctPassword = "123456789";
         if (!password) {
-            toast.error('Por favor ingrese la contraseña.');
+            toast.error('Error 400: Por favor ingrese la contraseña.');
         } else if (password !== correctPassword) {
-            toast.error('Contraseña incorrecta');
+            toast.error('Error 401: Contraseña incorrecta');
         } else {
             console.log(`Temporizador detenido para: ${selectedReason}`);
             clearInterval(intervalId);

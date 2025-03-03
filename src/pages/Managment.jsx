@@ -99,7 +99,7 @@ const Managment = () => {
       const numeroTelefonico = responseEjecutivo.data.numeroTelefonico;
 
       if (!idCuenta) {
-        toast.warning("idCuenta es nulo, solicita cargar a tu administrador");
+        toast.warning("Error 404: idCuenta es nulo, solicita cargar a tu administrador");
         setSearchResults([]);
         return;
       }
@@ -117,7 +117,7 @@ const Managment = () => {
       if (Array.isArray(listaResultados) && listaResultados.length > 0) {
         setSearchResults(listaResultados);
       } else {
-        toast.warning("No se encontraron resultados en la búsqueda de cuenta");
+        toast.warning("Error 404: No se encontraron resultados en la búsqueda de cuenta");
         setSearchResults([]);
       }
     } catch (error) {

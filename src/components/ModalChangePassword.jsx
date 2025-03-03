@@ -48,10 +48,11 @@ function ModalChangePassword({
         contra: oldPassword
       };
       const response = await userReset(dataUserReset); // Call userReset function
-      toast.success("Contraseña actualizada correctamente"); // Show success message
+      toast.success(response.mensaje || "Contraseña actualizada correctamente"); // Show success message
       closeSecondModal(); // Close the modal after submitting
     } catch (error) {
-      toast.error(error.message); // Show error message
+      console.error("Error al actualizar la contraseña:", error);
+      toast.error(error.mensaje || "Error 408: Error al actualizar la contraseña"); // Show error message
     }
   };
 

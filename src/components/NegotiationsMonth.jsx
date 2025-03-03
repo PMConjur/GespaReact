@@ -27,7 +27,7 @@ const NegotiationsMonth = () => {
       toast.success(`Cuenta ${idCuenta} seleccionada`);
     } catch (error) {
       console.error("Error al buscar detalles de la cuenta:", error);
-      toast.error("Error al buscar detalles de la cuenta");
+      toast.error("Error 404: Error al buscar detalles de la cuenta");
     }
   };
 

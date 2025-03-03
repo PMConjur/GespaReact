@@ -30,11 +30,11 @@ function Login() {
     e.preventDefault();
 
     if (!user) {
-      toast.error("Ingresa un usuario valido"); // Show toast alert for empty user field
+      toast.error("Error 400: Ingresa las credenciales"); // Show toast alert for empty user field
       return;
     }
     if (!password) {
-      toast.error("Ingresa una contraseña valida"); // Show toast alert for empty password field
+      toast.error("Error 401: Ingresa una contraseña valida"); // Show toast alert for empty password field
       return;
     }
 
@@ -63,7 +63,7 @@ function Login() {
           setExpire(response.data.ejecutivo.expiro == true ? true : false);
           setShowModal(true); // Show the modal
         } else {
-          toast.error("Error al iniciar sesion:", {
+          toast.error("Error 404: Error al iniciar sesion:", {
             description: response.data.ejecutivo.mensaje
           }); // Show toast alert with the error message from the API
         }
@@ -79,7 +79,7 @@ function Login() {
       }
     } catch (error) {
       console.error("There was a problem with the axios operation:", error);
-      toast.error("Error en la conexión");
+      toast.error("Error 408: El servidor tardó demasiado en responder.");
     }
   };
 
