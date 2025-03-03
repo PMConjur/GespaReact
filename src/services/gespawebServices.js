@@ -1,10 +1,12 @@
 import servicio from "./axiosServices";
 
+// Obtiene token de inicio de sesión
 const responseData =
   location.state || JSON.parse(localStorage.getItem("responseData"));
 const token = responseData?.ejecutivo?.token;
 const apiUrl = import.meta.env.VITE_API_URL;
 
+//endpoint login
 export async function userReset(dataUserReset) {
   try {
     const response = await servicio.post(

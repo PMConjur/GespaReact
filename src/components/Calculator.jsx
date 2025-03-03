@@ -55,14 +55,14 @@ const Calculadora = () => {
   };
 
   const buttonStyle = {
-    padding: '15px',
+    padding: '5px',
     fontSize: '1.2em',
-    width: '80%',
+    width: '100%',
   };
 
   const inputStyle = {
     fontSize: '2em',
-    padding: '15px',
+    padding: '5px',
     width: '100%',
   };
 
@@ -83,7 +83,7 @@ const Calculadora = () => {
             <div className="row">
               <div className="col-3">
                 <button
-                  className="btn btn-light btn-block mb-2"
+                  className="btn btn-light btn-block mb-3"
                   style={buttonStyle}
                   onClick={() => handleNumberClick(7)}
                 >
@@ -92,7 +92,7 @@ const Calculadora = () => {
               </div>
               <div className="col-3">
                 <button
-                  className="btn btn-light btn-block mb-2"
+                  className="btn btn-light btn-block mb-3"
                   style={buttonStyle}
                   onClick={() => handleNumberClick(8)}
                 >
@@ -101,7 +101,7 @@ const Calculadora = () => {
               </div>
               <div className="col-3">
                 <button
-                  className="btn btn-light btn-block mb-2"
+                  className="btn btn-light btn-block mb-3"
                   style={buttonStyle}
                   onClick={() => handleNumberClick(9)}
                 >
@@ -110,7 +110,7 @@ const Calculadora = () => {
               </div>
               <div className="col-3">
                 <button
-                  className="btn btn-warning btn-block mb-2"
+                  className="btn btn-warning btn-block mb-3"
                   style={buttonStyle}
                   onClick={() => handleOperatorClick('/')}
                 >
@@ -121,7 +121,7 @@ const Calculadora = () => {
             <div className="row">
               <div className="col-3">
                 <button
-                  className="btn btn-light btn-block mb-2"
+                  className="btn btn-light btn-block mb-3"
                   style={buttonStyle}
                   onClick={() => handleNumberClick(4)}
                 >
@@ -130,7 +130,7 @@ const Calculadora = () => {
               </div>
               <div className="col-3">
                 <button
-                  className="btn btn-light btn-block mb-2"
+                  className="btn btn-light btn-block mb-3"
                   style={buttonStyle}
                   onClick={() => handleNumberClick(5)}
                 >
@@ -139,7 +139,7 @@ const Calculadora = () => {
               </div>
               <div className="col-3">
                 <button
-                  className="btn btn-light btn-block mb-2"
+                  className="btn btn-light btn-block mb-3"
                   style={buttonStyle}
                   onClick={() => handleNumberClick(6)}
                 >
@@ -148,7 +148,7 @@ const Calculadora = () => {
               </div>
               <div className="col-3">
                 <button
-                  className="btn btn-warning btn-block mb-2"
+                  className="btn btn-warning btn-block mb-3"
                   style={buttonStyle}
                   onClick={() => handleOperatorClick('*')}
                 >
@@ -159,7 +159,7 @@ const Calculadora = () => {
             <div className="row">
               <div className="col-3">
                 <button
-                  className="btn btn-light btn-block mb-2"
+                  className="btn btn-light btn-block mb-3"
                   style={buttonStyle}
                   onClick={() => handleNumberClick(1)}
                 >
@@ -168,7 +168,7 @@ const Calculadora = () => {
               </div>
               <div className="col-3">
                 <button
-                  className="btn btn-light btn-block mb-2"
+                  className="btn btn-light btn-block mb-3"
                   style={buttonStyle}
                   onClick={() => handleNumberClick(2)}
                 >
@@ -177,7 +177,7 @@ const Calculadora = () => {
               </div>
               <div className="col-3">
                 <button
-                  className="btn btn-light btn-block mb-2"
+                  className="btn btn-light btn-block mb-3"
                   style={buttonStyle}
                   onClick={() => handleNumberClick(3)}
                 >
@@ -186,7 +186,7 @@ const Calculadora = () => {
               </div>
               <div className="col-3">
                 <button
-                  className="btn btn-warning btn-block mb-2"
+                  className="btn btn-warning btn-block mb-3"
                   style={buttonStyle}
                   onClick={() => handleOperatorClick('-')}
                 >
@@ -197,7 +197,7 @@ const Calculadora = () => {
             <div className="row">
               <div className="col-3">
                 <button
-                  className="btn btn-secondary btn-block mb-2"
+                  className="btn btn-secondary btn-block mb-3"
                   style={buttonStyle}
                   onClick={handleClearClick}
                 >
@@ -206,7 +206,7 @@ const Calculadora = () => {
               </div>
               <div className="col-3">
                 <button
-                  className="btn btn-light btn-block mb-2"
+                  className="btn btn-light btn-block mb-3"
                   style={buttonStyle}
                   onClick={() => handleNumberClick(0)}
                 >
@@ -215,7 +215,7 @@ const Calculadora = () => {
               </div>
               <div className="col-3">
                 <button
-                  className="btn btn-success btn-block mb-2"
+                  className="btn btn-success btn-block mb-3"
                   style={buttonStyle}
                   onClick={handleEqualsClick}
                 >
@@ -224,7 +224,7 @@ const Calculadora = () => {
               </div>
               <div className="col-3">
                 <button
-                  className="btn btn-warning btn-block mb-2"
+                  className="btn btn-warning btn-block mb-3"
                   style={buttonStyle}
                   onClick={() => handleOperatorClick('+')}
                 >
