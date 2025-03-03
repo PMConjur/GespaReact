@@ -25,12 +25,22 @@ namespace NoriAPI.Models
         public static DataTable tblDelDía = new DataTable();
         #endregion
 
-        #region preguntas_respuestas
-        
+        #region Calculadora
+
+     
+
 
 
         #endregion
 
+
+        #region Calculadora
+
+
+
+
+
+        #endregion
 
         private readonly IEjecutivoRepository _ejecutivoRepository;
 

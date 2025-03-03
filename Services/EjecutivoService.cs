@@ -24,6 +24,7 @@ namespace NoriAPI.Services
         Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo);
         Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
         Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
+        Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta);
     }
 
     public class EjecutivoService : IEjecutivoService
@@ -44,17 +45,13 @@ namespace NoriAPI.Services
         private static Hashtable _htValoresCatálogo;
         private static Hashtable _htNombreId;
         #endregion
-
-        #region preguntas_respuestas
-
-        #endregion
-
-
+       
         public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository)
         {
             _configuration = configuration;
             _ejecutivoRepository = ejecutivoRepository;
         }
+
         #region Productividad
         public async Task<ResultadoProductividad> ValidateProductividad(int numEmpleado)
         {
@@ -78,7 +75,6 @@ namespace NoriAPI.Services
             ClasesGespa.CargaCatalogos();
 
             //---------------------------------------Relaciones --------------------------------------------//
-
             ClasesGespa.dtRelaciones = await _ejecutivoRepository.VwRelaciones();
             ClasesGespa.Relaciones();
             //------------------------------------Tiempos----------------------------------------------// 
@@ -136,7 +132,6 @@ namespace NoriAPI.Services
 
         }
         #endregion
-
         #region Preguntas_Respuestas
         public async Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas()
         {
@@ -144,9 +139,154 @@ namespace NoriAPI.Services
 
             return validatePreg_Resp_list;
         }
+        #endregion
+
+        #region Caluculadora
+        public async Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta)
+        {
+            string mensaje = null;
+            DataTable dtnegociaciones = new DataTable();
+            DataTable dtPlazos = new DataTable();
+            DataTable dtPagos = new DataTable();
+            DataTable dtHerramientas = new DataTable();
+            DataTable dtDescuentos = new DataTable();
+            DataTable InfoProducto = new DataTable();
+
+            
+            //---------------------------------------Negociaciones--------------------------------//
+            //con el Idestado se valida si la promesa esta vigente
+
+
+            dtnegociaciones = await _ejecutivoRepository.ObtieneNegociaciones(Cartera, NoCuenta);
+
+            dtnegociaciones.PrimaryKey = new DataColumn[] {
+                dtnegociaciones.Columns["Fecha_Insert"],
+                dtnegociaciones.Columns["Segundo_Insert"],
+                dtnegociaciones.Columns["idHerramienta"]
+            };
+            dtnegociaciones.DefaultView.Sort = "FechaHora DESC";
+
+            //-----------------------------------Plazos------------------------------------------//
+
+            dtPlazos = await _ejecutivoRepository.ObtienePlazos(Cartera, NoCuenta);
+
+            DataColumn dcFechaHora = new DataColumn("FechaHora_Insert", typeof(DateTime));
+            dtPlazos.Columns.Add(dcFechaHora);
+            for (int i = 0; i < dtPlazos.Rows.Count; i++)
+            {                
+                DateTime dtFecha = Convert.ToDateTime(dtPlazos.Rows[i]["Fecha_Insert"]);
+
+                // Intentar convertir "Segundo_Insert" a un TimeSpan
+                if (TimeSpan.TryParse(dtPlazos.Rows[i]["Segundo_Insert"].ToString(), out TimeSpan tsSegundo))
+                {
+                    dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.Add(tsSegundo);
+                }
+                else if (double.TryParse(dtPlazos.Rows[i]["Segundo_Insert"].ToString(), out double segundos))
+                {
+                    dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.AddSeconds(segundos);
+                }
+                else
+                {
+                    throw new InvalidCastException($"No se pudo convertir 'Segundo_Insert' en la fila {i} a TimeSpan.");
+                }
+                //DateTime dtFecha = Convert.ToDateTime(dtPlazos.Rows[i]["Fecha_Insert"]);
+                //TimeSpan tsSegundo = (TimeSpan)dtPlazos.Rows[i]["Segundo_Insert"];
+                //dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.Add(tsSegundo);
+            }
+
+            //----------------------------------------Pagos----------------------------------------------//
+
+            dtPagos = await _ejecutivoRepository.ObtienePagos(Cartera, NoCuenta);
+            dtPagos.DefaultView.Sort = "FechaPago DESC";
+
+            //------------------------------------Herramientas------------------------------------------//
+            
+            dtHerramientas = await _ejecutivoRepository.ObtieneHerramientas(NoCuenta);
+
+            //-----------------------------------------------------------------------------------------//
+
+            dtDescuentos.Columns.Add("idHerramienta");
+            dtDescuentos.Columns.Add("Descuento");
+            dtDescuentos.Columns.Add("MáxDescuento");
+            dtDescuentos.Columns.Add("MaxDías");
+
+            string sHerramientas = "idHerramienta IN (0";
+            double fDescuento = 0, fMáxDesc = 0;
+            int iMáxDías = 0, idHerramienta = 0;
+
+            for (int i = 0; i < dtHerramientas.Columns.Count; i++)
+            {
+                //Herramientas que no aplica (0 en idHerramienta)
+                if (dtHerramientas.Rows[0][i].ToString().Equals("0") || dtHerramientas.Columns[i].ColumnName.Contains("Tasa"))
+                {  // Convenios 
+                    if (dtHerramientas.Columns[i].ColumnName.Contains("136") || dtHerramientas.Columns[i].ColumnName.Contains("144"))
+                        i += 2;
+                    continue;
+                }
+
+                // Agrega idHerramienta para filtro y días
+                if (int.TryParse(dtHerramientas.Columns[i].ColumnName, out idHerramienta))
+                {
+                    sHerramientas += "," + dtHerramientas.Columns[i].ColumnName;
+                    iMáxDías = Convert.ToInt16(dtHerramientas.Rows[0][i].ToString());
+                }
+
+                //Solo si tiene descuento.
+                if (dtHerramientas.Columns[i + 1].ColumnName.Contains("Descuento"))
+                {
+                    i++;
+                    fDescuento = Convert.ToDouble(dtHerramientas.Rows[0][i].ToString());
+                }
+
+                if (dtHerramientas.Columns[i + 1].ColumnName.Contains("Máximo"))
+                {
+                    i++;
+                    fMáxDesc = Convert.ToDouble(dtHerramientas.Rows[0][i].ToString());
+                }
+
+                DataRow drDescuento = dtDescuentos.NewRow();
+                drDescuento["idHerramienta"] = idHerramienta;
+                drDescuento["Descuento"] = fDescuento;
+                drDescuento["MáxDescuento"] = fMáxDesc;
+                drDescuento["MaxDías"] = iMáxDías;
+                dtDescuentos.Rows.Add(drDescuento);
+
+                fDescuento = fMáxDesc = iMáxDías = idHerramienta = 0;
+                dtDescuentos.PrimaryKey = new DataColumn[] { dtDescuentos.Columns["idHerramienta"] };
+            }
+            sHerramientas = sHerramientas.TrimEnd(',') + ")";
+
+            //----------------------------------------Producto Y ---------------------------------//
+            InfoProducto = await _ejecutivoRepository.ObtieneProducto(NoCuenta);
+
+            //------------------------------------------------------------------------------------//
+            if (InfoProducto.Columns.Contains("Fechacorte") && InfoProducto.Columns["Fechacorte"].ToString() != "")
+            {
+
+
+
+
+
+
+
+            }
+
+
+
+
+
+            //////////////////////////////////////////aun no se que voy a regresar ///////////////////////////////////
+            var resultadoCalculadora = new ResultadoCalculadora();
+            return resultadoCalculadora;
+        }
+
 
 
         #endregion
+
+
+
+
 
 
         private static void CalculaTiempoPromedioTest(DataTable tiempos, string Conteo)
