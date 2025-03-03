@@ -20,7 +20,7 @@ const Flow = () => {
                         />
                       </div>
                       <Card.Body>
-                        <Card.Title>Recordatorios</Card.Title>
+                        <Card.Title>Flujo de llamadas</Card.Title>
                         <Card.Text>Estamos trabajando en ello...</Card.Text>
                       </Card.Body>
                     </Card>

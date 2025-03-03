@@ -178,67 +178,77 @@ const Managment = () => {
     handleSuggestionClick,
     handleAutomaticSearch
   };
-
   return (
     <>
+      {/* Proveedor de contexto para compartir datos con los componentes hijos */}
       <AppContext.Provider value={contextValue}>
         <section>
+          {/* Componente de la barra de navegación */}
           <NavbarComponent />
+          
+          {/* Componente de Toast personalizado para mostrar mensajes emergentes */}
           <CustomToast
-            show={showToast}
-            onClose={() => setShowToast(false)}
-            numeroTelefonico={numeroTelefonico}
-            copyToClipboard={copyToClipboard}
+            show={showToast} // Controla si el Toast debe mostrarse
+            onClose={() => setShowToast(false)} // Cierra el Toast al invocar esta función
+            numeroTelefonico={numeroTelefonico} // Pasa el número telefónico al Toast
+            copyToClipboard={copyToClipboard} // Función para copiar al portapapeles
           />
-          <Toaster richColors position="top-center" style={{ top: "60px" }} />{" "}
-          {/* Agregar Sonner aquí */}
+          
+          {/* Componente Toaster para mostrar notificaciones emergentes */}
+          <Toaster richColors position="top-center" style={{ top: "60px" }} /> 
+  
           <Container fluid className="responsive mt-5">
             <Row>
-              <Col xs={12} md={12} lg={6} >
+              {/* Columna para mostrar información del deudor */}
+              <Col xs={12} md={12} lg={6}>
                 <br />
-
-                <DebtorInformation />
+                <DebtorInformation /> {/* Componente con información del deudor */}
               </Col>
+  
+              {/* Columna para mostrar el formulario de búsqueda */}
               <Col xs={12} md={12} lg={6} className="mx-auto">
                 <br />
-
-                <SearchForm />
+                <SearchForm /> {/* Componente del formulario de búsqueda */}
               </Col>
-
+  
+              {/* Componente de búsqueda de clientes */}
               <Col xs={12} md={12}>
                 <SearchCustomer />
               </Col>
+  
+              {/* Componente de tarjeta de datos */}
               <Col xs={12} md={12}>
                 <DataCard />
               </Col>
+  
               <Col xs={12} md={12}>
+                {/* Sección para mostrar información adicional */}
                 <Row className="recent-sales">
                   <Col xs={12} md={8} lg={8}>
-                    <InformationClient />
+                    <InformationClient /> {/* Componente con la información del cliente */}
                   </Col>
                   <Col xs={12} md={4}>
-                    <Flow />
+                    <Flow /> {/* Componente con el flujo de información */}
                   </Col>
                 </Row>
                 <Row>
                   <Col xs={12} md={8}>
-                    <Telephones />
+                    <Telephones /> {/* Componente con los números telefónicos */}
                   </Col>
                   <Col xs={12} md={4}>
-                    <Calculator />
+                    <Calculator /> {/* Componente con la calculadora */}
                   </Col>
                 </Row>
                 <Row>
+                  {/* Componente de gestiones */}
                   <Col xs={12} md={8}>
                     <h1>Gestiones</h1>
-                    <Managments />
+                    <Managments /> {/* Componente de gestiones */}
                   </Col>
                   <Col xs={12} md={4}>
-                  
-                    <Calendar />
+                    <Calendar /> {/* Componente con el calendario */}
                   </Col>
                 </Row>
-                
               </Col>
             </Row>
           </Container>
@@ -246,6 +256,7 @@ const Managment = () => {
       </AppContext.Provider>
     </>
   );
+  
 };
 
 export default Managment;
