@@ -13,11 +13,15 @@ const DebtorInformation = () => {
 
   const handleShowModalR = () => setShowModalR(true);
   const handleCloseModalR = () => setShowModalR(false);
+<<<<<<< HEAD
 
   const [showModalTim, setShowModalTim] = useState(false);
 
   const handleShowModalTim = () => setShowModalTim(true);
   const handleCloseModalTim = () => setShowModalTim(false);
+=======
+  
+>>>>>>> origin/HU10-Flujo
   return (
     <Row>
       <h4 className="text-secondary">

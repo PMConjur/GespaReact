@@ -24,7 +24,9 @@ const NegotiationsMonth = () => {
       const response = await searchCustomer("Cuenta", idCuenta);
       console.log("Detalles de la cuenta:", response);
       setSearchResults(response.listaResultados || []);
-      toast.success(`Cuenta ${idCuenta} seleccionada`);
+      toast.success(`Cuenta ${idCuenta} seleccionada`, {
+        description: "Puede cerrar la ventana para gestionar esta cuenta"
+      });
     } catch (error) {
       console.error("Error al buscar detalles de la cuenta:", error);
       toast.error("Error 404: Error al buscar detalles de la cuenta");
@@ -33,7 +35,6 @@ const NegotiationsMonth = () => {
 
   return (
     <>
-      <Toaster richColors position="top-center" />
       {/* Negociaciones del mes */}
       <br />
       <h5>Negociaciones del mes</h5>

@@ -1,17 +1,26 @@
 import servicio from "./axiosServices";
 
+// Obtiene token de inicio de sesión
 const responseData =
   location.state || JSON.parse(localStorage.getItem("responseData"));
 const token = responseData?.ejecutivo?.token;
 const apiUrl = import.meta.env.VITE_API_URL;
 
+//endpoint login
 export async function userReset(dataUserReset) {
   try {
     const response = await servicio.post(
       "/login/resetea-password",
       dataUserReset
     );
-    return response.data;
+    const { mensaje, exito } = response.data.resetea;
+    if (exito === "1") {
+      return { success: true, message: "Contraseña actualizada correctamente" };
+    } else if (mensaje) {
+      return { success: false, message: mensaje };
+    } else {
+      throw new Error("Error desconocido al actualizar la contraseña.");
+    }
   } catch (error) {
     if (error.response) {
       const errorMessage =
@@ -141,22 +150,21 @@ export const fetchPhones = async (idCuenta) => {
   }
 };
 
-export async function userTimes(numEmpleado) {
+export async function userFlow() {
   try {
-    console.log(numEmpleado);
     const response = await servicio.get(
-      `/ejecutivo/tiempos-ejecutivo?numEmpleado=${numEmpleado}`
+      `/ejecutivo/flujo-preguntas-respuestas`
     );
     const data = response.data;
-    
+    console.log(data);
     return data;
   } catch (error) {
     if (error.response) {
       const errorMessage =
-        error.response.data?.mensaje || "Error al recibir la productividad";
+        error.response.data?.mensaje || "Error al recibir el flujo";
       throw new Error(errorMessage);
     } else {
-      throw new Error("Error al recibir la productividad.");
+      throw new Error("Error en la respuesta del endpoint.");
     }
   }
 }

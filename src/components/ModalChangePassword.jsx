@@ -19,6 +19,7 @@ function ModalChangePassword({
     number: false,
     symbol: false
   });
+  console.log(oldPassword, user);
   const [passwordMatch, setPasswordMatch] = useState(false);
 
   const handlePasswordChange = (e) => {
@@ -48,7 +49,11 @@ function ModalChangePassword({
         contra: oldPassword
       };
       const response = await userReset(dataUserReset); // Call userReset function
-      toast.success(response.mensaje || "Contraseña actualizada correctamente"); // Show success message
+      if (response.success) {
+        toast.success(response.message); // Show success message
+      } else {
+        toast.error(response.message); // Show error message
+      }
       closeSecondModal(); // Close the modal after submitting
     } catch (error) {
       console.error("Error al actualizar la contraseña:", error);
