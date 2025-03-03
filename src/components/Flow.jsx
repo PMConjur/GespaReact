@@ -7,7 +7,7 @@ const Flow = () => {
   const { flowMessage } = useContext(AppContext);
 
   return (
-    <Row xs="auto" md="auto" className="g-2">
+    <Row xs="auto" md="auto" className="g-2" >
       {Array.from({ length: 1 }).map((_, idx) => (
         <Col key={idx} md={12}>
           <Card className="row-flow">

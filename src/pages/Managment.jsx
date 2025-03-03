@@ -244,10 +244,9 @@ const Managment = () => {
                     <Managments /> {/* Componente de gestiones */}
                   </Col>
                 </Col>
-
                 <Col xs={12} md={6} lg={4}>
                   <Col xs={12} md={12}>
-                    <Flow /> {/* Componente con el flujo de información */}
+                    <Flow/> {/* Componente con el flujo de información */}
                   </Col>
                   <Col xs={12} md={12}>
                     <Calculator /> {/* Componente con la calculadora */}

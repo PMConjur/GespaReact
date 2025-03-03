@@ -1,4 +1,5 @@
 import servicio from "./axiosServices";
+import { toast } from "sonner";
 
 // Obtiene token de inicio de sesión
 const responseData =
@@ -182,3 +183,34 @@ export const fetchValidationTel = async (data) => {
     throw error;
   }
 };
+
+const getErrorStatus = (status) => {
+  switch (status) {
+    case 200:
+      return "Solicitud exitosa (200): La operación se realizó correctamente.";
+    case 201:
+      return "Recurso creado (201): Se ha generado correctamente.";
+    case 202:
+      return "Aceptado (202): La solicitud ha sido aceptada para procesamiento.";
+    case 204:
+      return "Sin contenido (204): La solicitud fue exitosa, pero no hay datos para devolver.";
+    case 400:
+      return "Solicitud incorrecta (400): Verifica los datos enviados.";
+    case 401:
+      return "No autorizado (401): Verifica tus credenciales.";
+    case 403:
+      return "Acceso prohibido (403): No tienes permiso para esta acción.";
+    case 404:
+      return "No encontrado (404): El recurso solicitado no existe.";
+    case 409:
+      return "Conflicto (409): El recurso ya existe o hay un problema con la solicitud.";
+    case 429:
+      return "Demasiadas solicitudes (429): Intenta de nuevo más tarde.";
+    case 500:
+      return "Error interno del servidor (500): Intenta nuevamente más tarde.";
+    default:
+      return `Error inesperado (${status}): Contacta con soporte.`;
+  }
+};
+
+// const message = getErrorMessageFromStatus(response.status);
