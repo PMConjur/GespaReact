@@ -668,3 +668,15 @@ $list-group-transition: all 0.3s ease;
     }
   }
 }
+
+//estilos de dropdowninfo
+.custom-dropdown-toggle {
+  background-color: transparent !important;
+  border: none !important;
+  color: inherit !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+}
+

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import Nav from "react-bootstrap/Nav";
 import PropTypes from "prop-types"; // Import PropTypes for prop validation
+import { BoxArrowLeft } from "react-bootstrap-icons";
 
 const CerrarSesion = ({ setUser, setIdEjecutivo }) => {
   const navigate = useNavigate();
@@ -37,8 +38,8 @@ const CerrarSesion = ({ setUser, setIdEjecutivo }) => {
   };
 
   return (
-    <Nav.Link as="button" onClick={handleLogout} style={{ textAlign: "left" }}>
-      <h5>Cerrar Sesion</h5>
+    <Nav.Link as="button" onClick={handleLogout} className="custom-dropdown-toggle d-flex align-items-center">
+            <span className="me-2"><BoxArrowLeft/></span><h5 className="mb-0">Cerrar sesion</h5>
     </Nav.Link>
   );
 };
