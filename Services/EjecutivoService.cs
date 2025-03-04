@@ -1,9 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using NoriAPI.Models.Busqueda;
 using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Repositories;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 
 namespace NoriAPI.Services
@@ -13,7 +15,8 @@ namespace NoriAPI.Services
 
         Task<TiemposEjecutivo> ValidateTimes(int numEmpleado);
         Task<string> PauseUnpause(InfoPausa pausa);
-
+        //Task ObtieneNegociacionAsync(DataRow drDatos, DataSet dsTablas);
+        Task <DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
     }
 
 
@@ -23,13 +26,14 @@ namespace NoriAPI.Services
         private readonly IConfiguration _configuration;
         private readonly IEjecutivoRepository _ejecutivoRepository;
 
-        public EjecutivoService(IEjecutivoRepository ejecutivoRepository)
+        private readonly string _connectionString;
+
+        public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository)
         {
+            _configuration = configuration;
             _ejecutivoRepository = ejecutivoRepository;
-
+            _connectionString = _configuration.GetConnectionString("Piso2Amex");
         }
-
-
 
         public async Task<TiemposEjecutivo> ValidateTimes(int numEmpleado)
         {
@@ -101,6 +105,33 @@ namespace NoriAPI.Services
             // Si la validación es exitosa, retorna true.
             return true;
         }
+
+
+        public async Task <DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta)
+        {
+            DataTable negociacion = new DataTable();
+            string query = "SELECT * FROM fn_OfrecimientosNegociaciones(@idCartera, @idCuenta)"; // Evita inyección SQL
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(negociacion);
+                    }
+                }
+            }
+
+            return negociacion;
+        }
+
+       
 
 
     }
