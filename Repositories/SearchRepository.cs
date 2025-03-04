@@ -17,6 +17,7 @@ namespace NoriAPI.Repositories
         Task<dynamic> ValidateBusqueda(string filtro, string ValorBusqueda);
         Task<dynamic> ValidateAutomatico(int numEmpleado);
         Task<List<Phone>> GetPhones(string idCuenta, int idCartera);
+        Task<dynamic> RegisterNewPhone(NewPhone newPhoneToRegister);
         Task<List<CamposPantalla>> GetCamposPantalla(int idCartera, int idProducto);
         Task<dynamic> GetProducto(string idCuenta);
     }
@@ -132,6 +133,7 @@ namespace NoriAPI.Repositories
             {
                 idEjecutivo = numEmpleado
             };
+
             var automatico = (await connection.QueryFirstOrDefaultAsync<dynamic>(
                 storedAutomatico,
                 parameters,
@@ -153,6 +155,32 @@ namespace NoriAPI.Repositories
                 );
 
             return phoneList.ToList();
+        }
+
+        public async Task<dynamic> RegisterNewPhone(NewPhone newPhoneToRegister)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string newPhoneQuery = "[dbCollection].[dbo].[2.2.GuardaNuevoTeléfono]";
+            var parameters = new
+            {
+                idCartera = newPhoneToRegister.IdCartera,
+                idCuenta = newPhoneToRegister.IdCuenta,
+                idEjecutivo = newPhoneToRegister.IdEjecutivo,
+                NúmeroTelefónico = newPhoneToRegister.NumeroTelefonico,
+                idTelefonia = newPhoneToRegister.IdTelefonia,
+                idOrigen = newPhoneToRegister.IdOrigen,
+                idClase = newPhoneToRegister.IdClase,
+                SegHorarioContacto = newPhoneToRegister.HorarioContacto,
+                Extensión = newPhoneToRegister.Extension
+            };
+
+            var newPhoneQueryResult = (await connection.QueryFirstOrDefaultAsync<dynamic>(
+                newPhoneQuery,
+                parameters,
+                commandType: CommandType.StoredProcedure ));
+
+            return newPhoneQueryResult;
         }
 
         public async Task<List<CamposPantalla>> GetCamposPantalla(int idCartera, int idProducto)

@@ -181,6 +181,7 @@ namespace NoriAPI.Controllers
         }
        
 
+<<<<<<< HEAD
         private List<Dictionary<string, object>> ConvertDataTableToList(DataTable dataTable)
         {
             var list = new List<Dictionary<string, object>>();
@@ -196,6 +197,16 @@ namespace NoriAPI.Controllers
             }
 
             return list;
+=======
+        [HttpGet("Calculadora-simulador")]
+
+        public async Task<ActionResult<ResultadoCalculadora>> Calculadora_Simulador([FromQuery] int Cartera, string NoCuenta)
+        {
+            var InfoCalculadora = await _ejecutivoService.ValidateInfoCalculadora(Cartera, NoCuenta);
+
+            return Ok(InfoCalculadora); ;
+
+>>>>>>> Mark-16-Calculadora
         }
 
     }

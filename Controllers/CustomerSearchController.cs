@@ -10,6 +10,7 @@ using NoriAPI.Models.Phones;
 using System.Data;
 using System.Text.Json;
 using System;
+using System.Globalization;
 
 namespace NoriAPI.Controllers
 {
@@ -86,15 +87,16 @@ namespace NoriAPI.Controllers
             return Ok(new { exists = phoneValidation });
         }
 
-        [HttpPost("save-new-phone")]
-        public async Task<ActionResult<NewPhone>> SaveNewPhone([FromBody] NewPhoneRequest newPhoneData)
+        [HttpPut("save-new-phone")]
+        public async Task<IActionResult> SaveNewPhone([FromBody] NewPhoneRequest newPhoneData)
         {
             var phone = await _searchService.SaveNewPhone(newPhoneData);
+
             if (phone == null)
             {
                 return BadRequest();
             }
-            return Ok(phone);
+            return Ok(new { mensaje = phone });
         }
 
 

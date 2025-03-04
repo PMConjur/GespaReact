@@ -1,4 +1,4 @@
-
+﻿
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 
@@ -46,6 +46,262 @@ namespace NoriAPI.Services
             private readonly string _connectionString;
 
 
+        Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta);
+    }
+
+    public class EjecutivoService : IEjecutivoService
+    {
+        private readonly IConfiguration _configuration;
+
+        private readonly IEjecutivoRepository _ejecutivoRepository;
+
+        #region PropiedadesProductividad
+        private static string[] _NombreColumnasConteos = { "Titulares", "Conocidos", "Desconocidos", "SinContacto" };
+        private static DataTable Cuentas;
+        private static DataTable Tiempos;
+        private static DataTable Metas;
+        private static DataTable GestionesEjecutivo;
+        private static DataTable Conteos;
+        private static DataSet _dsTablas = new DataSet();
+        private static ArrayList _alNombreId;
+        private static Hashtable _htValoresCatálogo;
+        private static Hashtable _htNombreId;
+        #endregion
+       
+        public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository)
+        {
+            _configuration = configuration;
+            _ejecutivoRepository = ejecutivoRepository;
+        }
+
+        #region Productividad
+        public async Task<ResultadoProductividad> ValidateProductividad(int numEmpleado)
+        {
+            // Limpiar las variables estáticas al comienzo del método
+            ClasesGespa.Cuentas = new DataTable();
+            ClasesGespa.Tiempos = new DataTable();
+            ClasesGespa.Metas = new DataTable();
+            ClasesGespa.GestionesEjecutivo = new DataTable();
+            ClasesGespa.Conteos = new DataTable();
+            ClasesGespa._dsTablas = new DataSet();
+            ClasesGespa._alNombreId = new ArrayList();
+            ClasesGespa._htValoresCatálogo = new Hashtable();
+            ClasesGespa._htNombreId = new Hashtable();
+
+            string mensaje = null;
+
+            //---------------------------------CargaCatalogos---------------------------------//
+            ClasesGespa._alNombreId = new ArrayList();
+            // NUEVA LLAMADA AL REPOSITORY
+            ClasesGespa.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            ClasesGespa.CargaCatalogos();
+
+            //---------------------------------------Relaciones --------------------------------------------//
+            ClasesGespa.dtRelaciones = await _ejecutivoRepository.VwRelaciones();
+            ClasesGespa.Relaciones();
+            //------------------------------------Tiempos----------------------------------------------//
+
+            ClasesGespa.Tiempos = await _ejecutivoRepository.TiemposEjecutivo(numEmpleado);
+            ClasesGespa.ObtieneTiempos();
+            //-----------------------------------------Metas-----------------------------------------------------//
+
+            ClasesGespa.Metas = await _ejecutivoRepository.MetasEjecutivo(numEmpleado);
+            ClasesGespa.ObtieneMetas();
+            //----------------------------------------Gestiones-------------------------------------------------------//
+
+            ClasesGespa.tblDelDía = await _ejecutivoRepository.Gestiones(numEmpleado);
+
+            // Aquí terminan las consultas a la base y empieza la creación y adición de tablas.
+            // Crea tablas
+            ClasesGespa.ObtieneNegociaciones();
+
+            DataTable dt = ClasesGespa.Conteos;
+
+            // Tomar la primera fila y convertirla en un diccionario
+            var prod = dt.Rows[0]
+                .Table.Columns.Cast<DataColumn>()
+                .ToDictionary(col => col.ColumnName, col => dt.Rows[0][col]);
+            // Ahora 'prod' es un Dictionary<string, object> con los valores de la primera fila
+
+            var productividad = MapToInfoProductividad(prod);
+            var resultadoProductividad = new ResultadoProductividad(mensaje, productividad);
+            return resultadoProductividad;
+        }
+        private static ProductividadInfo MapToInfoProductividad(IDictionary<string, object> prod)
+        {
+            var productividad = new ProductividadInfo();
+
+            if (prod.TryGetValue("Negociaciones", out var negociaciones) && negociaciones != null)
+                productividad.Negociaciones = negociaciones.ToString();
+
+            if (prod.TryGetValue("Cuentas", out var cuentas) && cuentas != null)
+                productividad.Cuentas = cuentas.ToString();
+
+            if (prod.TryGetValue("Titulares", out var titulares) && titulares != null)
+                productividad.Titulares = titulares.ToString();
+
+            if (prod.TryGetValue("Conocidos", out var conocidos) && conocidos != null)
+                productividad.Conocidos = conocidos.ToString();
+
+            if (prod.TryGetValue("Desconocidos", out var desconocidos) && desconocidos != null)
+                productividad.Desconocidos = desconocidos.ToString();
+
+            if (prod.TryGetValue("SinContacto", out var sincontacto) && sincontacto != null)
+                productividad.SinContacto = sincontacto.ToString();
+
+            return productividad;
+
+
+        }
+        #endregion
+        #region Preguntas_Respuestas
+        public async Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas()
+        {
+            var validatePreg_Resp_list = await _ejecutivoRepository.ValidatePreguntas_Respuestas();
+
+            return validatePreg_Resp_list;
+        }
+        #endregion
+
+        #region Caluculadora
+        public async Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta)
+        {
+            string mensaje = null;
+            DataTable dtnegociaciones = new DataTable();
+            DataTable dtPlazos = new DataTable();
+            DataTable dtPagos = new DataTable();
+            DataTable dtHerramientas = new DataTable();
+            DataTable dtDescuentos = new DataTable();
+            DataTable InfoProducto = new DataTable();
+
+            
+            //---------------------------------------Negociaciones--------------------------------//
+            //con el Idestado se valida si la promesa esta vigente
+
+
+            dtnegociaciones = await _ejecutivoRepository.ObtieneNegociaciones(Cartera, NoCuenta);
+
+            dtnegociaciones.PrimaryKey = new DataColumn[] {
+                dtnegociaciones.Columns["Fecha_Insert"],
+                dtnegociaciones.Columns["Segundo_Insert"],
+                dtnegociaciones.Columns["idHerramienta"]
+            };
+            dtnegociaciones.DefaultView.Sort = "FechaHora DESC";
+
+            //-----------------------------------Plazos------------------------------------------//
+
+            dtPlazos = await _ejecutivoRepository.ObtienePlazos(Cartera, NoCuenta);
+
+            DataColumn dcFechaHora = new DataColumn("FechaHora_Insert", typeof(DateTime));
+            dtPlazos.Columns.Add(dcFechaHora);
+            for (int i = 0; i < dtPlazos.Rows.Count; i++)
+            {                
+                DateTime dtFecha = Convert.ToDateTime(dtPlazos.Rows[i]["Fecha_Insert"]);
+
+                // Intentar convertir "Segundo_Insert" a un TimeSpan
+                if (TimeSpan.TryParse(dtPlazos.Rows[i]["Segundo_Insert"].ToString(), out TimeSpan tsSegundo))
+                {
+                    dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.Add(tsSegundo);
+                }
+                else if (double.TryParse(dtPlazos.Rows[i]["Segundo_Insert"].ToString(), out double segundos))
+                {
+                    dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.AddSeconds(segundos);
+                }
+                else
+                {
+                    throw new InvalidCastException($"No se pudo convertir 'Segundo_Insert' en la fila {i} a TimeSpan.");
+                }
+                //DateTime dtFecha = Convert.ToDateTime(dtPlazos.Rows[i]["Fecha_Insert"]);
+                //TimeSpan tsSegundo = (TimeSpan)dtPlazos.Rows[i]["Segundo_Insert"];
+                //dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.Add(tsSegundo);
+            }
+
+            //----------------------------------------Pagos----------------------------------------------//
+
+            dtPagos = await _ejecutivoRepository.ObtienePagos(Cartera, NoCuenta);
+            dtPagos.DefaultView.Sort = "FechaPago DESC";
+
+            //------------------------------------Herramientas------------------------------------------//
+            
+            dtHerramientas = await _ejecutivoRepository.ObtieneHerramientas(NoCuenta);
+
+            //-----------------------------------------------------------------------------------------//
+
+            dtDescuentos.Columns.Add("idHerramienta");
+            dtDescuentos.Columns.Add("Descuento");
+            dtDescuentos.Columns.Add("MáxDescuento");
+            dtDescuentos.Columns.Add("MaxDías");
+
+            string sHerramientas = "idHerramienta IN (0";
+            double fDescuento = 0, fMáxDesc = 0;
+            int iMáxDías = 0, idHerramienta = 0;
+
+            for (int i = 0; i < dtHerramientas.Columns.Count; i++)
+            {
+                //Herramientas que no aplica (0 en idHerramienta)
+                if (dtHerramientas.Rows[0][i].ToString().Equals("0") || dtHerramientas.Columns[i].ColumnName.Contains("Tasa"))
+                {  // Convenios 
+                    if (dtHerramientas.Columns[i].ColumnName.Contains("136") || dtHerramientas.Columns[i].ColumnName.Contains("144"))
+                        i += 2;
+                    continue;
+                }
+
+                // Agrega idHerramienta para filtro y días
+                if (int.TryParse(dtHerramientas.Columns[i].ColumnName, out idHerramienta))
+                {
+                    sHerramientas += "," + dtHerramientas.Columns[i].ColumnName;
+                    iMáxDías = Convert.ToInt16(dtHerramientas.Rows[0][i].ToString());
+                }
+
+                //Solo si tiene descuento.
+                if (dtHerramientas.Columns[i + 1].ColumnName.Contains("Descuento"))
+                {
+                    i++;
+                    fDescuento = Convert.ToDouble(dtHerramientas.Rows[0][i].ToString());
+                }
+
+                if (dtHerramientas.Columns[i + 1].ColumnName.Contains("Máximo"))
+                {
+                    i++;
+                    fMáxDesc = Convert.ToDouble(dtHerramientas.Rows[0][i].ToString());
+                }
+
+                DataRow drDescuento = dtDescuentos.NewRow();
+                drDescuento["idHerramienta"] = idHerramienta;
+                drDescuento["Descuento"] = fDescuento;
+                drDescuento["MáxDescuento"] = fMáxDesc;
+                drDescuento["MaxDías"] = iMáxDías;
+                dtDescuentos.Rows.Add(drDescuento);
+
+                fDescuento = fMáxDesc = iMáxDías = idHerramienta = 0;
+                dtDescuentos.PrimaryKey = new DataColumn[] { dtDescuentos.Columns["idHerramienta"] };
+            }
+            sHerramientas = sHerramientas.TrimEnd(',') + ")";
+
+            //----------------------------------------Producto Y ---------------------------------//
+            InfoProducto = await _ejecutivoRepository.ObtieneProducto(NoCuenta);
+
+            //------------------------------------------------------------------------------------//
+            if (InfoProducto.Columns.Contains("Fechacorte") && InfoProducto.Columns["Fechacorte"].ToString() != "")
+            {
+
+
+
+
+
+
+
+            }
+
+
+
+
+
+            //////////////////////////////////////////aun no se que voy a regresar ///////////////////////////////////
+            var resultadoCalculadora = new ResultadoCalculadora();
+            return resultadoCalculadora;
+        }
+
 
 
             #region PropiedadesProductividad
@@ -66,6 +322,18 @@ namespace NoriAPI.Services
             #endregion
 
 
+<<<<<<< HEAD
+=======
+
+
+
+
+        private static void CalculaTiempoPromedioTest(DataTable tiempos, string Conteo)
+        {
+            if (!ClasesGespa.Conteos.Columns.Contains(Conteo) || !tiempos.Columns.Contains("Tiempo" + Conteo)
+                || tiempos.Rows[0]["Tiempo" + Conteo].ToString() == "")
+                return;
+>>>>>>> Mark-16-Calculadora
 
             public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository)
             {

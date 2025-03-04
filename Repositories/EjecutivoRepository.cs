@@ -18,8 +18,18 @@ namespace NoriAPI.Repositories
         Task<DataTable> TiemposEjecutivo(int numEmpleado);
         Task<DataTable> MetasEjecutivo(int numEmpleado);
         Task<DataTable> Gestiones(int numEmpleado);
-        Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
+        #endregion
 
+        #region PreguntasRespuestas
+        Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
+        #endregion
+
+        #region calculadora
+        Task<DataTable> ObtienePlazos(int Cartera, string NoCuenta);
+        Task<DataTable> ObtieneNegociaciones(int Cartera, string NoCuenta);
+        Task<DataTable> ObtienePagos(int Cartera, string NoCuenta);
+        Task<DataTable> ObtieneHerramientas(string NoCuenta);
+        Task<DataTable> ObtieneProducto(string NoCuenta);
         #endregion
 
         #region Tiempos
@@ -43,8 +53,11 @@ namespace NoriAPI.Repositories
     {
 
         private readonly IConfiguration _configuration;
+<<<<<<< HEAD
         private readonly string _connectionString;
 
+=======
+>>>>>>> Mark-16-Calculadora
         public EjecutivoRepository(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -71,7 +84,6 @@ namespace NoriAPI.Repositories
 
             return recordatorios;
         }
-
 
         #region Productividad
 
@@ -160,33 +172,7 @@ namespace NoriAPI.Repositories
             return ConvertToDataTable(productividad, "Productividad");
 
 
-        }
-        private static DataTable ConvertToDataTable(IEnumerable<dynamic> data, string tableName)
-        {
-            DataTable table = new DataTable(tableName);
-
-            if (!data.Any())
-                return table; // Retorna tabla vacía si no hay datos
-
-            // 🔹 Crear columnas en el DataTable a partir de las claves del primer elemento
-            foreach (var key in ((IDictionary<string, object>)data.First()).Keys)
-            {
-                table.Columns.Add(key);
-            }
-
-            // 🔹 Agregar las filas al DataTable
-            foreach (var item in data)
-            {
-                var row = table.NewRow();
-                foreach (var key in ((IDictionary<string, object>)item).Keys)
-                {
-                    row[key] = ((IDictionary<string, object>)item)[key] ?? DBNull.Value;
-                }
-                table.Rows.Add(row);
-            }
-
-            return table;
-        }
+        }        
 
         #region ProductividadOld
         /*
@@ -521,6 +507,7 @@ namespace NoriAPI.Repositories
         #endregion
         #endregion
 
+        #region Preguntas_Respuestas
         public async Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas()
         {
             using var connection = GetConnection("Piso2Amex");
@@ -549,9 +536,104 @@ namespace NoriAPI.Repositories
             return preg_resp_list.ToList();
 
         }
+        #endregion
+
+        #region Calculadora
+        public async Task<DataTable> ObtieneNegociaciones(int Cartera, string NoCuenta)
+        {
+            using var connection = GetConnection("Piso2Amex");
+            string querysNegociaciones = "SELECT * FROM fn_OfrecimientosNegociaciones(@idCartera, @idCuenta)";
+            var parameters = new
+            {
+                idCartera = Cartera,
+                idCuenta = NoCuenta
+            };
+
+            var negociaciones = (await connection.QueryAsync<dynamic>(
+                querysNegociaciones,
+                parameters,
+                commandType: CommandType.Text
+             ));
+
+            return ConvertToDataTable(negociaciones, "Negociaciones");            
+        }
+        public async Task<DataTable> ObtienePlazos(int Cartera, string NoCuenta)
+        {         
+            using var connection = GetConnection("Piso2Amex");
+            string querysPlazos = "SELECT * FROM fn_Plazos(@idCartera, @idCuenta)";
+            var parameters = new
+            {
+                idCartera = Cartera,
+                idCuenta = NoCuenta
+            };
+
+            var plazos = (await connection.QueryAsync<dynamic>(
+                querysPlazos,
+                parameters,
+                commandType: CommandType.Text
+             ));
+
+            return ConvertToDataTable(plazos, "Plazos");
+
+        }
+       
+        public async Task<DataTable> ObtienePagos(int Cartera, string NoCuenta)
+        {
+            using var connection = GetConnection("Piso2Amex");
+            string queryPagos = "SELECT * FROM fn_Pagos(@idCartera, @idCuenta) ";
+
+            var parameters = new
+            {
+                idCartera = Cartera,
+                idCuenta = NoCuenta
+            };
+
+            var pagos = (await connection.QueryAsync<dynamic>(
+                queryPagos,
+                parameters,
+                commandType: CommandType.Text
+             ));
+            return ConvertToDataTable(pagos, "Pagos");
+
+        } 
+        public async Task<DataTable> ObtieneHerramientas(string NoCuenta)
+        {
+            using var connection = GetConnection("Piso2Amex");
+            string queryHerramientas = "SELECT * FROM dbo.fn_AMEX_Herramientas(@idCuenta)";
+
+            var parameters = new
+            {
+                idCuenta = NoCuenta
+            };
+
+            var herramientas = (await connection.QueryAsync<dynamic>(
+                queryHerramientas,
+                parameters,
+                commandType: CommandType.Text
+             ));
+            return ConvertToDataTable(herramientas, "Herramientas");
+
+        }
+        public async Task<DataTable> ObtieneProducto(string NoCuenta)
+        {
+            using var connection = GetConnection("Piso2Amex");
+            string queryProducto = "select * from dbCollection.y.Producto_1 where idcuenta = @idCuenta";
+
+            var parameters = new
+            {
+                idCuenta = NoCuenta
+            };
+
+            var producto = (await connection.QueryAsync<dynamic>(
+                queryProducto,
+                parameters,
+                commandType: CommandType.Text
+             ));
+            return ConvertToDataTable(producto, "Producto");
+        }
 
 
-
+        #endregion
 
         #region Tiempos
         public async Task<ResultadoTiempos> ValidateTimes(int numEmpleado)
@@ -711,6 +793,32 @@ namespace NoriAPI.Repositories
             return new SqlConnection(_configuration.GetConnectionString(connection));
         }
 
+        private static DataTable ConvertToDataTable(IEnumerable<dynamic> data, string tableName)
+        {
+            DataTable table = new DataTable(tableName);
+
+            if (!data.Any())
+                return table; // Retorna tabla vacía si no hay datos
+
+            // 🔹 Crear columnas en el DataTable a partir de las claves del primer elemento
+            foreach (var key in ((IDictionary<string, object>)data.First()).Keys)
+            {
+                table.Columns.Add(key);
+            }
+
+            // 🔹 Agregar las filas al DataTable
+            foreach (var item in data)
+            {
+                var row = table.NewRow();
+                foreach (var key in ((IDictionary<string, object>)item).Keys)
+                {
+                    row[key] = ((IDictionary<string, object>)item)[key] ?? DBNull.Value;
+                }
+                table.Rows.Add(row);
+            }
+
+            return table;
+        }
 
     }
 }
