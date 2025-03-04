@@ -5,19 +5,13 @@ using Microsoft.IdentityModel.Tokens;
 using NoriAPI.Models.Busqueda;
 using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Models.Login;
-
 using NoriAPI.Services;
-
-using System.Collections.Generic;
-using System.Data;
-using System.Text.Json;
-using System;
-
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Text.Json;
 using System.Threading.Tasks;
+
 
 namespace NoriAPI.Controllers
 {
@@ -33,27 +27,19 @@ namespace NoriAPI.Controllers
         {
             _ejecutivoService = ejecutivoService;
             _configuration = configuration;
-
         }
 
-        [HttpGet("productividad-ejecutivo")]//Endpoint Padrino
+        [HttpGet("productividad-ejecutivo")]
         public async Task<ActionResult<ResultadoProductividad>> Productividad([FromQuery] int numEmpleado)
         {
             var Productividad = await _ejecutivoService.ValidateProductividad(numEmpleado);
-
-            if (!Productividad.Mensaje.IsNullOrEmpty())
-            {
-                return Ok(new { Productividad.ProductividadInfo });
-            }
             return Ok(new { Productividad.ProductividadInfo });
-
         }
 
-        [HttpGet("tiempos-ejecutivo")]//Endpoint C#
+        [HttpGet("tiempos-ejecutivo")]
         public async Task<ActionResult<TiemposEjecutivo>> Tiempos([FromQuery] int numEmpleado)
         {
             var Tiempos = await _ejecutivoService.ValidateTimes(numEmpleado);
-
             return Ok(new { Tiempos.ResultadosTiempos });
         }
 
@@ -61,13 +47,11 @@ namespace NoriAPI.Controllers
         public async Task<ActionResult> ManagePause([FromBody] InfoPausa pauseRequest)
         {
             string mensaje = await _ejecutivoService.PauseUnpause(pauseRequest);
-
             return Ok(new { mensaje });
         }
 
-
         [HttpGet("seguimientos/{idCartera}/{idCuenta}")]
-        public async Task<IActionResult> GetSeguimiento(int idCartera,string idCuenta)
+        public async Task<IActionResult> GetSeguimiento(int idCartera, string idCuenta)
         {
             try
             {
@@ -86,8 +70,40 @@ namespace NoriAPI.Controllers
                     return NotFound("No se encontraron recordatorios para este ejecutivo.");
                 }
 
-                // Convertimos el DataTable a una lista de diccionarios
                 var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Seguimiento"]);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+
+
+
+[HttpGet("recordatorios/{idEjecutivo}")]
+        public async Task<IActionResult> GetRecordatorios(int idEjecutivo)
+        {
+            try
+            {
+                DataSet dsTablas = new DataSet();
+                DataTable ejecutivosTable = dsTablas.Tables.Add("Ejecutivos");
+                ejecutivosTable.Columns.Add("idEjecutivo", typeof(int));
+                DataRow drDatos = ejecutivosTable.NewRow();
+                drDatos["idEjecutivo"] = idEjecutivo;
+
+                await _ejecutivoService.ObtieneRecordatoriosAsync(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("Seguimientos") || dsTablas.Tables["Seguimientos"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron recordatorios para este ejecutivo.");
+                }
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Seguimientos"]);
 
                 // Serializamos la lista a JSON
                 string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
@@ -99,6 +115,8 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+
+
 
         [HttpGet("accionamientos/{idCartera}/{idCuenta}")]
         public async Task<IActionResult> GetAccionamiento(int idCartera, string idCuenta)
@@ -120,10 +138,7 @@ namespace NoriAPI.Controllers
                     return NotFound("No se encontraron recordatorios para este ejecutivo.");
                 }
 
-                // Convertimos el DataTable a una lista de diccionarios
                 var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Accionamiento"]);
-
-                // Serializamos la lista a JSON
                 string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
 
                 return Ok(jsonString);
@@ -134,12 +149,10 @@ namespace NoriAPI.Controllers
             }
         }
 
-
         [HttpGet("get-negociaciones")]
         public async Task<IActionResult> GetNegociaciones([FromQuery] int idEjecutivo)
         {
             var negociaciones = await _ejecutivoService.GetNegociaciones(idEjecutivo);
-
             if (negociaciones.ConteoHoy == null)
             {
                 return BadRequest(new { Mensaje = "No se encontraron negociaciones." });
@@ -172,14 +185,11 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("flujo-preguntas-respuestas")]
-        public async Task<ActionResult<Preguntas_Respuestas_info>> Preguntas_Respuestas()////Cambiar el del resultado
+        public async Task<ActionResult<Preguntas_Respuestas_info>> Preguntas_Respuestas()
         {
             var preguntas_respuestas = await _ejecutivoService.ValidatePreguntas_Respuestas();
-
             return Ok(preguntas_respuestas);
-
         }
-       
 
         private List<Dictionary<string, object>> ConvertDataTableToList(DataTable dataTable)
         {
@@ -196,15 +206,13 @@ namespace NoriAPI.Controllers
             }
 
             return list;
-        [HttpGet("Calculadora-simulador")]
+        }
 
+        [HttpGet("Calculadora-simulador")]
         public async Task<ActionResult<ResultadoCalculadora>> Calculadora_Simulador([FromQuery] int Cartera, string NoCuenta)
         {
             var InfoCalculadora = await _ejecutivoService.ValidateInfoCalculadora(Cartera, NoCuenta);
-
-            return Ok(InfoCalculadora); ;
-
+            return Ok(InfoCalculadora);
         }
-
     }
 }

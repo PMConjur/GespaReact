@@ -53,11 +53,8 @@ namespace NoriAPI.Repositories
     {
 
         private readonly IConfiguration _configuration;
-<<<<<<< HEAD
         private readonly string _connectionString;
 
-=======
->>>>>>> Mark-16-Calculadora
         public EjecutivoRepository(IConfiguration configuration)
         {
             _configuration = configuration;
