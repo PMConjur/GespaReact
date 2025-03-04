@@ -217,7 +217,7 @@ namespace NoriAPI.Controllers
             return list;
         }
 
-        [HttpGet("Calculadora-simulador")]
+        [HttpGet("calculadora-simulador")]
         public async Task<ActionResult<ResultadoCalculadora>> Calculadora_Simulador([FromQuery] int Cartera, string NoCuenta)
         {
             var InfoCalculadora = await _ejecutivoService.ValidateInfoCalculadora(Cartera, NoCuenta);
@@ -225,17 +225,7 @@ namespace NoriAPI.Controllers
         }
 
 
-
-
-
-
-
-
-
-
-
-
-        [HttpGet("accionesNegociacion")]
+        [HttpGet("acciones-negociacion")]
         public async Task<IActionResult> GetAccionNegociacion(int idCartera, string idCuenta)
         {
             DataSet dsTablas = new DataSet();

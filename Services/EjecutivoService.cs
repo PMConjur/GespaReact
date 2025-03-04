@@ -28,8 +28,8 @@ namespace NoriAPI.Services
         Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
         Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
         Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta);
-        Task <DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
-        
+        Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
+
 
         Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo);
         Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas);
@@ -144,8 +144,8 @@ namespace NoriAPI.Services
 
 
 
-            
-        public async Task <DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta)
+
+        public async Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta)
         {
             DataTable negociacion = new DataTable();
             string query = "SELECT * FROM fn_OfrecimientosNegociaciones(@idCartera, @idCuenta)"; // Evita inyección SQL
@@ -492,7 +492,7 @@ namespace NoriAPI.Services
             return actual == 1
                 ? await _ejecutivoRepository.RecuperacionActual(idEjecutivo)
                 : await _ejecutivoRepository.RecuperacionAnterior(idEjecutivo);
-            
+
 
 
 
@@ -500,7 +500,7 @@ namespace NoriAPI.Services
 
 
 
-public async Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo)
+        public async Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo)
         {
             DataTable recordatorios = new DataTable();
             string query = "SELECT * FROM fn_SeguimientosEjecutivo(@idEjecutivo)"; // Evita inyección SQL
@@ -543,11 +543,11 @@ public async Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo)
             recordatorios.DefaultView.Sort = "SegundoSeguimiento ASC";
         }
 
-}
-
-
-
     }
+
+
+
+}
 
 
 
