@@ -16,10 +16,10 @@ import CustomToast from "../components/CustomToast";
 import Managments from "../components/Managments";
 import Reminder from "../components/Reminder";
 import { searchCustomer } from "../services/gespawebServices";
+
 // Crear el contexto
 export const AppContext = createContext();
-//Import automatico
-//immport Filtro Busqueda
+
 const Managment = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState("Cuenta");
@@ -33,6 +33,7 @@ const Managment = () => {
     location.state || JSON.parse(localStorage.getItem("responseData")); // Retrieve responseData from localStorage if not in location state
   const [showToast, setShowToast] = useState(false);
   const [numeroTelefonico, setNumeroTelefonico] = useState("");
+  const [flowMessage, setFlowMessage] = useState(""); // Estado para el mensaje del flujo
 
   //console.log("Token recibido:", token);
   const nombreEjecutivo =
@@ -133,6 +134,7 @@ const Managment = () => {
     navigator.clipboard.writeText(numeroTelefonico);
     toast.success("Número copiado al portapapeles");
   };
+
   // Valores que se compartirán a través del contexto
   const contextValue = {
     nombreEjecutivo,
@@ -157,76 +159,88 @@ const Managment = () => {
     handleFilterSelect,
     handleInputChange,
     handleSuggestionClick,
-    handleAutomaticSearch
+    handleAutomaticSearch,
+    flowMessage, // Añadir flowMessage al contexto
+    setFlowMessage // Añadir setFlowMessage al contexto
   };
 
   return (
     <>
+      {/* Proveedor de contexto para compartir datos con los componentes hijos */}
       <AppContext.Provider value={contextValue}>
         <section>
+          {/* Componente de la barra de navegación */}
           <NavbarComponent />
+
+          {/* Componente de Toast personalizado para mostrar mensajes emergentes */}
           <CustomToast
-            show={showToast}
-            onClose={() => setShowToast(false)}
-            numeroTelefonico={numeroTelefonico}
-            copyToClipboard={copyToClipboard}
+            show={showToast} // Controla si el Toast debe mostrarse
+            onClose={() => setShowToast(false)} // Cierra el Toast al invocar esta función
+            numeroTelefonico={numeroTelefonico} // Pasa el número telefónico al Toast
+            copyToClipboard={copyToClipboard} // Función para copiar al portapapeles
           />
-          <Toaster richColors position="top-center" style={{ top: "60px" }} />{" "}
-          {/* Agregar Sonner aquí */}
+
+          {/* Componente Toaster para mostrar notificaciones emergentes */}
+          <Toaster richColors position="top-center" style={{ top: "60px" }} />
+
           <Container fluid className="responsive mt-5">
             <Row>
+              {/* Columna para mostrar información del deudor */}
               <Col xs={12} md={12} lg={6}>
                 <br />
-
-                <DebtorInformation />
+                <DebtorInformation /> {/* Componente con información del deudor */}
               </Col>
+
+              {/* Columna para mostrar el formulario de búsqueda */}
               <Col xs={12} md={12} lg={6} className="mx-auto">
                 <br />
-
-                <SearchForm />
+                <SearchForm /> {/* Componente del formulario de búsqueda */}
               </Col>
 
+              {/* Componente de búsqueda de clientes */}
               <Col xs={12} md={12}>
                 <SearchCustomer />
               </Col>
+
+              {/* Componente de tarjeta de datos */}
               <Col xs={12} md={12}>
                 <DataCard />
               </Col>
-              <Col xs={12} md={12}>
-                <Row className="recent-sales">
-                  <Col xs={12} md={8} lg={8}>
-                    <InformationClient />
-                  </Col>
-                  <Col xs={12} md={4}>
-                    <Flow />
-                  </Col>
-                </Row>
-                <Row>
-                  <Col xs={12} md={8}>
-                    <Telephones />
-                  </Col>
-                  <Col xs={12} md={4}>
-                    <Calculator />
-                  </Col>
-                </Row>
-                <Row>
-                  <Col xs={12} md={8}>
+
+              <Row className="d-flex" xs={12} md={12}>
+                <Col xs={12} md={6} lg={8}>
+                  {/* Sección para mostrar información adicional */}
+                  <Row className="recent-sales">
+                    <Col xs={12}>
+                      <InformationClient /> {/* Componente con la información del cliente */}
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col xs={12}>
+                      <Telephones /> {/* Componente con los números telefónicos */}
+                    </Col>
+                  </Row>
+                  <Col xs={12}>
                     <h1>Gestiones</h1>
-                    <Managments />
+                    <Managments /> {/* Componente de gestiones */}
                   </Col>
-                  <Col xs={12} md={4}>
-                    <Calendar />
+                </Col>
+                <Col xs={12} md={6} lg={4}>
+                  <Col xs={12} md={12}>
+                    <Flow/> {/* Componente con el flujo de información */}
                   </Col>
-                </Row>
-                <Row>
-                  <Col xs={12} md={8}>
-                    <h1>Prueba</h1>
+                  <Col xs={12} md={12}>
+                    <Calculator /> {/* Componente con la calculadora */}
                   </Col>
-                  <Col xs={12} md={4}>
-                    <Reminder />
+                  <Col xs={12} md={12}>
+                    <Calendar /> {/* Componente con el calendario */}
                   </Col>
-                </Row>
-              </Col>
+                  {/* Componente de gestiones */}
+                  <Col>
+                    <Reminder /> {/* Componente de recordatorios */}
+                  </Col>
+                </Col>
+              </Row>
             </Row>
           </Container>
         </section>

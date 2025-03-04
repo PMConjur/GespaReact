@@ -245,9 +245,20 @@ $modal-title-line-height: 1.3;
 $modal-title-font-size: 1.5rem;
 
 // Animaciones
+$modal-transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 .modal {
   // Animación personalizada
+  &-show .modal-dialog {
+    transform: translateY(10%) scale(0.95);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  &-show.show .modal-dialog {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 
   // Fondo del modal
   &-content {
@@ -352,134 +363,172 @@ $modal-title-font-size: 1.5rem;
   color: #ffc400;
 }
 
-.scroll {
-  overflow-y: scroll;
-  height: 300px;
-  overflow-x: auto scroll;
 
-  &::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+//estilos de telefonos
+$table-bg:                #ffffff;
+$table-color:             #2d3439;
+$table-border-color:      rgba(0, 0, 0, 0.08);
+
+// Encabezados
+$table-head-bg:           #f8f9fa;
+$table-head-color:        #6c757d;
+
+// Variantes
+$table-hover-bg:          rgba(#4a9dff, 0.03);
+$table-striped-bg:        rgba(#e9ecef, 0.3);
+
+// Espaciado y bordes
+$table-cell-padding-y:    1rem;
+$table-cell-padding-x:    1rem;
+$table-border-width:      1px;
+$table-border-radius:     8px;
+
+.table {
+  // Borde redondeado para la tabla
+  border-collapse: separate;
+  border-spacing: 0;
+  padding: .2rem .2rem;
+  thead {
+    vertical-align: middle;
+    th {
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.85rem;
+      padding: 1rem 1rem;
+      
+    }
   }
 
-  &::-webkit-scrollbar-thumb {
-    background-color: #adadad;
-    border-radius: 4px;
+  tbody {
+    tr {
+      font-size: 14px;
+      vertical-align: middle;
+      text-align: center;
+    }
+   vertical-align: middle;
   }
 
-  &::-webkit-scrollbar-thumb:hover {
-    background-color: #495057;
+  // Celda personalizada
+  td {
+    vertical-align: middle;
+    border-top: $table-border-width solid $table-border-color;
   }
 
-  &::-webkit-scrollbar-track {
-    background-color: #343a40;
+  // Variante especial
+  &.table-custom {
+    thead th {
+      background: linear-gradient(45deg, #4a9dff, #6c5ce7);
+      color: white;
+      
+    }
   }
 }
 
-// Configuración base
-$list-group-bg: #ffffff;
-$list-group-border-color: rgba(0, 0, 0, 0.08);
-$list-group-border-radius: 0.75rem;
-$list-group-item-padding-y: 1rem;
-$list-group-item-padding-x: 1.5rem;
+.button-phones{
+  justify-content: flex-end;
+  width: auto;
+  margin: auto;
+  display: flex; // Por defecto en pantallas grandes
 
-// Colores y estados
-$list-group-hover-bg: rgba(#4a9dff, 0.05);
-$list-group-active-bg: #4a9dff;
-$list-group-active-color: rgb(255, 255, 255);
-$list-group-disabled-bg: #f8f9fa;
-$list-group-disabled-color: #6c757d;
+  @media (max-width: 768px) { 
+    display: block; // En pantallas pequeñas
+  }
 
-// Transiciones
-$list-group-transition: all 0.3s ease;
+ .input-phone{
+   width: auto !important;
+   margin-bottom: 5px;
+   margin-right: 0 !important;
+ }
+}
 
-.list-group {
-  // Contenedor principal
-  
-  overflow: hidden;
+.card-body-phones{
+  height: 500px;
+}
+//termina telefonos
 
-  &-item {
-    // Estilo base
+//estilos de informacion
+.table-container {
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.table-custom2 {
+  width: 100%;
+  border-collapse: initial;
+  border-spacing: 0px 2px;
+  background-color: #6c757d;
+  padding: 1px;
+  border-radius: 5px;
+  thead {
+    background-color: #343a40;
+    th {
+      color: #fff;
+      text-align: center;
+      background-color: #2b6bbe;
+    }
+  }
+
+  tbody {
+    font-size: 14px;
+    font-weight: 400;
+    text-align: center;
+    border-radius: 5px;
+    tr {
+   
+      td {
+        color: #adb5bd;
+        text-align: center;
+        border-right: #6c757d;
+      }
+
+      a {
+        color: #17a2b8;
+        &:hover {
+          color: #138496;
+        }
+      }
+    }
+  }
+
+  th {
+    color: #ffffff;
+    font-weight: bolder;
+    padding: 10px 10px;
+    text-align: left;
+    background-color:#1d1f20
+  }
+
+  td {
+    color: #28a745; // Color verde para valores
+    padding: 10px;
+    background-color: #232629;
+  }
+  .card-info{
     background-color: #1d1f20;
-    color: #e1e1e1;
-    border: none;
-    border-bottom: 1px solid #6c757d;
-    transition: $list-group-transition;
-
-    // Efecto hover
-    &:hover {
-      background: #acacac;
-      transform: translateX(8px);
-
-      color: #000000;
-    }
-
-    // Estado activo
-    &.active {
-      background: $list-group-active-bg;
-      color: $list-group-active-color;
-      font-weight: 600;
-
-      &::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 0;
-        height: 100%;
-        width: 4px;
-        background: darken($list-group-active-bg, 10%);
-      }
-    }
-
-    // Estado deshabilitado
-    &:disabled {
-      background: $list-group-disabled-bg;
-      color: $list-group-disabled-color;
-      cursor: not-allowed;
-    }
-
-    // Íconos o elementos adicionales
-    .icon {
-      width: 24px;
-      height: 24px;
-      fill: currentColor;
-    }
-
-    // Texto secundario
-    .text-muted {
-      margin-left: auto;
-      font-size: 0.9rem;
-    }
   }
+  
+  .card-phones{
+    background-color: #1d1f20;
+  }  
+}
+//termina informacion
 
-  // Eliminar borde del último elemento
-  &-item:last-child {
-    border-bottom: none;
-  }
+//calendario
+.calendar-day:hover {
+  background-color: #047f92; /* Cambia el color de fondo al hacer hover */
+  color: white; /* Cambia el color del texto al hacer hover */
+}
 
-  // Variante con fondo oscuro
-  &.list-group-dark {
-    background: #000000;
-    color: white;
+//flujo de trabajo
+.row-flow{
+  height: 315px;
+}
 
-    .list-group-item {
-      border-color: rgba(white, 0.1);
-      color: rgba(white, 0.9);
+//calculadora
 
-      &:hover {
-        background: rgba(rgb(131, 131, 131), 0.05);
-        color: #c5c5c5;
-      }
 
-      &.active {
-        background: #4a9dff;
-        color: white;
-      }
-
-      &:disabled {
-        background: rgba(white, 0.02);
-        color: rgba(white, 0.5);
-      }
-    }
-  }
+//Recordatorio
+.card-reminder {
+  max-height: 400px;
 }

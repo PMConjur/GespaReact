@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Container, Row, Col, Button, Table } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const Calendar = () => {
@@ -41,7 +42,8 @@ const Calendar = () => {
         className={`calendar-day ${
           selectedDay === day ? "bg-info text-white" : ""
         }`} // Aplicar estilo si está seleccionado
-        onClick={() => setSelectedDay(day)} // Manejador de clic para seleccionar el día
+        onClick={() => setSelectedDay(day)} // Manejador de clic para seleccionar el día+
+        style={{ cursor: "pointer"}} 
       >
         {day}
       </td>
@@ -54,36 +56,46 @@ const Calendar = () => {
   }
 
   return (
-    <div className="container mt-4 text-center">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <button className="btn btn-secondary" onClick={prevMonth}>
-          Anterior
-        </button>
-        <h3 className="text-white">
-          {new Date(currentYear, currentMonth).toLocaleString("default", {
-            month: "long",
-            year: "numeric",
-          })}
-        </h3>
-        <button className="btn btn-secondary" onClick={nextMonth}>
-          Siguiente
-        </button>
+    <Container className="mt-4 text-center">
+      <Row className="d-flex justify-content-between align-items-center mb-1">
+        <Col xs="auto">
+          <Button variant="secondary" onClick={prevMonth}
+          style={{padding: "0.1rem 1rem"}}>
+            <span>{'<'}</span>
+          </Button>
+        </Col>
+        <Col xs="auto">
+          <h4 className="text-white">
+            {new Date(currentYear, currentMonth).toLocaleString("default", {
+              month: "long",
+              year: "numeric",
+            })}
+          </h4>
+        </Col>
+        <Col xs="auto">
+          <Button variant="secondary" onClick={nextMonth}
+          style={{padding: "0.1rem 1rem"}}>
+          <span>{'>'}</span>
+          </Button>
+        </Col>
+      </Row>
+      <div className="table-responsive">
+        <Table bordered variant="dark" className="text-center p-0">
+          <thead>
+            <tr>
+              <th>Dom</th>
+              <th>Lun</th>
+              <th>Mar</th>
+              <th>Mié</th>
+              <th>Jue</th>
+              <th>Vie</th>
+              <th>Sáb</th>
+            </tr>
+          </thead>
+          <tbody>{weeks}</tbody>
+        </Table>
       </div>
-      <table className="table table-bordered table-dark text-center">
-        <thead>
-          <tr>
-            <th>Dom</th>
-            <th>Lun</th>
-            <th>Mar</th>
-            <th>Mié</th>
-            <th>Jue</th>
-            <th>Vie</th>
-            <th>Sáb</th>
-          </tr>
-        </thead>
-        <tbody>{weeks}</tbody>
-      </table>
-    </div>
+    </Container>
   );
 };
 

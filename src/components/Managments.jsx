@@ -4,7 +4,7 @@ import { auto } from "@popperjs/core";
 import Mantenimiento from "../assets/img/mantenimiento.jpg";
 const Managments = () => {
   return (
-    <Row xs={auto} md={auto} className="g-2">
+    <Row xs={12} md={auto} className="g-2">
       {Array.from({ length: 1 }).map((_, idx) => (
         <Col key={idx} md={12}>
           <Card>
@@ -17,7 +17,7 @@ const Managments = () => {
                 style={{
                   width: "300px",
                   objectFit: "cover",
-                  resize: "both"
+                  resize: "both",
                 }}
               />
             </div>
