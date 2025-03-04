@@ -84,6 +84,15 @@ namespace NoriAPI.Controllers
 
 
 
+
+
+
+
+
+
+
+
+
 [HttpGet("recordatorios/{idEjecutivo}")]
         public async Task<IActionResult> GetRecordatorios(int idEjecutivo)
         {
@@ -214,5 +223,50 @@ namespace NoriAPI.Controllers
             var InfoCalculadora = await _ejecutivoService.ValidateInfoCalculadora(Cartera, NoCuenta);
             return Ok(InfoCalculadora);
         }
+
+
+
+
+
+
+
+
+
+
+
+
+ [HttpGet("accionesNegociacion")]
+        public async Task<IActionResult> GetAccionNegociacion(int idCartera, string idCuenta)
+        {
+            DataSet dsTablas = new DataSet();
+            try
+            {
+                DataTable Negociaciones = new DataTable();                
+
+                Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync( idCartera,  idCuenta);
+                             
+                // Convertimos el DataTable a una lista de diccionarios
+                var listaNegociaciones = ConvertDataTableToList(Negociaciones);
+
+                // Serializamos la lista a JSON
+                string jsonString = JsonSerializer.Serialize(listaNegociaciones, new JsonSerializerOptions { WriteIndented = true });
+
+                //dsTablas.Tables.Add(Negociaciones);
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+
+
+
+
+ 
+
+
     }
 }
