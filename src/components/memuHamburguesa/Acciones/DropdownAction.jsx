@@ -8,7 +8,7 @@ function DropdownActions() {
         <span className="me-2"><MenuButtonFill/></span> 
         <h5 className="mb-0">Acciones</h5>
       </Dropdown.Toggle>
-      <Dropdown.Menu placement="right">
+      <Dropdown.Menu >
         <Dropdown.Item href="#">Negociaciones</Dropdown.Item>
         <Dropdown.Item href="#">Seguimientos</Dropdown.Item>
         <Dropdown.Item href="#">Accionamientos</Dropdown.Item>

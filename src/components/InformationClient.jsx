@@ -1,15 +1,16 @@
 import { Card, Table, Placeholder } from "react-bootstrap";
 import { fetchInformation } from "../services/gespawebServices"; // Importa el servicio
 import { useContext, useState, useEffect } from "react";
-import { AppContext } from "../pages/Managment"; // Importa el contexto DEL PADRE 
+import { AppContext } from "../pages/Managment"; // Importa el contexto DEL PADRE
 import { toast, Toaster } from "sonner";
-import "../scss/styles.scss"; 
+import "../scss/styles.scss";
+import { InfoCircleFill } from "react-bootstrap-icons";
 
 const InformationClient = () => {
   const [data, setData] = useState([]);
-  const [isLoading, setIsLoading] = useState(false); 
+  const [isLoading, setIsLoading] = useState(false);
   const { searchResults } = useContext(AppContext);
-  const [toastShown, setToastShown] = useState(false); 
+  const [toastShown, setToastShown] = useState(false);
 
   // Cargar datos desde la API al montar el componente
   useEffect(() => {
@@ -18,11 +19,14 @@ const InformationClient = () => {
       try {
         const information = await Promise.all(
           searchResults.map(async (result, index) => {
-            const information  = await fetchInformation(result.idCuenta); // Usar result.idCuenta
+            const information = await fetchInformation(result.idCuenta); // Usar result.idCuenta
             if (information.length === 0 && !toastShown) {
-              toast.error(`No hay carga de información para la cuenta ${result.idCuenta}`, {
-                position: "top-right" // Mostrar toast en el lado derecho
-              });
+              toast.error(
+                `No hay carga de información para la cuenta ${result.idCuenta}`,
+                {
+                  position: "top-right" // Mostrar toast en el lado derecho
+                }
+              );
               setToastShown(true); // Marcar que el toast ya se mostró
             }
             return information;
@@ -40,83 +44,106 @@ const InformationClient = () => {
     };
 
     loadData();
-  }, [searchResults, toastShown]); 
+  }, [searchResults, toastShown]);
 
   const renderRow = (item) => (
     <React.Fragment>
       <tr>
         <th>Empresa:</th>
-        <td className="text-success">{item['[employersname];[employersaddress]'] || '--'}</td>
+        <td className="text-success">
+          {item["[employersname];[employersaddress]"] || "--"}
+        </td>
         <th>WO \ CBO / ING:</th>
-        <td className="text-success">{item['[WO?] \\ [CBO] \\[BloqueoHerramienta] \\ [montlyincome]'] || '--'}</td>
+        <td className="text-success">
+          {item["[WO?] \\ [CBO] \\[BloqueoHerramienta] \\ [montlyincome]"] ||
+            "--"}
+        </td>
         <th>Fecha de Corte:</th>
-        <td className="text-success">{item['[Fechacorte]'] || '--'}</td>
+        <td className="text-success">{item["[Fechacorte]"] || "--"}</td>
         <th>Fecha de Asignación:</th>
-        <td className="text-success">{item['[batchdate]'] || '--'}</td>
+        <td className="text-success">{item["[batchdate]"] || "--"}</td>
       </tr>
       <tr>
         <th>Fecha de Cancelación:</th>
-        <td className="text-success">{item['[CancellationDate]'] || '--'}</td>
+        <td className="text-success">{item["[CancellationDate]"] || "--"}</td>
         <th>Llave 2:</th>
-        <td className="text-success">{item['[CollectibilityCode] [SegmentoAMX] [DescuentoAMX]'] || '--'}</td>
+        <td className="text-success">
+          {item["[CollectibilityCode] [SegmentoAMX] [DescuentoAMX]"] || "--"}
+        </td>
         <th>Aniversario:</th>
-        <td className="text-success">{item['[anniversarydate] No Ofertar [BloqueoCorporate]'] || '--'}</td>
+        <td className="text-success">
+          {item["[anniversarydate] No Ofertar [BloqueoCorporate]"] || "--"}
+        </td>
         <th>Tipo de Crédito:</th>
-        <td className="text-success">{item['[Product] [loan_productcode]'] || '--'}</td>
+        <td className="text-success">
+          {item["[Product] [loan_productcode]"] || "--"}
+        </td>
       </tr>
       <tr>
         <th>Manual:</th>
-        <td className="text-success">{item['[Valajuste] [AC MANUAL] & [Waiver]'] || '--'}</td>
+        <td className="text-success">
+          {item["[Valajuste] [AC MANUAL] & [Waiver]"] || "--"}
+        </td>
         <th>Saldo Inicial:</th>
-        <td className="text-success">{item['[Balance G*]'] || '--'}</td>
+        <td className="text-success">{item["[Balance G*]"] || "--"}</td>
         <th>INV / Atraso:</th>
-        <td className="text-success">{item['[INV] \\ [Diasatraso] Días'] || '--'}</td>
+        <td className="text-success">
+          {item["[INV] \\ [Diasatraso] Días"] || "--"}
+        </td>
         <th>Ejecutivo:</th>
-        <td className="text-success">{item['[EJECUTIVO] '] || '--'}</td>
+        <td className="text-success">{item["[EJECUTIVO] "] || "--"}</td>
       </tr>
       <tr>
         <th>Interés:</th>
-        <td className="text-success">{item['$'] || '--'}</td>
+        <td className="text-success">{item["$"] || "--"}</td>
         <th>Fecha de Ultimo Pago:</th>
-        <td className="text-success">{item['[Last Date Payment]'] || '--'}</td>
+        <td className="text-success">{item["[Last Date Payment]"] || "--"}</td>
         <th>Monto de Ultimo Pago:</th>
-        <td className="text-success">{item['[Amount]'] || '--'}</td>
+        <td className="text-success">{item["[Amount]"] || "--"}</td>
         <th>Testeo/Contador Co:</th>
-        <td className="text-success">{item['[StayDaysOA]\\[SettlementAccountDays]\\[Conjurnet]\\[TESTAPR]'] || '--'}</td>
+        <td className="text-success">
+          {item[
+            "[StayDaysOA]\\[SettlementAccountDays]\\[Conjurnet]\\[TESTAPR]"
+          ] || "--"}
+        </td>
       </tr>
     </React.Fragment>
   );
 
   return (
-    <Card className="overflow-auto bg-dark">
+    <Card className="overflow-auto">
+      <Card.Header className="text-white">
+        <i className="h5">
+          <InfoCircleFill></InfoCircleFill> Información
+        </i>
+      </Card.Header>
       <Card.Body>
-        <h5 className="card-title text-white">Informacion</h5>
         <div className="table-container">
-          <Table hover className="table table-borderless table-custom2" variant="dark">
+          <Table
+            hover
+            className="table table-borderless table-custom2"
+            variant="dark"
+          >
             <tbody>
-              {isLoading ? (
-                [...Array(4)].map((_, i) => (
-                  <tr key={i}>
-                    {[...Array(8)].map((_, j) => (
-                      <td key={j}>
-                        <Placeholder as="span" animation="glow">
-                          <Placeholder xs={12} />
-                        </Placeholder>
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              ) : (
-                data.length === 0 ? (
-                  renderRow({})
-                ) : (
-                  data.map((item, index) => (
+              {isLoading
+                ? [...Array(4)].map((_, i) => (
+                    <tr key={i}>
+                      {[...Array(8)].map((_, j) => (
+                        <td key={j}>
+                          <Placeholder as="span" animation="glow">
+                            <Placeholder xs={12} />
+                          </Placeholder>
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                : data.length === 0
+                ? renderRow({})
+                : data.map((item, index) => (
                     <React.Fragment key={index}>
                       {renderRow(item)}
                     </React.Fragment>
-                  ))
-                )
-              )}
+                  ))}
             </tbody>
           </Table>
         </div>

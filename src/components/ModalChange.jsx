@@ -34,14 +34,17 @@ function ModalChange({
           loggedUser.ejecutivo.infoEjecutivo.nombreEjecutivo;
         const idEjecutivo = loggedUser.ejecutivo.infoEjecutivo.idEjecutivo;
         const user = loggedUser.ejecutivo.infoEjecutivo.user;
+        loggedUser.ejecutivo.infoEjecutivo.password = password; // Add password to infoEjecutivo
+        window.localStorage.setItem("responseData", JSON.stringify(loggedUser)); // Update localStorage with password
         console.log("Nombre ejecutivo:", nombreEjecutivo);
         console.log("ID ejecutivo:", idEjecutivo);
         console.log("Usuario:", user);
+        console.log("Contraseña:", loggedUser.ejecutivo.infoEjecutivo.password); // Log the password to confirm
       } else {
         console.error("Token no encontrado");
       }
     }
-  }, []);
+  }, [password]);
 
   const handleNoClick = async () => {
     if (expire === true) {
