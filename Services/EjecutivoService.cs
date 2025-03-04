@@ -322,8 +322,6 @@ namespace NoriAPI.Services
             #endregion
 
 
-<<<<<<< HEAD
-=======
 
 
 
@@ -333,7 +331,6 @@ namespace NoriAPI.Services
             if (!ClasesGespa.Conteos.Columns.Contains(Conteo) || !tiempos.Columns.Contains("Tiempo" + Conteo)
                 || tiempos.Rows[0]["Tiempo" + Conteo].ToString() == "")
                 return;
->>>>>>> Mark-16-Calculadora
 
             public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository)
             {
