@@ -223,6 +223,28 @@ export async function userTimes(numEmpleado) {
   }
 }
 
+
+export async function userTimesUpdate(data) {
+    try {
+        console.log("📤 Enviando datos de pausa a la API:", JSON.stringify(data, null, 2));
+
+        // const response = await fetch(`${apiUrl}/search-customer/validate-phone`, {
+        const response = await fetch(`${apiUrl}/api/ejecutivo/pause-ejecutivo`,
+            data
+        );
+
+        console.log("✅ Respuesta de la API:", response.data);
+        toast.success("Datos enviados correctamente a la base de datos.");
+        return response.data;
+    } catch (error) {
+        console.error("❌ Error al enviar los datos:", error);
+        const errorMessage = error.response?.data?.mensaje || "Error al enviar la pausa.";
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
+    }
+}
+
+
 //Endpoint Flow
 
 export async function userFlow() {

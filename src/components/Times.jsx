@@ -2,12 +2,17 @@ import { useState } from 'react';
 import { Modal, Button, Form, Container, Row } from 'react-bootstrap';
 import TableTimes from './TableTimes';
 import { toast, Toaster } from "sonner";
+import axios from 'axios';
+import { userTimesUpdate } from "../services/gespawebServices"; // Asegúrate de importar la función
+
 
 const Times = ({ show, handleClose }) => {
     const responseData = JSON.parse(localStorage.getItem("responseData"));
+    console.log("Datos almacenados en localStorage:", responseData);
     const numEmpleado = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
-    const registeredPassword = localStorage.getItem(`password_${numEmpleado}`); // Obtener la contraseña registrada para el numEmpleado
-
+    const registeredPassword = responseData?.ejecutivo?.infoEjecutivo?.password?.trim(); // Obtener la contraseña registrada para el numEmpleado y eliminar espacios en blanco
+    const userPassword = responseData?.ejecutivo?.infoEjecutivo?.password;
+    console.log("La contraseña es:" + userPassword)
     const [selectedReason, setSelectedReason] = useState('');
     const [timers, setTimers] = useState({
         permiso: 0,
@@ -47,59 +52,108 @@ const Times = ({ show, handleClose }) => {
         }
     };
 
-    const handleStopTimer = () => {
+
+    const handleStopTimer = async () => {
         console.log(`Intentando detener temporizador para: ${selectedReason}`);
+        console.log(`Contraseña ingresada: '${password.trim()}'`);
+        console.log(`Contraseña registrada: '${registeredPassword}'`);
+    
         if (!password) {
             toast.error('Error 400: Por favor ingrese la contraseña.');
-        } else if (password !== registeredPassword) {
+            return;
+        } else if (password.trim() !== registeredPassword) {
             toast.error('Error 401: Contraseña incorrecta');
-        } else {
-            console.log(`Temporizador detenido para: ${selectedReason}`);
-            clearInterval(intervalId);
-            setIntervalId(null);
-            setIsPaused(false);
-            setPassword('');
-            setTimers((prevTimers) => {
-                const updatedTimers = {
-                    ...prevTimers,
-                    [selectedReason]: prevTimers[selectedReason] + currentTimer,
-                };
-                localStorage.setItem('timesData', JSON.stringify(updatedTimers));
-                return updatedTimers;
-            });
-            updateTableTimes();
-            if (!hasSentData) {
-                sendDataToServer();
-                setHasSentData(true);
-            }
+            return;
         }
-    };
-
-    const updateTableTimes = () => {
-        setTableTimes((prevTableTimes) => {
-            const updatedTableTimes = {
-                ...prevTableTimes,
-                [selectedReason]: prevTableTimes[selectedReason] + currentTimer,
+    
+        console.log(`✅ Temporizador detenido para: ${selectedReason}`);
+        clearInterval(intervalId);
+        setIntervalId(null);
+        setIsPaused(false);
+        setPassword('');
+    
+        setTimers((prevTimers) => {
+            const updatedTimers = {
+                ...prevTimers,
+                [selectedReason]: (prevTimers[selectedReason] || 0) + currentTimer,
             };
-            console.log("Tabla actualizada con los tiempos:", updatedTableTimes);
-            return updatedTableTimes;
+    
+            localStorage.setItem('timesData', JSON.stringify(updatedTimers));
+            console.log("📌 Tiempos actualizados en localStorage:", updatedTimers);
+    
+            updateTableTimes(updatedTimers);
+    
+            // ✅ Llamada a userTimesUpdate para enviar los datos
+            const tiempoTotal = updatedTimers[selectedReason] || 0;
+            const duracion = new Date(tiempoTotal * 1000).toISOString().substr(11, 8);
+    
+            const dataToSend = {
+                idEjecutivo: numEmpleado,
+                contrasenia: registeredPassword,
+                peCausa: selectedReason,
+                duracion: {
+                    ticks: duracion, // Formato "hh:mm:ss"
+                }
+            };
+    
+            userTimesUpdate(dataToSend);
+    
+            return updatedTimers;
         });
+    
+        setCurrentTimer(0);
     };
+    
+  
 
-    const sendDataToServer = () => {
-        const dataToSend = {
-            numEmpleado: numEmpleado, // Usar el ID del empleado real
-            tiempos: {
-                tiempoPermiso: timers.permiso,
-                tiempoCurso: timers.curso,
-                tiempoCalidad: timers.calidad,
-                tiempoComida: timers.comida,
-                tiempoBaño: timers.baño,
-            }
+  const updateTableTimes = (updatedTimers) => {
+    setTableTimes((prevTableTimes) => {
+        const updatedTableTimes = {
+            ...prevTableTimes,
+            ...updatedTimers, // Se aseguran los valores correctos
         };
-        console.log("Enviando datos al servidor:", dataToSend);
-        // Aquí puedes agregar la lógica para enviar los datos al servidor
-    };
+        console.log("📌 Tabla actualizada con los tiempos:", updatedTableTimes);
+        return updatedTableTimes;
+    });
+};
+
+
+
+const sendDataToServer = async (updatedTimers) => {
+  if (!numEmpleado || !registeredPassword || !selectedReason) {
+      toast.error("Faltan datos para enviar la pausa.");
+      return;
+  }
+
+  const tiempoTotal = updatedTimers[selectedReason] || 0; 
+  const duracion = new Date(tiempoTotal * 1000).toISOString().substr(11, 8); 
+
+  const dataToSend = {
+      idEjecutivo: numEmpleado,
+      contrasenia: registeredPassword,
+      peCausa: selectedReason,
+      duracion: {
+          ticks: duracion, // Formato "hh:mm:ss"
+      }
+  };
+
+  console.log("📤 Enviando datos actualizados al servidor:", JSON.stringify(dataToSend, null, 2));
+
+  try {
+      const response = await axios.post(
+          "http://192.168.7.33/api/ejecutivo/pause-ejecutivo",
+          dataToSend
+      );
+
+      console.log("✅ Respuesta de la API:", response.data);
+      toast.success("Datos enviados correctamente a la base de datos.");
+  } catch (error) {
+      console.error("❌ Error al enviar los datos:", error);
+      toast.error("Error al enviar los tiempos al servidor.");
+  }
+};
+
+
 
     const formatTime = (seconds) => {
         const hrs = Math.floor(seconds / 3600).toString().padStart(2, '0');
@@ -192,7 +246,6 @@ const Times = ({ show, handleClose }) => {
             Cerrar
           </Button>
         </Modal.Footer>
-        <Toaster />
       </Modal>
     );
 };

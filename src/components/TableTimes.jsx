@@ -31,7 +31,7 @@ const TableTimes = () => {
     };
     
     // Para ver el JSON generado en la consola:
-    console.log(JSON.stringify(generateJsonData(), null, 2));
+    // console.log(JSON.stringify(generateJsonData(), null, 2));
     
     
     // Estado inicial basado en localStorage

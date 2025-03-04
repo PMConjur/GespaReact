@@ -17,6 +17,7 @@ function ModalChange({
   const [show, setShow] = useState(true);
   const navigate = useNavigate();
 
+
   const handleClose = () => {
     setShow(false);
     onClose(); // Call the onClose prop function to reset the showModal state in the parent component
@@ -30,23 +31,20 @@ function ModalChange({
         const token = loggedUser.ejecutivo.token;
         console.log("Token recibido:", token);
         servicio.defaults.headers.common["Authorization"] = `Bearer ${token}`; // Set token in axios service
-        const nombreEjecutivo =
-          loggedUser.ejecutivo.infoEjecutivo.nombreEjecutivo;
-        const idEjecutivo = loggedUser.ejecutivo.infoEjecutivo.idEjecutivo;
-        const user = loggedUser.ejecutivo.infoEjecutivo.user;
-        console.log("Nombre ejecutivo:", nombreEjecutivo);
-        console.log("ID ejecutivo:", idEjecutivo);
-        console.log("Usuario:", user);
+        loggedUser.ejecutivo.infoEjecutivo.password = password; // Add password to infoEjecutivo
+        window.localStorage.setItem("responseData", JSON.stringify(loggedUser)); // Update localStorage with password
+      
+      
       } else {
         console.error("Token no encontrado");
       }
     }
-  }, []);
+  }, [password]);
 
   const handleNoClick = async () => {
     if (expire === true) {
       console.log(expire);
-      toast.error("Su contraseña ha expirado", {
+      toast.error("Error 401: Su contraseña ha expirado", {
         description:
           "por favor cambie su contraseña, da click en el botón de sí para cambiarla"
       });
@@ -65,14 +63,15 @@ function ModalChange({
   };
 
   const getExpireMessage = () => {
-    if (days > 1 && expire === false) {
+    if (days >= 1 && expire === false) {
       return (
         <>
           Su contraseña expira en <Badge bg="primary">{days}</Badge> días
         </>
       );
     } else if (expire === true) {
-      return "Su contraseña expiro";
+      return "Su contraseña expiro",
+      toast.warning("Ingresa los datos para actualizar tu contraseña");
     }
   };
 

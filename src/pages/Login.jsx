@@ -30,11 +30,11 @@ function Login() {
     e.preventDefault();
 
     if (!user) {
-      toast.error("Ingresa un usuario valido"); // Show toast alert for empty user field
+      toast.error("Error 400: Ingresa las credenciales"); // Show toast alert for empty user field
       return;
     }
     if (!password) {
-      toast.error("Ingresa una contraseña valida"); // Show toast alert for empty password field
+      toast.error("Error 401: Ingresa una contraseña valida"); // Show toast alert for empty password field
       return;
     }
 
@@ -63,7 +63,7 @@ function Login() {
           setExpire(response.data.ejecutivo.expiro == true ? true : false);
           setShowModal(true); // Show the modal
         } else {
-          toast.error("Error al iniciar sesion:", {
+          toast.error("Error 404: Error al iniciar sesion:", {
             description: response.data.ejecutivo.mensaje
           }); // Show toast alert with the error message from the API
         }
@@ -72,6 +72,7 @@ function Login() {
         setExpire(response.data.ejecutivo.expiro == true ? true : false);
         setShowModal(true); // Show the modal
 
+        
         // Store the response data
         setResponseData(response.data);
 
@@ -79,7 +80,7 @@ function Login() {
       }
     } catch (error) {
       console.error("There was a problem with the axios operation:", error);
-      toast.error("Error en la conexión");
+      toast.error("Error 408: Error en la conexión");
     }
   };
 
@@ -98,7 +99,7 @@ function Login() {
 
   return (
     <>
-       <div style={{ backgroundColor: "#000000", minHeight: "100vh" }}></div>
+      <div style={{ backgroundColor: "#000000", minHeight: "100vh" }}></div>
       <Form onSubmit={handleSubmit}>
         <Container className="position-absolute top-50 start-50 translate-middle ">
           <Row className="justify-content-center">
@@ -186,7 +187,7 @@ function Login() {
           showSecondModal={showPasswordModal}
           closeSecondModal={handleClosePasswordModal}
           user={user}
-          password={password}
+          oldPassword={password} // Pass the password correctly
         />
       )}{" "}
       {/* Render ModalChangePassword */}
