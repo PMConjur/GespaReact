@@ -107,22 +107,22 @@ export const fetchPhones = async (idCuenta) => {
         }
       }
     );
+
+    const message =  getErrorStatus(response.status);
+
     console.log("Respuesta de la API recibida. Estado:", response.status);
 
     if (!response.ok) {
-      console.error(
-        "Error en la respuesta de la API. Estado:",
-        response.status
-      );
-      throw new Error("Error al obtener los datos de teléfonos");
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
     }
 
     const data = await response.json();
-    console.log("Datos obtenidos de la API:", data);
 
     return data;
   } catch (error) {
-    console.error("Error en fetchPhones:", error);
+    console.error("Error en 401:", error.message);
+    toast.error(`Error en la solicitud: ${error.message}`, { position: "top-right" });
     throw error;
   }
 };
