@@ -121,8 +121,7 @@ export const fetchPhones = async (idCuenta) => {
 
     return data;
   } catch (error) {
-    console.error("Error en 401:", error.message);
-    toast.error(`Error en la solicitud: ${error.message}`, { position: "top-right" });
+    console.error("Error en 401:");
     throw error;
   }
 };
