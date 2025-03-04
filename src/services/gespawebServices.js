@@ -166,7 +166,8 @@ export const fetchValidationTel = async (data) => {
     const response = await fetch(`${apiUrl}/search-customer/validate-phone`, {
       method: "POST", // Asegurar que sea POST
       headers: {
-        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Incluye el token en el header
+        "Content-Type": "application/json" // Tipo de contenido
       },
       body: JSON.stringify(data), // Enviar datos correctamente en el body
     });
@@ -184,6 +185,7 @@ export const fetchValidationTel = async (data) => {
   }
 };
 
+//Error status global
 const getErrorStatus = (status) => {
   switch (status) {
     case 200:
@@ -213,4 +215,4 @@ const getErrorStatus = (status) => {
   }
 };
 
-// const message = getErrorMessageFromStatus(response.status);
+//const message = getErrorStatus(response.status);

@@ -102,7 +102,7 @@ const Telephones = () => {
                     className="me-2 input-phone"
                     style={{ width: "25%" }}
                     onClick={() => {
-                      
+                      loadData();
                       setFlowMessage("Inicia flujo");
                     }}
                   >
