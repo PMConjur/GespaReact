@@ -108,7 +108,7 @@ const TableTimes = () => {
 
             userTimes(idEjecutivo)
                 .then((data) => {
-                    console.log("Respuesta de la API:", data);
+             
 
                     if (!data || !data.resultadosTiempos) {
                         console.warn("La API no devolvió resultados válidos.");

@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { Row, Col, Card, Form, Button } from "react-bootstrap";
+import { Row, Col, Card, Form, Button, Stack } from "react-bootstrap";
 import { userFlow } from "../services/gespawebServices";
+import { NodePlusFill } from "react-bootstrap-icons";
 
 const Flow = () => {
   const [userFlowData, setUserFlowData] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(1);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [selectedValues, setSelectedValues] = useState({});
+  const [answerHistory, setAnswerHistory] = useState([]); // Add state to keep track of answer history
 
   useEffect(() => {
     userFlow()
@@ -39,7 +41,24 @@ const Flow = () => {
       (item) => item.idPregunta === currentAnswer
     );
     if (nextQuestion) {
+      setAnswerHistory((prev) => [
+        ...prev,
+        { idPregunta: currentQuestionId, idRespuesta: currentAnswer }
+      ]); // Save current question and answer to history
       setCurrentQuestionId(nextQuestion.idPregunta);
+    }
+  };
+
+  const handleBack = () => {
+    if (answerHistory.length > 0) {
+      const lastAnswer = answerHistory[answerHistory.length - 1];
+      setCurrentQuestionId(lastAnswer.idPregunta);
+      setSelectedAnswers((prev) => {
+        const updatedAnswers = { ...prev };
+        delete updatedAnswers[lastAnswer.idPregunta];
+        return updatedAnswers;
+      });
+      setAnswerHistory((prev) => prev.slice(0, -1)); // Remove last answer from history
     }
   };
 
@@ -53,8 +72,14 @@ const Flow = () => {
     if (questions.length === 0) return null;
 
     return (
-      <Card>
-        <Card.Body>
+      <Card className="flow-size" border="primary">
+        <Card.Header className="text-white">
+          <i className="h5">
+            <NodePlusFill></NodePlusFill> Flujo
+          </i>
+        </Card.Header>
+
+        <Card.Body className="scroll-flow">
           <Form>
             <h5>{questions[0].pregunta}</h5>
             {questions.map((question) => (
@@ -78,20 +103,28 @@ const Flow = () => {
               />
             ))}
           </Form>
-          <Button variant="primary" className="mt-3" onClick={handleAccept}>
-            Aceptar
-          </Button>
         </Card.Body>
+        <Card.Footer className="text-white">
+          <Row>
+            <Col>
+              <Button variant="primary" className="mt-3" onClick={handleBack}>
+                Regresar
+              </Button>
+            </Col>
+            <Col className="d-flex flex-row-reverse">
+              <Button variant="success" className="mt-3" onClick={handleAccept}>
+                Aceptar
+              </Button>
+            </Col>
+          </Row>
+        </Card.Footer>
       </Card>
     );
   };
 
   return (
     <Row xs="auto" md="auto" className="g-2">
-      <Col md={12}>
-        <h6 className="text-white">Flujo</h6>
-        {renderQuestions(currentQuestionId)}
-      </Col>
+      <Col md={12}>{renderQuestions(currentQuestionId)}</Col>
     </Row>
   );
 };

@@ -263,25 +263,5 @@ const Managment = () => {
 };
 
 
-//Uso de endpoint de tiempos 
-export async function userTimes(numEmpleado) {
-  try {
-    console.log(numEmpleado);
-    const response = await servicio.get(
-      `/ejecutivo/tiempos-ejecutivo?numEmpleado=${numEmpleado}`
-    );
-    const data = response.data;
-    
-    return data;
-  } catch (error) {
-    if (error.response) {
-      const errorMessage =
-        error.response.data?.mensaje || "Error al recibir la productividad";
-      throw new Error(errorMessage);
-    } else {
-      throw new Error("Error al recibir la productividad.");
-    }
-  }
-}
 
 export default Managment;
