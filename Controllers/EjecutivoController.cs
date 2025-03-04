@@ -1,20 +1,29 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using NoriAPI.Models.Busqueda;
 using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Models.Login;
+
 using NoriAPI.Services;
+
 using System.Collections.Generic;
 using System.Data;
 using System.Text.Json;
 using System;
+
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/ejecutivo")]
+    [Authorize]
     public class EjecutivoController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -24,6 +33,19 @@ namespace NoriAPI.Controllers
         {
             _ejecutivoService = ejecutivoService;
             _configuration = configuration;
+
+        }
+
+        [HttpGet("productividad-ejecutivo")]//Endpoint Padrino
+        public async Task<ActionResult<ResultadoProductividad>> Productividad([FromQuery] int numEmpleado)
+        {
+            var Productividad = await _ejecutivoService.ValidateProductividad(numEmpleado);
+
+            if (!Productividad.Mensaje.IsNullOrEmpty())
+            {
+                return Ok(new { Productividad.ProductividadInfo });
+            }
+            return Ok(new { Productividad.ProductividadInfo });
 
         }
 
@@ -42,6 +64,8 @@ namespace NoriAPI.Controllers
 
             return Ok(new { mensaje });
         }
+
+
         [HttpGet("seguimientos/{idCartera}/{idCuenta}")]
         public async Task<IActionResult> GetSeguimiento(int idCartera,string idCuenta)
         {
@@ -110,6 +134,83 @@ namespace NoriAPI.Controllers
             }
         }
 
+
+        [HttpGet("get-negociaciones")]
+        public async Task<IActionResult> GetNegociaciones([FromQuery] int idEjecutivo)
+        {
+            var negociaciones = await _ejecutivoService.GetNegociaciones(idEjecutivo);
+
+            if (negociaciones.ConteoHoy == null)
+            {
+                return BadRequest(new { Mensaje = "No se encontraron negociaciones." });
+            }
+
+            return Ok(negociaciones);
+        }
+
+        [HttpGet("get-recuperacion")]
+        public async Task<IActionResult> GetRecuperacion([FromQuery] int idEjecutivo, [FromQuery] int actual)
+        {
+            if (idEjecutivo <= 0)
+            {
+                return BadRequest(new { Mensaje = "El ID del ejecutivo debe ser un número positivo." });
+            }
+
+            if (actual != 0 && actual != 1)
+            {
+                return BadRequest(new { Mensaje = "El parámetro 'actual' debe ser 0 (anterior) o 1 (actual)." });
+            }
+
+            var recuperacion = await _ejecutivoService.GetRecuperacion(idEjecutivo, actual);
+
+            if (recuperacion == null)
+            {
+                return BadRequest(new { Mensaje = "Parámetros inválidos o no se encontró información de recuperación del ejecutivo." });
+            }
+
+            return Ok(recuperacion);
+        }
+
+        [HttpGet("flujo-preguntas-respuestas")]
+        public async Task<ActionResult<Preguntas_Respuestas_info>> Preguntas_Respuestas()////Cambiar el del resultado
+        {
+            var preguntas_respuestas = await _ejecutivoService.ValidatePreguntas_Respuestas();
+
+            return Ok(preguntas_respuestas);
+
+        }
+        [HttpGet("recordatorios/{idEjecutivo}")]
+        public async Task<IActionResult> GetRecordatorios(int idEjecutivo)
+        {
+            try
+            {
+                DataSet dsTablas = new DataSet();
+                DataTable ejecutivosTable = dsTablas.Tables.Add("Ejecutivos");
+                ejecutivosTable.Columns.Add("idEjecutivo", typeof(int));
+                DataRow drDatos = ejecutivosTable.NewRow();
+                drDatos["idEjecutivo"] = idEjecutivo;
+
+                await _ejecutivoService.ObtieneRecordatoriosAsync(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("Seguimientos") || dsTablas.Tables["Seguimientos"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron recordatorios para este ejecutivo.");
+                }
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Seguimientos"]);
+
+                // Serializamos la lista a JSON
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
         private List<Dictionary<string, object>> ConvertDataTableToList(DataTable dataTable)
         {
             var list = new List<Dictionary<string, object>>();
@@ -126,7 +227,6 @@ namespace NoriAPI.Controllers
 
             return list;
         }
-
 
     }
 }

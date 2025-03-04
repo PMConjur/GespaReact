@@ -33,7 +33,6 @@ namespace NoriAPI.Services
 
         public async Task<ResultadoReseteo> ValidateContra(ReseteaContra request)
         {
-            string mensaje = null;
 
             var validateReseteaContra = await _userRepository.ValidateContra(request);
 
@@ -41,12 +40,18 @@ namespace NoriAPI.Services
 
             if (dict.TryGetValue("Mensaje", out object mensajeObj) && mensajeObj != null)
             {
-                mensaje = mensajeObj.ToString();
-                return new ResultadoReseteo(mensaje);
+                return new ResultadoReseteo(mensajeObj.ToString(), null);
             }
-            var resultadoReseteo = new ResultadoReseteo(mensaje);
-            return resultadoReseteo;
+            else if (dict.TryGetValue("Éxito", out object mensajeExt) && mensajeExt != null)
+            {
+                return new ResultadoReseteo(null, mensajeExt.ToString());
+            }
+            else
+            {
+                string mensaje = "No se pudo validar el usuario, falló la solicitud con el servidor.";
+                return new ResultadoReseteo(mensaje, null);
 
+            }
         }
 
 

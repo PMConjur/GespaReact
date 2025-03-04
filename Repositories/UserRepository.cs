@@ -81,7 +81,7 @@ namespace NoriAPI.Repositories
         {
             using var connection = GetConnection("Piso2Amex");
 
-            string storedIniciaSesion = "EXEC [dbCollection].[dbo].[1.1.ValidaEjecutivo]";
+            string storedIniciaSesion = "[dbCollection].[dbo].[1.1.ValidaEjecutivo]";
             var parameters = new
             {
                 request.Usuario,

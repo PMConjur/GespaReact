@@ -46,7 +46,7 @@ namespace NoriAPI.Controllers
 
             if (!string.IsNullOrEmpty(resetea.Mensaje))
             {
-                return Unauthorized(new { resetea });
+                return BadRequest(new { resetea });
             }
 
             return Ok(new { resetea });

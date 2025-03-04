@@ -1,23 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using NoriAPI.Models.Login;
 using Microsoft.Extensions.Configuration;
 using NoriAPI.Services;
 using System.Threading.Tasks;
-using System;
 using System.Collections.Generic;
 using NoriAPI.Models.Busqueda;
 using Microsoft.AspNetCore.Authorization;
+using NoriAPI.Models.Phones;
 
 namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/search-customer")]
-    [Authorize]
-    public class CustomerSearchController : Controller
+    //[Authorize]
+    public class CustomerSearchController : ControllerBase
 
     {
         private readonly IConfiguration _configuration;
@@ -31,9 +27,8 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("busqueda-cuenta")]//Endpoint Padrino
-        //public async Task<ActionResult<ResultadoBusqueda>> Busqueda([FromBody] Busqueda request)
         public async Task<ActionResult<ResultadoBusqueda>> Busqueda([FromQuery] string filtro, string ValorBusqueda)
-        {            
+        {
             var Busqueda = await _searchService.ValidateBusqueda(filtro, ValorBusqueda);
 
             if (!Busqueda.Mensaje.IsNullOrEmpty())
@@ -44,16 +39,60 @@ namespace NoriAPI.Controllers
             return Ok(new { Busqueda.ListaResultados });
         }
 
-        [HttpGet("productividad-ejecutivo")]//Endpoint Padrino
-        public async Task<ActionResult<ResultadoProductividad>> Productividad([FromQuery] int NumEmpleado)
-        {
-            var Productividad = await _searchService.ValidateProductividad(NumEmpleado);
+        [HttpGet("automatico-ejecutivo")]//Endpoint Padrino
+        public async Task<ActionResult<ResultadoAutomatico>> Automatico([FromQuery] int numEmpleado)
 
-            if(!Productividad.Mensaje.IsNullOrEmpty()) 
-            { 
-                return BadRequest(new { Productividad.Mensaje }); 
+        {
+            var Automatico = await _searchService.ValidateAutomatico(numEmpleado);
+
+            if (!Automatico.Mensaje.IsNullOrEmpty())
+            {
+                return Ok(new { Automatico.Mensaje });
             }
-            return Ok(new { Productividad.Mensaje });
+
+
+            return Ok(Automatico.Cuenta);
+
+        }
+
+        [HttpGet("phones")]
+        public async Task<ActionResult<IEnumerable<Phone>>> GetPhones([FromQuery] string idCuenta)
+        {
+            var phones = await _searchService.FetchPhones(idCuenta);
+            if (phones == null || phones.Count == 0)
+            {
+                return NotFound();
+            }
+            return Ok(phones);
+        }
+
+        [HttpGet("products-info")]
+        public async Task<IActionResult> GetProductData([FromQuery] string idCuenta)
+        {
+            var datos = await _searchService.CalculateProductData(idCuenta);
+            return Ok(datos);
+        }
+
+        [HttpPost("validate-phone")]
+        public async Task<IActionResult> ValidatePhone([FromBody] string telefono, string idCuenta)
+        {
+            var phoneValidation = await _searchService.ValidatePhone(telefono.Trim(), idCuenta);
+            if (!phoneValidation)
+            {
+                return NotFound(new { exists = phoneValidation });
+            }
+            return Ok(new { exists = phoneValidation });
+        }
+
+        [HttpPost("save-new-phone")]
+        public async Task<ActionResult<NewPhone>> SaveNewPhone([FromBody] NewPhoneRequest newPhoneData)
+        {
+            var phone = await _searchService.SaveNewPhone(newPhoneData);
+            if (phone == null)
+            {
+                return BadRequest();
+            }
+            return Ok(phone);
         }
 
 

@@ -1,12 +1,13 @@
 ﻿using Dapper;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using NoriAPI.Models.Busqueda;
-using NoriAPI.Models.Login;
+using NoriAPI.Models.Busqueda.InfoProducto;
+using NoriAPI.Models.Phones;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace NoriAPI.Repositories
@@ -14,19 +15,20 @@ namespace NoriAPI.Repositories
     public interface ISearchRepository
     {
         Task<dynamic> ValidateBusqueda(string filtro, string ValorBusqueda);
-        Task<dynamic> ValidateProductividad(int NumEmpleado);
-
+        Task<dynamic> ValidateAutomatico(int numEmpleado);
+        Task<List<Phone>> GetPhones(string idCuenta, int idCartera);
+        Task<List<CamposPantalla>> GetCamposPantalla(int idCartera, int idProducto);
+        Task<dynamic> GetProducto(string idCuenta);
     }
 
     public class SearchRepository : ISearchRepository
     {
-        private readonly IConfiguration _configuration;
 
+        private readonly IConfiguration _configuration;
         public SearchRepository(IConfiguration configuration)
         {
             _configuration = configuration;
         }
-
         public async Task<dynamic> ValidateBusqueda(string filtro, string ValorBusqueda)
         {
             string validacion = null;
@@ -42,14 +44,16 @@ namespace NoriAPI.Repositories
                                     "   C.RFC, \r\n" +
                                     "   C.NúmeroCliente, \r\n" +
                                     "   V.Valor Situación, \r\n" +
-                                    //"   C.Saldo, \r\n" +
-                                    "   C.idCartera \r\n" +
+                                    "   C.idCartera, \r\n" +
+                                    "   C.Saldo, \r\n" +
+                                    "   C.Fecha_CambioActivación, \r\n" +
+                                    "   C.Expediente \r\n" +
                                     "FROM Cuentas C \r\n" +
                                     "    	INNER JOIN Productos P ON P.idProducto = C.idProducto \r\n" +
                                     "    	INNER JOIN Carteras CL ON CL.idCartera = C.idCartera \r\n" +
                                     "       INNER JOIN ValoresCatálogo V ON V.idValor = C.idSituación \r\n"
-                                    
-                                    ;            
+
+                                    ;
             switch (filtro)
             {
                 case "Cuenta":
@@ -60,7 +64,7 @@ namespace NoriAPI.Repositories
                 case "Nombre":
                     queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
                     queryBusqueda += " INNER JOIN Nombres N (NOLOCK) ON N.Expediente = C.Expediente ";
-                    
+
                     foreach (string sNombre in ValorBusqueda.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
                         queryBusqueda += " AND CONTAINS( N.NombreDeudor, '" + sNombre.Replace("'", "") + "') ";
                     queryBusqueda += "WHERE CuentaActiva = 1";
@@ -90,16 +94,16 @@ namespace NoriAPI.Repositories
                     break;
 
                 case "Expediente":     //El equipo Front debe validar que no tenga letras
-                                       
+
                     queryBusqueda += " WHERE CuentaActiva = 1 AND CL.Abreviación = '";
                     foreach (char Caracter in ValorBusqueda.Substring(0, 3))
                         if (char.IsLetter(Caracter))
                             queryBusqueda += Caracter;
                     queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
                     //quitar letras cuando se libere a todas las carteras
-                    queryBusqueda += "' AND C.Expediente = " + ValorBusqueda.Replace("AMX", "").Replace("amx", "").Replace(" ", "");                    
+                    queryBusqueda += "' AND C.Expediente = " + ValorBusqueda.Replace("AMX", "").Replace("amx", "").Replace(" ", "");
 
-                    
+
                     break;
 
                 default:
@@ -110,41 +114,90 @@ namespace NoriAPI.Repositories
             if (validacion == "Nombre")
             {
                 var busqueda = (await connection.QueryAsync<dynamic>(queryBusqueda, commandType: CommandType.Text));
-                return busqueda;                
+                return busqueda;
             }
             else
             {
                 var busqueda = (await connection.QueryFirstOrDefaultAsync<dynamic>(queryBusqueda, commandType: CommandType.Text));
                 return busqueda;
-            }                    
+            }
+
 
         }
+        public async Task<dynamic> ValidateAutomatico(int numEmpleado)
+        {
+            using var connection = GetConnection("Piso2Amex");
+            string storedAutomatico = "[dbMemory].[AMS].[ObtieneCuenta]";
+            var parameters = new
+            {
+                idEjecutivo = numEmpleado
+            };
+            var automatico = (await connection.QueryFirstOrDefaultAsync<dynamic>(
+                storedAutomatico,
+                parameters,
+                commandType: CommandType.StoredProcedure
+                ));
+            return automatico;
 
-        public async Task<dynamic> ValidateProductividad(string filtro, string ValorBusqueda)
+        }
+        public async Task<List<Phone>> GetPhones(string idCuenta, int idCartera)
         {
             using var connection = GetConnection("Piso2Amex");
 
-            string queryProductividad = "";
+            string phonesQuery = "SELECT * FROM [dbo].[fn_TeléfonosLadasGMT](@idCartera, @idCuenta)";
 
-            var productividad = (await connection.QueryAsync<dynamic>(
-                queryProductividad,
-                //parameters,
+            var phoneList = await connection.QueryAsync<Phone>(
+                phonesQuery,
+                new { idCartera = idCartera, idCuenta = idCuenta },
                 commandType: CommandType.Text
-            )).ToList();
+                );
 
-            return productividad;
-
+            return phoneList.ToList();
         }
 
-        public Task<dynamic> ValidateProductividad(int NumEmpleado)
+        public async Task<List<CamposPantalla>> GetCamposPantalla(int idCartera, int idProducto)
         {
-            throw new NotImplementedException();
+            using var connection = GetConnection("Piso2Amex");
+
+            string fieldsQuery = "SELECT " +
+                    "CP.Posición AS Posicion," +
+                    "CP.AliasCampo," +
+                    "CP.NombreCampo," +
+                    "CP.idFormatoCampo AS IdFormatoCampo " +
+                "FROM CamposPantalla CP(NOLOCK) INNER JOIN Productos P(NOLOCK) ON CP.idProducto = P.idProducto " +
+                "WHERE P.idCartera = @idCartera AND P.idProducto = @idProducto";
+
+            var fieldsList = await connection.QueryAsync<CamposPantalla>(
+                fieldsQuery,
+                new { idCartera = idCartera, idProducto = idProducto },
+                commandType: CommandType.Text
+                );
+
+            return fieldsList.ToList();
+        }
+
+        public async Task<dynamic> GetProducto(string idCuenta)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string productQuery = "WAITFOR DELAY '00:00:00';" +
+                                 "SELECT * FROM Y.Producto_1 (NOLOCK) " +
+                                 "WHERE idCuenta = @IdCuenta";
+
+            var product = await connection.QueryFirstOrDefaultAsync<dynamic>(
+                productQuery,
+                new { IdCuenta = idCuenta },
+                commandType: CommandType.Text
+                );
+
+            return product;
         }
 
         private SqlConnection GetConnection(string connection)
         {
             return new SqlConnection(_configuration.GetConnectionString(connection));
         }
+
 
 
     }
