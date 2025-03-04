@@ -38,12 +38,6 @@ namespace NoriAPI.Services
         Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
         Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
 
-        Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo);
-        Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas);
-
-
-
-
         public class EjecutivoService : IEjecutivoService
         {
             private readonly IConfiguration _configuration;
@@ -171,62 +165,6 @@ namespace NoriAPI.Services
                 return validatePreg_Resp_list;
             }
 
-            public async Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo)
-            {
-                DataTable recordatorios = new DataTable();
-                string query = "SELECT * FROM fn_SeguimientosEjecutivo(@idEjecutivo)"; // Evita inyección SQL
-
-                using (var connection = new SqlConnection(_connectionString))
-                {
-                    await connection.OpenAsync();
-                    using (var command = new SqlCommand(query, connection))
-                    {
-                        // Usar Add con tipo explícito para evitar problemas con tipos de datos
-                        command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
-
-                        using (var adapter = new SqlDataAdapter(command))
-                        {
-                            adapter.Fill(recordatorios);
-                        }
-                    }
-                }
-                //string jsonString = JsonSerializer.Serialize();
-                return recordatorios;
-            }
-
-            public async Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas)
-            {
-                if (drDatos == null || dsTablas.Tables.Contains("Seguimientos"))
-                    return;
-
-                // Verifica que drDatos tenga la columna 'idEjecutivo'
-                if (!drDatos.Table.Columns.Contains("idEjecutivo"))
-                    throw new ArgumentException("La columna 'idEjecutivo' no existe en el DataRow");
-
-                var idEjecutivo = drDatos["idEjecutivo"];
-                DataTable recordatorios = await GetSeguimientosEjecutivoAsync(Convert.ToInt32(idEjecutivo));
-
-                if (recordatorios == null || recordatorios.Rows.Count == 0)
-                    return;
-
-                recordatorios.TableName = "Seguimientos";
-                dsTablas.Tables.Add(recordatorios);
-                recordatorios.DefaultView.Sort = "SegundoSeguimiento ASC";
-            }
-            public List<Dictionary<string, object>> ConvertDataTableToList(DataTable dt)
-            {
-                var list = new List<Dictionary<string, object>>();
-                foreach (DataRow row in dt.Rows)
-                {
-                    var dict = new Dictionary<string, object>();
-                    foreach (DataColumn column in dt.Columns)
-                    {
-                        dict[column.ColumnName] = row[column];
-                    }
-                    list.Add(dict);
-                }
-                return list;
-            }
 
             #endregion
 

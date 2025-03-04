@@ -7,6 +7,9 @@ using System.Collections.Generic;
 using NoriAPI.Models.Busqueda;
 using Microsoft.AspNetCore.Authorization;
 using NoriAPI.Models.Phones;
+using System.Data;
+using System.Text.Json;
+using System;
 
 namespace NoriAPI.Controllers
 {
@@ -23,7 +26,6 @@ namespace NoriAPI.Controllers
         {
             _configuration = configuration;
             _searchService = searchService;
-
         }
 
         [HttpGet("busqueda-cuenta")]//Endpoint Padrino
