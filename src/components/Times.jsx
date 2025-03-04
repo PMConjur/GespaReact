@@ -4,6 +4,10 @@ import TableTimes from './TableTimes';
 import { toast, Toaster } from "sonner";
 
 const Times = ({ show, handleClose }) => {
+    const responseData = JSON.parse(localStorage.getItem("responseData"));
+    const numEmpleado = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+    const registeredPassword = localStorage.getItem(`password_${numEmpleado}`); // Obtener la contraseña registrada para el numEmpleado
+
     const [selectedReason, setSelectedReason] = useState('');
     const [timers, setTimers] = useState({
         permiso: 0,
@@ -45,10 +49,9 @@ const Times = ({ show, handleClose }) => {
 
     const handleStopTimer = () => {
         console.log(`Intentando detener temporizador para: ${selectedReason}`);
-        const correctPassword = "123456789";
         if (!password) {
             toast.error('Error 400: Por favor ingrese la contraseña.');
-        } else if (password !== correctPassword) {
+        } else if (password !== registeredPassword) {
             toast.error('Error 401: Contraseña incorrecta');
         } else {
             console.log(`Temporizador detenido para: ${selectedReason}`);
@@ -85,7 +88,7 @@ const Times = ({ show, handleClose }) => {
 
     const sendDataToServer = () => {
         const dataToSend = {
-            numEmpleado: 37940, // Reemplazar con el ID del empleado real
+            numEmpleado: numEmpleado, // Usar el ID del empleado real
             tiempos: {
                 tiempoPermiso: timers.permiso,
                 tiempoCurso: timers.curso,
@@ -189,6 +192,7 @@ const Times = ({ show, handleClose }) => {
             Cerrar
           </Button>
         </Modal.Footer>
+        <Toaster />
       </Modal>
     );
 };
