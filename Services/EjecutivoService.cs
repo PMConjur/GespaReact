@@ -1,9 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using NoriAPI.Models.Busqueda;
 using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Repositories;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 
 namespace NoriAPI.Services
@@ -13,7 +15,8 @@ namespace NoriAPI.Services
 
         Task<TiemposEjecutivo> ValidateTimes(int numEmpleado);
         Task<string> PauseUnpause(InfoPausa pausa);
-
+        Task ObtenerSeguimientos(DataRow drDatos, DataSet dsTablas);
+        Task ObtenerAccionamiento(DataRow drDatos, DataSet dsTablas);
     }
 
 
@@ -22,11 +25,14 @@ namespace NoriAPI.Services
     {
         private readonly IConfiguration _configuration;
         private readonly IEjecutivoRepository _ejecutivoRepository;
+        private readonly string _connectionString;
 
-        public EjecutivoService(IEjecutivoRepository ejecutivoRepository)
+
+        public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository)
         {
+            _configuration = configuration;
             _ejecutivoRepository = ejecutivoRepository;
-
+            _connectionString = _configuration.GetConnectionString("Piso2Amex");
         }
 
 
@@ -101,6 +107,102 @@ namespace NoriAPI.Services
             // Si la validación es exitosa, retorna true.
             return true;
         }
+        public async Task<DataTable> GetSeguimientosAsync(int idCartera,string idCuenta)
+        {
+            DataTable seguimiento = new DataTable();
+            string query = "SELECT * FROM fn_Seguimientos(@idCartera, @idCuenta)"; // Evita inyección SQL
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(seguimiento);
+                    }
+                }
+            }
+            return seguimiento;
+        }
+
+        public async Task ObtenerSeguimientos(DataRow drDatos, DataSet dsTablas)
+        {
+            if (drDatos == null)
+                return;
+
+            // Verifica que drDatos tenga las columnas 'idCartera' y 'idCuenta'
+            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
+                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
+
+            var idCartera = Convert.ToInt32(drDatos["idCartera"]);
+            var idCuenta = Convert.ToString(drDatos["idCuenta"]);
+
+            DataTable seguimientosGet = await GetSeguimientosAsync(idCartera, idCuenta);
+
+            if (seguimientosGet == null || seguimientosGet.Rows.Count == 0)
+                return;
+
+            // Si la tabla ya existe, elimínala antes de agregar la nueva
+            if (dsTablas.Tables.Contains("Seguimiento"))
+            {
+                dsTablas.Tables.Remove("Seguimiento");
+            }
+
+            seguimientosGet.TableName = "Seguimiento";
+            dsTablas.Tables.Add(seguimientosGet);
+        }
+        public async Task<DataTable> GetAccionamientoAsync(int idCartera, string idCuenta)
+        {
+            DataTable accionamiento = new DataTable();
+            string query = "SELECT * FROM fn_Accionamientos(@idCartera, @idCuenta)"; // Evita inyección SQL
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(accionamiento);
+                    }
+                }
+            }
+            return accionamiento;
+        }
+
+        public async Task ObtenerAccionamiento(DataRow drDatos, DataSet dsTablas)
+        {
+            if (drDatos == null)
+                return;
+            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
+                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
+
+            var idCartera = Convert.ToInt32(drDatos["idCartera"]);
+            var idCuenta = Convert.ToString(drDatos["idCuenta"]);
+
+            DataTable accionamientoGet = await GetAccionamientoAsync(idCartera, idCuenta);
+
+            if (accionamientoGet == null || accionamientoGet.Rows.Count == 0)
+                return;
+
+            if (dsTablas.Tables.Contains("Accionamiento"))
+            {
+                dsTablas.Tables.Remove("Accionamiento");
+            }
+
+            accionamientoGet.TableName = "Accionamiento"; 
+            dsTablas.Tables.Add(accionamientoGet);
+        }
+
+
 
 
     }
