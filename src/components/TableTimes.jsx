@@ -31,7 +31,7 @@ const TableTimes = () => {
     };
     
     // Para ver el JSON generado en la consola:
-    console.log(JSON.stringify(generateJsonData(), null, 2));
+   
     
     
     // Estado inicial basado en localStorage
@@ -108,7 +108,7 @@ const TableTimes = () => {
 
             userTimes(idEjecutivo)
                 .then((data) => {
-                    console.log("Respuesta de la API:", data);
+             
 
                     if (!data || !data.resultadosTiempos) {
                         console.warn("La API no devolvió resultados válidos.");
