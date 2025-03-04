@@ -93,7 +93,7 @@ namespace NoriAPI.Controllers
 
 
 
-[HttpGet("recordatorios/{idEjecutivo}")]
+        [HttpGet("recordatorios/{idEjecutivo}")]
         public async Task<IActionResult> GetRecordatorios(int idEjecutivo)
         {
             try
@@ -235,16 +235,16 @@ namespace NoriAPI.Controllers
 
 
 
- [HttpGet("accionesNegociacion")]
+        [HttpGet("accionesNegociacion")]
         public async Task<IActionResult> GetAccionNegociacion(int idCartera, string idCuenta)
         {
             DataSet dsTablas = new DataSet();
             try
             {
-                DataTable Negociaciones = new DataTable();                
+                DataTable Negociaciones = new DataTable();
 
-                Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync( idCartera,  idCuenta);
-                             
+                Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
+
                 // Convertimos el DataTable a una lista de diccionarios
                 var listaNegociaciones = ConvertDataTableToList(Negociaciones);
 
@@ -265,7 +265,7 @@ namespace NoriAPI.Controllers
 
 
 
- 
+
 
 
     }
