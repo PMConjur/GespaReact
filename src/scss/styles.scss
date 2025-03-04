@@ -532,3 +532,139 @@ $table-border-radius:     8px;
 .card-reminder {
   max-height: 400px;
 }
+
+//Scroll para las carda
+
+.scroll {
+  overflow-y: scroll;
+  height: 300px;
+  overflow-x: auto scroll;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #adadad;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #495057;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: #343a40;
+  }
+}
+
+
+
+
+// Configuración base
+$list-group-bg: #ffffff;
+$list-group-border-color: rgba(0, 0, 0, 0.08);
+$list-group-border-radius: 0.75rem;
+$list-group-item-padding-y: 1rem;
+$list-group-item-padding-x: 1.5rem;
+
+// Colores y estados
+$list-group-hover-bg: rgba(#4a9dff, 0.05);
+$list-group-active-bg: #4a9dff;
+$list-group-active-color: rgb(255, 255, 255);
+$list-group-disabled-bg: #f8f9fa;
+$list-group-disabled-color: #6c757d;
+
+// Transiciones
+$list-group-transition: all 0.3s ease;
+
+.list-group {
+  // Contenedor principal
+
+  overflow: hidden;
+
+  &-item {
+    // Estilo base
+    background-color: #1d1f20;
+    color: #e1e1e1;
+    border: none;
+    border-bottom: 1px solid #6c757d;
+    transition: $list-group-transition;
+
+    // Efecto hover
+    &:hover {
+      background: #acacac;
+      transform: translateX(8px);
+
+      color: #000000;
+    }
+
+    // Estado activo
+    &.active {
+      background: $list-group-active-bg;
+      color: $list-group-active-color;
+      font-weight: 600;
+
+      &::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+      }
+    }
+
+    // Estado deshabilitado
+    &:disabled {
+      background: $list-group-disabled-bg;
+      color: $list-group-disabled-color;
+      cursor: not-allowed;
+    }
+
+    // Íconos o elementos adicionales
+    .icon {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+    }
+
+    // Texto secundario
+    .text-muted {
+      margin-left: auto;
+      font-size: 0.9rem;
+    }
+  }
+
+  // Eliminar borde del último elemento
+  &-item:last-child {
+    border-bottom: none;
+  }
+
+  // Variante con fondo oscuro
+  &.list-group-dark {
+    background: #000000;
+    color: white;
+
+    .list-group-item {
+      border-color: rgba(white, 0.1);
+      color: rgba(white, 0.9);
+
+      &:hover {
+        background: rgba(rgb(131, 131, 131), 0.05);
+        color: #c5c5c5;
+      }
+
+      &.active {
+        background: #4a9dff;
+        color: white;
+      }
+
+      &:disabled {
+        background: rgba(white, 0.02);
+        color: rgba(white, 0.5);
+      }
+    }
+  }
+}

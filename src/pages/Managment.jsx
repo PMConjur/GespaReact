@@ -42,14 +42,8 @@ const Managment = () => {
 
   const handleSearch = async () => {
     try {
-      const response = await axios.get(
-        "http://192.168.7.33/api/search-customer/busqueda-cuenta",
-        {
-          params: { filtro: filter, ValorBusqueda: searchTerm },
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      setSearchResults(response.data.listaResultados || []);
+      const response = await searchCustomer(filter, searchTerm);
+      setSearchResults(response.listaResultados || []);
     } catch (error) {
       console.error("Error fetching search results:", error);
     }
@@ -267,5 +261,27 @@ const Managment = () => {
     </>
   );
 };
+
+
+//Uso de endpoint de tiempos 
+export async function userTimes(numEmpleado) {
+  try {
+    console.log(numEmpleado);
+    const response = await servicio.get(
+      `/ejecutivo/tiempos-ejecutivo?numEmpleado=${numEmpleado}`
+    );
+    const data = response.data;
+    
+    return data;
+  } catch (error) {
+    if (error.response) {
+      const errorMessage =
+        error.response.data?.mensaje || "Error al recibir la productividad";
+      throw new Error(errorMessage);
+    } else {
+      throw new Error("Error al recibir la productividad.");
+    }
+  }
+}
 
 export default Managment;

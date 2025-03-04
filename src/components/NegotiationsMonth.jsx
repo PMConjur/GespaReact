@@ -1,19 +1,14 @@
-import React, { useEffect, useState } from "react";
-import {
-  Modal,
-  Button,
-  Form,
-  ListGroup,
-  Table,
-  Card,
-  Placeholder
-} from "react-bootstrap";
-import { userNegotiations } from "../services/gespawebServices";
+import { useEffect, useState, useContext } from "react";
+import { Table, Card } from "react-bootstrap";
+import { userNegotiations, searchCustomer } from "../services/gespawebServices";
+import { AppContext } from "../pages/Managment";
+import { toast, Toaster } from "sonner";
 
 const NegotiationsMonth = () => {
   const responseData = JSON.parse(localStorage.getItem("responseData"));
   const idEjecutivo = 14126; //responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
   const [negotiations, setNegotiations] = useState([]);
+  const { setSearchResults } = useContext(AppContext);
 
   useEffect(() => {
     if (idEjecutivo) {
@@ -24,11 +19,26 @@ const NegotiationsMonth = () => {
     }
   }, [idEjecutivo]);
 
+  const handleAccountClick = async (idCuenta) => {
+    try {
+      const response = await searchCustomer("Cuenta", idCuenta);
+      console.log("Detalles de la cuenta:", response);
+      setSearchResults(response.listaResultados || []);
+      toast.success(`Cuenta ${idCuenta} seleccionada`, {
+        description: "Puede cerrar la ventana para gestionar esta cuenta"
+      });
+    } catch (error) {
+      console.error("Error al buscar detalles de la cuenta:", error);
+      toast.error("Error al buscar detalles de la cuenta");
+    }
+  };
+
   return (
     <>
       {/* Negociaciones del mes */}
+      <br />
       <h5>Negociaciones del mes</h5>
-      <Card className="mt-3 bg-secondary text-white">
+      <Card className="mt-3 text-white scroll">
         <Card.Body>
           <div className="table-responsive">
             <Table striped bordered hover variant="dark">
@@ -48,7 +58,12 @@ const NegotiationsMonth = () => {
                 {negotiations.length > 0 ? (
                   negotiations.map((negotiation, index) => (
                     <tr key={index}>
-                      <td>{negotiation.idCuenta}</td>
+                      <td
+                        onClick={() => handleAccountClick(negotiation.idCuenta)}
+                        style={{ cursor: "pointer", color: "#0d6efd" }}
+                      >
+                        {negotiation.idCuenta}
+                      </td>
                       <td>{negotiation.herramienta}</td>
                       <td>{negotiation.idEstado}</td>
                       <td>{negotiation.fechaCreacion}</td>

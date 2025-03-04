@@ -87,6 +87,23 @@ export async function userNegotiations(idEjecutivo) {
     }
   }
 }
+//Endpoibnt searchCustomer
+export async function searchCustomer(filter, value) {
+  try {
+    const response = await servicio.get("/search-customer/busqueda-cuenta", {
+      params: { filtro: filter, ValorBusqueda: value }
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      const errorMessage =
+        error.response.data?.mensaje || "Error al buscar el cliente";
+      throw new Error(errorMessage);
+    } else {
+      throw new Error("Error al buscar el cliente.");
+    }
+  }
+}
 
 //Endpoint Telefonos
 export const fetchPhones = async (idCuenta) => {
@@ -183,6 +200,49 @@ export const fetchValidationTel = async (data) => {
     throw error;
   }
 };
+
+
+//Uso de endpoint de tiempos 
+export async function userTimes(numEmpleado) {
+  try {
+    console.log(numEmpleado);
+    const response = await servicio.get(
+      `/ejecutivo/tiempos-ejecutivo?numEmpleado=${numEmpleado}`
+    );
+    const data = response.data;
+    
+    return data;
+  } catch (error) {
+    if (error.response) {
+      const errorMessage =
+        error.response.data?.mensaje || "Error al recibir la productividad";
+      throw new Error(errorMessage);
+    } else {
+      throw new Error("Error al recibir la productividad.");
+    }
+  }
+}
+
+//Endpoint Flow
+
+export async function userFlow() {
+  try {
+    const response = await servicio.get(
+      `/ejecutivo/flujo-preguntas-respuestas`
+    );
+    const data = response.data;
+    console.log(data);
+    return data;
+  } catch (error) {
+    if (error.response) {
+      const errorMessage =
+        error.response.data?.mensaje || "Error al recibir el flujo";
+      throw new Error(errorMessage);
+    } else {
+      throw new Error("Error en la respuesta del endpoint.");
+    }
+  }
+}
 
 //Error status global
 const getErrorStatus = (status) => {
