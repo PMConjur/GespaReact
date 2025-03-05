@@ -67,6 +67,14 @@ const DataCard = () => {
 
   const result = searchResults[0] || defaultData;
 
+  const formatNumber = (number) => {
+    if (isNaN(number)) return "-";
+    return number.toLocaleString("es-MX", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
   return (
     <Row className="dashboard">
       <Col xxl={3} xl={6} md={6}>
@@ -112,7 +120,9 @@ const DataCard = () => {
                     color: "#39FC8D"
                   }}
                 >
-                  {"$" + result.saldo}
+                  {result.saldo !== "-"
+                    ? "$" + formatNumber(parseFloat(result.saldo))
+                    : "-"}
                 </h6>
                 <span className="small pt-1 fw-bold">Saldo registrado</span>
               </div>
@@ -138,8 +148,8 @@ const DataCard = () => {
                     color: "#f1a441"
                   }}
                 >
-                  {result.minimoAtrasado != null
-                    ? "$" + result.minimoAtrasado
+                  {result.minimoAtrasado !== "-"
+                    ? "$" + formatNumber(parseFloat(result.minimoAtrasado))
                     : "-"}
                 </h6>
                 <span className="small pt-1 fw-bold">Monto reflejado</span>
