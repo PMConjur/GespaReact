@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Row, Col, Card, Form, Button, Stack } from "react-bootstrap";
 import { userFlow } from "../services/gespawebServices";
 import { NodePlusFill } from "react-bootstrap-icons";
+import { toast, Toaster } from "sonner"; // Import toast and Toaster
 
 const Flow = () => {
   const [userFlowData, setUserFlowData] = useState([]);
@@ -37,15 +38,50 @@ const Flow = () => {
 
   const handleAccept = () => {
     const currentAnswer = selectedAnswers[currentQuestionId];
-    const nextQuestion = userFlowData.find(
-      (item) => item.idPregunta === currentAnswer
+    const currentQuestion = userFlowData.find(
+      (item) => item.idPregunta === currentQuestionId
     );
-    if (nextQuestion) {
-      setAnswerHistory((prev) => [
-        ...prev,
-        { idPregunta: currentQuestionId, idRespuesta: currentAnswer }
-      ]); // Save current question and answer to history
-      setCurrentQuestionId(nextQuestion.idPregunta);
+
+    if (currentQuestion.valor === "Manual") {
+      const nextQuestion = userFlowData.find(
+        (item) => item.idPregunta === currentQuestion.idSuiguientePregunta
+      );
+      if (nextQuestion) {
+        setAnswerHistory((prev) => [
+          ...prev,
+          { idPregunta: currentQuestionId, idRespuesta: currentAnswer }
+        ]); // Save current question and answer to history
+        setCurrentQuestionId(nextQuestion.idPregunta);
+      } else {
+        console.log("Manual valor" + currentQuestion.idSuiguientePregunta);
+        toast.info("Información de flujo terminada");
+      }
+    } else if (currentQuestion.valor === "Entrada") {
+      const nextQuestion = userFlowData.find(
+        (item) => item.idPregunta === currentAnswer
+      );
+      if (nextQuestion) {
+        setAnswerHistory((prev) => [
+          ...prev,
+          { idPregunta: currentQuestionId, idRespuesta: currentAnswer }
+        ]); // Save current question and answer to history
+        setCurrentQuestionId(nextQuestion.idPregunta);
+      } else {
+        toast.info("Información de flujo terminada");
+      }
+    } else {
+      const nextQuestion = userFlowData.find(
+        (item) => item.idSuiguientePregunta === currentAnswer
+      );
+      if (nextQuestion) {
+        setAnswerHistory((prev) => [
+          ...prev,
+          { idPregunta: currentQuestionId, idRespuesta: currentAnswer }
+        ]); // Save current question and answer to history
+        setCurrentQuestionId(nextQuestion.idPregunta);
+      } else {
+        toast.info("Información de flujo terminada");
+      }
     }
   };
 
@@ -125,6 +161,8 @@ const Flow = () => {
   return (
     <Row xs="auto" md="auto" className="g-2">
       <Col md={12}>{renderQuestions(currentQuestionId)}</Col>
+
+      {/* Add Toaster component for toast visibility */}
     </Row>
   );
 };

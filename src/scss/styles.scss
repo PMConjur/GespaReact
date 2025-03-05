@@ -704,6 +704,93 @@ $list-group-transition: all 0.3s ease;
   }
 }
 
-h5{
+h5 {
   font-weight: 400;
+}
+
+//Colores raiz
+// Colores personalizados
+$success: #39fc8d; // Verde
+$info: #6dd6ff; // Azul claro
+$warning: #f1a441; // Amarillo
+$danger: #f14b41; // Rojo
+$primary: #007bff; // Azul
+$secondary: #e1e1e1; // Gris
+$light: #f8f9fa; // Blanco claro
+$dark: #1d1f20; // Gris oscuro
+
+// Colores adicionales
+$custom-color-1: #6c5ce7; // Morado
+$custom-color-2: #00b894; // Verde turquesa
+
+// Sobrescribir clases de texto
+.text-success {
+  color: $success !important;
+  &.hoverable:hover {
+    color: darken($success, 10%) !important;
+  }
+}
+
+.text-info {
+  color: $info !important;
+  &.hoverable:hover {
+    color: darken($info, 10%) !important;
+  }
+}
+
+.text-warning {
+  color: $warning !important;
+  &.hoverable:hover {
+    color: darken($warning, 10%) !important;
+  }
+}
+
+.text-danger {
+  color: $danger !important;
+  &.hoverable:hover {
+    color: darken($danger, 10%) !important;
+  }
+}
+
+.text-primary {
+  color: $primary !important;
+  &.hoverable:hover {
+    color: darken($primary, 10%) !important;
+  }
+}
+
+.text-secondary {
+  color: $secondary !important;
+  &.hoverable:hover {
+    color: darken($secondary, 10%) !important;
+  }
+}
+
+.text-light {
+  color: $light !important;
+  &.hoverable:hover {
+    color: darken($light, 10%) !important;
+  }
+}
+
+.text-dark {
+  color: $dark !important;
+  &.hoverable:hover {
+    color: darken($dark, 10%) !important;
+  }
+}
+
+// Clases personalizadas adicionales
+.text-custom-1 {
+  color: $custom-color-1 !important;
+  &.hoverable:hover {
+    color: darken($custom-color-1, 10%) !important;
+  }
+}
+
+.text-custom-2 {
+  color: $custom-color-2 !important;
+  &.hoverable:hover {
+    color: darken($custom-color-2, 10%) !important;
+  }
 }
