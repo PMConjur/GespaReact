@@ -33,7 +33,7 @@ const Managment = () => {
   const [showToast, setShowToast] = useState(false);
   const [numeroTelefonico, setNumeroTelefonico] = useState("");
   const [flowMessage, setFlowMessage] = useState(""); // Estado para el mensaje del flujo
-
+  const [selectedAnswer, setSelectedAnswer] = useState(null); // Estado para la respuesta seleccionada
   const token = responseData?.ejecutivo?.token;
   console.log("Token recibido:", token);
   const nombreEjecutivo =
@@ -174,7 +174,9 @@ const Managment = () => {
     handleSuggestionClick,
     handleAutomaticSearch,
     flowMessage, // Añadir flowMessage al contexto
-    setFlowMessage // Añadir setFlowMessage al contexto
+    setFlowMessage, // Añadir setFlowMessage al contexto
+    selectedAnswer, // Añadir selectedAnswer al contexto
+    setSelectedAnswer // Añadir setSelectedAnswer al contexto
   };
 
   return (
