@@ -29,7 +29,7 @@ namespace NoriAPI.Services
         Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
         Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta);
         Task <DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
-        
+        Task ObtenerBusquedaEJE(DataRow drDatos, DataSet dsTablas);
 
         Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo);
         Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas);
@@ -140,11 +140,7 @@ namespace NoriAPI.Services
         }
         #endregion
 
-
-
-
-
-            
+        #region Acciones Negociables
         public async Task <DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta)
         {
             DataTable negociacion = new DataTable();
@@ -169,15 +165,7 @@ namespace NoriAPI.Services
             return negociacion;
         }
 
-
-
-
-
-
-
-
-
-
+        #endregion
 
         #region Calculadora
         public async Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta)
@@ -283,8 +271,6 @@ namespace NoriAPI.Services
             return resultadoCalculadora;
         }
         #endregion
-
-
 
         #region Tiempos
         public async Task<TiemposEjecutivo> ValidateTimes(int numEmpleado)
@@ -500,7 +486,7 @@ namespace NoriAPI.Services
 
 
 
-public async Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo)
+        public async Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo)
         {
             DataTable recordatorios = new DataTable();
             string query = "SELECT * FROM fn_SeguimientosEjecutivo(@idEjecutivo)"; // Evita inyección SQL
@@ -542,19 +528,68 @@ public async Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo)
             dsTablas.Tables.Add(recordatorios);
             recordatorios.DefaultView.Sort = "SegundoSeguimiento ASC";
         }
+        #endregion
 
-}
+        #region Búsqueda
+        public async Task<DataTable> GetBusquedaAsync(int idCartera, string idCuenta,int Jararquia)
+        {
+            DataTable busqueda = new DataTable();
+            string query = "SELECT * FROM fn_Búsquedas(@idCartera, @idCuenta, @Jerarquía)";
 
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+                    command.Parameters.Add("@Jerarquía", SqlDbType.Int).Value = Jararquia;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(busqueda);
+                    }
+                }
+            }
+            return busqueda;
+        }
+
+        public async Task ObtenerBusquedaEJE(DataRow drDatos, DataSet dsTablas)
+        {
+            if (drDatos == null)
+                return;
+
+            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
+                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
+
+            var idCartera = Convert.ToInt32(drDatos["idCartera"]);
+            var idCuenta = Convert.ToString(drDatos["idCuenta"]);
+            var Jerarquia = Convert.ToInt32(drDatos["Jerarquía"]);
+
+            DataTable busquedaGet = await GetBusquedaAsync(idCartera, idCuenta,Jerarquia);
+
+            if (busquedaGet == null || busquedaGet.Rows.Count == 0)
+                return;
+
+            if (dsTablas.Tables.Contains("Busqueda"))
+            {
+                dsTablas.Tables.Remove("Busqueda");
+            }
+
+            busquedaGet.TableName = "Busqueda";
+            dsTablas.Tables.Add(busquedaGet);
+        }
+
+        #endregion
 
 
     }
 
 
 
+}
 
 
 
 
 
-
-#endregion

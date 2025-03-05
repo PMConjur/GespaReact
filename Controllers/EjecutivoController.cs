@@ -28,6 +28,7 @@ namespace NoriAPI.Controllers
             _ejecutivoService = ejecutivoService;
             _configuration = configuration;
         }
+        #region Productividad
 
         [HttpGet("productividad-ejecutivo")]
         public async Task<ActionResult<ResultadoProductividad>> Productividad([FromQuery] int numEmpleado)
@@ -36,6 +37,9 @@ namespace NoriAPI.Controllers
             return Ok(new { Productividad.ProductividadInfo });
         }
 
+        #endregion
+
+        #region Tiempos
         [HttpGet("tiempos-ejecutivo")]
         public async Task<ActionResult<TiemposEjecutivo>> Tiempos([FromQuery] int numEmpleado)
         {
@@ -50,6 +54,9 @@ namespace NoriAPI.Controllers
             return Ok(new { mensaje });
         }
 
+        #endregion
+
+        #region Seguimientos
         [HttpGet("seguimientos/{idCartera}/{idCuenta}")]
         public async Task<IActionResult> GetSeguimiento(int idCartera, string idCuenta)
         {
@@ -80,20 +87,10 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+        #endregion
 
-
-
-
-
-
-
-
-
-
-
-
-
-[HttpGet("recordatorios/{idEjecutivo}")]
+        #region Recordatorios
+        [HttpGet("recordatorios/{idEjecutivo}")]
         public async Task<IActionResult> GetRecordatorios(int idEjecutivo)
         {
             try
@@ -125,8 +122,9 @@ namespace NoriAPI.Controllers
             }
         }
 
+        #endregion
 
-
+        #region Accionamientos
         [HttpGet("accionamientos/{idCartera}/{idCuenta}")]
         public async Task<IActionResult> GetAccionamiento(int idCartera, string idCuenta)
         {
@@ -158,6 +156,9 @@ namespace NoriAPI.Controllers
             }
         }
 
+        #endregion
+
+        #region Negociaciones
         [HttpGet("get-negociaciones")]
         public async Task<IActionResult> GetNegociaciones([FromQuery] int idEjecutivo)
         {
@@ -170,6 +171,9 @@ namespace NoriAPI.Controllers
             return Ok(negociaciones);
         }
 
+        #endregion
+
+        #region Recuperacion
         [HttpGet("get-recuperacion")]
         public async Task<IActionResult> GetRecuperacion([FromQuery] int idEjecutivo, [FromQuery] int actual)
         {
@@ -192,7 +196,9 @@ namespace NoriAPI.Controllers
 
             return Ok(recuperacion);
         }
+        #endregion
 
+        #region Flujo Preguntas Respuestas
         [HttpGet("flujo-preguntas-respuestas")]
         public async Task<ActionResult<Preguntas_Respuestas_info>> Preguntas_Respuestas()
         {
@@ -200,6 +206,9 @@ namespace NoriAPI.Controllers
             return Ok(preguntas_respuestas);
         }
 
+        #endregion
+
+        #region Directorio
         private List<Dictionary<string, object>> ConvertDataTableToList(DataTable dataTable)
         {
             var list = new List<Dictionary<string, object>>();
@@ -217,6 +226,10 @@ namespace NoriAPI.Controllers
             return list;
         }
 
+        #endregion
+
+        #region Calculadora
+
         [HttpGet("Calculadora-simulador")]
         public async Task<ActionResult<ResultadoCalculadora>> Calculadora_Simulador([FromQuery] int Cartera, string NoCuenta)
         {
@@ -224,18 +237,10 @@ namespace NoriAPI.Controllers
             return Ok(InfoCalculadora);
         }
 
+        #endregion
 
-
-
-
-
-
-
-
-
-
-
- [HttpGet("accionesNegociacion")]
+        #region AccionesNegociacion
+        [HttpGet("accionesNegociacion")]
         public async Task<IActionResult> GetAccionNegociacion(int idCartera, string idCuenta)
         {
             DataSet dsTablas = new DataSet();
@@ -260,12 +265,46 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+        #endregion
+
+        #region Busqueda
+        [HttpGet("busqueda/{idCartera}/{idCuenta}/{Jerarquia}")]
+        public async Task<IActionResult> GetBusqueda(int idCartera, string idCuenta, int Jerarquia)
+        {
+            try
+            {
+                DataSet dsTablas = new DataSet();
+                DataTable busquedaTable = dsTablas.Tables.Add("Busqueda");
+                busquedaTable.Columns.Add("idCartera", typeof(int));
+                busquedaTable.Columns.Add("idCuenta", typeof(string));
+                busquedaTable.Columns.Add("Jerarquía", typeof(int));
+
+                DataRow drDatos = busquedaTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
+                drDatos["Jerarquía"] = Jerarquia;
+
+                await _ejecutivoService.ObtenerBusquedaEJE(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("Busqueda") || dsTablas.Tables["Busqueda"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Busquedas para este ejecutivo.");
+                }
+
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Busqueda"]);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+        #endregion
 
 
 
-
-
- 
 
 
     }
