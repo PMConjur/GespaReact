@@ -282,3 +282,25 @@ const getErrorStatus = (status) => {
 };
 
 //const message = getErrorStatus(response.status);
+//jajajajajajaja Pinche uriel
+
+/***
+ * 
+ * 
+ * 
+ * 
+ *         /////\\\\\
+       /         \
+      /  ~~~~ ~~~\  
+     (  -  -  -  - )  
+      |    ⏜    |  
+      |  \___/  |  
+       \_______/  
+    /  |       |  \  
+   /   |  ---  |   \  
+  /    |       |    \  
+ /_____|_______|_____\  
+   (     )   (     )  
+
+ * 
+ */
