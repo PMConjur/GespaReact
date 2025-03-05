@@ -9,10 +9,10 @@ function DropdownInfo() {
         <span className="me-2"><InfoSquareFill /></span> 
         <h5 className="mb-0">Información</h5>
       </Dropdown.Toggle>
-      <Dropdown.Menu placement="end">
-        <Dropdown.Item href="#">Multideudores</Dropdown.Item>
-        <Dropdown.Item href="#">Adicionales</Dropdown.Item>
-        <Dropdown.Item href="#">Pagos</Dropdown.Item>
+      <Dropdown.Menu placement="end" style={{backgroundColor: '#1d1f20', border: 'none'}}>
+        <Dropdown.Item href="/maintenance">Multideudores</Dropdown.Item>
+        <Dropdown.Item href="/maintenance">Adicionales</Dropdown.Item>
+        <Dropdown.Item href="/maintenance">Pagos</Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>
   );

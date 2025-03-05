@@ -8,10 +8,10 @@ function DropdownInfo() {
         <span className="me-2"><PersonLinesFill/></span> 
         <h5 className="mb-0">Ejecutivo</h5>
       </Dropdown.Toggle>
-      <Dropdown.Menu>
-        <Dropdown.Item href="#">Gestiones del dia</Dropdown.Item>
-        <Dropdown.Item href="#">Scripts</Dropdown.Item>
-        <Dropdown.Item href="#">Negociaciones</Dropdown.Item>
+      <Dropdown.Menu style={{backgroundColor: '#1d1f20', border: 'none'}}>
+        <Dropdown.Item href="/maintenance">Gestiones del dia</Dropdown.Item>
+        <Dropdown.Item href="/maintenance">Scripts</Dropdown.Item>
+        <Dropdown.Item href="v">Negociaciones</Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>
   );

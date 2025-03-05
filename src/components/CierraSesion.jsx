@@ -38,7 +38,7 @@ const CerrarSesion = ({ setUser, setIdEjecutivo }) => {
   };
 
   return (
-    <Nav.Link as="button" onClick={handleLogout} className="custom-dropdown-toggle d-flex align-items-center">
+    <Nav.Link as="button" onClick={handleLogout} className="custom-dropdown-toggle d-flex mt-3">
             <span className="me-2"><BoxArrowLeft/></span><h5 className="mb-0">Cerrar sesion</h5>
     </Nav.Link>
   );

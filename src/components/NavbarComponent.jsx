@@ -40,7 +40,7 @@ const NavbarComponent = () => {
         id="offcanvasNavbar"
         placement="start"
         data-bs-theme="dark"
-        style={{ width: "300px" }}
+        style={{ width: "250px" }}
       >
         <Offcanvas.Header closeButton />
         <Offcanvas.Body style={{ 
@@ -60,8 +60,8 @@ const NavbarComponent = () => {
             <DropdownAction/>
             <DropdownExecutive/>           
           </Nav>
-          <div style={{marginTop: 'auto', marginBottom: '10px', display: 'flex', justifyContent: 'space-between'}}>
-            <div style={{ textAlign: 'center' }}>Grupo Consorcio</div>
+          <div style={{marginTop: 'auto', marginBottom: '10px', display: 'block'}}>
+            <div>Grupo Consorcio</div>
             <CerrarSesion setUser={setUser} setIdEjecutivo={setIdEjecutivo} />
           </div>
         </Offcanvas.Body>
