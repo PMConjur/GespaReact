@@ -40,6 +40,7 @@ namespace NoriAPI.Services
     {
         private readonly IConfiguration _configuration;
         private readonly IEjecutivoRepository _ejecutivoRepository;
+        private readonly ISearchService _searchService;
         private readonly string _connectionString;
 
         #region PropiedadesProductividad
@@ -55,11 +56,12 @@ namespace NoriAPI.Services
         private static Hashtable _htNombreId;
         #endregion
 
-        public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository)
+        public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository, ISearchService searchService)
         {
             _configuration = configuration;
             _ejecutivoRepository = ejecutivoRepository;
             _connectionString = _configuration.GetConnectionString("Piso2Amex");
+            _searchService = searchService;
         }
 
         #region Productividad
@@ -315,8 +317,14 @@ namespace NoriAPI.Services
                     return "Contraseña Incorrecta.";
                 }
 
+                DataTable catalogosTable = await _ejecutivoRepository.VwCatalogos();
+
+                int idPeCausa = await _searchService.GetIdValor(catalogosTable, "Pausas", pausa.PeCausa);
+
+
                 await _ejecutivoRepository.ChangeEjecutivoMode(pausa.IdEjecutivo, "Consulta");
-                await _ejecutivoRepository.Pausa210(pausa.IdEjecutivo, 3001, pausa.Duracion);
+                //await _ejecutivoRepository.Pausa210(pausa.IdEjecutivo, 3001, pausa.Duracion);
+                await _ejecutivoRepository.Pausa210(pausa.IdEjecutivo, idPeCausa, pausa.Duracion);
                 await _ejecutivoRepository.IncreaseEjecutivoTime(pausa.IdEjecutivo, pausa.Duracion, pausa.PeCausa);
             }
             catch

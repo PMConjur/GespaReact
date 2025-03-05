@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace NoriAPI.Controllers
 {
@@ -68,6 +69,15 @@ namespace NoriAPI.Controllers
 
             return Ok(new { ejecutivo });
         }
+
+        [HttpPost("renew-token")]
+        //[ProducesResponseType(typeof(RenewTokenResult), StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> RenewToken([FromBody]  string contrasenia)
+        {
+            return Ok(new RenewTokenResult { });
+        }
+
 
         private string GenerateJwtToken(AuthRequest user)
         {
