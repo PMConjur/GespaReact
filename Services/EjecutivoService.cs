@@ -145,14 +145,19 @@ namespace NoriAPI.Services
         public async Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta)
         {
             string mensaje = null;
+            int MaxDescuento = 0, MinDescuento, _iMensualidades = 1;
             DataTable dtnegociaciones = new DataTable();
+            DataTable dtfiltrado = new DataTable();
             DataTable dtPlazos = new DataTable();
             DataTable dtPagos = new DataTable();
             DataTable dtHerramientas = new DataTable();
+            DataTable dtHerrFiltradas = new DataTable();
             DataTable dtDescuentos = new DataTable();
             DataTable InfoProducto = new DataTable();
+            DataTable HerramientasC = new DataTable();
+            DataTable tblCuenta = new DataTable();
+            DataTable produc = new DataTable();
 
-            
             //---------------------------------------Negociaciones--------------------------------//
             //con el Idestado se valida si la promesa esta vigente
 
@@ -165,6 +170,54 @@ namespace NoriAPI.Services
                 dtnegociaciones.Columns["idHerramienta"]
             };
             dtnegociaciones.DefaultView.Sort = "FechaHora DESC";
+
+            // Crear nuevo DataTable solo con las columnas que quieres
+            DataTable dtFiltrado = new DataTable();
+            dtFiltrado.Columns.Add("Fecha_Insert", typeof(DateTime));
+            dtFiltrado.Columns.Add("Segundo_Insert", typeof(string));
+            dtFiltrado.Columns.Add("Herramienta", typeof(string));
+            dtFiltrado.Columns.Add("idEstado", typeof(string)); // Aquí lo dejamos como string para poder poner "Incumplida"
+            dtFiltrado.Columns.Add("Vencimiento", typeof(string));
+            dtFiltrado.Columns.Add("SaldoInterés", typeof(decimal));
+
+            foreach (DataRow row in dtnegociaciones.Rows)
+            {
+                DateTime fechaInsert = Convert.ToDateTime(row["Fecha_Insert"].ToString());
+                string segundoInsert = row["Segundo_Insert"].ToString();
+                string herramienta = row["Herramienta"].ToString();
+                string estado = row["idEstado"].ToString();
+                string vencimiento = row["Vencimiento"].ToString().Replace("12:00:00 a. m.", "");
+                decimal saldo = Convert.ToDecimal(row["SaldoInterés"]);
+
+                // Validación del estado
+                if (estado == "2901")
+                    estado = "Vigente";
+                else if (estado == "2902")
+                    estado = "Cumplida";
+                else if (estado == "2903")
+                    estado = "Incumplida";
+                else if (estado == "2904")
+                    estado = "Parcialmente Cumplida";
+                else if (estado == "2905")
+                    estado = "Cancelada";
+                else if (estado == "2906")
+                    estado = "Plazo vencido";
+                else if (estado == "2907")
+                    estado = "Pendiente";
+                else if (estado == "2908")
+                    estado = "Permanente";
+                else if (estado == "2909")
+                    estado = "Reestructurada";
+                else if (estado == "")
+                    estado = "";
+
+                // Agregamos la fila con los valores al nuevo DataTable
+                dtFiltrado.Rows.Add(fechaInsert, segundoInsert, herramienta, estado, vencimiento, saldo);
+                dtFiltrado.DefaultView.Sort = "Fecha_Insert DESC";
+                dtFiltrado = dtFiltrado.DefaultView.ToTable();
+
+            }
+
 
             //-----------------------------------Plazos------------------------------------------//
 
@@ -203,6 +256,20 @@ namespace NoriAPI.Services
             
             dtHerramientas = await _ejecutivoRepository.ObtieneHerramientas(NoCuenta);
 
+            //----------------------------------Herramientas completas ---------------------------------//
+
+            HerramientasC = await _ejecutivoRepository.ObtieneHerramientasCompletas();
+            HerramientasC.PrimaryKey = new DataColumn[] { HerramientasC.Columns["idHerramienta"] };
+
+
+
+
+
+            //----------------------------------------Saldo----------------------------------------------//
+
+            tblCuenta = await _ejecutivoRepository.InfoCuenta(Cartera, NoCuenta);
+
+
             //-----------------------------------------------------------------------------------------//
 
             dtDescuentos.Columns.Add("idHerramienta");
@@ -211,8 +278,8 @@ namespace NoriAPI.Services
             dtDescuentos.Columns.Add("MaxDías");
 
             string sHerramientas = "idHerramienta IN (0";
-            double fDescuento = 0, fMáxDesc = 0;
-            int iMáxDías = 0, idHerramienta = 0;
+            double fDescuento = 0, fMaxDesc = 0;
+            int iMaxDias = 0, idHerramienta = 0;
 
             for (int i = 0; i < dtHerramientas.Columns.Count; i++)
             {
@@ -228,7 +295,7 @@ namespace NoriAPI.Services
                 if (int.TryParse(dtHerramientas.Columns[i].ColumnName, out idHerramienta))
                 {
                     sHerramientas += "," + dtHerramientas.Columns[i].ColumnName;
-                    iMáxDías = Convert.ToInt16(dtHerramientas.Rows[0][i].ToString());
+                    iMaxDias = Convert.ToInt16(dtHerramientas.Rows[0][i].ToString());
                 }
 
                 //Solo si tiene descuento.
@@ -241,38 +308,136 @@ namespace NoriAPI.Services
                 if (dtHerramientas.Columns[i + 1].ColumnName.Contains("Máximo"))
                 {
                     i++;
-                    fMáxDesc = Convert.ToDouble(dtHerramientas.Rows[0][i].ToString());
+                    fMaxDesc = Convert.ToDouble(dtHerramientas.Rows[0][i].ToString());
                 }
 
                 DataRow drDescuento = dtDescuentos.NewRow();
                 drDescuento["idHerramienta"] = idHerramienta;
                 drDescuento["Descuento"] = fDescuento;
-                drDescuento["MáxDescuento"] = fMáxDesc;
-                drDescuento["MaxDías"] = iMáxDías;
+                drDescuento["MáxDescuento"] = fMaxDesc;
+                drDescuento["MaxDías"] = iMaxDias;
                 dtDescuentos.Rows.Add(drDescuento);
 
-                fDescuento = fMáxDesc = iMáxDías = idHerramienta = 0;
+                fDescuento = fMaxDesc = iMaxDias = idHerramienta = 0;
                 dtDescuentos.PrimaryKey = new DataColumn[] { dtDescuentos.Columns["idHerramienta"] };
             }
             sHerramientas = sHerramientas.TrimEnd(',') + ")";
 
             //----------------------------------------Producto Y ---------------------------------//
-            InfoProducto = await _ejecutivoRepository.ObtieneProducto(NoCuenta);
+            produc = await _ejecutivoRepository.ObtieneProducto(NoCuenta);
 
             //------------------------------------------------------------------------------------//
-            if (InfoProducto.Columns.Contains("Fechacorte") && InfoProducto.Columns["Fechacorte"].ToString() != "")
+            static DateTime FechaCorte_(string CorteOfecha)
             {
+                DateTime dtFechaCorte = new DateTime();
 
+                int iCorte;
+                if (int.TryParse(CorteOfecha, out iCorte))
+                {
+                    dtFechaCorte = new DateTime(DateTime.Today.Year, DateTime.Today.Month, iCorte);
+                    if (dtFechaCorte <= DateTime.Today)
+                        dtFechaCorte = dtFechaCorte.AddMonths(1);
+                }
+                else
+                    DateTime.TryParse(CorteOfecha, out dtFechaCorte);
 
-
-
-
-
-
+                return dtFechaCorte;
             }
 
+            DateTime fechaReferencia = DateTime.Now;
 
+            if (InfoProducto.Columns.Contains("Fechacorte") && InfoProducto.Columns["Fechacorte"].ToString() != "")
+            {
+                DateTime FechaCorte = FechaCorte_(InfoProducto.Rows[0]["Fechacorte"].ToString().Replace("00:00:00:000", ""));
+                FechaCorte = new DateTime(fechaReferencia.Year, fechaReferencia.Month, FechaCorte.Day);
+                if (FechaCorte >= DateTime.Today)
+                    FechaCorte = FechaCorte.AddMonths(-1);
 
+                int DíasRes = 0, DíasSum = 3;
+
+                //Aumenta fecha corte.
+                for (int i = 1; i <= DíasSum; i++)
+                    if (FechaCorte.AddDays(i).DayOfWeek == DayOfWeek.Sunday || FechaCorte.AddDays(i).DayOfWeek == DayOfWeek.Saturday)
+                        DíasSum++;
+
+                if (FechaCorte.AddDays(DíasSum) < DateTime.Today)
+                    FechaCorte = FechaCorte.AddMonths(1);
+
+                DíasRes = 3;// 5;
+                DíasSum = 2;// 3;
+                for (int i = 1; i <= DíasSum; i++)
+                    if (FechaCorte.AddDays(i).DayOfWeek == DayOfWeek.Sunday || FechaCorte.AddDays(i).DayOfWeek == DayOfWeek.Saturday)
+                        DíasSum++;
+
+                for (int i = 1; i <= DíasRes; i++)
+                    if (FechaCorte.AddDays(-i).DayOfWeek == DayOfWeek.Sunday || FechaCorte.AddDays(-i).DayOfWeek == DayOfWeek.Saturday)
+                        DíasRes++;
+
+                if (DateTime.Today >= FechaCorte.AddDays(-DíasRes) && DateTime.Today <= FechaCorte.AddDays(DíasSum))
+                    sHerramientas = sHerramientas.Replace("142", "0");
+
+            }            
+            HerramientasC.DefaultView.RowFilter = sHerramientas;
+
+            //aqui se busca dependiendo de lo que escoja///////////////////////////
+            DataRow drHerramienta = HerramientasC.Rows.Find(136);//convenio
+
+            DataRow drHerramientaAmex = dtDescuentos.Rows.Find(136);//convenio
+
+            string Herramienta = drHerramienta["Nombre"].ToString();
+            double Saldo, MontoRequerido;
+            int días1erPago = 0;
+
+            //Falta validar el saldo 
+            if(!double.TryParse(tblCuenta.Rows[0]["Saldo"].ToString(), out Saldo))
+            {
+                //mandar error
+            }
+            if (Saldo <= 0)
+            {
+                //mandar error
+            }
+
+            // Cálculo del descuento.
+            MaxDescuento = Convert.ToInt16(drHerramientaAmex["MáxDescuento"].ToString());
+            MinDescuento = Convert.ToInt16(drHerramientaAmex["Descuento"].ToString());
+
+            //  Cálculo de días de corte
+            DateTime Fecha_Corte = new DateTime();
+            if (drHerramienta["CampoFechaCorte"].ToString() != "")
+            {
+                Fecha_Corte = FechaCorte_(_ejecutivoRepository.CampoCalculado(drHerramienta["CampoFechaCorte"].ToString()).ToString().Replace("00:00:00:000", ""));
+                días1erPago = Math.Min(días1erPago, (int)Math.Abs((Fecha_Corte - DateTime.Today).TotalDays));
+
+                if (!Fecha_Corte.ToString().Contains("01/01/0001") && Fecha_Corte <= DateTime.Today)
+                    Fecha_Corte = Fecha_Corte.AddMonths(1);
+            }
+
+            // Cálculo de monto requerido.
+            if (double.TryParse(
+               _ejecutivoRepository.CampoCalculado(drHerramienta["CálculoMontoRequerido"].ToString()).ToString(),
+               out MontoRequerido) || MontoRequerido == 0)
+            {
+                MontoRequerido = MontoRequerido * (1 - MinDescuento / (float)100);
+            }
+            else
+            {
+                //Mandar error
+            }
+
+            //  Días primer pago
+            MontoRequerido = Math.Round(MontoRequerido, 2);
+            //Math.Ceiling(MontoRequerido * 100) / 100;
+            días1erPago = Convert.ToInt32(drHerramienta["Días1erPago"]);
+
+            DataRow[] drParcial = dtnegociaciones.Select("idHerramienta IN (145,137) AND Fecha_Insert > '" + DateTime.Today.AddMonths(-1).ToShortDateString() + "'");
+            if (drParcial.Length > 0)
+                días1erPago = 28;
+
+            _iMensualidades = Convert.ToInt16(drHerramienta["Mensualidades"]);
+
+            //Días Máximos
+            iMaxDias = Convert.ToInt32(drHerramientaAmex["MaxDías"]);
 
 
             //////////////////////////////////////////aun no se que voy a regresar ///////////////////////////////////

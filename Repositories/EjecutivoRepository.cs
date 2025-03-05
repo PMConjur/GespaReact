@@ -7,6 +7,8 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
 using NoriAPI.Models.Ejecutivo;
+using System.Collections;
+using System.Text.RegularExpressions;
 
 namespace NoriAPI.Repositories
 {
@@ -30,6 +32,10 @@ namespace NoriAPI.Repositories
         Task<DataTable> ObtienePagos(int Cartera, string NoCuenta);
         Task<DataTable> ObtieneHerramientas(string NoCuenta);
         Task<DataTable> ObtieneProducto(string NoCuenta);
+        Task<DataTable> ObtieneHerramientasCompletas();
+        Task<DataTable> InfoCuenta(int Cartera, string NoCuenta);
+        object CampoCalculado(string Expresión);
+
         #endregion
 
         #region Tiempos
@@ -510,6 +516,8 @@ namespace NoriAPI.Repositories
         #endregion
 
         #region Calculadora
+
+        Hashtable _htProducto;
         public async Task<DataTable> ObtieneNegociaciones(int Cartera, string NoCuenta)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -546,8 +554,7 @@ namespace NoriAPI.Repositories
 
             return ConvertToDataTable(plazos, "Plazos");
 
-        }
-       
+        }       
         public async Task<DataTable> ObtienePagos(int Cartera, string NoCuenta)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -585,6 +592,17 @@ namespace NoriAPI.Repositories
             return ConvertToDataTable(herramientas, "Herramientas");
 
         }
+        public async Task<DataTable> ObtieneHerramientasCompletas()
+        {
+            using var connection = GetConnection("Piso2Amex");
+            string queryHerramientasC = "SELECT * FROM Herramientas (NOLOCK) WHERE Activa = 1 ";            
+
+            var herramientasC = (await connection.QueryAsync<dynamic>(
+                queryHerramientasC,                
+                commandType: CommandType.Text
+             ));
+            return ConvertToDataTable(herramientasC, "HerramientasCompletas");
+        }
         public async Task<DataTable> ObtieneProducto(string NoCuenta)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -600,8 +618,113 @@ namespace NoriAPI.Repositories
                 parameters,
                 commandType: CommandType.Text
              ));
+            _htProducto = ConvertirDataTableAHashtable(ConvertToDataTable(producto, "Producto"));
             return ConvertToDataTable(producto, "Producto");
         }
+        public async Task<DataTable> InfoCuenta(int Cartera, string NoCuenta)
+        {
+            using var connection = GetConnection("Piso2Amex");
+            string queryInfoCuenta = "WAITFOR DELAY '00:00:00';SELECT TOP 1 * FROM vw_CuentaActiva WHERE idCartera = @idCartera AND idCuenta = @idCuenta ";
+
+            var parameters = new
+            {
+                idCuenta = NoCuenta,
+                idCartera = Cartera
+            };
+
+            var InfoCuenta = (await connection.QueryAsync<dynamic>(
+                queryInfoCuenta,
+                parameters,
+                commandType: CommandType.Text
+             ));
+            return ConvertToDataTable(InfoCuenta, "InfoCuenta");
+        }
+
+        public object CampoCalculado(string Expresión)
+        {
+
+            string[] sCampos = Expresión.Split(new char[] { '[', ']' }, StringSplitOptions.RemoveEmptyEntries);
+            string sResult = Expresión;
+
+            for (int i = 0; i < sCampos.Length; i++)
+            {
+                if (_htProducto[sCampos[i]] != null)
+                    sResult = sResult.Replace("[" + sCampos[i] + "]", _htProducto[sCampos[i]].ToString().Trim());
+            }
+
+            if (Expresión.StartsWith("#"))
+                return EvaluateDate(sResult.Replace("#", ""));
+
+            else if (sCampos.Length > 1 && (Expresión.Contains("+") || Expresión.Contains("-") || Expresión.Contains("*") || Expresión.Contains("/") || Expresión.Contains("^")))
+                return Evaluate(sResult);
+
+            return sResult;
+        }
+        static public double Evaluate(string expression)
+        {
+
+            if (Regex.Matches(expression, @"[a-zA-Z]").Count > 0)
+                return 0;
+
+            DataTable dtExpression = new DataTable();
+            double dEvaluation = 0;
+            expression = expression.Replace("%", "/100");
+
+            try
+            {
+                dtExpression.Columns.Add(new DataColumn("Eval", typeof(double), expression));
+                dtExpression.Rows.Add(dtExpression.NewRow());
+                double.TryParse(dtExpression.Rows[0]["Eval"].ToString(), out dEvaluation);
+            }
+            catch (Exception)
+            {
+                //ErrorLogClass.LogError("Evaluate", expression);
+            }
+
+            return dEvaluation;
+        }
+        static public object EvaluateDate(string expression)
+        {
+
+            if (Regex.Matches(expression, @"[a-zA-Z]").Count > 0)
+                return new DateTime(0);
+
+            DateTime dtPrimero = new DateTime();
+            DateTime dtSegundo = new DateTime();
+            int iDías = 0;
+
+            string[] sExpresión = expression.Trim().Split(' ');
+
+
+            if (sExpresión.Length != 3 || !TryParseDate(sExpresión[0], out dtPrimero))
+                return "";
+
+            switch (sExpresión[1])
+            {
+
+                case "+":
+                    if (int.TryParse(sExpresión[2], out iDías))
+                        return dtPrimero.AddDays(iDías);
+                    break;
+
+                case "-":
+                    if (TryParseDate(sExpresión[2], out dtSegundo))
+                        return (dtPrimero - dtSegundo).TotalDays;
+                    else if (int.TryParse(sExpresión[2], out iDías))
+                        return dtPrimero.AddDays(-iDías);
+                    break;
+            }
+
+            return sExpresión[0];
+        }
+        static public bool TryParseDate(string Text, out DateTime Date)
+        {
+            if (DateTime.TryParse(Text, out Date) ||
+                        DateTime.TryParseExact(Text, new string[] { "yyyyMMdd" }, null, System.Globalization.DateTimeStyles.None, out Date))
+                return true;
+            return false;
+        }
+
 
 
         #endregion
@@ -790,6 +913,23 @@ namespace NoriAPI.Repositories
 
             return table;
         }
+        public Hashtable ConvertirDataTableAHashtable(DataTable dt)
+        {
+            Hashtable ht = new Hashtable();
+
+            if (dt.Rows.Count > 0)
+            {
+                DataRow row = dt.Rows[0]; // Tomamos la primera fila
+
+                foreach (DataColumn col in dt.Columns)
+                {
+                    ht[col.ColumnName] = row[col];
+                }
+            }
+
+            return ht;
+        }
+
 
     }
 }
