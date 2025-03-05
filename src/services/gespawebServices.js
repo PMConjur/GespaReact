@@ -152,27 +152,20 @@ export const fetchInformation = async (idCuenta) => {
       `${apiUrl}/search-customer/products-info?idCuenta=${idCuenta}`
     );
 
-    const response = await fetch(
-      `${apiUrl}/search-customer/products-info?idCuenta=${idCuenta}`,
-      {
-        method: "GET", // Método HTTP (GET, POST, etc.)
-        headers: {
-          Authorization: `Bearer ${token}`, // Incluye el token en el header
-          "Content-Type": "application/json" // Tipo de contenido
-        }
-      }
+    const response = await servicio.get(
+      `/search-customer/products-info?idCuenta=${idCuenta}`,
     );
+
+    const message = getErrorStatus(response.status);
+
     console.log("Respuesta de la API recibida. Estado:", response.status);
 
-    if (!response.ok) {
-      console.error(
-        "Error en la respuesta de la API. Estado:",
-        response.status
-      );
-      throw new Error("Error al obtener los datos de informacion");
+    if (response.status !== 200) {
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
     }
 
-    const data = await response.json();
+    const data = response.data;
     console.log("Datos obtenidos de la API:", data);
 
     return data;
@@ -185,22 +178,18 @@ export const fetchInformation = async (idCuenta) => {
 //Endpoint Validación de Teléfono
 export const fetchValidationTel = async (data) => {
   try {
-    const response = await fetch(`${apiUrl}/search-customer/validate-phone`, {
-      method: "POST", // Asegurar que sea POST
-      headers: {
-        Authorization: `Bearer ${token}`, // Incluye el token en el header
-        "Content-Type": "application/json" // Tipo de contenido
-      },
-      body: JSON.stringify(data) // Enviar datos correctamente en el body
-    });
+    const response = await servicio.post(
+      `/search-customer/validate-phone`,
+      data,
+    );
 
-    if (!response.ok) {
+    if (response.status !== 200) {
       throw new Error(
         `Error en la respuesta de la API. Estado: ${response.status}`
       );
     }
 
-    const result = await response.json();
+    const result = response.data;
     console.log("Validación recibida:", result);
     return result;
   } catch (error) {
