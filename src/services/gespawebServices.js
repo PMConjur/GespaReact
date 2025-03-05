@@ -121,31 +121,24 @@ export const fetchPhones = async (idCuenta) => {
       `${apiUrl}/search-customer/phones?idCuenta=${idCuenta}`
     );
 
-    const response = await fetch(
-      `${apiUrl}/search-customer/phones?idCuenta=${idCuenta}`,
-      {
-        method: "GET", // Método HTTP (GET, POST, etc.)
-        headers: {
-          Authorization: `Bearer ${token}`, // Incluye el token en el header
-          "Content-Type": "application/json" // Tipo de contenido
-        }
-      }
+    const response = await servicio.get(
+      `/search-customer/phones?idCuenta=${idCuenta}`
     );
 
     const message = getErrorStatus(response.status);
 
     console.log("Respuesta de la API recibida. Estado:", response.status);
 
-    if (!response.ok) {
+    if (response.status !== 200) {
       toast.error(message, { position: "top-right" });
       throw new Error(message);
     }
 
-    const data = await response.json();
+    const data = response.data;
 
     return data;
   } catch (error) {
-    console.error("Error en 401:");
+    console.error("Error en fetchPhones:", error);
     throw error;
   }
 };
