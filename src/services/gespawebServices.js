@@ -115,7 +115,7 @@ export const fetchPhones = async (idCuenta) => {
     );
 
     const response = await fetch(
-      `${apiUrl}/search-custome/phones?idCuenta=${idCuenta}`,
+      `${apiUrl}/search-customer/phones?idCuenta=${idCuenta}`,
       {
         method: "GET", // Método HTTP (GET, POST, etc.)
         headers: {
