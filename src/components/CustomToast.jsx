@@ -18,8 +18,7 @@ const CustomToast = ({ show, onClose, numeroTelefonico, copyToClipboard}) => {
       zIndex: '1000',
       color: 'black',
       backgroundColor: 'white'
-    }}
-  >
+    }}>
     <Toast.Header closeButton>
       <strong className="me-auto">Numero de Telefono</strong>
     </Toast.Header>
@@ -29,8 +28,7 @@ const CustomToast = ({ show, onClose, numeroTelefonico, copyToClipboard}) => {
           display: "flex",
           alignItems: "center",
           justifyContent: 'space-between'
-        }}
-      >
+        }}>
         <Headset style={{fontSize: '28px'}}/> 
         <span style={{fontSize: '18px'}}>{numeroTelefonico}</span>
         <Button
@@ -42,8 +40,7 @@ const CustomToast = ({ show, onClose, numeroTelefonico, copyToClipboard}) => {
             padding: "5px 10px",
             borderRadius: "5px",
             cursor: "pointer",
-          }}
-        >
+          }}>
           <Copy/>
         </Button>
       </div>
