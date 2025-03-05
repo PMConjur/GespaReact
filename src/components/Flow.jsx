@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
-import { Row, Col, Card, Form, Button, Stack } from "react-bootstrap";
+import { Row, Col, Card, Form, Button } from "react-bootstrap";
 import { userFlow } from "../services/gespawebServices";
 import { NodePlusFill } from "react-bootstrap-icons";
-import { toast, Toaster } from "sonner"; // Import toast and Toaster
+import { toast } from "sonner"; // Import toast and Toaster
+import { AppContext } from "../pages/Managment";
+import { useContext } from "react";
 
 const Flow = () => {
   const [userFlowData, setUserFlowData] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(1);
   const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [selectedValues, setSelectedValues] = useState({});
   const [answerHistory, setAnswerHistory] = useState([]); // Add state to keep track of answer history
+  const { selectedAnswer } = useContext(AppContext);
 
   useEffect(() => {
     userFlow()
@@ -24,6 +26,13 @@ const Flow = () => {
         console.error("Error fetching user flow data:", error);
       });
   }, []);
+
+  useEffect(() => {
+    if (selectedAnswer !== null) {
+      handleAnswerChange(currentQuestionId, selectedAnswer, selectedAnswer);
+    }
+  }, [selectedAnswer]);
+
   console.log("El flujo es:" + userFlowData);
   const handleAnswerChange = (idPregunta, idRespuesta, idValor) => {
     setSelectedAnswers((prev) => ({

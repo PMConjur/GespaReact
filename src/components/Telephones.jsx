@@ -4,12 +4,13 @@ import { fetchPhones, fetchValidationTel } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 import "../scss/styles.scss";
+import { TelephoneFill } from "react-bootstrap-icons";
 
 const Telephones = () => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
-  const { searchResults, setFlowMessage } = useContext(AppContext);
+  const { searchResults, setFlowMessage, setSelectedAnswer } = useContext(AppContext);
   const [toastShown, setToastShown] = useState(false);
 
   // Cargar datos desde la API
@@ -91,7 +92,7 @@ const Telephones = () => {
   return (
     <Card className="overflow-auto card-phones">
       <Card.Body className="card-body-phones">
-        <h5 className="card-title text-white">Teléfonos</h5>
+        <h5 className="card-title text-white"><TelephoneFill/> Teléfonos</h5>
         <Table hover variant="dark" className="table " responsive="sm">
           <thead>
             <tr>
@@ -101,9 +102,9 @@ const Telephones = () => {
                     variant="primary"
                     className="me-2 input-phone"
                     style={{ width: "25%" }}
-                    onClick={() => {
-                      loadData();
+                    onClick={() => {   
                       setFlowMessage("Inicia flujo");
+                      setSelectedAnswer(10); // Enviar valor 10 al Form.Check en Flow.jsx
                     }}
                   >
                     Llamada de entrada
@@ -172,8 +173,8 @@ const Telephones = () => {
                     <td>{row.intentosViciDial || "--"}</td>
                     <td>{row.id || "--"}</td>
                     <td>
-                      <a>
-                        {"XXXXXX" + row.númeroTelefónico.slice(6) || "--"}
+                    <a href="#" className="text-primary">
+                        {"XXXXXX" + row.númeroTelefónico.slice(6)}
                       </a>
                     </td>
                     <td>{row.idTelefonía || "--"}</td>
