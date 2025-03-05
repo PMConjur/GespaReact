@@ -14,7 +14,14 @@ export async function userReset(dataUserReset) {
       "/login/resetea-password",
       dataUserReset
     );
-    return response.data;
+    const { mensaje, exito } = response.data.resetea;
+    if (exito === "1") {
+      return { success: true, message: "Contraseña actualizada correctamente" };
+    } else if (mensaje) {
+      return { success: false, message: mensaje };
+    } else {
+      throw new Error("Error desconocido al actualizar la contraseña.");
+    }
   } catch (error) {
     if (error.response) {
       const errorMessage =
@@ -125,7 +132,7 @@ export const fetchPhones = async (idCuenta) => {
       }
     );
 
-    const message =  getErrorStatus(response.status);
+    const message = getErrorStatus(response.status);
 
     console.log("Respuesta de la API recibida. Estado:", response.status);
 
@@ -147,22 +154,28 @@ export const fetchPhones = async (idCuenta) => {
 export const fetchInformation = async (idCuenta) => {
   try {
     console.log("Iniciando llamada a la API...");
-    console.log("URL de la API:", `${apiUrl}/search-customer/products-info?idCuenta=${idCuenta}`);
+    console.log(
+      "URL de la API:",
+      `${apiUrl}/search-customer/products-info?idCuenta=${idCuenta}`
+    );
 
     const response = await fetch(
       `${apiUrl}/search-customer/products-info?idCuenta=${idCuenta}`,
       {
         method: "GET", // Método HTTP (GET, POST, etc.)
         headers: {
-          "Authorization": `Bearer ${token}`, // Incluye el token en el header
-          "Content-Type": "application/json", // Tipo de contenido
-        },
+          Authorization: `Bearer ${token}`, // Incluye el token en el header
+          "Content-Type": "application/json" // Tipo de contenido
+        }
       }
     );
     console.log("Respuesta de la API recibida. Estado:", response.status);
 
     if (!response.ok) {
-      console.error("Error en la respuesta de la API. Estado:", response.status);
+      console.error(
+        "Error en la respuesta de la API. Estado:",
+        response.status
+      );
       throw new Error("Error al obtener los datos de informacion");
     }
 
@@ -185,11 +198,13 @@ export const fetchValidationTel = async (data) => {
         Authorization: `Bearer ${token}`, // Incluye el token en el header
         "Content-Type": "application/json" // Tipo de contenido
       },
-      body: JSON.stringify(data), // Enviar datos correctamente en el body
+      body: JSON.stringify(data) // Enviar datos correctamente en el body
     });
 
     if (!response.ok) {
-      throw new Error(`Error en la respuesta de la API. Estado: ${response.status}`);
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
     }
 
     const result = await response.json();
@@ -201,8 +216,7 @@ export const fetchValidationTel = async (data) => {
   }
 };
 
-
-//Uso de endpoint de tiempos 
+//Uso de endpoint de tiempos
 export async function userTimes(numEmpleado) {
   try {
     console.log(numEmpleado);
@@ -210,7 +224,7 @@ export async function userTimes(numEmpleado) {
       `/ejecutivo/tiempos-ejecutivo?numEmpleado=${numEmpleado}`
     );
     const data = response.data;
-    
+
     return data;
   } catch (error) {
     if (error.response) {

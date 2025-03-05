@@ -98,7 +98,7 @@ function Login() {
 
   return (
     <>
-       <div style={{ backgroundColor: "#000000", minHeight: "100vh" }}></div>
+      <div style={{ backgroundColor: "#000000", minHeight: "100vh" }}></div>
       <Form onSubmit={handleSubmit}>
         <Container className="position-absolute top-50 start-50 translate-middle ">
           <Row className="justify-content-center">
@@ -186,7 +186,7 @@ function Login() {
           showSecondModal={showPasswordModal}
           closeSecondModal={handleClosePasswordModal}
           user={user}
-          password={password}
+          oldPassword={password} // Pass the password correctly
         />
       )}{" "}
       {/* Render ModalChangePassword */}
