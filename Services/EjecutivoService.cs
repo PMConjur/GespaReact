@@ -29,7 +29,8 @@ namespace NoriAPI.Services
         Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
         Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta);
         Task <DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
-        
+        Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
+
 
         Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo);
         Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas);
@@ -167,6 +168,30 @@ namespace NoriAPI.Services
             }
 
             return negociacion;
+        }
+
+        public async Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta)
+        {
+            DataTable plazos = new DataTable();
+            string query = "SELECT * FROM fn_Plazos(@idCartera, @idCuenta)"; // Evita inyección SQL
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(plazos);
+                    }
+                }
+            }
+
+            return plazos;
         }
 
 

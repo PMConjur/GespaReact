@@ -9,6 +9,7 @@ using NoriAPI.Services;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -235,13 +236,13 @@ namespace NoriAPI.Controllers
 
 
 
- [HttpGet("accionesNegociacion")]
+        [HttpGet("accionesNegociacion")]
         public async Task<IActionResult> GetAccionNegociacion(int idCartera, string idCuenta)
         {
             DataSet dsTablas = new DataSet();
             try
             {
-                DataTable Negociaciones = new DataTable();                
+                DataTable Negociaciones = new DataTable();
 
                 Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync( idCartera,  idCuenta);
                              
@@ -249,11 +250,110 @@ namespace NoriAPI.Controllers
                 var listaNegociaciones = ConvertDataTableToList(Negociaciones);
 
                 // Serializamos la lista a JSON
-                string jsonString = JsonSerializer.Serialize(listaNegociaciones, new JsonSerializerOptions { WriteIndented = true });
+                string jsonNegociaciones = JsonSerializer.Serialize(listaNegociaciones, new JsonSerializerOptions { WriteIndented = true });
 
                 //dsTablas.Tables.Add(Negociaciones);
 
-                return Ok(jsonString);
+                return Ok(jsonNegociaciones);
+                
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpGet("accionesPlazos")]
+        public async Task<IActionResult> GetAccionPlazos(int idCartera, string idCuenta)
+        {
+            DataSet dsTablas = new DataSet();
+            try
+            {
+                DataTable Plazos = new DataTable();
+
+                Plazos = await _ejecutivoService.GetAccionesPlazosAsync(idCartera, idCuenta);
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var listaPlazos = ConvertDataTableToList(Plazos);
+
+
+
+                // Serializamos la lista a JSON
+                string jsonPlazos = JsonSerializer.Serialize(listaPlazos, new JsonSerializerOptions { WriteIndented = true });
+
+                //dsTablas.Tables.Add(Negociaciones);
+
+                return Ok(jsonPlazos);
+               
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpGet("accionesNegociacionConPlazos")]
+        public async Task<IActionResult> GetAccionNegociacionConPlazos(int idCartera, string idCuenta)
+        {
+            try
+            {
+                // Obtener las negociaciones
+                DataTable Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
+
+                // Convertir el DataTable de Negociaciones a una lista de diccionarios
+                var listaNegociaciones = ConvertDataTableToList(Negociaciones);
+
+                // Obtener los plazos
+                DataTable Plazos = await _ejecutivoService.GetAccionesPlazosAsync(idCartera, idCuenta);
+
+                // Convertir el DataTable de Plazos a una lista de diccionarios
+                var listaPlazos = ConvertDataTableToList(Plazos);
+
+                // Combinar la información de negociaciones y plazos
+                var resultadoCombinado = new List<object>();
+
+                foreach (var negociacion in listaNegociaciones)
+                {
+                    var fechaInsert = negociacion.ContainsKey("FechaHora") ? Convert.ToDateTime(negociacion["FechaHora"]) : DateTime.MinValue;
+                    // Aquí, debes agregar lógica para relacionar las negociaciones con los plazos,
+                    // por ejemplo, basándote en la fecha de la negociación y los plazos.
+
+                    // Supongamos que la relación es por la fecha o algún otro campo, 
+                    // entonces puedes agregar los plazos correspondientes a cada negociación
+                    var plazosRelacionados = listaPlazos
+                    .Where(p => {
+                        // Verificar si existen los campos necesarios en el diccionario
+                        if (p.ContainsKey("Fecha_Insert") && p.ContainsKey("Segundo_Insert"))
+                        {
+                            // Obtener la fecha de Fecha_Insert
+                            var fechaPlazo = Convert.ToDateTime(p["Fecha_Insert"]).Date;
+
+                            // Obtener la hora de Segundo_Insert y combinarla con la fecha
+                            var horaPlazo = (TimeSpan)p["Segundo_Insert"];
+
+                            // Crear la fecha completa de plazo combinando la fecha de Fecha_Insert con la hora de Segundo_Insert
+                            var fechaHoraPlazo = fechaPlazo.Add(horaPlazo);
+
+                            // Comparar si la fecha y hora combinadas coinciden con la fecha completa de la negociación
+                            return fechaHoraPlazo == fechaInsert;
+                        }
+                        return false;
+                    })
+                    .ToList();
+                    // Agregar la negociación junto con los plazos relacionados
+                    var negociacionConPlazos = new
+                    {
+                        Negociacion = negociacion,
+                        Plazos = plazosRelacionados
+                    };
+
+                    resultadoCombinado.Add(negociacionConPlazos);
+                }
+
+                // Serializar la respuesta combinada a JSON
+                string jsonResultado = JsonSerializer.Serialize(resultadoCombinado, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonResultado);
             }
             catch (Exception ex)
             {
@@ -262,10 +362,6 @@ namespace NoriAPI.Controllers
         }
 
 
-
-
-
- 
 
 
     }
