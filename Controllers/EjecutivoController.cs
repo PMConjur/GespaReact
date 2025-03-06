@@ -343,6 +343,45 @@ namespace NoriAPI.Controllers
         }
         #endregion
 
+        #region CargoEnLinea
+
+        [HttpGet("cargosEnLinea/{idCartera}/{idCuenta}")]
+        public async Task<IActionResult> GetCargosEnLinea(int idCartera, string idCuenta)
+        {
+            try
+            {
+                DataSet dsTablas = new DataSet();
+                DataTable CargosTable = dsTablas.Tables.Add("Cargos");
+                CargosTable.Columns.Add("idCartera", typeof(int));
+                CargosTable.Columns.Add("idCuenta", typeof(string));
+                DataRow drDatos = CargosTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
+
+                await _ejecutivoService.ObtenerCargosEnLinea(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("Cargos") || dsTablas.Tables["Cargos"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Cargos En Linea para este ejecutivo.");
+                }
+
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Cargos"]);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+
+
+
+
+        #endregion
+
 
     }
 }

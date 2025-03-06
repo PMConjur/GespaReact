@@ -34,7 +34,8 @@ namespace NoriAPI.Services
         Task<bool> GuardaBusquedaAsync(BusquedaClass busqueda, int idCartera, string idCuenta, int idEjecutivo, TimeSpan tiempoEnCuenta);
         Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo);
         Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas);
-
+        Task<DataTable> GetCargosEnLineaAsync(int idCartera, string idCuenta);
+        Task ObtenerCargosEnLinea(DataRow drDatos, DataSet dsTablas);
     }
 
     public class EjecutivoService : IEjecutivoService
@@ -714,6 +715,54 @@ namespace NoriAPI.Services
 
         #endregion
 
+        #region CargosEnLinea
+        public async Task<DataTable> GetCargosEnLineaAsync(int idCartera, string idCuenta)
+        {
+            DataTable cargos = new DataTable();
+            string query = "SELECT * FROM dbo.fn_CargosEnLínea(@idCartera, @idCuenta) ";
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(cargos);
+                    }
+                }
+            }
+            return cargos;
+        }
+
+        public async Task ObtenerCargosEnLinea(DataRow drDatos, DataSet dsTablas)
+        {
+            if (drDatos == null)
+                return;
+
+            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
+                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
+
+            var idCartera = Convert.ToInt32(drDatos["idCartera"]);
+            var idCuenta = Convert.ToString(drDatos["idCuenta"]);
+
+            DataTable CargoGet = await GetCargosEnLineaAsync(idCartera, idCuenta);
+
+            if (CargoGet == null || CargoGet.Rows.Count == 0)
+                return;
+
+            if (dsTablas.Tables.Contains("Cargos"))
+            {
+                dsTablas.Tables.Remove("Cargos");
+            }
+
+            CargoGet.TableName = "Cargos";
+            dsTablas.Tables.Add(CargoGet);
+        }
+        #endregion
 
     }
 }
