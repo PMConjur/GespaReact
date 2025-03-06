@@ -28,10 +28,10 @@ namespace NoriAPI.Services
         Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
         Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
         Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta);
-        Task <DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
+        Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
         Task ObtenerBusquedaEJE(DataRow drDatos, DataSet dsTablas);
 
-        Task<string> GuardaBusquedaAsync(BusquedaClass busqueda, int idCartera, string idCuenta, int idEjecutivo, TimeSpan tiempoEnCuenta);
+        Task<bool> GuardaBusquedaAsync(BusquedaClass busqueda, int idCartera, string idCuenta, int idEjecutivo, TimeSpan tiempoEnCuenta);
         Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo);
         Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas);
 
@@ -145,7 +145,7 @@ namespace NoriAPI.Services
         #endregion
 
         #region Acciones Negociables
-        public async Task <DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta)
+        public async Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta)
         {
             DataTable negociacion = new DataTable();
             string query = "SELECT * FROM fn_OfrecimientosNegociaciones(@idCartera, @idCuenta)"; // Evita inyección SQL
@@ -482,7 +482,7 @@ namespace NoriAPI.Services
             return actual == 1
                 ? await _ejecutivoRepository.RecuperacionActual(idEjecutivo)
                 : await _ejecutivoRepository.RecuperacionAnterior(idEjecutivo);
-            
+
 
 
 
@@ -535,7 +535,7 @@ namespace NoriAPI.Services
         #endregion
 
         #region Búsqueda
-        public async Task<DataTable> GetBusquedaAsync(int idCartera, string idCuenta,int Jararquia)
+        public async Task<DataTable> GetBusquedaAsync(int idCartera, string idCuenta, int Jararquia)
         {
             DataTable busqueda = new DataTable();
             string query = "SELECT * FROM fn_Búsquedas(@idCartera, @idCuenta, @Jerarquía)";
@@ -570,7 +570,7 @@ namespace NoriAPI.Services
             var idCuenta = Convert.ToString(drDatos["idCuenta"]);
             var Jerarquia = Convert.ToInt32(drDatos["Jerarquía"]);
 
-            DataTable busquedaGet = await GetBusquedaAsync(idCartera, idCuenta,Jerarquia);
+            DataTable busquedaGet = await GetBusquedaAsync(idCartera, idCuenta, Jerarquia);
 
             if (busquedaGet == null || busquedaGet.Rows.Count == 0)
                 return;
@@ -583,45 +583,49 @@ namespace NoriAPI.Services
             busquedaGet.TableName = "Busqueda";
             dsTablas.Tables.Add(busquedaGet);
         }
-         // Usar la interfaz
+        // Usar la interfaz
 
-            public EjecutivoService(string connectionString, IBusquedaRepository busquedaRepository) // Inyectar la interfaz
-            {
-                _connectionString = connectionString;
-                _busquedaRepository = busquedaRepository;
-            }
+        public EjecutivoService(string connectionString, IBusquedaRepository busquedaRepository) // Inyectar la interfaz
+        {
+            _connectionString = connectionString;
+            _busquedaRepository = busquedaRepository;
+        }
 
-        public async Task<string> GuardaBusquedaAsync(BusquedaClass busqueda, int idCartera, string idCuenta, int idEjecutivo, TimeSpan tiempoEnCuenta)
+        public async Task<bool> GuardaBusquedaAsync(BusquedaClass busqueda, int idCartera, string idCuenta, int idEjecutivo, TimeSpan tiempoEnCuenta)
         {
             if (busqueda == null)
                 throw new ArgumentNullException(nameof(busqueda), "El objeto búsqueda no puede ser null");
 
-            // Validar parámetros importantes al inicio
-            if (idCartera <= 0 || idEjecutivo <= 0 || busqueda.idDato <= 0 || busqueda.idFuente <= 0)
+            using (var connection = new SqlConnection(_connectionString))
             {
-                return "Parámetros inválidos.";
-            }
-
-            try
-            {
-                using (var connection = new SqlConnection(_connectionString))
+                await connection.OpenAsync();
+                using (var transaction = connection.BeginTransaction())
                 {
-                    await connection.OpenAsync();
-                    using (var transaction = connection.BeginTransaction())
+                    try
                     {
-                        // Validar si la búsqueda ya existe hoy (usando el repositorio)
+                        // Validar si la búsqueda ya existe hoy
                         string fechaHoy = DateTime.UtcNow.ToString("yyyy-MM-dd");
-                        bool existeBusqueda = _busquedaRepository.Búsquedas.Select($"Fecha_Insert = '{fechaHoy}' AND idDato = {busqueda.idDato} AND idFuente = {busqueda.idFuente} AND idEjecutivo = {idEjecutivo}").Length > 0;
 
-                        if (existeBusqueda)
+                        using (var checkCommand = new SqlCommand(
+                            "SELECT COUNT(*) FROM Busquedas WHERE Fecha_Insert = @FechaHoy AND idDato = @idDato AND idFuente = @idFuente AND idEjecutivo = @idEjecutivo",
+                            connection, transaction))
                         {
-                            return "Ya existe una búsqueda de dicho dato en esa fuente el día de hoy a la cuenta.";
+                            checkCommand.Parameters.AddWithValue("@FechaHoy", fechaHoy);
+                            checkCommand.Parameters.AddWithValue("@idDato", busqueda.idDato);
+                            checkCommand.Parameters.AddWithValue("@idFuente", busqueda.idFuente);
+                            checkCommand.Parameters.AddWithValue("@idEjecutivo", idEjecutivo);
+
+                            int count = (int)await checkCommand.ExecuteScalarAsync();
+                            if (count > 0)
+                            {
+                                transaction.Rollback();
+                                return false; // Ya existe una búsqueda con esos datos hoy
+                            }
                         }
 
                         // Insertar nueva búsqueda
                         using (var command = new SqlCommand("EXEC [2.9.Búsqueda] @idCartera, @idCuenta, @idEjecutivo, @idDato, @DatoBuscado, @idFuente, @Encontrado, @Telefonos, @Persona, @Puesto, @Lugar, NULL, @TiempoEnCuenta, @link, @validador;", connection, transaction))
                         {
-                            // Asignación de parámetros
                             command.Parameters.AddWithValue("@idCartera", idCartera);
                             command.Parameters.AddWithValue("@idCuenta", idCuenta?.Trim() ?? string.Empty);
                             command.Parameters.AddWithValue("@idEjecutivo", idEjecutivo);
@@ -631,73 +635,87 @@ namespace NoriAPI.Services
                                 ? $"XXX-XXX-{busqueda.Teléfonos[0].NúmeroTelefónico.Substring(6, 4)}"
                                 : busqueda.Dato ?? string.Empty;
 
-                            // Validar longitudes de cadenas antes de usar Substring
-                            if (busqueda.Teléfonos != null && busqueda.Teléfonos.Length > 0 && busqueda.Teléfonos[0].NúmeroTelefónico.Length < 10)
-                            {
-                                return "Número de teléfono inválido o incompleto.";
-                            }
-
                             command.Parameters.AddWithValue("@DatoBuscado", datoBuscado);
                             command.Parameters.AddWithValue("@idFuente", busqueda.idFuente);
                             command.Parameters.AddWithValue("@Encontrado", busqueda.Encontrado);
                             command.Parameters.AddWithValue("@Telefonos", busqueda.Teléfonos?.Length ?? 0);
-                            command.Parameters.AddWithValue("@Persona", (object)busqueda.Persona ?? DBNull.Value);
-                            command.Parameters.AddWithValue("@Puesto", (object)busqueda.Puesto ?? DBNull.Value);
-                            command.Parameters.AddWithValue("@Lugar", (object)busqueda.Lugar ?? DBNull.Value);
-                            command.Parameters.AddWithValue("@TiempoEnCuenta", tiempoEnCuenta.ToString(@"hh\:mm\:ss")); // Asegurar formato correcto
-                            command.Parameters.AddWithValue("@link", (object)busqueda.Link ?? DBNull.Value);
-                            command.Parameters.AddWithValue("@validador", (object)busqueda.validador ?? DBNull.Value);
+                            command.Parameters.AddWithValue("@Persona", busqueda.Persona ?? string.Empty);
+                            command.Parameters.AddWithValue("@Puesto", busqueda.Puesto ?? string.Empty);
+                            command.Parameters.AddWithValue("@Lugar", busqueda.Lugar ?? string.Empty);
+                            command.Parameters.AddWithValue("@TiempoEnCuenta", tiempoEnCuenta.ToString(@"hh\:mm\:ss"));
+                            command.Parameters.AddWithValue("@link", busqueda.Link ?? string.Empty);
+                            command.Parameters.AddWithValue("@validador", (object?)busqueda.validador ?? DBNull.Value);
 
                             await command.ExecuteNonQueryAsync(); // Ejecutar sin recuperar idBusqueda
                         }
 
-                        // Guardar nuevos teléfonos (usando el repositorio)
-                        if (busqueda.Teléfonos != null)
+                        // Guardar nuevos teléfonos
+                        if (busqueda.Teléfonos != null && busqueda.Teléfonos.Length > 0)
                         {
-                            for (int i = 0; i < busqueda.Teléfonos.Length; i++)
+                            foreach (var telefono in busqueda.Teléfonos)
                             {
-                                string mensajeTelefono = _busquedaRepository.GuardaNuevoTelefono(busqueda.Teléfonos[i], true, connection, transaction); // idBusqueda no es necesario
-                                if (!string.IsNullOrEmpty(mensajeTelefono))
+                                string mensaje = GuardaNuevoTelefono(telefono, true, connection, transaction);
+                                if (!string.IsNullOrEmpty(mensaje))
                                 {
                                     transaction.Rollback();
-                                    return mensajeTelefono;
+                                    return false; // Error al guardar teléfono, rollback
                                 }
                             }
                         }
 
-                        // Actualizar DataTable local (usando el repositorio)
-                        if (_busquedaRepository.Búsquedas != null)
-                        {
-                            DataRow nuevaFila = _busquedaRepository.Búsquedas.NewRow();
-                            nuevaFila["Fecha_Insert"] = DateTime.UtcNow.Date;
-                            nuevaFila["Segundo_Insert"] = DateTime.UtcNow.TimeOfDay;
-
-                            _busquedaRepository.Búsquedas.Rows.Add(nuevaFila);
-                        }
-
                         transaction.Commit();
-                        return ""; // Éxito
+                        return true;
+                    }
+                    catch (SqlException sqlEx)
+                    {
+                        transaction.Rollback();
+                        Console.WriteLine($"Error en SQL: {sqlEx.Number} - {sqlEx.Message} - idCartera: {idCartera}, idCuenta: {idCuenta}, idEjecutivo: {idEjecutivo}, idDato: {busqueda.idDato}, idFuente: {busqueda.idFuente}, validador: {busqueda.validador}");
+                        return false;
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        Console.WriteLine($"Error general: {ex.Message}");
+                        return false;
                     }
                 }
             }
-            catch (SqlException sqlEx)
+        }
+
+        public string GuardaNuevoTelefono(Telefono telefono, bool esNuevo, SqlConnection connection, SqlTransaction transaction)
+        {
+            if (telefono == null || string.IsNullOrWhiteSpace(telefono.NúmeroTelefónico) || telefono.NúmeroTelefónico.Length != 10)
             {
-                Console.WriteLine($"Error en SQL: {sqlEx.Number} - {sqlEx.Message} - idCartera: {idCartera}, idCuenta: {idCuenta}, idEjecutivo: {idEjecutivo}, idDato: {busqueda.idDato}, idFuente: {busqueda.idFuente}, validador: {busqueda.validador}");
-                return "Error en la base de datos.";
+                return "Número telefónico inválido o incompleto.";
+            }
+
+            try
+            {
+                using (var command = new SqlCommand("INSERT INTO Telefonos (NumeroTelefonico) VALUES (@NumeroTelefonico)", connection, transaction))
+                {
+                    command.Parameters.AddWithValue("@NumeroTelefonico", telefono.NúmeroTelefónico);
+                    command.ExecuteNonQuery();
+                }
+                return "";
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine($"Error de base de datos al guardar teléfono: {ex.Number} - {ex.Message} - NumeroTelefonico: {telefono.NúmeroTelefónico}");
+                return "Error al guardar teléfono en la base de datos.";
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error general: {ex.Message}");
-                return "Error inesperado al guardar la búsqueda.";
+                Console.WriteLine($"Error inesperado al guardar teléfono: {ex.Message}");
+                return "Error inesperado al guardar el teléfono.";
             }
         }
-    }
 
 
 
         #endregion
 
 
+    }
 }
 
 

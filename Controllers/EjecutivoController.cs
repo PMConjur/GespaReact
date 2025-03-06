@@ -326,15 +326,15 @@ namespace NoriAPI.Controllers
         {
             try
             {
-                DataTable busquedas = new DataTable(); // Simulación de caché local de búsquedas
                 TimeSpan tiempoEnCuenta = TimeSpan.Zero; // Debes definir cómo obtener esto en tu lógica
 
-                string resultado = await _ejecutivoService.GuardaBusquedaAsync(busqueda, idCartera, idCuenta, idEjecutivo, tiempoEnCuenta);
+                bool resultado = await _ejecutivoService.GuardaBusquedaAsync(busqueda, idCartera, idCuenta, idEjecutivo, tiempoEnCuenta);
 
-                if (!string.IsNullOrEmpty(resultado))
-                    return BadRequest(new { mensaje = resultado });
-
-                return Ok(new { mensaje = "Búsqueda guardada exitosamente." });
+                return Ok(new
+                {
+                    success = resultado,
+                    message = resultado ? "Búsqueda guardada con éxito." : "Error al guardar la búsqueda."
+                });
             }
             catch (Exception ex)
             {
