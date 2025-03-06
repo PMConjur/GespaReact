@@ -1,5 +1,6 @@
 import servicio from "./axiosServices";
 import { toast } from "sonner";
+import axios from "axios";
 
 // Obtiene token de inicio de sesión
 const responseData =
@@ -229,8 +230,15 @@ export async function userTimesUpdate(data) {
         console.log("📤 Enviando datos de pausa a la API:", JSON.stringify(data, null, 2));
 
         // const response = await fetch(`${apiUrl}/search-customer/validate-phone`, {
-        const response = await fetch(`${apiUrl}/api/ejecutivo/pause-ejecutivo`,
-            data
+        const response = await fetch(`${apiUrl}/ejecutivo/pause-ejecutivo`,
+            {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            }
         );
 
         console.log("✅ Respuesta de la API:", response.data);
@@ -238,7 +246,7 @@ export async function userTimesUpdate(data) {
         return response.data;
     } catch (error) {
         console.error("❌ Error al enviar los datos:", error);
-        const errorMessage = error.response?.data?.mensaje || "Error al enviar la pausa.";
+        const errorMessage = error.response?.data?.mensaje || "Error 408: Error al enviar la pausa.";
         toast.error(errorMessage);
         throw new Error(errorMessage);
     }
@@ -296,4 +304,30 @@ const getErrorStatus = (status) => {
   }
 };
 
-//const message = getErrorStatus(response.status);
+
+export async function getGestionData(idCuenta, idCartera) {
+  try {
+    // Asegúrate de obtener el token de manera correcta
+    const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));
+    const token = responseData?.ejecutivo?.token; // Obtener el token del almacenamiento local o estado
+
+    if (!token) {
+      throw new Error("Token de autenticación no disponible");
+    }
+
+    // Incluir el token en los encabezados de la solicitud
+    const response = await axios.get(
+      `${apiUrl}/ejecutivo/seguimientos/${idCartera}/${idCuenta}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Incluir el token en el encabezado
+        },
+      }
+    );
+    console.log('Respuesta de la API de seguimiento:', response.data); // Verificar los datos recibidos
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error al obtener los datos de seguimiento:", error);
+    throw new Error("Error al cargar los datos de gestión.");
+  }
+}

@@ -91,9 +91,7 @@ const Times = ({ show, handleClose }) => {
                 idEjecutivo: numEmpleado,
                 contrasenia: registeredPassword,
                 peCausa: selectedReason,
-                duracion: {
-                    ticks: duracion, // Formato "hh:mm:ss"
-                }
+                duracion: duracion, // Formato "hh:mm:ss"
             };
     
             userTimesUpdate(dataToSend);
@@ -132,9 +130,8 @@ const sendDataToServer = async (updatedTimers) => {
       idEjecutivo: numEmpleado,
       contrasenia: registeredPassword,
       peCausa: selectedReason,
-      duracion: {
-          ticks: duracion, // Formato "hh:mm:ss"
-      }
+      duracion: duracion // Formato "hh:mm:ss"
+      
   };
 
   console.log("📤 Enviando datos actualizados al servidor:", JSON.stringify(dataToSend, null, 2));

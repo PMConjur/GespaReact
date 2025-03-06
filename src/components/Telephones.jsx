@@ -24,7 +24,7 @@ const Telephones = () => {
       const flatPhones = phones.flat();
       setData(flatPhones);
       if (flatPhones.length === 0 && !toastShown) {
-        toast.error("No hay carga de teléfonos", { position: "top-right" });
+        toast.info("No hay carga de teléfonos", { position: "top-right" });
         setToastShown(true);
       }
     } catch (error) {
@@ -47,15 +47,15 @@ const Telephones = () => {
   // Validar número de teléfono
   const handleValidatePhone = async () => {
     if (!phoneNumber.trim()) {
-      toast.warning("Ingrese un número de teléfono", { position: "top-right" });
+      toast.warning("Error 400: Ingrese un número de teléfono", { position: "top-right" });
       return;
     }
     if (phoneNumber.length !== 10 && phoneNumber.length !== 11) {
-      toast.warning("El número de teléfono debe tener 10 o 11 dígitos", { position: "top-right" });
+      toast.warning("Error 400: El número de teléfono debe tener 10 o 11 dígitos", { position: "top-right" });
       return;
     }
     if (searchResults.length === 0 || !searchResults[0].idCuenta) {
-      toast.warning("No hay una cuenta válida seleccionada", { position: "top-right" });
+      toast.warning("Error 428: No hay una cuenta válida seleccionada", { position: "top-right" });
       return;
     }
   
@@ -70,11 +70,11 @@ const Telephones = () => {
           style: { transform: "translateY(20vh)" }, // Ajusta verticalmente
         });
       } else {
-        toast.error("El número de telefono no existe en la cuenta", { position: "center-right"});
+        toast.error("Error 409: El número de telefono no existe en la cuenta", { position: "center-right"});
       }
     } catch (error) {
       console.error("Error al validar el teléfono:", error);
-      toast.error("El número de teléfono no existe en la cuenta", {
+      toast.error("Error 404: El número de teléfono no existe en la cuenta", {
         position: "top-right",
         style: { transform: "translateY(20vh)" }, // Ajusta verticalmente
       });

@@ -21,7 +21,7 @@ const InformationClient = () => {
           searchResults.map(async (result, index) => {
             const information = await fetchInformation(result.idCuenta); // Usar result.idCuenta
             if (information.length === 0 && !toastShown) {
-              toast.error(
+              toast.info(
                 `No hay carga de información para la cuenta ${result.idCuenta}`,
                 {
                   position: "top-right" // Mostrar toast en el lado derecho
