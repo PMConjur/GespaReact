@@ -31,6 +31,7 @@ namespace NoriAPI.Services
         Task <DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
         Task ObtenerBusquedaEJE(DataRow drDatos, DataSet dsTablas);
 
+        Task<string> GuardaBusquedaAsync(BusquedaClass busqueda, int idCartera, string idCuenta, int idEjecutivo, TimeSpan tiempoEnCuenta);
         Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo);
         Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas);
 
@@ -41,6 +42,8 @@ namespace NoriAPI.Services
         private readonly IConfiguration _configuration;
         private readonly IEjecutivoRepository _ejecutivoRepository;
         private readonly string _connectionString;
+        private readonly IBusquedaRepository _busquedaRepository;
+
 
         #region PropiedadesProductividad
         private static string[] _NombreColumnasConteos = { "Titulares", "Conocidos", "Desconocidos", "SinContacto" };
@@ -579,15 +582,122 @@ namespace NoriAPI.Services
             busquedaGet.TableName = "Busqueda";
             dsTablas.Tables.Add(busquedaGet);
         }
+         // Usar la interfaz
 
-        #endregion
+            public EjecutivoService(string connectionString, IBusquedaRepository busquedaRepository) // Inyectar la interfaz
+            {
+                _connectionString = connectionString;
+                _busquedaRepository = busquedaRepository;
+            }
 
+            public async Task<string> GuardaBusquedaAsync(BusquedaClass busqueda, int idCartera, string idCuenta, int idEjecutivo, TimeSpan tiempoEnCuenta)
+            {
+                if (busqueda == null)
+                    throw new ArgumentNullException(nameof(busqueda), "El objeto búsqueda no puede ser null");
 
+                string mensaje = "";
+
+                // Guardar nuevos teléfonos
+                if (busqueda.Teléfonos != null)
+                {
+                    for (int i = 0; i < busqueda.Teléfonos.Length; i++)
+                    {
+                        mensaje = _busquedaRepository.GuardaNuevoTelefono(busqueda.Teléfonos[i], true);
+                        if (!string.IsNullOrEmpty(mensaje))
+                            return mensaje;
+                    }
+                }
+
+                // Validar si la búsqueda ya existe hoy
+                string fechaHoy = DateTime.UtcNow.ToString("yyyy-MM-dd");
+                bool existeBusqueda = _busquedaRepository.Búsquedas.Select($"Fecha_Insert = '{fechaHoy}' AND idDato = {busqueda.idDato} AND idFuente = {busqueda.idFuente} AND idEjecutivo = {idEjecutivo}").Length > 0;
+
+                if (existeBusqueda)
+                    return "Ya existe una búsqueda de dicho dato en esa fuente el día de hoy a la cuenta.";
+
+                try
+                {
+                    using (var connection = new SqlConnection(_connectionString))
+                    {
+                        await connection.OpenAsync();
+
+                        using (var command = new SqlCommand("EXEC [2.9.Búsqueda] @idCartera, @idCuenta, @idEjecutivo, @idDato, @DatoBuscado, @idFuente, @Encontrado, @Telefonos, @Persona, @Puesto, @Lugar, NULL, @TiempoEnCuenta, @link, @validador", connection))
+                        {
+                            // Asignación de parámetros
+                            command.Parameters.AddWithValue("@idCartera", idCartera);
+                            command.Parameters.AddWithValue("@idCuenta", idCuenta?.Trim() ?? string.Empty);
+                            command.Parameters.AddWithValue("@idEjecutivo", idEjecutivo);
+                            command.Parameters.AddWithValue("@idDato", busqueda.idDato);
+
+                            string datoBuscado = busqueda.idFuente == 2420 && busqueda.Teléfonos != null && busqueda.Teléfonos.Length > 0
+                                ? $"XXX-XXX-{busqueda.Teléfonos[0].NúmeroTelefónico.Substring(6, 4)}"
+                                : busqueda.Dato ?? string.Empty;
+
+                            command.Parameters.AddWithValue("@DatoBuscado", datoBuscado);
+                            command.Parameters.AddWithValue("@idFuente", busqueda.idFuente);
+                            command.Parameters.AddWithValue("@Encontrado", busqueda.Encontrado);
+                            command.Parameters.AddWithValue("@Telefonos", busqueda.Teléfonos?.Length ?? 0);
+                            command.Parameters.AddWithValue("@Persona", (object?)busqueda.Persona ?? DBNull.Value);
+                            command.Parameters.AddWithValue("@Puesto", (object?)busqueda.Puesto ?? DBNull.Value);
+                            command.Parameters.AddWithValue("@Lugar", (object?)busqueda.Lugar ?? DBNull.Value);
+                            command.Parameters.AddWithValue("@TiempoEnCuenta", tiempoEnCuenta);
+                            command.Parameters.AddWithValue("@link", (object?)busqueda.Link ?? DBNull.Value);
+                            command.Parameters.AddWithValue("@validador", (object?)busqueda.validador ?? DBNull.Value);
+
+                            int rowsAffected = await command.ExecuteNonQueryAsync();
+                            if (rowsAffected <= 0)
+                                return "Falló al guardar búsqueda en la base de datos.";
+
+                            // Actualizar DataTable local
+                            if (_busquedaRepository.Búsquedas != null)
+                            {
+                                DataRow nuevaFila = _busquedaRepository.Búsquedas.NewRow();
+                                nuevaFila["Fecha_Insert"] = DateTime.UtcNow.Date;
+                                nuevaFila["Segundo_Insert"] = DateTime.UtcNow.TimeOfDay;
+                                
+                                _busquedaRepository.Búsquedas.Rows.Add(nuevaFila);
+                            }
+
+                            return "";
+                        }
+                    }
+                }
+                catch (SqlException sqlEx)
+                {
+                    Console.WriteLine($"Error en SQL: {sqlEx.Message}");
+                    return "Error en la base de datos.";
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error general: {ex.Message}");
+                    return "Error inesperado al guardar la búsqueda.";
+                }
+            }
+
+        
+        // Método para validar estado de contingencia
+        //public string ValidaTelefonoContingencia(DataRow TelefonoActual)
+        //{
+        //    if (TelefonoActual == null)
+        //        return "";
+
+        //    if (Catálogos.EstadosContingencia.Contains($"{TelefonoActual["Estado"]}_{_drInfo["idProducto"]}"))
+        //        return Funciones.NombreEstado(TelefonoActual["Estado"].ToString());
+
+        //    return "";
+        //}
     }
 
 
 
+        #endregion
+
+
 }
+
+
+
+
 
 
 

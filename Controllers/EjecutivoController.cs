@@ -89,7 +89,22 @@ namespace NoriAPI.Controllers
         }
         #endregion
 
+
         #region Recordatorios
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         [HttpGet("recordatorios/{idEjecutivo}")]
         public async Task<IActionResult> GetRecordatorios(int idEjecutivo)
         {
@@ -239,17 +254,21 @@ namespace NoriAPI.Controllers
 
         #endregion
 
+
         #region AccionesNegociacion
+
+
+
         [HttpGet("accionesNegociacion")]
         public async Task<IActionResult> GetAccionNegociacion(int idCartera, string idCuenta)
         {
             DataSet dsTablas = new DataSet();
             try
             {
-                DataTable Negociaciones = new DataTable();                
+                DataTable Negociaciones = new DataTable();
 
-                Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync( idCartera,  idCuenta);
-                             
+                Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
+
                 // Convertimos el DataTable a una lista de diccionarios
                 var listaNegociaciones = ConvertDataTableToList(Negociaciones);
 
@@ -301,10 +320,28 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+
+        [HttpPost("guardar")]
+        public async Task<IActionResult> GuardaBusqueda([FromBody] BusquedaClass busqueda, [FromQuery] int idCartera, [FromQuery] string idCuenta, [FromQuery] int idEjecutivo)
+        {
+            try
+            {
+                DataTable busquedas = new DataTable(); // Simulación de caché local de búsquedas
+                TimeSpan tiempoEnCuenta = TimeSpan.Zero; // Debes definir cómo obtener esto en tu lógica
+
+                string resultado = await _ejecutivoService.GuardaBusquedaAsync(busqueda, idCartera, idCuenta, idEjecutivo, tiempoEnCuenta);
+
+                if (!string.IsNullOrEmpty(resultado))
+                    return BadRequest(new { mensaje = resultado });
+
+                return Ok(new { mensaje = "Búsqueda guardada exitosamente." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = $"Error interno: {ex.Message}" });
+            }
+        }
         #endregion
-
-
-
 
 
     }

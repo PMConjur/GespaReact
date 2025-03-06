@@ -15,7 +15,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/login")]
-    [Authorize]
+    //[Authorize]
     public class LoginController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -35,6 +35,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost("resetea-password")]
+        [AllowAnonymous]
         public async Task<ActionResult<ResultadoLogin>> ReseteaPassword([FromBody] ReseteaContra request)
         {
             if (string.IsNullOrEmpty(request.Usuario) || string.IsNullOrEmpty(request.NuevaContra) || string.IsNullOrEmpty(request.Contra))

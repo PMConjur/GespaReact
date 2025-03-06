@@ -92,6 +92,7 @@ builder.Services.AddScoped<IEjecutivoService, EjecutivoService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISearchRepository, SearchRepository>();
 builder.Services.AddScoped<IEjecutivoRepository, EjecutivoRepository>();
+builder.Services.AddScoped<IBusquedaRepository, BusquedaRepository>();
 
 
 

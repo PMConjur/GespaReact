@@ -8,6 +8,7 @@ using System.Linq;
 using System.Data;
 using System.Text.RegularExpressions;
 using NoriAPI.Models.Phones;
+using Microsoft.IdentityModel.Tokens;
 
 
 namespace NoriAPI.Services
@@ -274,23 +275,22 @@ namespace NoriAPI.Services
                 telefonoCuenta.HorarioContacto = null;
             }
 
-            var newPhoneResult = _searchRepository.RegisterNewPhone(telefonoCuenta);
+            // 🔹 Asegurar que se espera correctamente el resultado asíncrono
+            var newPhoneResult = await _searchRepository.RegisterNewPhone(telefonoCuenta);
 
-            if (newPhoneResult != null)
+            if (newPhoneResult == null)
             {
-                return "Fallo al guardar el teléfono en la base de datos";
+                return "Fallo al guardar el teléfono en la base de datos.";
             }
 
-            var phoneResultDict = (IDictionary<string, object>)newPhoneResult;
-
-            // Si la propiedad "Expiró" existe, extraemos su valor
-            if (phoneResultDict.TryGetValue("Resultado", out object resultadoObj) && resultadoObj != null)
+            // 🔹 Verifica si el resultado contiene un mensaje de error
+            if (newPhoneResult is IDictionary<string, object> phoneResultDict &&
+                phoneResultDict.TryGetValue("Resultado", out object resultadoObj) && resultadoObj != null)
             {
-                // Puede venir como bool, int, etc. Se recomienda convertirlo a bool
                 return Convert.ToString(resultadoObj);
             }
 
-            return "Éxito";
+            return "";
         }
 
 
