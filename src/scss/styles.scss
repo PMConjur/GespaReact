@@ -794,3 +794,60 @@ $custom-color-2: #00b894; // Verde turquesa
     color: darken($custom-color-2, 10%) !important;
   }
 }
+
+
+
+/***
+
+
+
+Codigo de Fer
+**/
+
+
+.notes-widget {
+  max-height: 600px;
+  overflow-y: auto;
+  overflow: auto;
+}
+
+.notes-widget .list-group-item {
+  transition: background-color 0.2s;
+}
+
+.notes-widget .list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+.notes-widget .btn-sm {
+  padding: 0.25rem 0.5rem;
+}
+
+.notes-widget .edit-area textarea {
+
+  resize: vertical;
+  min-height: 100px;
+}
+
+.notes-widget .gap-1 {
+  gap: 0.25rem;
+}
+
+.notes-widget .gap-2 {
+  gap: 0.5rem;
+}
+
+@media (max-width: 576px) {
+  .notes-widget .card-header h5 {
+    font-size: 1rem;
+  }
+
+  .notes-widget .list-group-item h6 {
+    font-size: 0.9rem;
+  }
+}
+
+.react-time-picker__inputGroup__input {
+  width: 50px !important; /* Ajusta el ancho de los campos de hora y minutos */
+  font-size: 1rem; /* Aumenta el tamaño de la fuente si es necesario */
+}

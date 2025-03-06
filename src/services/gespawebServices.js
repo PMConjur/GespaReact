@@ -237,6 +237,42 @@ export async function userFlow() {
   }
 }
 
+
+
+// Endpoint Recordatorios
+
+export const fetchNotes = async (numEmpleado, token) => {
+  try {
+    if (!token) {
+      throw new Error("Token is missing or invalid");
+    }
+
+    const response = await servicio.get(
+      `http://192.168.7.33/api/ejecutivo/recordatorios/${numEmpleado}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    // formato de los datos
+    const data = response.data;
+    const formattedNotes = data.map((item) => ({
+      id: item.idCuenta,
+      title: item.Nombre,
+      content: `Saldo: ${item.Saldo}\nTeléfono: ${item.NúmeroTelefónico}\nSituación: ${item.idSituación}\nFecha Seguimiento: ${item.FechaSeguimiento}\nHora Seguimiento: ${item.SegundoSeguimiento}`,
+      date: item.FechaHoraSeguimiento,
+    }));
+
+    return formattedNotes;
+  } catch (error) {
+    console.error("Error fetching notes:", error);
+    throw error;
+  }
+};
+
+
 //Error status global
 const getErrorStatus = (status) => {
   switch (status) {
@@ -265,6 +301,12 @@ const getErrorStatus = (status) => {
     default:
       return `Error inesperado (${status}): Contacta con soporte.`;
   }
+
+
+
+
+
+
 };
 
 //const message = getErrorStatus(response.status);
