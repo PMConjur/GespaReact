@@ -10,7 +10,7 @@ const Telephones = () => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
-  const { searchResults, setFlowMessage, setSelectedAnswer } = useContext(AppContext);
+  const { searchResults, setSelectedAnswer} = useContext(AppContext);
   const [toastShown, setToastShown] = useState(false);
 
   // Cargar datos desde la API
@@ -103,7 +103,6 @@ const Telephones = () => {
                     className="me-2 input-phone"
                     style={{ width: "25%" }}
                     onClick={() => {   
-                      setFlowMessage("Inicia flujo");
                       setSelectedAnswer(10); // Enviar valor 10 al Form.Check en Flow.jsx
                     }}
                   >
@@ -173,7 +172,7 @@ const Telephones = () => {
                     <td>{row.intentosViciDial || "--"}</td>
                     <td>{row.id || "--"}</td>
                     <td>
-                    <a href="#" className="text-primary">
+                    <a href="#" className="text-primary" onClick={() => setSelectedAnswer(2)}>
                         {"XXXXXX" + row.númeroTelefónico.slice(6)}
                       </a>
                     </td>

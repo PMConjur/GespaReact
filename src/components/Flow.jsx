@@ -10,6 +10,7 @@ const Flow = () => {
   const [userFlowData, setUserFlowData] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(1);
   const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [selectedValues, setSelectedValues] = useState({});
   const [answerHistory, setAnswerHistory] = useState([]); // Add state to keep track of answer history
   const { selectedAnswer } = useContext(AppContext);
 
@@ -29,7 +30,7 @@ const Flow = () => {
 
   useEffect(() => {
     if (selectedAnswer !== null) {
-      handleAnswerChange(currentQuestionId, selectedAnswer, selectedAnswer);
+      handleAnswerChange(currentQuestionId, selectedAnswer, null);
     }
   }, [selectedAnswer]);
 
