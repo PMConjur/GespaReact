@@ -35,6 +35,8 @@ namespace NoriAPI.Repositories
         Task<DataTable> ObtieneHerramientasCompletas();
         Task<DataTable> InfoCuenta(int Cartera, string NoCuenta);
         object CampoCalculado(string Expresión);
+        List<OfrecimientosInfo> ConvertirDataTableALista(DataTable dt);
+        List<HerramientasInfo> ConvertirDataTableALista_(DataTable dt);
 
         #endregion
 
@@ -933,15 +935,23 @@ namespace NoriAPI.Repositories
         {
             return dt.AsEnumerable().Select(row => new OfrecimientosInfo
             {
-                Fecha_Insert = row.Field<string>("Fecha_Insert"),
+                Fecha_Insert = Convert.ToString(row.Field<DateTime>("Fecha_Insert")),
                 Segundo_Insert = row.Field<string>("Segundo_Insert"),
                 Herramienta = row.Field<string>("Herramienta"),
                 idEstado = row.Field<string>("idEstado"),
                 Vencimiento = row.Field<string>("Vencimiento"),
-                SaldoInterés = row.Field<string>("Monto")
+                SaldoInterés =Convert.ToString(row.Field<Decimal>("SaldoInterés"))
             }).ToList();
         }
 
+        public List<HerramientasInfo> ConvertirDataTableALista_(DataTable dt)
+        {
+            return dt.AsEnumerable().Select(row => new HerramientasInfo
+            {
+                idHerramienta = row.Field<int>("idHerramienta"),
+                Nombre = row.Field<string>("Nombre")                
+            }).ToList();
+        }
 
 
     }

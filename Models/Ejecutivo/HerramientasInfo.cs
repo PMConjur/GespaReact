@@ -2,7 +2,7 @@
 {
     public class HerramientasInfo
     {
-        public string idHerramienta {  get; set; }
+        public int idHerramienta {  get; set; }
         public string Nombre { get; set; }
     }
 }

@@ -217,15 +217,7 @@ namespace NoriAPI.Services
                 dtFiltrado.DefaultView.Sort = "Fecha_Insert DESC";
                 dtFiltrado = dtFiltrado.DefaultView.ToTable();
 
-            }
-            //Convierte datatable a list 
-
-           
-
-
-
-
-
+            }                    
 
             //-----------------------------------Plazos------------------------------------------//
 
@@ -461,22 +453,20 @@ namespace NoriAPI.Services
             _iMensualidades = Convert.ToInt16(drHerramienta["Mensualidades"]);
 
             //Días Máximos
-            iMaxDias = Convert.ToInt32(drHerramientaAmex["MaxDías"]);  
-            
+            iMaxDias = Convert.ToInt32(drHerramientaAmex["MaxDías"]);
+
 
             //Convierte datatable a list 
 
-
-
-
-
-
+            List<OfrecimientosInfo> listaOfrecimientos = _ejecutivoRepository.ConvertirDataTableALista(dtFiltrado);
+            List<HerramientasInfo> listaHerramientas = _ejecutivoRepository.ConvertirDataTableALista_(dtHerrFiltradas);
 
             var resultadoCalculadora = new ResultadoCalculadora {
-                Ofrecimientos = dtFiltrado,
-                Herramientas = dtHerrFiltradas,
+                Ofrecimientos = listaOfrecimientos,
+                Herramientas = listaHerramientas,
                 MontoRequerido = MontoRequerido,
                 Descuento = MinDescuento,
+                MaxDias = días1erPago,
                 MontoDescuento = Montodescuento,
                 Saldo = Saldo,
                 FechaCorte = Convert.ToString(Fecha_Corte)
@@ -487,11 +477,6 @@ namespace NoriAPI.Services
 
 
         #endregion
-
-
-
-
-
 
         private static void CalculaTiempoPromedioTest(DataTable tiempos, string Conteo)
         {
