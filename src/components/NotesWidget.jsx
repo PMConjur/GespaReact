@@ -1,19 +1,14 @@
 import { useState, useEffect } from "react";
 import { fetchNotes } from "../services/gespawebServices";
 import servicio from "../services/axiosServices";
-
-
 import DatePicker from "react-datepicker";
 import TimePicker from "react-time-picker";
 
-import 'react-datepicker/dist/react-datepicker.css';
+import "react-datepicker/dist/react-datepicker.css";
 import "../scss/styles.scss";
 
-
-
-
-//const [idEjecutivo, setIdEjecutivo] = useState("");
-const numEmpleado = 36072;
+const responseData = JSON.parse(localStorage.getItem("responseData"));
+const numEmpleado = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
 
 const token = servicio;
 const PencilIcon = () => (
@@ -89,11 +84,11 @@ function NotesWidget() {
         console.error("Error fetching notes:", error);
         if (error.response && error.response.status === 404) {
           alert(
-            "No se encontraron notas para el ID de empleado proporcionado."
+            "No se encontraron Recordatorios para el ID de empleado proporcionado."
           );
         } else {
           alert(
-            "Se produjo un error al recuperar notas. Por favor inténtalo de nuevo más tarde.."
+            "Se produjo un error al recuperar Recordatorios. Por favor inténtalo de nuevo más tarde.."
           );
         }
       }
