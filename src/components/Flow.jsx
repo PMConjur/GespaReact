@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Row, Col, Card, Form, Button } from "react-bootstrap";
+import { Row, Col, Card, Form, Button, Stack } from "react-bootstrap";
 import { userFlow } from "../services/gespawebServices";
 import { NodePlusFill } from "react-bootstrap-icons";
-import { toast } from "sonner"; // Import toast and Toaster
+import { toast, Toaster } from "sonner"; // Import toast and Toaster
 import { AppContext } from "../pages/Managment";
 import { useContext } from "react";
 
@@ -10,6 +10,7 @@ const Flow = () => {
   const [userFlowData, setUserFlowData] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(1);
   const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [selectedValues, setSelectedValues] = useState({});
   const [answerHistory, setAnswerHistory] = useState([]); // Add state to keep track of answer history
   const { selectedAnswer } = useContext(AppContext);
 
