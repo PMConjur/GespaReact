@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using NoriAPI.Models.Login;
 using System.Diagnostics;
 using static NoriAPI.Models.ClasesGespa;
+using Microsoft.Identity.Client;
 
 namespace NoriAPI.Services
 {
@@ -217,6 +218,14 @@ namespace NoriAPI.Services
                 dtFiltrado = dtFiltrado.DefaultView.ToTable();
 
             }
+            //Convierte datatable a list 
+
+           
+
+
+
+
+
 
             //-----------------------------------Plazos------------------------------------------//
 
@@ -452,7 +461,15 @@ namespace NoriAPI.Services
             _iMensualidades = Convert.ToInt16(drHerramienta["Mensualidades"]);
 
             //Días Máximos
-            iMaxDias = Convert.ToInt32(drHerramientaAmex["MaxDías"]);           
+            iMaxDias = Convert.ToInt32(drHerramientaAmex["MaxDías"]);  
+            
+
+            //Convierte datatable a list 
+
+
+
+
+
 
 
             var resultadoCalculadora = new ResultadoCalculadora {

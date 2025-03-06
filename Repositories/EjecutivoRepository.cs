@@ -886,7 +886,6 @@ namespace NoriAPI.Repositories
         {
             return new SqlConnection(_configuration.GetConnectionString(connection));
         }
-
         private static DataTable ConvertToDataTable(IEnumerable<dynamic> data, string tableName)
         {
             DataTable table = new DataTable(tableName);
@@ -929,6 +928,20 @@ namespace NoriAPI.Repositories
 
             return ht;
         }
+
+        public List<OfrecimientosInfo> ConvertirDataTableALista(DataTable dt)
+        {
+            return dt.AsEnumerable().Select(row => new OfrecimientosInfo
+            {
+                Fecha_Insert = row.Field<string>("Fecha_Insert"),
+                Segundo_Insert = row.Field<string>("Segundo_Insert"),
+                Herramienta = row.Field<string>("Herramienta"),
+                idEstado = row.Field<string>("idEstado"),
+                Vencimiento = row.Field<string>("Vencimiento"),
+                SaldoInterés = row.Field<string>("Monto")
+            }).ToList();
+        }
+
 
 
     }
