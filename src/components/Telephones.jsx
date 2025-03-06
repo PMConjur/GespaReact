@@ -1,5 +1,12 @@
 import React, { useEffect, useState, useContext } from "react";
-import { Card, Table, Button, InputGroup, FormControl, Placeholder } from "react-bootstrap";
+import {
+  Card,
+  Table,
+  Button,
+  InputGroup,
+  FormControl,
+  Placeholder
+} from "react-bootstrap";
 import { fetchPhones, fetchValidationTel } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
@@ -7,10 +14,15 @@ import "../scss/styles.scss";
 import { TelephoneFill } from "react-bootstrap-icons";
 
 const Telephones = () => {
+  // Estado para almacenar los datos de los teléfonos
   const [data, setData] = useState([]);
+  // Estado para manejar la carga de datos
   const [isLoading, setIsLoading] = useState(false);
+  // Estado para almacenar el número de teléfono ingresado
   const [phoneNumber, setPhoneNumber] = useState("");
-  const { searchResults, setFlowMessage, setSelectedAnswer } = useContext(AppContext);
+  // Consumir el contexto para obtener los resultados de búsqueda y la función para establecer la respuesta seleccionada
+  const { searchResults, setSelectedAnswer } = useContext(AppContext);
+  // Estado para manejar la visualización de notificaciones
   const [toastShown, setToastShown] = useState(false);
 
   // Cargar datos desde la API
@@ -52,35 +64,44 @@ const Telephones = () => {
       return;
     }
     if (phoneNumber.length !== 10 && phoneNumber.length !== 11) {
-      toast.warning("El número de teléfono debe tener 10 o 11 dígitos", { position: "top-right" });
+      toast.warning("El número de teléfono debe tener 10 o 11 dígitos", {
+        position: "top-right"
+      });
       return;
     }
     if (searchResults.length === 0 || !searchResults[0].idCuenta) {
-      toast.warning("No hay una cuenta válida seleccionada", { position: "top-right" });
+      toast.warning("No hay una cuenta válida seleccionada", {
+        position: "top-right"
+      });
       return;
     }
-  
-    const idCuenta = searchResults[0].idCuenta; 
-  
+
+    const idCuenta = searchResults[0].idCuenta;
+
     try {
-      const response = await fetchValidationTel({ telefono: phoneNumber, idCuenta });
-  
+      const response = await fetchValidationTel({
+        telefono: phoneNumber,
+        idCuenta
+      });
+
       if (response.exists) {
         toast.success("El número de teléfono existe en la cuenta", {
           position: "top-right",
-          style: { transform: "translateY(20vh)" }, // Ajusta verticalmente
+          style: { transform: "translateY(20vh)" } // Ajusta verticalmente
         });
       } else {
-        toast.error("El número de telefono no existe en la cuenta", { position: "center-right"});
+        toast.error("El número de telefono no existe en la cuenta", {
+          position: "center-right"
+        });
       }
     } catch (error) {
       console.error("Error al validar el teléfono:", error);
       toast.error("El número de teléfono no existe en la cuenta", {
         position: "top-right",
-        style: { transform: "translateY(20vh)" }, // Ajusta verticalmente
+        style: { transform: "translateY(20vh)" } // Ajusta verticalmente
       });
     }
-  };  
+  };
 
   // Buscar datos cuando haya cambios en searchResults
   useEffect(() => {
@@ -92,7 +113,9 @@ const Telephones = () => {
   return (
     <Card className="overflow-auto card-phones">
       <Card.Body className="card-body-phones">
-        <h5 className="card-title text-white"><TelephoneFill/> Teléfonos</h5>
+        <h5 className="card-title text-white">
+          <TelephoneFill /> Teléfonos
+        </h5>
         <Table hover variant="dark" className="table " responsive="sm">
           <thead>
             <tr>
@@ -102,8 +125,7 @@ const Telephones = () => {
                     variant="primary"
                     className="me-2 input-phone"
                     style={{ width: "25%" }}
-                    onClick={() => {   
-                      setFlowMessage("Inicia flujo");
+                    onClick={() => {
                       setSelectedAnswer(10); // Enviar valor 10 al Form.Check en Flow.jsx
                     }}
                   >
@@ -151,47 +173,53 @@ const Telephones = () => {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? (
-                [...Array(4)].map((_, i) => (
-                  <tr key={i}>
-                    {[...Array(18)].map((_, j) => (
-                      <td key={j}>
-                        <Placeholder as="span" animation="glow">
-                          <Placeholder xs={12} />
-                        </Placeholder>
+              {isLoading
+                ? [...Array(4)].map((_, i) => (
+                    <tr key={i}>
+                      {[...Array(18)].map((_, j) => (
+                        <td key={j}>
+                          <Placeholder as="span" animation="glow">
+                            <Placeholder xs={12} />
+                          </Placeholder>
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                : data.map((row, index) => (
+                    <tr key={index}>
+                      <td>{row.titulares || "--"}</td>
+                      <td>{row.conocidos || "--"}</td>
+                      <td>{row.desconocidos || "--"}</td>
+                      <td>{row.sinContacto || "--"}</td>
+                      <td>{row.intentosViciDial || "--"}</td>
+                      <td>{row.id || "--"}</td>
+                      <td>
+                        <a
+                          href="#"
+                          className="text-primary"
+                          onClick={() => setSelectedAnswer(2)}
+                        >
+                          {"XXXXXX" + row.númeroTelefónico.slice(6)}
+                        </a>
+                        // Enviar valor 2 al Form.Check en Flow.jsx
                       </td>
-                    ))}
-                  </tr>
-                ))
-              ) : (
-                data.map((row, index) => (
-                  <tr key={index}>
-                    <td>{row.titulares || "--"}</td>
-                    <td>{row.conocidos || "--"}</td>
-                    <td>{row.desconocidos || "--"}</td>
-                    <td>{row.sinContacto || "--"}</td>
-                    <td>{row.intentosViciDial || "--"}</td>
-                    <td>{row.id || "--"}</td>
-                    <td>
-                    <a href="#" className="text-primary">
-                        {"XXXXXX" + row.númeroTelefónico.slice(6)}
-                      </a>
-                    </td>
-                    <td>{row.idTelefonía || "--"}</td>
-                    <td>{row.idOrigen || "--"}</td>
-                    <td>{row.idClase || "--"}</td>
-                    <td>{row.estado || "--"}</td>
-                    <td>{row.municipio || "--"}</td>
-                    <td>{row.husoHorario || "--"}</td>
-                    <td>{row.segHorarioContacto || "--"}</td>
-                    <td>{row.extensión || "--"}</td>
-                    <td>{row._Confirmado ? "Sí" : "No" || "--"}</td>
-                    <td>{new Date(row.fecha_Insert).toLocaleDateString() || "--"}</td>
-                    <td>{row.calificacion || "--"}</td>
-                    <td>{row.activo ? "Activo" : "Inactivo" || "--"}</td>
-                  </tr>
-                ))
-              )}
+                      <td>{row.idTelefonía || "--"}</td>
+                      <td>{row.idOrigen || "--"}</td>
+                      <td>{row.idClase || "--"}</td>
+                      <td>{row.estado || "--"}</td>
+                      <td>{row.municipio || "--"}</td>
+                      <td>{row.husoHorario || "--"}</td>
+                      <td>{row.segHorarioContacto || "--"}</td>
+                      <td>{row.extensión || "--"}</td>
+                      <td>{row._Confirmado ? "Sí" : "No" || "--"}</td>
+                      <td>
+                        {new Date(row.fecha_Insert).toLocaleDateString() ||
+                          "--"}
+                      </td>
+                      <td>{row.calificacion || "--"}</td>
+                      <td>{row.activo ? "Activo" : "Inactivo" || "--"}</td>
+                    </tr>
+                  ))}
             </tbody>
           </Table>
         </div>

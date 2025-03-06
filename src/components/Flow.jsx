@@ -1,18 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { Row, Col, Card, Form, Button, Stack } from "react-bootstrap";
 import { userFlow } from "../services/gespawebServices";
 import { NodePlusFill } from "react-bootstrap-icons";
 import { toast, Toaster } from "sonner"; // Import toast and Toaster
-import { AppContext } from "../pages/Managment";
-import { useContext } from "react";
+import { AppContext } from "../pages/Managment"; // Import AppContext
 
 const Flow = () => {
   const [userFlowData, setUserFlowData] = useState([]);
-  const [currentQuestionId, setCurrentQuestionId] = useState(1);
+  const [currentQuestionId, setCurrentQuestionId] = useState(null);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [selectedValues, setSelectedValues] = useState({});
-  const [answerHistory, setAnswerHistory] = useState([]); // Add state to keep track of answer history
-  const { selectedAnswer } = useContext(AppContext);
+  const [answerHistory, setAnswerHistory] = useState([]); // Guarda el historial de las respuestas que se van seleccioando
+  const { selectedAnswer } = useContext(AppContext); // Contexto de llamada de entrada
 
   useEffect(() => {
     userFlow()
@@ -30,71 +29,56 @@ const Flow = () => {
 
   useEffect(() => {
     if (selectedAnswer !== null) {
-      handleAnswerChange(currentQuestionId, selectedAnswer, selectedAnswer);
+      if (selectedAnswer === 2 || selectedAnswer === 10) {
+        setCurrentQuestionId(selectedAnswer);
+      } else {
+        const firstQuestion = userFlowData.find(
+          (item) => item.idSiguientePregunta === selectedAnswer
+        );
+        if (firstQuestion) {
+          setCurrentQuestionId(firstQuestion.idPregunta);
+        }
+      }
     }
-  }, [selectedAnswer]);
+  }, [selectedAnswer, userFlowData]);
 
-  console.log("El flujo es:" + userFlowData);
-  const handleAnswerChange = (idPregunta, idRespuesta, idValor) => {
+  const handleAnswerChange = (
+    idPregunta,
+    idRespuesta,
+    idSiguientePregunta,
+    valor,
+    pregunta
+  ) => {
     setSelectedAnswers((prev) => ({
       ...prev,
       [idPregunta]: idRespuesta
     }));
     setSelectedValues((prev) => ({
       ...prev,
-      [idPregunta]: idValor
+      [idPregunta]: idSiguientePregunta
     }));
-  };
 
-  const handleAccept = () => {
-    const currentAnswer = selectedAnswers[currentQuestionId];
-    const currentQuestion = userFlowData.find(
-      (item) => item.idPregunta === currentQuestionId
+    const nextQuestion = userFlowData.find(
+      (item) => item.idPregunta === idSiguientePregunta
     );
-
-    if (currentQuestion.valor === "Manual") {
-      const nextQuestion = userFlowData.find(
-        (item) => item.idPregunta === currentQuestion.idSuiguientePregunta
-      );
-      if (nextQuestion) {
-        setAnswerHistory((prev) => [
-          ...prev,
-          { idPregunta: currentQuestionId, idRespuesta: currentAnswer }
-        ]); // Save current question and answer to history
-        setCurrentQuestionId(nextQuestion.idPregunta);
-      } else {
-        console.log("Manual valor" + currentQuestion.idSuiguientePregunta);
-        toast.info("Información de flujo terminada");
-      }
-    } else if (currentQuestion.valor === "Entrada") {
-      const nextQuestion = userFlowData.find(
-        (item) => item.idPregunta === currentAnswer
-      );
-      if (nextQuestion) {
-        setAnswerHistory((prev) => [
-          ...prev,
-          { idPregunta: currentQuestionId, idRespuesta: currentAnswer }
-        ]); // Save current question and answer to history
-        setCurrentQuestionId(nextQuestion.idPregunta);
-      } else {
-        toast.info("Información de flujo terminada");
-      }
+    if (nextQuestion) {
+      setAnswerHistory((prev) => [
+        ...prev,
+        {
+          idPregunta: idPregunta,
+          idRespuesta: idRespuesta,
+          valor: valor,
+          pregunta: pregunta
+        }
+      ]); // Save current question, answer, value, and question to history
+      setCurrentQuestionId(nextQuestion.idPregunta);
     } else {
-      const nextQuestion = userFlowData.find(
-        (item) => item.idSuiguientePregunta === currentAnswer
-      );
-      if (nextQuestion) {
-        setAnswerHistory((prev) => [
-          ...prev,
-          { idPregunta: currentQuestionId, idRespuesta: currentAnswer }
-        ]); // Save current question and answer to history
-        setCurrentQuestionId(nextQuestion.idPregunta);
-      } else {
-        toast.info("Información de flujo terminada");
-      }
+      toast.info("Información de flujo terminada");
     }
-  };
 
+    console.log("Answer History:", answerHistory); // Print answer history to console
+  };
+  //Accion de boton de regreso
   const handleBack = () => {
     if (answerHistory.length > 0) {
       const lastAnswer = answerHistory[answerHistory.length - 1];
@@ -107,9 +91,10 @@ const Flow = () => {
       setAnswerHistory((prev) => prev.slice(0, -1)); // Remove last answer from history
     }
   };
-
+  //Renderiza las preguntas e historial que guarda en un objeto los datos que va seleccionando
   const renderQuestions = (idPregunta) => {
-    if (!userFlowData || userFlowData.length === 0) return null;
+    if (!userFlowData || userFlowData.length === 0 || idPregunta === null)
+      return null;
 
     const questions = userFlowData.filter(
       (item) => item.idPregunta === idPregunta
@@ -117,12 +102,28 @@ const Flow = () => {
 
     if (questions.length === 0) return null;
 
+    const lastAnswer =
+      answerHistory.length > 0
+        ? `${answerHistory[answerHistory.length - 1].pregunta} - ${
+            answerHistory[answerHistory.length - 1].valor
+          }`
+        : "";
+
     return (
       <Card className="flow-size" border="primary">
         <Card.Header className="text-white">
-          <i className="h5">
-            <NodePlusFill></NodePlusFill> Flujo
-          </i>
+          <Row>
+            <Col>
+              {" "}
+              <i className="h5">
+                <NodePlusFill></NodePlusFill> Flujo
+              </i>
+            </Col>
+            <Col md="auto">
+              {" "}
+              <span> {lastAnswer}</span>
+            </Col>
+          </Row>
         </Card.Header>
 
         <Card.Body className="scroll-flow">
@@ -143,7 +144,9 @@ const Flow = () => {
                   handleAnswerChange(
                     question.idPregunta,
                     question.idRespuesta,
-                    question.idValor
+                    question.idSiguientePregunta,
+                    question.valor,
+                    question.pregunta
                   )
                 }
               />
@@ -157,11 +160,6 @@ const Flow = () => {
                 Regresar
               </Button>
             </Col>
-            <Col className="d-flex flex-row-reverse">
-              <Button variant="success" className="mt-3" onClick={handleAccept}>
-                Aceptar
-              </Button>
-            </Col>
           </Row>
         </Card.Footer>
       </Card>
@@ -171,8 +169,6 @@ const Flow = () => {
   return (
     <Row xs="auto" md="auto" className="g-2">
       <Col md={12}>{renderQuestions(currentQuestionId)}</Col>
-
-      {/* Add Toaster component for toast visibility */}
     </Row>
   );
 };

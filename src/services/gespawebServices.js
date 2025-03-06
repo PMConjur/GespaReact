@@ -1,7 +1,7 @@
 import servicio from "./axiosServices";
 import { toast } from "sonner";
 
-// 
+//
 const apiUrl = import.meta.env.VITE_API_URL;
 
 //endpoint login
@@ -150,7 +150,7 @@ export const fetchInformation = async (idCuenta) => {
     );
 
     const response = await servicio.get(
-      `/search-customer/products-info?idCuenta=${idCuenta}`,
+      `/search-customer/products-info?idCuenta=${idCuenta}`
     );
 
     const message = getErrorStatus(response.status);
@@ -177,7 +177,7 @@ export const fetchValidationTel = async (data) => {
   try {
     const response = await servicio.post(
       `/search-customer/validate-phone`,
-      data,
+      data
     );
 
     if (response.status !== 200) {
@@ -224,7 +224,7 @@ export async function userFlow() {
       `/ejecutivo/flujo-preguntas-respuestas`
     );
     const data = response.data;
-    console.log(data);
+
     return data;
   } catch (error) {
     if (error.response) {
