@@ -7,10 +7,15 @@ import "../scss/styles.scss";
 import { TelephoneFill } from "react-bootstrap-icons";
 
 const Telephones = () => {
+  // Estado para almacenar los datos de los teléfonos
   const [data, setData] = useState([]);
+  // Estado para manejar la carga de datos
   const [isLoading, setIsLoading] = useState(false);
+  // Estado para almacenar el número de teléfono ingresado
   const [phoneNumber, setPhoneNumber] = useState("");
-  const { searchResults, setSelectedAnswer} = useContext(AppContext);
+  // Consumir el contexto para obtener los resultados de búsqueda y la función para establecer la respuesta seleccionada
+  const { searchResults, setSelectedAnswer } = useContext(AppContext);
+  // Estado para manejar la visualización de notificaciones
   const [toastShown, setToastShown] = useState(false);
 
   // Cargar datos desde la API
@@ -174,7 +179,7 @@ const Telephones = () => {
                     <td>
                     <a href="#" className="text-primary" onClick={() => setSelectedAnswer(2)}>
                         {"XXXXXX" + row.númeroTelefónico.slice(6)}
-                      </a>
+                      </a>// Enviar valor 2 al Form.Check en Flow.jsx
                     </td>
                     <td>{row.idTelefonía || "--"}</td>
                     <td>{row.idOrigen || "--"}</td>
