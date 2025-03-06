@@ -21,7 +21,8 @@ namespace NoriAPI.Services
     {
         Task<ResultadoProductividad> ValidateProductividad(int numEmpleado);
         Task<TiemposEjecutivo> ValidateTimes(int numEmpleado);
-        Task<string> PauseUnpause(InfoPausa pausa);
+        Task<Dictionary<string, object>> PauseUnpause(InfoPausa pausa);
+        Task<Dictionary<string, object>> Promedios(int idEjecutivo);
         Task ObtenerSeguimientos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerAccionamiento(DataRow drDatos, DataSet dsTablas);
         Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo);
@@ -141,10 +142,6 @@ namespace NoriAPI.Services
             return validatePreg_Resp_list;
         }
         #endregion
-
-
-
-
 
 
         public async Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta)
@@ -308,31 +305,32 @@ namespace NoriAPI.Services
         #endregion
 
         #region Pausa
-        public async Task<string> PauseUnpause(InfoPausa pausa)
+        public async Task<Dictionary<string, object>> PauseUnpause(InfoPausa pausa)
         {
             try
             {
                 if (!await Despausar(pausa))
                 {
-                    return "Contraseña Incorrecta.";
+                    return new Dictionary<string, object> { { "Error", "Contraseña Incorrecta." } };
                 }
+
 
                 DataTable catalogosTable = await _ejecutivoRepository.VwCatalogos();
 
+                // Obtener IdPeCausa desde los catálogos
                 int idPeCausa = await _searchService.GetIdValor(catalogosTable, "Pausas", pausa.PeCausa);
 
 
                 await _ejecutivoRepository.ChangeEjecutivoMode(pausa.IdEjecutivo, "Consulta");
-                //await _ejecutivoRepository.Pausa210(pausa.IdEjecutivo, 3001, pausa.Duracion);
                 await _ejecutivoRepository.Pausa210(pausa.IdEjecutivo, idPeCausa, pausa.Duracion);
                 await _ejecutivoRepository.IncreaseEjecutivoTime(pausa.IdEjecutivo, pausa.Duracion, pausa.PeCausa);
+
+                return new Dictionary<string, object> { { "Éxito", "Sesión reanudada." } };
             }
             catch
             {
-                return "Ocurrió un error al reanudar la sesión.";
+                return new Dictionary<string, object> { { "Error", "Ocurrió un error al reanudar la sesión." } };
             }
-
-            return "";
         }
 
         private async Task<bool> Despausar(InfoPausa tiempos)
@@ -340,6 +338,52 @@ namespace NoriAPI.Services
             var validatePass = await _ejecutivoRepository.ValidatePasswordEjecutivo(tiempos.IdEjecutivo, tiempos.Contrasenia);
             return validatePass != null;
         }
+
+
+        public async Task<Dictionary<string, object>> Promedios(int idEjecutivo)
+        {
+            try
+            {
+                // Instancia temporal de ClasesGespa (en lugar de usar estática)
+                var gespa = new ClasesGespaNonStatic();
+
+                // Cargar catálogos
+                gespa.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+                gespa.CargaCatalogos();
+
+                gespa.dtRelaciones = await _ejecutivoRepository.VwRelaciones();
+                gespa.Relaciones();
+
+                // Calcular tiempos después de la pausa
+                gespa.Tiempos = await _ejecutivoRepository.TiemposEjecutivo(idEjecutivo);
+                gespa.ObtieneTiempos();
+
+
+                DataTable teibolDelDia = await _ejecutivoRepository.CuentasEjecutivo(idEjecutivo);
+                gespa.ObtieneGestionesDelDia(teibolDelDia);
+                gespa.ConteosGestiones();
+
+                // Extraer la fila adicional con los tiempos calculados
+                if (gespa.Tiempos.Rows.Count > 1)
+                {
+                    var filaAdicional = gespa.Tiempos.Rows[1]
+                        .Table.Columns.Cast<DataColumn>()
+                        .ToDictionary(col => col.ColumnName, col => gespa.Tiempos.Rows[1][col]);
+
+                    return filaAdicional;
+                }
+
+                return new Dictionary<string, object> { { "Error", "No se pudo calcular el tiempo." } };
+            }
+            catch
+            {
+                return new Dictionary<string, object> { { "Error", "No se pudo calcular el tiempo." } };
+            }
+
+        }
+
+
+
         #endregion
 
         #region Seguimientos
@@ -500,10 +544,6 @@ namespace NoriAPI.Services
             return actual == 1
                 ? await _ejecutivoRepository.RecuperacionActual(idEjecutivo)
                 : await _ejecutivoRepository.RecuperacionAnterior(idEjecutivo);
-
-
-
-
         }
 
 

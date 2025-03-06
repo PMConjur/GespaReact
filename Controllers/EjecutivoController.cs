@@ -17,7 +17,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/ejecutivo")]
-    [Authorize]
+    //[Authorize]
     public class EjecutivoController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -46,7 +46,14 @@ namespace NoriAPI.Controllers
         [HttpPost("pause-ejecutivo")]
         public async Task<ActionResult> ManagePause([FromBody] InfoPausa pauseRequest)
         {
-            string mensaje = await _ejecutivoService.PauseUnpause(pauseRequest);
+            Dictionary<string, object> mensaje = await _ejecutivoService.PauseUnpause(pauseRequest);
+            return Ok(new { mensaje });
+        }
+
+        [HttpGet("promedio-ejecutivo")]
+        public async Task<ActionResult> Averages([FromQuery] int idEjecutivo)
+        {
+            Dictionary<string, object> mensaje = await _ejecutivoService.Promedios(idEjecutivo);
             return Ok(new { mensaje });
         }
 

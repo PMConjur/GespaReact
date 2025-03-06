@@ -15,6 +15,7 @@ namespace NoriAPI.Repositories
         #region Productividad
         Task<DataTable> VwCatalogos();
         Task<DataTable> VwRelaciones();
+        Task<DataTable> CuentasEjecutivo(int numEmpleado);
         Task<DataTable> TiemposEjecutivo(int numEmpleado);
         Task<DataTable> MetasEjecutivo(int numEmpleado);
         Task<DataTable> Gestiones(int numEmpleado);
@@ -110,6 +111,8 @@ namespace NoriAPI.Repositories
             return ConvertToDataTable(relaciones, "Relaciones");
 
         }
+
+
         public async Task<DataTable> TiemposEjecutivo(int numEmpleado)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -127,8 +130,27 @@ namespace NoriAPI.Repositories
             ));
 
             return ConvertToDataTable(tiempos, "Tiempos");
-
         }
+
+        public async Task<DataTable> CuentasEjecutivo(int numEmpleado)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string queryCuentas = "SELECT * FROM fn_GestionesTelDiaras(@idEjecutivo)";
+
+            var parametersCuentas = new
+            {
+                idEjecutivo = numEmpleado
+            };
+            var cuentas = (await connection.QueryAsync<dynamic>(
+                queryCuentas,
+                parametersCuentas,
+                commandType: CommandType.Text
+            ));
+
+            return ConvertToDataTable(cuentas, "Cuentas");
+        }
+
         public async Task<DataTable> MetasEjecutivo(int numEmpleado)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -169,7 +191,7 @@ namespace NoriAPI.Repositories
             return ConvertToDataTable(productividad, "Productividad");
 
 
-        }        
+        }
 
         #region ProductividadOld
         /*
@@ -552,10 +574,10 @@ namespace NoriAPI.Repositories
                 commandType: CommandType.Text
              ));
 
-            return ConvertToDataTable(negociaciones, "Negociaciones");            
+            return ConvertToDataTable(negociaciones, "Negociaciones");
         }
         public async Task<DataTable> ObtienePlazos(int Cartera, string NoCuenta)
-        {         
+        {
             using var connection = GetConnection("Piso2Amex");
             string querysPlazos = "SELECT * FROM fn_Plazos(@idCartera, @idCuenta)";
             var parameters = new
@@ -573,7 +595,7 @@ namespace NoriAPI.Repositories
             return ConvertToDataTable(plazos, "Plazos");
 
         }
-       
+
         public async Task<DataTable> ObtienePagos(int Cartera, string NoCuenta)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -592,7 +614,7 @@ namespace NoriAPI.Repositories
              ));
             return ConvertToDataTable(pagos, "Pagos");
 
-        } 
+        }
         public async Task<DataTable> ObtieneHerramientas(string NoCuenta)
         {
             using var connection = GetConnection("Piso2Amex");
