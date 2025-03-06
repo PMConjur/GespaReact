@@ -24,7 +24,7 @@ namespace NoriAPI.Services
         Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo);
         Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
         Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
-        Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta);
+        Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta, int idHerr);
     }
 
     public class EjecutivoService : IEjecutivoService
@@ -142,7 +142,7 @@ namespace NoriAPI.Services
         #endregion
 
         #region Caluculadora
-        public async Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta)
+        public async Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta, int idHerr)
         {
             string mensaje = null;
             int MaxDescuento = 0, MinDescuento, _iMensualidades = 1;
@@ -218,7 +218,6 @@ namespace NoriAPI.Services
 
             }
 
-
             //-----------------------------------Plazos------------------------------------------//
 
             dtPlazos = await _ejecutivoRepository.ObtienePlazos(Cartera, NoCuenta);
@@ -260,10 +259,24 @@ namespace NoriAPI.Services
 
             HerramientasC = await _ejecutivoRepository.ObtieneHerramientasCompletas();
             HerramientasC.PrimaryKey = new DataColumn[] { HerramientasC.Columns["idHerramienta"] };
+            // IDs que quieres filtrar
+            int[] idsFiltrar = { 0, 136, 137, 138, 139, 1010, 142, 684 };
 
+            dtHerrFiltradas.Columns.Add("idHerramienta", typeof(int));
+            dtHerrFiltradas.Columns.Add("Nombre", typeof(string));
 
-
-
+            // Recorrer las filas y filtrar
+            foreach (DataRow row in HerramientasC.Rows)
+            {
+                int idHerramienta = Convert.ToInt32(row["idHerramienta"]);
+                if (idsFiltrar.Contains(idHerramienta))
+                {
+                    DataRow newRow = dtHerrFiltradas.NewRow();
+                    newRow["idHerramienta"] = idHerramienta;
+                    newRow["Nombre"] = row["Nombre"].ToString();
+                    dtHerrFiltradas.Rows.Add(newRow);
+                }
+            }
 
             //----------------------------------------Saldo----------------------------------------------//
 
@@ -279,7 +292,7 @@ namespace NoriAPI.Services
 
             string sHerramientas = "idHerramienta IN (0";
             double fDescuento = 0, fMaxDesc = 0;
-            int iMaxDias = 0, idHerramienta = 0;
+            int iMaxDias = 0, idHerramienta_ = 0;
 
             for (int i = 0; i < dtHerramientas.Columns.Count; i++)
             {
@@ -292,7 +305,7 @@ namespace NoriAPI.Services
                 }
 
                 // Agrega idHerramienta para filtro y días
-                if (int.TryParse(dtHerramientas.Columns[i].ColumnName, out idHerramienta))
+                if (int.TryParse(dtHerramientas.Columns[i].ColumnName, out idHerramienta_))
                 {
                     sHerramientas += "," + dtHerramientas.Columns[i].ColumnName;
                     iMaxDias = Convert.ToInt16(dtHerramientas.Rows[0][i].ToString());
@@ -312,13 +325,13 @@ namespace NoriAPI.Services
                 }
 
                 DataRow drDescuento = dtDescuentos.NewRow();
-                drDescuento["idHerramienta"] = idHerramienta;
+                drDescuento["idHerramienta"] = idHerramienta_;
                 drDescuento["Descuento"] = fDescuento;
                 drDescuento["MáxDescuento"] = fMaxDesc;
                 drDescuento["MaxDías"] = iMaxDias;
                 dtDescuentos.Rows.Add(drDescuento);
 
-                fDescuento = fMaxDesc = iMaxDias = idHerramienta = 0;
+                fDescuento = fMaxDesc = iMaxDias = idHerramienta_ = 0;
                 dtDescuentos.PrimaryKey = new DataColumn[] { dtDescuentos.Columns["idHerramienta"] };
             }
             sHerramientas = sHerramientas.TrimEnd(',') + ")";
@@ -380,12 +393,11 @@ namespace NoriAPI.Services
             HerramientasC.DefaultView.RowFilter = sHerramientas;
 
             //aqui se busca dependiendo de lo que escoja///////////////////////////
-            DataRow drHerramienta = HerramientasC.Rows.Find(136);//convenio
-
-            DataRow drHerramientaAmex = dtDescuentos.Rows.Find(136);//convenio
+            DataRow drHerramienta = HerramientasC.Rows.Find(idHerr);//convenio
+            DataRow drHerramientaAmex = dtDescuentos.Rows.Find(idHerr);//convenio 136
 
             string Herramienta = drHerramienta["Nombre"].ToString();
-            double Saldo, MontoRequerido;
+            double Saldo, MontoRequerido, Montodescuento;
             int días1erPago = 0;
 
             //Falta validar el saldo 
@@ -427,6 +439,9 @@ namespace NoriAPI.Services
 
             //  Días primer pago
             MontoRequerido = Math.Round(MontoRequerido, 2);
+            Montodescuento = (Saldo * (MinDescuento / (float)100));
+            Montodescuento = Math.Round(Montodescuento, 2);
+
             //Math.Ceiling(MontoRequerido * 100) / 100;
             días1erPago = Convert.ToInt32(drHerramienta["Días1erPago"]);
 
@@ -437,11 +452,18 @@ namespace NoriAPI.Services
             _iMensualidades = Convert.ToInt16(drHerramienta["Mensualidades"]);
 
             //Días Máximos
-            iMaxDias = Convert.ToInt32(drHerramientaAmex["MaxDías"]);
+            iMaxDias = Convert.ToInt32(drHerramientaAmex["MaxDías"]);           
 
 
-            //////////////////////////////////////////aun no se que voy a regresar ///////////////////////////////////
-            var resultadoCalculadora = new ResultadoCalculadora();
+            var resultadoCalculadora = new ResultadoCalculadora {
+                Ofrecimientos = dtFiltrado,
+                Herramientas = dtHerrFiltradas,
+                MontoRequerido = MontoRequerido,
+                Descuento = MinDescuento,
+                MontoDescuento = Montodescuento,
+                Saldo = Saldo,
+                FechaCorte = Convert.ToString(Fecha_Corte)
+            };
             return resultadoCalculadora;
         }
 

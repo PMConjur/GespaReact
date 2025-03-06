@@ -493,7 +493,7 @@ namespace NoriAPI.Repositories
                 "FR.[idRespuesta],\r\n" +
                 "FR.[idValor],\r\n" +
                 "FR.[Respuesta],\r\n" +
-                "FR.[idSiguientePregunta],\r\n" +
+                "convert(varchar,FR.[idSiguientePregunta]) as idSiguientePregunta ,\r\n" +
                 "FR.[Seguimiento],\r\n" +
                 "FR.[Negociación],\r\n" +
                 "FR.[Identificador],\r\n" +
