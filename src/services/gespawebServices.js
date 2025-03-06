@@ -305,7 +305,7 @@ const getErrorStatus = (status) => {
 };
 
 
-export async function getGestionData(idCuenta, idCartera) {
+export async function getFollowUpsData(idCuenta, idCartera) {
   try {
     // Asegúrate de obtener el token de manera correcta
     const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));

@@ -117,38 +117,41 @@ const Times = ({ show, handleClose }) => {
 
 
 
-const sendDataToServer = async (updatedTimers) => {
-  if (!numEmpleado || !registeredPassword || !selectedReason) {
-      toast.error("Faltan datos para enviar la pausa.");
+  const sendDataToServer = async (updatedTimers) => {
+    // Validación de datos requeridos
+    if (!numEmpleado || !registeredPassword || !selectedReason) {
+      toast.error("⚠️ Faltan datos para enviar la pausa.");
       return;
-  }
+    }
 
-  const tiempoTotal = updatedTimers[selectedReason] || 0; 
-  const duracion = new Date(tiempoTotal * 1000).toISOString().substr(11, 8); 
+    const tiempoTotal = updatedTimers[selectedReason] || 0;
+    const duracion = new Date(tiempoTotal * 1000).toISOString().substr(11, 8);
 
-  const dataToSend = {
+    const dataToSend = {
       idEjecutivo: numEmpleado,
       contrasenia: registeredPassword,
       peCausa: selectedReason,
       duracion: duracion // Formato "hh:mm:ss"
-      
-  };
+    };
 
-  console.log("📤 Enviando datos actualizados al servidor:", JSON.stringify(dataToSend, null, 2));
+    console.log("📤 Enviando datos actualizados al servidor:", JSON.stringify(dataToSend, null, 2));
 
-  try {
+    try {
       const response = await axios.post(
-          "http://192.168.7.33/api/ejecutivo/pause-ejecutivo",
-          dataToSend
+        "http://192.168.7.33/api/ejecutivo/pause-ejecutivo",
+        dataToSend
       );
 
-      console.log("✅ Respuesta de la API:", response.data);
-      toast.success("Datos enviados correctamente a la base de datos.");
-  } catch (error) {
+      // Evita que el mensaje se repita asegurando que solo se muestra si el servidor responde bien
+      if (response.status === 200 || response.status === 201) {
+        console.log("✅ Respuesta de la API:", response.data);
+        
+      }
+    } catch (error) {
       console.error("❌ Error al enviar los datos:", error);
-      toast.error("Error al enviar los tiempos al servidor.");
-  }
-};
+      toast.error("❌ Error al enviar los tiempos al servidor.");
+    }
+  };
 
 
 

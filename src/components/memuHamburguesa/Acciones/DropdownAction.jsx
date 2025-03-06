@@ -2,12 +2,17 @@ import { useState, useEffect } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { MenuButtonFill } from 'react-bootstrap-icons';
 import FollowUps from './FollowUps'; // Asegúrate de importar el componente
-import { getGestionData } from '../../../services/gespawebServices'; // Asegúrate de importar la función
+import { getFollowUpsData } from '../../../services/gespawebServices';
+import Talks from './Talks'; // Asegúrate de importar la función
 
 function DropdownActions() {
   const [showFollowUps, setShowFollowUps] = useState(false);
   const [followUpsData, setFollowUpsData] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const [showTalks, setShowTalks] = useState(false);
+  const [talksData, setTalksData] = useState([]);
+  const [loadingtalks, setLoadingtalks] = useState(false);
 
   const handleShowFollowUps = async () => {
     setLoading(true);
@@ -15,7 +20,7 @@ function DropdownActions() {
       // Aquí debes definir los valores de idCuenta y idCartera según tu aplicación
       const idCuenta = '370700000000004'; // Ejemplo
       const idCartera = 1; // Ejemplo
-      const data = await getGestionData(idCuenta, idCartera);
+      const data = await getFollowUpsData(idCuenta, idCartera);
       console.log('Datos de seguimiento recibidos:', data); // Verificar los datos recibidos
       setFollowUpsData(data); // Establece los datos recibidos
     } catch (error) {
@@ -28,6 +33,27 @@ function DropdownActions() {
 
   const handleCloseFollowUps = () => setShowFollowUps(false);
 
+  //negociaciones//
+
+  const handleShowTalks = async () => {
+    setLoadingtalks(true);
+    try {
+      // Aquí debes definir los valores de idCuenta y idCartera según tu aplicación
+      const idCuenta = '370700000000004'; // Ejemplo
+      const idCartera = 1; // Ejemplo
+      const data = await getTalksData(idCuenta, idCartera);
+      console.log('Datos de negociaciones recibidos:', data); // Verificar los datos recibidos
+      setTalksData(data); // Establece los datos recibidos
+    } catch (error) {
+      console.error('Error al cargar los datos de negociaciones:', error);
+    } finally {
+      setLoadingtalks(false);
+    }
+    setShowTalks(true);
+  };
+
+  const handleCloseTalks = () => setShowTalks(false);
+
   return (
     <>
       <Dropdown className='mb-3'>
@@ -36,7 +62,7 @@ function DropdownActions() {
           <h5 className="mb-0">Acciones</h5>
         </Dropdown.Toggle>
         <Dropdown.Menu>
-          <Dropdown.Item href="#">Negociaciones</Dropdown.Item>
+          <Dropdown.Item onClick={handleShowTalks}>Negociaciones</Dropdown.Item>
           <Dropdown.Item onClick={handleShowFollowUps}>Seguimientos</Dropdown.Item>
           <Dropdown.Item href="#">Accionamientos</Dropdown.Item>
           <Dropdown.Item href="#">Busqueda</Dropdown.Item>
@@ -50,6 +76,7 @@ function DropdownActions() {
       </Dropdown>
 
       <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps} data={followUpsData} loading={loading} />
+      <FollowUps show={showTalks} handleClose={handleCloseTalks} data={talksData} loading={loadingtalks} />
     </>
   );
 }

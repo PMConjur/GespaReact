@@ -1,16 +1,16 @@
 import React from "react";
 import { Modal, Button } from "react-bootstrap";
-import TableFollowUps from "../../TableFollowUps";
+import TableTalks from "../../TableTalks";
 
 
-const FollowUps = ({ show, handleClose, data }) => {
+const Talks = ({ show, handleClose, data }) => {
     return (
         <Modal show={show} onHide={handleClose} size="xl">
             <Modal.Header closeButton>
-                <Modal.Title>Seguimiento</Modal.Title>
+                <Modal.Title>Negociaciones</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <TableFollowUps data={data} />
+                <TableTalks data={data} />
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={handleClose}>
@@ -21,4 +21,4 @@ const FollowUps = ({ show, handleClose, data }) => {
     );
 };
 
-export default FollowUps;
+export default Talks;
