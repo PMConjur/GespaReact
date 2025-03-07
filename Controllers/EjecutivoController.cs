@@ -405,6 +405,34 @@ namespace NoriAPI.Controllers
             }
         }
 
+        [HttpGet("accionesComentario")]
+        public async Task<IActionResult> GetAccionesComentario(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion)
+        {
+            DataSet dsTablas = new DataSet();
+            try
+            {                
+                    DataTable Comentarios = new DataTable();
+
+                    Comentarios = await _ejecutivoService.GetAccionesComentarioAsync(idCartera, idCuenta, idEjecutivo,Comentario,ModificaSituacion);
+
+                    // Convertimos el DataTable a una lista de diccionarios
+                    var insertaComentario = ConvertDataTableToList(Comentarios);
+
+                    // Serializamos la lista a JSON
+                    string jsonComentarios = JsonSerializer.Serialize(insertaComentario, new JsonSerializerOptions { WriteIndented = true });
+
+                    //dsTablas.Tables.Add(Negociaciones);
+
+                    return Ok(jsonComentarios);
+                
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
 
     }
 }

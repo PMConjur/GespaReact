@@ -30,9 +30,11 @@ namespace NoriAPI.Services
         Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta);
 
         #region Acciones
-        Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
-        Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
-        Task<DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña);
+        Task <DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
+        Task <DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
+        Task <DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña);
+        Task <DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
+
         #endregion
 
         Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo);
@@ -251,6 +253,36 @@ namespace NoriAPI.Services
             }
                        
         }
+
+        public async Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta,int idEjecutivo, string Comentario, bool ModificaSituacion)
+        {
+            
+                DataTable comentario = new DataTable();
+                string query = "EXEC [2.13.InsertaComentario] @idCartera, @idCuenta, @idEjecutivo, @Comentario, @ModificaSituación "; // Evita inyección SQL
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                        command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                        command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+                        command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
+                        command.Parameters.Add("@Comentario", SqlDbType.VarChar).Value = Comentario;
+                        command.Parameters.Add("@ModificaSituación", SqlDbType.Bit).Value = ModificaSituacion;
+
+                        using (var adapter = new SqlDataAdapter(command))
+                        {
+                            adapter.Fill(comentario);
+                        }
+                    }
+                }
+
+                return comentario;
+        }
+
+        
 
         #endregion
 
