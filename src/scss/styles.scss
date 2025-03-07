@@ -818,3 +818,14 @@ $custom-color-2: #00b894; // Verde turquesa
   background-color: #232629 ;
   color: white;
 }
+
+/* customStyles.css */
+.custom-dropdown-item:hover {
+  background-color:  #343a40;; /* Cambia este color al que prefieras */
+  color: #fff; /* Cambia el color del texto si es necesario */
+}
+
+custom-dropdown-menu{
+  z-index: 100 !important;
+  position: fixed !important;
+}

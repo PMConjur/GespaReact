@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, Button, Table } from 'react-bootstrap';
+import "../../../scss/styles.scss";
 
 const AccionamientosTable = ({ data }) => {
   return (

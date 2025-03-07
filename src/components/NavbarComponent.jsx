@@ -4,9 +4,7 @@ import NavContainer from "./NavContainer";
 import { Offcanvas } from "react-bootstrap";
 import CerrarSesion from "./CierraSesion";
 import { NavLink, useLocation } from "react-router-dom";
-import DropdownsInfo from "../../src/components/memuHamburguesa/Informacion/DropdownInfo"
-import DropdownAction from "../../src/components/memuHamburguesa/Acciones/DropdownAction"
-import DropdownExecutive from "../../src/components/memuHamburguesa/Ejecutivo/DropdownExecutive"
+
 import { HouseDoorFill, KanbanFill } from "react-bootstrap-icons";
 
 const NavbarComponent = () => {
@@ -55,10 +53,7 @@ const NavbarComponent = () => {
             </Nav.Link>
             <Nav.Link href="/managment" className="text-align-center">
               <h5><span><KanbanFill/></span> Gestion</h5>
-            </Nav.Link> 
-            <DropdownsInfo/>
-            <DropdownAction/>
-            <DropdownExecutive/>           
+            </Nav.Link>           
           </Nav>
           <div style={{marginTop: 'auto', marginBottom: '10px', display: 'block'}}>
             <div>Grupo Consorcio</div>
