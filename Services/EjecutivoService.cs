@@ -40,7 +40,7 @@ namespace NoriAPI.Services
         Task<DataTable> GetCargosEnLineaAsync(int idCartera, string idCuenta);
         Task ObtenerCargosEnLinea(DataRow drDatos, DataSet dsTablas);
         Task<string> SaveCargoEnlinea(CargoEnLineaRe newCargoEn);
-
+        Task ObtenerEstadoDeCuenta(DataRow drDatos, DataSet dsTablas);
     }
 
     public class EjecutivoService : IEjecutivoService
@@ -794,7 +794,7 @@ namespace NoriAPI.Services
                                 monto: Convert.ToDecimal(newCargoEn.Monto),
                                 tarjeta: numeroTarjetaLong,
                                 autorizacion: autorizacionString,
-                                 // Pasar el valor de noAutorizacion
+                                // Pasar el valor de noAutorizacion
                                 status: Convert.ToInt32(cargoData.Status),
                                 IdBanco: Convert.ToInt32(cargoData.idBanco),
                                 idEjecutivoAutorizo: Convert.ToInt32(newCargoEn.IdEjecutivoAutorizo),
@@ -989,12 +989,62 @@ namespace NoriAPI.Services
 
             }
         }
-    }
+    
 
 
     #endregion
 
+    #region Estado de cuenta
+    public async Task<DataTable> GetEstadoDeCuentaAsync(int idCartera, string idCuenta)
+        {
+            DataTable estado = new DataTable();
+            string query = "WAITFOR DELAY '00:00:00' SELECT * FROM dbo.fn_SolicitudEstadosDeCuenta (@idCuenta, @idCartera)";
 
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(estado);
+                    }
+                }
+            }
+            return estado;
+        }
+
+        public async Task ObtenerEstadoDeCuenta(DataRow drDatos, DataSet dsTablas)
+        {
+            if (drDatos == null)
+                return;
+
+            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
+                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
+
+            var idCartera = Convert.ToInt32(drDatos["idCartera"]);
+            var idCuenta = Convert.ToString(drDatos["idCuenta"]);
+
+            DataTable estadoGet = await GetEstadoDeCuentaAsync(idCartera, idCuenta);
+
+            if (estadoGet == null || estadoGet.Rows.Count == 0)
+                return;
+
+            if (dsTablas.Tables.Contains("EstadoDeCuenta"))
+            {
+                dsTablas.Tables.Remove("EstadoDeCuenta");
+            }
+
+            estadoGet.TableName = "EstadoDeCuenta";
+            dsTablas.Tables.Add(estadoGet);
+        }
+        #endregion
+
+
+    }
 }
 
 
