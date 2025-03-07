@@ -8,6 +8,7 @@ using Microsoft.OpenApi.Models;
 using NoriAPI.Middleware;
 using NoriAPI.Repositories;
 using NoriAPI.Services;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using static NoriAPI.Services.IEjecutivoService;
@@ -93,7 +94,6 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISearchRepository, SearchRepository>();
 builder.Services.AddScoped<IEjecutivoRepository, EjecutivoRepository>();
 builder.Services.AddScoped<IBusquedaRepository, BusquedaRepository>();
-
 
 
 var app = builder.Build();

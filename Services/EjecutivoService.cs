@@ -14,6 +14,9 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using static NoriAPI.Models.ClasesGespa;
 using System.Text.Json;
+using NoriAPI.Models.Phones;
+using Dapper;
+using System.Globalization;
 
 namespace NoriAPI.Services
 {
@@ -36,10 +39,13 @@ namespace NoriAPI.Services
         Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas);
         Task<DataTable> GetCargosEnLineaAsync(int idCartera, string idCuenta);
         Task ObtenerCargosEnLinea(DataRow drDatos, DataSet dsTablas);
+        Task<string> SaveCargoEnlinea(CargoEnLineaRe newCargoEn);
+
     }
 
     public class EjecutivoService : IEjecutivoService
     {
+        private readonly ISearchRepository _searchRepository;
         private readonly IConfiguration _configuration;
         private readonly IEjecutivoRepository _ejecutivoRepository;
         private readonly string _connectionString;
@@ -59,12 +65,13 @@ namespace NoriAPI.Services
         private static Hashtable _htNombreId;
         #endregion
 
-        public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository, IBusquedaRepository busquedaRepository)
+        public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository, IBusquedaRepository busquedaRepository, ISearchRepository searchRepository)
         {
             _configuration = configuration;
             _ejecutivoRepository = ejecutivoRepository;
             _connectionString = _configuration.GetConnectionString("Piso2Amex");
             _busquedaRepository = busquedaRepository;
+            _searchRepository = searchRepository;
         }
 
         #region Productividad
@@ -762,10 +769,234 @@ namespace NoriAPI.Services
             CargoGet.TableName = "Cargos";
             dsTablas.Tables.Add(CargoGet);
         }
-        #endregion
+        public async Task<string> SaveCargoEnlinea(CargoEnLineaRe newCargoEn)
+        {
+            try
+            {
+                string idCuenta = newCargoEn.idCuenta.ToString();
+                int idCartera = ObtenerIdCarteraDesdeBaseDeDatos(idCuenta);
+                dynamic cargoData = ObtenerDatosCargoEnLinea(idCartera, idCuenta);
 
+                if (cargoData != null)
+                {
+                    try
+                    {
+                        if (long.TryParse(cargoData.Tarjeta.ToString(), out long numeroTarjetaLong))
+                        {
+                            Console.WriteLine($"cargoData.Tarjeta: {cargoData.Tarjeta}, numeroTarjetaLong: {numeroTarjetaLong}");
+
+                            string autorizacionString = cargoData.Autorización?.ToString();
+
+                            // Deserialización como DateTime
+                            DateTime fechaVencimiento = newCargoEn.vencimiento; // Obtener la fecha del modelo
+
+                            CargoEnLinea newCargo = new CargoEnLinea(
+                                monto: Convert.ToDecimal(newCargoEn.Monto),
+                                tarjeta: numeroTarjetaLong,
+                                autorizacion: autorizacionString,
+                                 // Pasar el valor de noAutorizacion
+                                status: Convert.ToInt32(cargoData.Status),
+                                IdBanco: Convert.ToInt32(cargoData.idBanco),
+                                idEjecutivoAutorizo: Convert.ToInt32(newCargoEn.IdEjecutivoAutorizo),
+                                vencimiento: fechaVencimiento, // Pasar el objeto DateTime
+                                nombre: cargoData.Nombre.ToString(),
+                                esClabe: Convert.ToBoolean(cargoData._EsClabe),
+                                domiciliado: Convert.ToBoolean(cargoData._Domiciliado),
+                                sistema: false,
+                                idCartera: idCartera,
+                                idCuenta: idCuenta,
+                                idEjecutivo: Convert.ToInt32(newCargoEn.idEjecutivo)
+                            );
+
+                            string saveCargoResult = await ValidateNewCargo(newCargo);
+                            return saveCargoResult;
+                        }
+                        else
+                        {
+                            return "El número de tarjeta no es válido.";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error al convertir el número de tarjeta: {ex.Message}");
+                        return $"Error al convertir el número de tarjeta: {ex.Message}";
+                    }
+                }
+                else
+                {
+                    return "No se encontraron datos para el cargo en línea.";
+                }
+            }
+            catch (Exception ex)
+            {
+                return $"Error al guardar el cargo en línea: {ex.Message}";
+            }
+            return "Error desconocido al procesar el cargo en línea.";
+        }
+
+        private async Task<string> ValidateNewCargo(CargoEnLinea cargoCuenta)
+        {
+            // Registra el valor de cargoCuenta.Tarjeta
+            Console.WriteLine($"Validando Tarjeta: {cargoCuenta.Tarjeta}");
+
+            var newCargoResult = await _ejecutivoRepository.RegisterNewCargo(cargoCuenta);
+
+            if (newCargoResult == null)
+            {
+                return "Fallo al guardar el cargo en la base de datos.";
+            }
+
+            //  Verifica si el resultado contiene un mensaje de error
+            if (newCargoResult is IDictionary<string, object> cargoResultDict &&
+                cargoResultDict.TryGetValue("Resultado", out object resultadoObj) && resultadoObj != null)
+            {
+                return Convert.ToString(resultadoObj);
+            }
+
+            return "";
+        }
+
+        private dynamic ObtenerDatosCargoEnLinea(int idCartera, string idCuenta)
+        {
+            try
+            {
+                using (IDbConnection connection = new SqlConnection(_connectionString))
+                {
+                    string query = "SELECT * FROM dbo.fn_CargosEnLínea(@idCartera, @idCuenta)";
+                    return connection.QueryFirstOrDefault(query, new { idCartera = idCartera, idCuenta = idCuenta }); // Pasar idCartera
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al obtener datos de CargoEnLínea: {ex.Message}");
+                return null;
+            }
+        }
+
+        private int ObtenerIdCarteraDesdeBaseDeDatos(string idCuenta)
+        {
+            try
+            {
+                using (IDbConnection connection = new SqlConnection(_connectionString))
+                {
+                    string query = "SELECT idCartera FROM [dbCollection].[dbo].[Cuentas] WHERE idCuenta = @idCuenta";
+                    return connection.QueryFirstOrDefault<int>(query, new { idCuenta });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al obtener idCartera: {ex.Message}");
+                return 0;
+            }
+        }
+
+
+
+        public async Task<dynamic> ValidateBusqueda(string filtro, string ValorBusqueda)
+        {
+            string validacion = null;
+
+            using (IDbConnection connection = new SqlConnection(_connectionString)) // Corregido: Usar _connectionString
+            {
+
+                string queryBusqueda = "WAITFOR DELAY '00:00:00';\r\n" +
+                                        "SELECT TOP 100 \r\n" +
+                                        "   C.idCuenta Cuenta, \r\n" +
+                                        "   CL.Cartera, \r\n" +
+                                        "   P.Producto, \r\n" +
+                                        "   C.NombreDeudor Nombre, \r\n" +
+                                        "   C.RFC, \r\n" +
+                                        "   C.NúmeroCliente, \r\n" +
+                                        "   V.Valor Situación, \r\n" +
+                                        "   C.idCartera, \r\n" +
+                                        "   C.Saldo, \r\n" +
+                                        "   C.Fecha_CambioActivación, \r\n" +
+                                        "   C.Expediente \r\n" +
+                                        "FROM Cuentas C \r\n" +
+                                        "    	INNER JOIN Productos P ON P.idProducto = C.idProducto \r\n" +
+                                        "    	INNER JOIN Carteras CL ON CL.idCartera = C.idCartera \r\n" +
+                                        "       INNER JOIN ValoresCatálogo V ON V.idValor = C.idSituación \r\n"
+
+                                        ;
+                switch (filtro)
+                {
+                    case "Cuenta":
+                        queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
+                        queryBusqueda += " WHERE CuentaActiva = 1 AND C.idCuenta = '" + ValorBusqueda.Replace(" ", "") + "' ";
+                        break;
+
+                    case "Nombre":
+                        queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
+                        queryBusqueda += " INNER JOIN Nombres N (NOLOCK) ON N.Expediente = C.Expediente ";
+
+                        foreach (string sNombre in ValorBusqueda.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
+                            queryBusqueda += " AND CONTAINS( N.NombreDeudor, '" + sNombre.Replace("'", "") + "') ";
+                        queryBusqueda += "WHERE CuentaActiva = 1";
+                        validacion = "Nombre";
+                        break;
+
+                    case "RFC":
+                        queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (INDEX(IX_Cuentas_RFC), NOLOCK)");
+                        queryBusqueda += " WHERE CuentaActiva = 1 AND  CHARINDEX('" + ValorBusqueda.Replace(" ", "") + "', C.RFC) = 1  ";
+                        break;
+
+                    case "Numero Cliente":
+                        queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (INDEX(IX_Cuentas_NúmeroCliente), NOLOCK)");
+                        queryBusqueda += " WHERE CuentaActiva = 1 AND  C.NúmeroCliente = '" + ValorBusqueda.Replace(" ", "") + "' ";
+                        break;
+
+                    case "Telefono":
+                        queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
+                        queryBusqueda += "  LEFT JOIN Teléfonos T WITH (NOLOCK) ON T.idCartera = C.idCartera AND T.idCuenta = C.idCuenta \r\n";
+
+                        //foreach (char caracter in ValorBusqueda.Replace(" ", ""))
+                        //    if (!char.IsDigit(caracter))
+                        //        return tblResultado;
+                        //que el equipo Front controle que solo sean numeros y sean 10 digitos
+
+                        queryBusqueda += " WHERE CuentaActiva = 1 AND T.NúmeroTelefónico = RIGHT('" + ValorBusqueda.Replace(" ", "") + "', 10) ";
+                        break;
+
+                    case "Expediente":     //El equipo Front debe validar que no tenga letras
+
+                        queryBusqueda += " WHERE CuentaActiva = 1 AND CL.Abreviación = '";
+                        foreach (char Caracter in ValorBusqueda.Substring(0, 3))
+                            if (char.IsLetter(Caracter))
+                                queryBusqueda += Caracter;
+                        queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
+                        //quitar letras cuando se libere a todas las carteras
+                        queryBusqueda += "' AND C.Expediente = " + ValorBusqueda.Replace("AMX", "").Replace("amx", "").Replace(" ", "");
+
+
+                        break;
+
+                    default:
+                        //sQueryWHERE += " AND 2=1";
+                        break;
+                }
+
+                if (validacion == "Nombre")
+                {
+                    var busqueda = (await connection.QueryAsync<dynamic>(queryBusqueda, commandType: CommandType.Text));
+                    return busqueda;
+                }
+                else
+                {
+                    var busqueda = (await connection.QueryFirstOrDefaultAsync<dynamic>(queryBusqueda, commandType: CommandType.Text));
+                    return busqueda;
+                }
+
+
+            }
+        }
     }
+
+
+    #endregion
+
+
 }
+
 
 
 

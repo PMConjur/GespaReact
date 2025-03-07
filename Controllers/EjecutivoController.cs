@@ -93,18 +93,6 @@ namespace NoriAPI.Controllers
         #region Recordatorios
 
 
-
-
-
-
-
-
-
-
-
-
-
-
         [HttpGet("recordatorios/{idEjecutivo}")]
         public async Task<IActionResult> GetRecordatorios(int idEjecutivo)
         {
@@ -375,7 +363,23 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+        [HttpPost("SaveCargoEnlinea")]
+        public async Task<IActionResult> SaveCargoEnlinea([FromBody] CargoEnLineaRe newCargoEn)
+        {
+            if (newCargoEn == null)
+            {
+                return BadRequest("Datos de cargo en línea inválidos.");
+            }
 
+            string result = await _ejecutivoService.SaveCargoEnlinea(newCargoEn);
+
+            if (result.StartsWith("Error"))
+            {
+                return BadRequest(result); // Devuelve BadRequest para errores
+            }
+
+            return Ok(result); // Devuelve Ok con el resultado
+        }
 
 
 
