@@ -19,18 +19,21 @@ namespace NoriAPI.Services
 {
     public interface IEjecutivoService
     {
-        Task<ResultadoProductividad> ValidateProductividad(int numEmpleado);
-        Task<TiemposEjecutivo> ValidateTimes(int numEmpleado);
-        Task<string> PauseUnpause(InfoPausa pausa);
+        Task <ResultadoProductividad> ValidateProductividad(int numEmpleado);
+        Task <TiemposEjecutivo> ValidateTimes(int numEmpleado);
+        Task <string> PauseUnpause(InfoPausa pausa);
         Task ObtenerSeguimientos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerAccionamiento(DataRow drDatos, DataSet dsTablas);
-        Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo);
-        Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
-        Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
+        Task <NegociacionesResponse> GetNegociaciones(int idEjecutivo);
+        Task <Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
+        Task <List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
         Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta);
-        Task <DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
-        Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
 
+        #region Acciones
+        Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
+        Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
+        Task<DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña);
+        #endregion
 
         Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo);
         Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas);
@@ -144,9 +147,9 @@ namespace NoriAPI.Services
 
 
 
+        #region Acciones
 
-            
-        public async Task <DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta)
+        public async Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta)
         {
             DataTable negociacion = new DataTable();
             string query = "SELECT * FROM fn_OfrecimientosNegociaciones(@idCartera, @idCuenta)"; // Evita inyección SQL
@@ -194,7 +197,62 @@ namespace NoriAPI.Services
             return plazos;
         }
 
+        public async Task<DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña)
+        {
+            if (idEjecutivo!= 0 && Contraseña != "")
+            {
+                DataTable passValidadores = new DataTable();
+                string query = "EXEC dbCollection..[2.8.Validación] @idProducto, @idEjecutivo, @Contraesña"; // Evita inyección SQL
 
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                        command.Parameters.Add("@idProducto", SqlDbType.Int).Value = idProducto;
+                        command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
+                        command.Parameters.Add("@Contraesña", SqlDbType.VarChar).Value = Contraseña;
+
+                        using (var adapter = new SqlDataAdapter(command))
+                        {
+                            adapter.Fill(passValidadores);
+                        }
+                    }
+                }
+
+                return passValidadores;
+            }
+            else
+            {
+                DataTable validadores = new DataTable();
+                string query = "SELECT  E.idEjecutivo, E.NombreEjecutivo Nombre " +
+                    "FROM Ejecutivos E (NOLOCK) " +
+                    "INNER JOIN Validadores V (NOLOCK) " +
+                    "ON E.idEjecutivo = V.idEjecutivo " +
+                    "WHERE V.idProducto = @idProducto"; // Evita inyección SQL
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                        command.Parameters.Add("@idProducto", SqlDbType.Int).Value = idProducto;
+
+                        using (var adapter = new SqlDataAdapter(command))
+                        {
+                            adapter.Fill(validadores);
+                        }
+                    }
+                }
+
+                return validadores;
+            }
+                       
+        }
+
+        #endregion
 
 
 

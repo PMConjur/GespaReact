@@ -9,6 +9,7 @@ using NoriAPI.Services;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -276,8 +277,6 @@ namespace NoriAPI.Controllers
                 // Convertimos el DataTable a una lista de diccionarios
                 var listaPlazos = ConvertDataTableToList(Plazos);
 
-
-
                 // Serializamos la lista a JSON
                 string jsonPlazos = JsonSerializer.Serialize(listaPlazos, new JsonSerializerOptions { WriteIndented = true });
 
@@ -338,8 +337,7 @@ namespace NoriAPI.Controllers
                             return fechaHoraPlazo == fechaInsert;
                         }
                         return false;
-                    })
-                    .ToList();
+                    }).ToList();
                     // Agregar la negociación junto con los plazos relacionados
                     var negociacionConPlazos = new
                     {
@@ -361,7 +359,51 @@ namespace NoriAPI.Controllers
             }
         }
 
+        [HttpGet("validador")]
+        public async Task<IActionResult> GetValidador(int idProducto, int idEjecutivo, string Contraseña)
+        {
+            DataSet dsTablas = new DataSet();
+            try
+            {
+                if (idEjecutivo != 0 && Contraseña != "")
+                {
+                    DataTable passValidador = new DataTable();
 
+                    passValidador = await _ejecutivoService.GetValidadorAsync(idProducto, idEjecutivo,Contraseña);
+
+                    // Convertimos el DataTable a una lista de diccionarios
+                    var passValidadores = ConvertDataTableToList(passValidador);
+
+                    // Serializamos la lista a JSON
+                    string jsonPassValidadores = JsonSerializer.Serialize(passValidadores, new JsonSerializerOptions { WriteIndented = true });
+
+                    //dsTablas.Tables.Add(Negociaciones);
+
+                    return Ok(jsonPassValidadores);
+                }
+                else 
+                {
+                    DataTable Validador = new DataTable();
+
+                    Validador = await _ejecutivoService.GetValidadorAsync(idProducto, idEjecutivo, Contraseña);
+
+                    // Convertimos el DataTable a una lista de diccionarios
+                    var Validadores = ConvertDataTableToList(Validador);
+
+                    // Serializamos la lista a JSON
+                    string jsonValidadores = JsonSerializer.Serialize(Validadores, new JsonSerializerOptions { WriteIndented = true });
+
+                    //dsTablas.Tables.Add(Negociaciones);
+
+                    return Ok(jsonValidadores);
+                }                               
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
 
 
     }
