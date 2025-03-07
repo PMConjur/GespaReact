@@ -113,7 +113,7 @@ const InformationClient = () => {
   return (
     <Card className="overflow-auto">
       <Card.Header className="text-white">
-        <i className="h5">
+        <i className="h5 card-title">
           <InfoCircleFill></InfoCircleFill> Información
         </i>
       </Card.Header>

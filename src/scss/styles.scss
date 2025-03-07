@@ -275,7 +275,7 @@ $modal-transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       left: 0;
       width: 100%;
       height: 4px;
-      background: linear-gradient(90deg, #4a9dff, #6c5ce7);
+      background: linear-gradient(90deg, #6dd6ff, #07fb70);
     }
   }
 
@@ -416,7 +416,7 @@ $table-border-radius: 8px;
   // Variante especial
   &.table-custom {
     thead th {
-      background: linear-gradient(45deg, #4a9dff, #6c5ce7);
+      background: linear-gradient(45deg, #6dd6ff, #07fb70);
       color: white;
     }
   }
@@ -718,7 +718,7 @@ $primary: #007bff; // Azul
 $secondary: #e1e1e1; // Gris
 $light: #f8f9fa; // Blanco claro
 $dark: #1d1f20; // Gris oscuro
-
+$dark-force: #000000; // Gris oscuro
 // Colores adicionales
 $custom-color-1: #6c5ce7; // Morado
 $custom-color-2: #00b894; // Verde turquesa
@@ -792,5 +792,147 @@ $custom-color-2: #00b894; // Verde turquesa
   color: $custom-color-2 !important;
   &.hoverable:hover {
     color: darken($custom-color-2, 10%) !important;
+  }
+}
+//Estilos flujo
+.elemento {
+  border-radius: 10px;
+  padding: 5px;
+  transition: background-color 0.5s ease, color 0.5s ease;
+  background-color: #000000;
+  color: darken(
+    $success,
+    10%
+  ); // Color de texto inicial (blanco para contrastar con el fondo negro)
+
+  &:hover {
+    background-color: darken($success, 10%); // Aclara el fondo en un 20%
+    color: #000000; // Cambia el color del texto a negro para contrastar con el fondo aclarado
+  }
+}
+//Buttons
+// Colores base
+$primary: #6dd6ff; // Azul
+$secondary: #6c757d; // Gris
+$success: #39fc8d; // Verde
+$info: #17a2b8; // Azul claro
+$warning: #ffc107; // Amarillo
+$danger: #f14b41; // Rojo
+$light: #f8f9fa; // Blanco claro
+$dark: #343a40; // Gris oscuro
+
+// Colores adicionales
+$custom-color-1: #6c5ce7; // Morado
+$custom-color-2: #00b894; // Verde turquesa
+
+// Variables específicas para botones
+$btn-border-radius: 0.8rem;
+$btn-padding-y: 0.75rem;
+$btn-padding-x: 1.5rem;
+$btn-font-weight: 600;
+$btn-transition: background-color 0.5s ease, color 0.5s ease;
+
+.btn {
+  // Estilos base
+  border: none;
+
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: $btn-transition;
+
+  // Efecto hover
+  &:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  // Efecto activo
+  &:active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  // Botones personalizados
+  &-primary {
+    background: darken($primary, 40%);
+    color: darken($light, 0%);
+    border: 1px solid darken($primary, 40%);
+    &:hover {
+      background: darken($dark, 10%);
+      color: darken($primary, 0%);
+      border: 1px solid darken($primary, 0%);
+    }
+  }
+
+  &-success {
+    background: darken($success, 35%);
+    color: darken($light, 0%);
+    border: 1px solid darken($success, 35%);
+    &:hover {
+      background: darken($dark, 10%);
+      color: darken($success, 5%);
+      border: 1px solid darken($success, 5%);
+    }
+  }
+  &-warning {
+    background: darken($warning, 30%);
+    color: darken($light, 0%);
+    border: 1px solid darken($warning, 30%);
+    &:hover {
+      background: darken($dark, 10%);
+      color: darken($warning, 5%);
+    }
+  }
+  &-danger {
+    background: darken($danger, 30%);
+    color: darken($light, 0%);
+    border: 1px solid darken($danger, 30%);
+    &:hover {
+      background: darken($dark, 10%);
+      color: darken($danger, 5%);
+    }
+  }
+  &-secondary {
+    background: darken($secondary, 10%);
+    color: darken($light, 0%);
+    border: 1px solid darken($secondary, 30%);
+    &:hover {
+      background: darken($dark, 10%);
+      color: darken($light, 5%);
+    }
+  }
+
+  &-custom-2 {
+    background: $custom-color-2;
+    color: rgb(0, 0, 0);
+
+    &:hover {
+      background: darken($custom-color-2, 10%);
+    }
+  }
+
+  // Botones con íconos
+  &.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .icon {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+  }
+
+  // Botones con efecto degradado
+  &.btn-gradient {
+    background: linear-gradient(45deg, $primary, $info);
+    color: white;
+    border: none;
+
+    &:hover {
+      background: linear-gradient(
+        45deg,
+        darken($primary, 10%),
+        darken($info, 10%)
+      );
+    }
   }
 }

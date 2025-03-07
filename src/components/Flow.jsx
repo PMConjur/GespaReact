@@ -1,8 +1,12 @@
 import { useEffect, useState, useContext } from "react";
-import { Row, Col, Card, Form, Button, Stack } from "react-bootstrap";
+import { Row, Col, Card, Form, Button } from "react-bootstrap";
 import { userFlow } from "../services/gespawebServices";
-import { NodePlusFill } from "react-bootstrap-icons";
-import { toast, Toaster } from "sonner"; // Import toast and Toaster
+import {
+  NodePlusFill,
+  Check2Circle,
+  ArrowLeftCircleFill
+} from "react-bootstrap-icons";
+import { toast } from "sonner"; // Import toast and Toaster
 import { AppContext } from "../pages/Managment"; // Import AppContext
 
 const Flow = () => {
@@ -106,7 +110,7 @@ const Flow = () => {
       answerHistory.length > 0
         ? `${answerHistory[answerHistory.length - 1].pregunta} - ${
             answerHistory[answerHistory.length - 1].valor
-          }`
+          } `
         : "";
 
     return (
@@ -115,13 +119,17 @@ const Flow = () => {
           <Row>
             <Col>
               {" "}
-              <i className="h5">
+              <i className="h5 card-title">
                 <NodePlusFill></NodePlusFill> Flujo
               </i>
             </Col>
-            <Col md="auto">
+            <Col md="auto  text-right">
               {" "}
-              <span> {lastAnswer}</span>
+              <span className="elemento">
+                {" "}
+                {lastAnswer}
+                <Check2Circle></Check2Circle>
+              </span>
             </Col>
           </Row>
         </Card.Header>
@@ -156,8 +164,8 @@ const Flow = () => {
         <Card.Footer className="text-white">
           <Row>
             <Col>
-              <Button variant="primary" className="mt-3" onClick={handleBack}>
-                Regresar
+              <Button variant="primary" className="mt-3 " onClick={handleBack}>
+                <ArrowLeftCircleFill></ArrowLeftCircleFill> Regresar
               </Button>
             </Col>
           </Row>
