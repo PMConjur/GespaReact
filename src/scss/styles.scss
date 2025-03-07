@@ -141,24 +141,21 @@ $card-spacer-x: 2rem;
   font-size: 14px;
 }
 
-$breadcrumb-font-size: 0.9rem;
-$breadcrumb-padding-y: 0.5rem;
-$breadcrumb-padding-x: 1rem;
-$breadcrumb-item-padding-x: 0.75rem;
+$breadcrumb-font-size: 15px;
 $breadcrumb-margin-bottom: 1.5rem;
 $breadcrumb-bg: rgba(#c5c5c5, 0.8);
-$breadcrumb-border-radius: 1rem;
+$breadcrumb-border-radius: 10px;
 
 // Colores
-$breadcrumb-divider-color: #feffbb;
-$breadcrumb-active-color: #f8d86a;
+$breadcrumb-divider-color: #6dd6ff;
+$breadcrumb-active-color: #e1e1e1;
 $breadcrumb-divider: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24'%3E%3Cpath fill='%236c757d' d='M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z'/%3E%3C/svg%3E");
 
 .breadcrumb {
   // Estilo de contenedor
-  backdrop-filter: blur(4px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-
+  font-family: "Poppins", sans-serif;
+  border-radius: $breadcrumb-border-radius;
+  font-size: $breadcrumb-font-size;
   // Items y enlaces
   &-item {
     display: flex;
@@ -453,7 +450,7 @@ $table-border-radius: 8px;
 .table-custom2 {
   width: 100%;
   border-collapse: initial;
-  border-spacing: 0px 2px;
+  border-spacing: 0px px;
   background-color: #6c757d;
   padding: 1px;
   border-radius: 5px;
