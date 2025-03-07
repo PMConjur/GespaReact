@@ -27,6 +27,7 @@ const Telephones = () => {
 
   // Cargar datos desde la API
   const loadData = async () => {
+    console.log("searchResults:", searchResults); // Inspecciona 
     setIsLoading(true);
     try {
       const phones = await Promise.all(
@@ -201,7 +202,6 @@ const Telephones = () => {
                         >
                           {"XXXXXX" + row.númeroTelefónico.slice(6)}
                         </a>
-                        // Enviar valor 2 al Form.Check en Flow.jsx
                       </td>
                       <td>{row.idTelefonía || "--"}</td>
                       <td>{row.idOrigen || "--"}</td>
@@ -220,6 +220,47 @@ const Telephones = () => {
                       <td>{row.activo ? "Activo" : "Inactivo" || "--"}</td>
                     </tr>
                   ))}
+              {isLoading ? (
+                [...Array(4)].map((_, i) => (
+                  <tr key={i}>
+                    {[...Array(18)].map((_, j) => (
+                      <td key={j}>
+                        <Placeholder as="span" animation="glow">
+                          <Placeholder xs={12} />
+                        </Placeholder>
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : (
+                data.map((row, index) => (
+                  <tr key={index}>
+                    <td>{row.titulares || "--"}</td>
+                    <td>{row.conocidos || "--"}</td>
+                    <td>{row.desconocidos || "--"}</td>
+                    <td>{row.sinContacto || "--"}</td>
+                    <td>{row.intentosViciDial || "--"}</td>
+                    <td>{row.id || "--"}</td>
+                    <td>
+                    <a href="#" className="text-primary" onClick={() => setSelectedAnswer(2)}>
+                        {"XXXXXX" + row.númeroTelefónico.slice(6)}
+                      </a>
+                    </td>
+                    <td>{row.idTelefonía || "--"}</td>
+                    <td>{row.idOrigen || "--"}</td>
+                    <td>{row.idClase || "--"}</td>
+                    <td>{row.estado || "--"}</td>
+                    <td>{row.municipio || "--"}</td>
+                    <td>{row.husoHorario || "--"}</td>
+                    <td>{row.segHorarioContacto || "--"}</td>
+                    <td>{row.extensión || "--"}</td>
+                    <td>{row._Confirmado ? "Sí" : "No" || "--"}</td>
+                    <td>{new Date(row.fecha_Insert).toLocaleDateString() || "--"}</td>
+                    <td>{row.calificacion || "--"}</td>
+                    <td>{row.activo ? "Activo" : "Inactivo" || "--"}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </Table>
         </div>

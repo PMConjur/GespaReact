@@ -237,6 +237,40 @@ export async function userFlow() {
   }
 }
 
+//Endpoint de accionamientos
+export const fetchDrives = async (idCartera, idCuenta) => {
+
+  try {
+    console.log("Iniciando llamada a la API...");
+    console.log(
+      "URL de la API:",
+      `${apiUrl}/ejecutivo/accionamientos/${idCartera}/${idCuenta}`
+    );
+
+    const response = await servicio.get(
+      `${apiUrl}/ejecutivo/accionamientos/1/${idCuenta}`
+    );
+
+    const message = getErrorStatus(response.status);
+
+    console.log("Respuesta de la API recibida. Estado:", response.status);
+
+    if (response.status !== 200) {
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
+    }
+
+    const data = response.data;
+
+    console.log("Datos obtenidos de la API:", data); // Agrega este console.log para mostrar los datos obtenidos
+
+    return data;
+  } catch (error) {
+    console.error("Error en fetchDrives:", error);
+    throw error;
+  }
+};
+
 //Error status global
 const getErrorStatus = (status) => {
   switch (status) {

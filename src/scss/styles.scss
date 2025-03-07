@@ -794,3 +794,27 @@ $custom-color-2: #00b894; // Verde turquesa
     color: darken($custom-color-2, 10%) !important;
   }
 }
+
+.dark-modal .modal-content {
+  background-color: #1d1f20;
+  color: #ffffff;
+}
+
+.dark-modal .modal-header,
+.dark-modal .modal-footer {
+  border-color: #444;
+}
+
+.dark-modal .modal-title {
+  color: #ffffff;
+}
+
+.dark-modal .btn-secondary {
+  background-color: #444;
+  border-color: #444;
+}
+
+.table-bg-action{
+  background-color: #232629 ;
+  color: white;
+}

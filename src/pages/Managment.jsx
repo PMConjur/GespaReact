@@ -15,7 +15,7 @@ import SearchCustomer from "../components/SearchCustomer";
 import CustomToast from "../components/CustomToast";
 import Managments from "../components/Managments";
 import Reminder from "../components/Reminder";
-
+import { searchCustomer } from "../services/gespawebServices";
 // Crear el contexto
 export const AppContext = createContext();
 
