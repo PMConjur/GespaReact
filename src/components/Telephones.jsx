@@ -5,7 +5,9 @@ import {
   Button,
   InputGroup,
   FormControl,
-  Placeholder
+  Placeholder,
+  DropdownButton,
+  Dropdown
 } from "react-bootstrap";
 import { fetchPhones, fetchValidationTel, fetchNewTel } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
@@ -20,6 +22,7 @@ const Telephones = () => {
   const [isPhoneNew, setIsPhoneNew] = useState(false); // Estado para manejar si el teléfono es nuevo
   const { searchResults, setSelectedAnswer } = useContext(AppContext);
   const [toastShown, setToastShown] = useState(false);
+  const [selectedClaseTelefono, setSelectedClaseTelefono] = useState("");
 
   const loadData = async () => {
     console.log("searchResults:", searchResults);
@@ -47,17 +50,19 @@ const Telephones = () => {
 
   const handlePhoneNumberChange = (e) => {
     const input = e.target.value.replace(/\D/g, "");
-    if (input.length <= 11) {
+    if (input.length <= 13) {
       setPhoneNumber(input);
     }
   };
 
   const handleValidatePhone = async () => {
     if (!phoneNumber.trim()) {
-      toast.warning("Ingrese un número de teléfono", { position: "top-right" });
+      toast.warning("Ingrese un número de teléfono", { position: "top-right",
+        style: { transform: "translateY(80vh)" }
+       });
       return;
     }
-    if (phoneNumber.length !== 10 && phoneNumber.length !== 11) {
+    if (phoneNumber.length !== 10 && phoneNumber.length !== 13) {
       toast.warning("El número de teléfono debe tener 10 o 11 dígitos", {
         position: "top-right"
       });
@@ -81,12 +86,13 @@ const Telephones = () => {
       if (response.exists) {
         toast.success("El número de teléfono existe en la cuenta", {
           position: "top-right",
-          style: { transform: "translateY(20vh)" }
+          style: { transform: "translateY(80vh)" }
         });
         setIsPhoneNew(false); // El teléfono existe, no es nuevo
       } else {
         toast.error("El número de telefono no existe en la cuenta", {
-          position: "center-right"
+          position: "center-right",
+          style: { transform: "translateY(80vh)" }
         });
         setIsPhoneNew(true); // El teléfono no existe, es nuevo
       }
@@ -94,7 +100,7 @@ const Telephones = () => {
       console.error("Error al validar el teléfono:", error);
       toast.error("El número de teléfono no existe en la cuenta", {
         position: "top-right",
-        style: { transform: "translateY(20vh)" }
+        style: { transform: "translateY(80vh)" }
       });
       setIsPhoneNew(true); // En caso de error, considerar el teléfono como nuevo
     }
@@ -102,10 +108,14 @@ const Telephones = () => {
 
   const handleSaveNewPhone = async () => {
     if (!phoneNumber.trim()) {
-      toast.warning("Ingrese un número de teléfono", { position: "top-right" });
+      toast.warning("Ingrese un número de teléfono", { position: "top-right", 
+        style: { transform: "translateY(80vh)" }
+       }
+        
+      );
       return;
     }
-    if (phoneNumber.length !== 10 && phoneNumber.length !== 11) {
+    if (phoneNumber.length !== 10 && phoneNumber.length !== 13) {
       toast.warning("El número de teléfono debe tener 10 o 11 dígitos", {
         position: "top-right"
       });
@@ -126,7 +136,7 @@ const Telephones = () => {
       idEjecutivo: idEjecutivo,
       phoneNumber: phoneNumber,
       telefonia: "fija", // Ajusta estos valores según sea necesario
-      claseTelefono: "Hogar",
+      claseTelefono: selectedClaseTelefono,
       horarioContacto: "05:53:10",
       extension: 0
     };
@@ -135,7 +145,7 @@ const Telephones = () => {
       const response = await fetchNewTel(newPhoneData);
       toast.success("Nuevo número de teléfono guardado", {
         position: "top-right",
-        style: { transform: "translateY(20vh)" }
+        style: { transform: "translateY(80vh)" }
       });
       setIsPhoneNew(false); // Restablecer el estado del teléfono nuevo
       setPhoneNumber(""); // Limpiar el campo de entrada
@@ -144,7 +154,7 @@ const Telephones = () => {
       console.error("Error al guardar el nuevo teléfono:", error);
       toast.error("Error al guardar el nuevo teléfono", {
         position: "top-right",
-        style: { transform: "translateY(20vh)" }
+        style: { transform: "translateY(80vh)" }
       });
     }
   };
@@ -176,6 +186,23 @@ const Telephones = () => {
                   >
                     Llamada de entrada
                   </Button>
+                  {isPhoneNew && (
+                    <DropdownButton
+                      id="dropdown-basic-button"
+                      title={selectedClaseTelefono || "Clase de telefono"}
+                      onSelect={(e) => setSelectedClaseTelefono(e)}
+                      className="custom-dropdown-menu"
+                    >
+                      <Dropdown.Item eventKey="Hogar">Hogar</Dropdown.Item>
+                      <Dropdown.Item eventKey="Tercero">Tercero</Dropdown.Item>
+                      <Dropdown.Item eventKey="Familiar">Familiar</Dropdown.Item>
+                      <Dropdown.Item eventKey="Empresa Trabajo">Empresa Trabajo</Dropdown.Item>
+                      <Dropdown.Item eventKey="Celular">Celular</Dropdown.Item>
+                      <Dropdown.Item eventKey="Recados">Recados</Dropdown.Item>
+                      <Dropdown.Item eventKey="Oficina">Oficina</Dropdown.Item>
+                      <Dropdown.Item eventKey="Baja">Baja</Dropdown.Item>
+                    </DropdownButton>
+                  )}
                   <InputGroup style={{ width: "35%" }} className="input-phone">
                     <FormControl
                       placeholder="Numero de telefono"

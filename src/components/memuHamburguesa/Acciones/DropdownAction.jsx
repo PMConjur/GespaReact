@@ -8,6 +8,9 @@ import "../../../scss/styles.scss";
 const DropdownActions = () => {
   const [showModal, setShowModal] = useState(false);
   const [accionamientosData, setAccionamientosData] = useState([]);
+  const [showFollowUps, setShowFollowUps] = useState(false);
+  const [followUpsData, setFollowUpsData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   // Consumir el contexto
   const { searchResults } = useContext(AppContext);
@@ -44,7 +47,21 @@ const DropdownActions = () => {
     }
   };
 
+   const handleShowFollowUps = async () => {
+      setLoading(true);
+      try {
+        const followUps = await getFollowUpsData(searchResults); // 🔹 Ahora recibe toda la lista
+        setFollowUpsData(followUps.flat()); // 🔹 Asegura que la data es un array plano
+        setShowFollowUps(true);
+      } catch (error) {
+        console.error("Error al obtener los datos de seguimiento:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
   const handleCloseModal = () => setShowModal(false);
+  const handleCloseFollowUps = () => setShowFollowUps(false);
 
   return (
     <>
@@ -54,7 +71,7 @@ const DropdownActions = () => {
         </Dropdown.Toggle>
         <Dropdown.Menu style={{backgroundColor: '#1d1f20', border: 'none'}} className='custom-dropdown-menu'>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Negociaciones</Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Seguimientos</Dropdown.Item>
+          <Dropdown.Item onClick={handleShowFollowUps} className="custom-dropdown-item">Seguimientos</Dropdown.Item>
           <Dropdown.Item onClick={handleShowModal} className="custom-dropdown-item">Accionamientos</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Busqueda</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Cargos en linea</Dropdown.Item>

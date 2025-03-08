@@ -294,6 +294,53 @@ export const fetchNewTel = async (newPhoneData) => {
   }
 };
 
+// Endpoint de seguimientos para múltiples cuentas
+export async function getFollowUpsData(searchResults) {
+  try {
+    // Obtener token de autenticación de localStorage o estado
+    const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));
+    const token = responseData?.ejecutivo?.token;
+
+    if (!token) {
+      throw new Error("Token de autenticación no disponible");
+    }
+
+    // Definir idCartera fijo (siempre 1 según el código original)
+    const idCartera = 1;
+
+    // Realizar múltiples solicitudes en paralelo para cada idCuenta en searchResults
+    const followUps = await Promise.all(
+      searchResults.map(async (result) => {
+        const idCuenta = result.idCuenta.trim(); // Limpieza del idCuenta
+        console.log("🔍 Buscando seguimientos para idCuenta:", idCuenta);
+
+        try {
+          const response = await axios.get(
+            `${apiUrl}/ejecutivo/seguimientos/${idCartera}/${idCuenta}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`, // Autenticación con token
+              },
+            }
+          );
+
+          console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
+          return response.data; // Retornar datos obtenidos
+        } catch (error) {
+          console.error(`❌ Error al obtener datos de seguimiento para idCuenta ${idCuenta}:`, error);
+          return null; // Retornar null en caso de error para evitar fallas en Promise.all
+        }
+      })
+    );
+
+    // Filtrar valores nulos (en caso de errores individuales)
+    return followUps.filter((data) => data !== null);
+  } catch (error) {
+    console.error("❌ Error al obtener los datos de seguimiento:", error);
+    throw new Error("Error al cargar los datos de gestión.");
+  }
+}
+
 //Error status global
 const getErrorStatus = (status) => {
   switch (status) {
