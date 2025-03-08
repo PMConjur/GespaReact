@@ -26,7 +26,7 @@ namespace NoriAPI.Repositories
         Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
         #endregion
 
-        #region calculadora
+        #region Calculadora-1era parte
         Task<DataTable> ObtienePlazos(int Cartera, string NoCuenta);
         Task<DataTable> ObtieneNegociaciones(int Cartera, string NoCuenta);
         Task<DataTable> ObtienePagos(int Cartera, string NoCuenta);
@@ -517,7 +517,7 @@ namespace NoriAPI.Repositories
         }
         #endregion
 
-        #region Calculadora
+        #region Calculadora-1raparte
 
         Hashtable _htProducto;
         public async Task<DataTable> ObtieneNegociaciones(int Cartera, string NoCuenta)
@@ -640,8 +640,7 @@ namespace NoriAPI.Repositories
                 commandType: CommandType.Text
              ));
             return ConvertToDataTable(InfoCuenta, "InfoCuenta");
-        }
-
+        }        
         public object CampoCalculado(string Expresión)
         {
 
@@ -726,8 +725,6 @@ namespace NoriAPI.Repositories
                 return true;
             return false;
         }
-
-
 
         #endregion
 
@@ -930,7 +927,6 @@ namespace NoriAPI.Repositories
 
             return ht;
         }
-
         public List<OfrecimientosInfo> ConvertirDataTableALista(DataTable dt)
         {
             return dt.AsEnumerable().Select(row => new OfrecimientosInfo
@@ -943,7 +939,6 @@ namespace NoriAPI.Repositories
                 SaldoInterés =Convert.ToString(row.Field<Decimal>("SaldoInterés"))
             }).ToList();
         }
-
         public List<HerramientasInfo> ConvertirDataTableALista_(DataTable dt)
         {
             return dt.AsEnumerable().Select(row => new HerramientasInfo

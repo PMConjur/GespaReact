@@ -100,14 +100,26 @@ namespace NoriAPI.Controllers
 
         }
 
-        [HttpGet("Calculadora-simulador")]
+        [HttpGet("Calculadora-1erParte")]
         public async Task<ActionResult<ResultadoCalculadora>> Calculadora_Simulador([FromQuery] int Cartera, string NoCuenta, int idHerr)
         {
-            var InfoCalculadora = await _ejecutivoService.ValidateInfoCalculadora(Cartera, NoCuenta, idHerr);
+            var InfoCalculadora = await _ejecutivoService.ValidateInfoCalculadora1(Cartera, NoCuenta, idHerr);
 
             return Ok(InfoCalculadora); ;
 
         }
+
+        [HttpGet("Calculadora-2daParte")]
+
+        public async Task<ActionResult<ResultadoCalculadora2>> Calculadora([FromQuery] int idHerramienta, string FechaPlazo, string NoCuenta)
+        {
+            var InfoCalucladora2 = await _ejecutivoService.ValidateInfoCalculadora2(idHerramienta, FechaPlazo, NoCuenta);
+
+            return Ok(InfoCalucladora2);
+
+        }
+
+
 
     }
 }
