@@ -52,6 +52,19 @@ namespace NoriAPI.Controllers
             return Ok(new { mensaje });
         }
 
+        /**
+        Promedios Ejecutivo
+        Diseñado por Yoshiiiii
+        */
+
+         [HttpGet("promedio-ejecutivo")]
+        public async Task<ActionResult> Averages([FromQuery] int idEjecutivo)
+        {
+            Dictionary<string, object> mensaje = await _ejecutivoService.Promedios(idEjecutivo);
+            return Ok(new { mensaje });
+        }
+
+
         [HttpGet("seguimientos/{idCartera}/{idCuenta}")]
         public async Task<IActionResult> GetSeguimiento(int idCartera, string idCuenta)
         {

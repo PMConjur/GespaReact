@@ -19,11 +19,23 @@ namespace NoriAPI.Services
 {
     public interface IEjecutivoService
     {
+        #region Productividad
         Task <ResultadoProductividad> ValidateProductividad(int numEmpleado);
+        #endregion
+
+        #region Tiempos
+
         Task <TiemposEjecutivo> ValidateTimes(int numEmpleado);
-        Task <string> PauseUnpause(InfoPausa pausa);
+        Task<Dictionary<string, object>> PauseUnpause(InfoPausa pausa);
+        Task<Dictionary<string, object>> Promedios(int idEjecutivo);
+
+        #endregion 
+        #region AccionesDropDown
         Task ObtenerSeguimientos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerAccionamiento(DataRow drDatos, DataSet dsTablas);
+
+        #endregion
+      
         Task <NegociacionesResponse> GetNegociaciones(int idEjecutivo);
         Task <Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
         Task <List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
@@ -46,6 +58,7 @@ namespace NoriAPI.Services
     {
         private readonly IConfiguration _configuration;
         private readonly IEjecutivoRepository _ejecutivoRepository;
+        private readonly ISearchService _searchService; 
         private readonly string _connectionString;
 
         #region PropiedadesProductividad
@@ -61,11 +74,12 @@ namespace NoriAPI.Services
         private static Hashtable _htNombreId;
         #endregion
 
-        public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository)
+        public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository, ISearchService searchService)
         {
             _configuration = configuration;
             _ejecutivoRepository = ejecutivoRepository;
             _connectionString = _configuration.GetConnectionString("Piso2Amex");
+            _searchService = searchService;
         }
 
         #region Productividad
@@ -145,9 +159,6 @@ namespace NoriAPI.Services
             return validatePreg_Resp_list;
         }
         #endregion
-
-
-
 
         #region Acciones
 
@@ -286,14 +297,6 @@ namespace NoriAPI.Services
 
         #endregion
 
-
-
-
-
-
-
-
-
         #region Calculadora
         public async Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta)
         {
@@ -399,9 +402,7 @@ namespace NoriAPI.Services
         }
         #endregion
 
-
-
-        #region Tiempos
+        #region Pausa
         public async Task<TiemposEjecutivo> ValidateTimes(int numEmpleado)
         {
             ResultadoTiempos tiempos = null;
@@ -418,32 +419,89 @@ namespace NoriAPI.Services
 
             return new TiemposEjecutivo(null, tiempos);
         }
-        #endregion
 
-        #region Pausa
-        public async Task<string> PauseUnpause(InfoPausa pausa)
+        public async Task<Dictionary<string, object>> PauseUnpause(InfoPausa pausa)
         {
             try
             {
                 if (!await Despausar(pausa))
                 {
-                    return "Contraseña Incorrecta.";
+                    return new Dictionary<string, object> { { "Error", "Contraseña Incorrecta." } };
                 }
 
+
+                DataTable catalogosTable = await _ejecutivoRepository.VwCatalogos();
+
+                // Obtener IdPeCausa desde los catálogos
+                int idPeCausa = await _searchService.GetIdValor(catalogosTable, "Pausas", pausa.PeCausa);
+
+
                 await _ejecutivoRepository.ChangeEjecutivoMode(pausa.IdEjecutivo, "Consulta");
-                await _ejecutivoRepository.Pausa210(pausa.IdEjecutivo, 3001, pausa.Duracion);
+                await _ejecutivoRepository.Pausa210(pausa.IdEjecutivo, idPeCausa, pausa.Duracion);
                 await _ejecutivoRepository.IncreaseEjecutivoTime(pausa.IdEjecutivo, pausa.Duracion, pausa.PeCausa);
+
+                return new Dictionary<string, object> { { "Éxito", "Sesión reanudada." } };
             }
             catch
             {
-                return "Ocurrió un error al reanudar la sesión.";
+                return new Dictionary<string, object> { { "Error", "Ocurrió un error al reanudar la sesión." } };
             }
-
-            return "";
         }
 
         private async Task<bool> Despausar(InfoPausa tiempos)
         {
+            var validatePass = await _ejecutivoRepository.ValidatePasswordEjecutivo(tiempos.IdEjecutivo, tiempos.Contrasenia);
+            return validatePass != null;
+        }
+        #endregion
+
+        #region Promedios
+
+        public async Task<Dictionary<string, object>> Promedios(int idEjecutivo)
+        {
+            try
+            {
+                // Instancia temporal de ClasesGespa (en lugar de usar estática)
+                var gespa = new ClasesGespaNonStatic();
+
+                // Cargar catálogos
+                gespa.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+                gespa.CargaCatalogos();
+
+                gespa.dtRelaciones = await _ejecutivoRepository.VwRelaciones();
+                gespa.Relaciones();
+
+                // Calcular tiempos después de la pausa
+                gespa.Tiempos = await _ejecutivoRepository.TiemposEjecutivo(idEjecutivo);
+                gespa.ObtieneTiempos();
+
+
+                DataTable teibolDelDia = await _ejecutivoRepository.CuentasEjecutivo(idEjecutivo);
+                gespa.ObtieneGestionesDelDia(teibolDelDia);
+                gespa.ConteosGestiones();
+
+                // Extraer la fila adicional con los tiempos calculados
+                if (gespa.Tiempos.Rows.Count > 1)
+                {
+                    var filaAdicional = gespa.Tiempos.Rows[1]
+                        .Table.Columns.Cast<DataColumn>()
+                        .ToDictionary(col => col.ColumnName, col => gespa.Tiempos.Rows[1][col]);
+
+                    return filaAdicional;
+                }
+
+                return new Dictionary<string, object> { { "Error", "No se pudo calcular el tiempo." } };
+            }
+            catch
+            {
+                return new Dictionary<string, object> { { "Error", "No se pudo calcular el tiempo." } };
+            }
+        }
+
+        #endregion
+
+        #region Tiempos
+    
             var validatePass = await _ejecutivoRepository.ValidatePasswordEjecutivo(tiempos.IdEjecutivo, tiempos.Contrasenia);
             return validatePass != null;
         }
@@ -613,9 +671,8 @@ namespace NoriAPI.Services
 
         }
 
-
-
-public async Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo)
+        #endregion
+        public async Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo)
         {
             DataTable recordatorios = new DataTable();
             string query = "SELECT * FROM fn_SeguimientosEjecutivo(@idEjecutivo)"; // Evita inyección SQL
@@ -637,7 +694,6 @@ public async Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo)
             //string jsonString = JsonSerializer.Serialize();
             return recordatorios;
         }
-
         public async Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas)
         {
             if (drDatos == null || dsTablas.Tables.Contains("Seguimientos"))
@@ -658,18 +714,6 @@ public async Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo)
             recordatorios.DefaultView.Sort = "SegundoSeguimiento ASC";
         }
 
+    }
 }
 
-
-
-    }
-
-
-
-
-
-
-
-
-
-#endregion

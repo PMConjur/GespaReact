@@ -20,6 +20,8 @@ namespace NoriAPI.Services
         Task<Dictionary<string, object>> CalculateProductData(string idCuenta);
         Task<bool> ValidatePhone(string telefono, string idCuenta);
         Task<string> SaveNewPhone(NewPhoneRequest newPhoneData);
+        Task<int> GetIdValor(DataTable catalogos, string catalogo, object valor);
+
 
     }
 
