@@ -293,7 +293,9 @@ function NotesWidget() {
               />
             </div>
             <div className="mb-3" style={{ width: "100%" }}>
+              <label htmlFor="timePicker">Hora -- Minutos</label>
               <TimePicker
+                id="timePicker"
                 onChange={setTime}
                 value={time}
                 className="custom-time-picker"
