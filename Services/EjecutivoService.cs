@@ -40,8 +40,10 @@ namespace NoriAPI.Services
         Task<DataTable> GetCargosEnLineaAsync(int idCartera, string idCuenta);
         Task ObtenerCargosEnLinea(DataRow drDatos, DataSet dsTablas);
         Task<string> SaveCargoEnlinea(CargoEnLineaRe newCargoEn);
-        Task ObtenerEstadoDeCuenta(DataRow drDatos, DataSet dsTablas);
         Task<string> SaveEstadoDeCuenta(EstadoDeCuentaRe newEstadoEn);
+        Task ObtenerMultideudores(DataRow drDatos, DataSet dsTablas, Hashtable htProducto, string sortMultideudores, string connectionString);
+        Task ObtenerPagos(DataRow drDatos, DataSet dsTablas);
+        Task ObtenerPago(DataRow drDatos, DataSet dsTablas);
     }
 
     public class EjecutivoService : IEjecutivoService
@@ -995,7 +997,7 @@ namespace NoriAPI.Services
 
     #endregion
 
-    #region Estado de cuenta
+        #region Estado de cuenta
     public async Task<DataTable> GetEstadoDeCuentaAsync(int idCartera, string idCuenta)
         {
             DataTable estado = new DataTable();
@@ -1018,7 +1020,7 @@ namespace NoriAPI.Services
             return estado;
         }
 
-        public async Task ObtenerEstadoDeCuenta(DataRow drDatos, DataSet dsTablas)
+        public async Task ObtenerPagos(DataRow drDatos, DataSet dsTablas)
         {
             if (drDatos == null)
                 return;
@@ -1140,7 +1142,124 @@ namespace NoriAPI.Services
 
         #endregion
 
+        #region MultiDeudores
+        public async Task<DataTable> ObtieneMultideudoresAsync(DataRow drInfo, Hashtable htProducto, string sortMultideudores, string connectionString)
+        {
+            if (drInfo == null)
+                return null; // Devuelve null si drInfo es nulo
 
+            DataTable tblMultideudores = new DataTable();
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                await connection.OpenAsync();
+
+                string query = "SELECT TOP 1 * FROM vw_CuentaActiva WHERE idCartera = @idCartera AND idCuenta = @idCuenta " +
+                               "UNION \r\n" +
+                               "SELECT * FROM vw_CuentaActiva WHERE RFC = @RFC AND @RFC IS NOT NULL AND RTRIM(LTRIM(@RFC)) <> '' \r\n" +
+                               "UNION \r\n" +
+                               "SELECT * FROM vw_CuentaActiva WHERE NúmeroCliente = @NúmeroCliente AND idCartera = @idCartera AND @NúmeroCliente IS NOT NULL AND RTRIM(LTRIM(@NúmeroCliente)) <> ''";
+
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@idCartera", drInfo["idCartera"]);
+                    command.Parameters.AddWithValue("@idCuenta", drInfo["idCuenta"]);
+                    command.Parameters.AddWithValue("@RFC", drInfo["RFC"]);
+                    command.Parameters.AddWithValue("@NúmeroCliente", drInfo["NúmeroCliente"]);
+
+                    // AMEX GDC Búsqueda por nombre.
+                    if (drInfo["idProducto"].ToString() == "35")
+                    {
+                        command.CommandText = "SELECT C.* FROM vw_CuentaActiva C INNER JOIN Y.Producto_35 P ON C.idCuenta = P.idcuenta WHERE idCartera = 1 AND idProducto = 35 AND P.nombreempresa = @nombreempresa";
+                        command.Parameters.AddWithValue("@nombreempresa", htProducto["nombreempresa"]);
+                    }
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(tblMultideudores);
+                    }
+                }
+            }
+
+            if (tblMultideudores.Rows.Count == 0)
+                return null; // Devuelve null si no hay filas
+
+            tblMultideudores.PrimaryKey = new DataColumn[] { tblMultideudores.Columns["idCartera"], tblMultideudores.Columns["idCuenta"] };
+            tblMultideudores.DefaultView.Sort = sortMultideudores;
+
+            return tblMultideudores;
+        }
+        public async Task ObtenerMultideudores(DataRow drDatos, DataSet dsTablas, Hashtable htProducto, string sortMultideudores, string connectionString)
+        {
+            if (drDatos == null)
+                return;
+
+            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
+                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
+
+            DataTable multideudores = await ObtieneMultideudoresAsync(drDatos, htProducto, sortMultideudores, connectionString);
+
+            if (multideudores == null || multideudores.Rows.Count == 0)
+                return;
+
+            if (dsTablas.Tables.Contains("Multideudores"))
+            {
+                dsTablas.Tables.Remove("Multideudores");
+            }
+
+            multideudores.TableName = "Multideudores";
+            dsTablas.Tables.Add(multideudores);
+        }
+        #endregion
+
+        #region Pagos
+        public async Task<DataTable> GetPagosAsync(int idCartera, string idCuenta)
+        {
+            DataTable pagos = new DataTable();
+            string query = "SELECT * FROM fn_Pagos(@idCartera, @idCuenta)";
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(pagos);
+                    }
+                }
+            }
+            return pagos;
+        }
+
+        public async Task ObtenerPago(DataRow drDatos, DataSet dsTablas)
+        {
+            if (drDatos == null)
+                return;
+
+            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
+                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
+
+            var idCartera = Convert.ToInt32(drDatos["idCartera"]);
+            var idCuenta = Convert.ToString(drDatos["idCuenta"]);
+
+            DataTable pagosGet = await GetPagosAsync(idCartera, idCuenta);
+
+            if (pagosGet == null || pagosGet.Rows.Count == 0)
+                return;
+
+            if (dsTablas.Tables.Contains("Pagos"))
+            {
+                dsTablas.Tables.Remove("Pagos");
+            }
+
+            pagosGet.TableName = "Pagos";
+            dsTablas.Tables.Add(pagosGet);
+        }
+        #endregion
     }
 }
 

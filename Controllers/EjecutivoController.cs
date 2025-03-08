@@ -7,6 +7,7 @@ using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Models.Login;
 using NoriAPI.Services;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Text.Json;
@@ -22,11 +23,13 @@ namespace NoriAPI.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IEjecutivoService _ejecutivoService;
+        private readonly string _connectionString;
 
         public EjecutivoController(IEjecutivoService ejecutivoService, IConfiguration configuration)
         {
             _ejecutivoService = ejecutivoService;
             _configuration = configuration;
+            _connectionString = _configuration.GetConnectionString("Piso2Amex");
         }
         #region Productividad
 
@@ -398,7 +401,7 @@ namespace NoriAPI.Controllers
                 drDatos["idCartera"] = idCartera;
                 drDatos["idCuenta"] = idCuenta;
 
-                await _ejecutivoService.ObtenerEstadoDeCuenta(drDatos, dsTablas);
+                await _ejecutivoService.ObtenerPagos(drDatos, dsTablas);
 
                 if (!dsTablas.Tables.Contains("EstadoDeCuenta") || dsTablas.Tables["EstadoDeCuenta"].Rows.Count == 0)
                 {
@@ -435,6 +438,86 @@ namespace NoriAPI.Controllers
         }
         #endregion
 
+        #region MultiDeudores
+        [HttpGet("multideudores/{idCartera}/{idCuenta}")]
+        public async Task<IActionResult> GetMultideudores(int idCartera, string idCuenta)
+        {
+            try
+            {
+                DataSet dsTablas = new DataSet();
+                DataTable MultideudoresTable = dsTablas.Tables.Add("Multideudores");
+                MultideudoresTable.Columns.Add("idCartera", typeof(int));
+                MultideudoresTable.Columns.Add("idCuenta", typeof(string));
+                MultideudoresTable.Columns.Add("RFC", typeof(string)); // Agrega la columna RFC
+                MultideudoresTable.Columns.Add("NúmeroCliente", typeof(string)); // Agrega la columna NúmeroCliente
+                MultideudoresTable.Columns.Add("idProducto", typeof(int)); // Agrega la columna idProducto
+
+                DataRow drDatos = MultideudoresTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
+                // Asegúrate de que drDatos["RFC"] y drDatos["NúmeroCliente"] tengan valores apropiados
+                // drDatos["RFC"] = "valorRFC"; // Reemplaza con el valor real
+                // drDatos["NúmeroCliente"] = "valorNúmeroCliente"; // Reemplaza con el valor real
+                // drDatos["idProducto"] = 35; // Reemplaza con el valor real
+
+                Hashtable htProducto = new Hashtable();
+                htProducto["nombreempresa"] = "Nombre de la Empresa"; // Reemplaza con el valor real si es necesario
+
+                string sortMultideudores = "idCartera ASC, idCuenta ASC"; // Define el ordenamiento
+
+                await _ejecutivoService.ObtenerMultideudores(drDatos, dsTablas, htProducto, sortMultideudores, _connectionString);
+
+                if (!dsTablas.Tables.Contains("Multideudores") || dsTablas.Tables["Multideudores"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Multideudores para esta cuenta.");
+                }
+
+                var listaMultideudores = ConvertDataTableToList(dsTablas.Tables["Multideudores"]);
+                string jsonString = JsonSerializer.Serialize(listaMultideudores, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region Pagos
+
+        [HttpGet("pagos/{idCartera}/{idCuenta}")]
+        public async Task<IActionResult> GetPagos(int idCartera, string idCuenta)
+        {
+            try
+            {
+                DataSet dsTablas = new DataSet();
+                DataTable PagoTable = dsTablas.Tables.Add("Pagos");
+                PagoTable.Columns.Add("idCartera", typeof(int));
+                PagoTable.Columns.Add("idCuenta", typeof(string));
+                DataRow drDatos = PagoTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
+
+                await _ejecutivoService.ObtenerPago(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("Pagos") || dsTablas.Tables["Pagos"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Pagos para este ejecutivo.");
+                }
+
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Pagos"]);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+        #endregion
 
     }
 }
