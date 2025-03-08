@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace NoriAPI.Controllers
 {
@@ -73,9 +74,18 @@ namespace NoriAPI.Controllers
         [HttpPost("renew-token")]
         //[ProducesResponseType(typeof(RenewTokenResult), StatusCodes.Status200OK)]
         //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> RenewToken([FromBody]  string contrasenia)
+        public async Task<IActionResult> RenewToken([FromBody] RenewTokenRequest renewTokenInfo)
         {
-            return Ok(new RenewTokenResult { });
+            (string, bool) validationResult = await _userService.ValidateUserForRefresh(renewTokenInfo);
+
+            if (!validationResult.Item2)
+            {
+                return BadRequest(new { token = "", mensaje = validationResult.Item1 });
+            }
+
+            string newToken = GenerateJwtToken(new AuthRequest { Usuario = renewTokenInfo.Usuario});
+
+            return Ok(new { token = newToken, mensaje = "Éxito" });
         }
 
 

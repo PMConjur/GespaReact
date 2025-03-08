@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
@@ -13,6 +14,8 @@ namespace NoriAPI.Repositories
         Task<dynamic> ValidateContra(ReseteaContra request);
         Task<dynamic> ValidateUser(AuthRequest request);
         Task<dynamic> ValidateUserRetry(AuthRequest request);
+        Task<dynamic> ValidatePasswordEjecutivo(int idEjecutivo, string contrasenia);
+        Task<dynamic> ValidateExistingSession(int idEjecutivo);
     }
 
     public class UserRepository : IUserRepository
@@ -72,7 +75,7 @@ namespace NoriAPI.Repositories
                 storedIniciaSesion,
                 parameters,
                 commandType: CommandType.StoredProcedure
-            ));
+            )); 
 
             return validarUsuario;
         }
@@ -102,6 +105,54 @@ namespace NoriAPI.Repositories
 
             return validarUsuarioRetry;
         }
+
+        public async Task<dynamic> ValidatePasswordEjecutivo(int idEjecutivo, string contrasenia)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string queryPass = "[dbMemory].[PS].[ValidaContraseñaEjecutivo]";
+
+            var parameters = new
+            {
+                idEjecutivo = idEjecutivo,
+                Contraseña = contrasenia,
+            };
+
+            var passwordValidate = await connection.ExecuteScalarAsync(
+                queryPass,
+                parameters,
+                commandType: CommandType.StoredProcedure
+
+            );
+
+            return passwordValidate;
+        }
+
+        public async Task<dynamic> ValidateExistingSession(int idEjecutivo)
+        {
+            using var connection = GetConnection("Piso2Amex");
+            string querySession = "USE [dbMemory] " +
+                "SELECT " +
+                "CASE WHEN Segundo_Salida IS NULL THEN 1 ELSE 0 END " +
+                "FROM [dbMemory].[PS].[Sesiones]" +
+                "WHERE idEjecutivo = @idEjecutivo ";
+
+            var parameters = new
+            {
+                idEjecutivo = idEjecutivo
+            };
+
+            var validateSession = await connection.ExecuteScalarAsync(
+                querySession,
+                parameters,
+                commandType: CommandType.Text
+            );
+
+            return validateSession;
+
+        }
+
+
 
         private SqlConnection GetConnection(string connection)
         {
