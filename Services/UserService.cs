@@ -12,11 +12,9 @@ namespace NoriAPI.Services
     public interface IUserService
     {
 
-        ////Task<List<dynamic>> ValidateUser(string username, string password, int extension, int bloqueo, string dominio, string computadora, string usuarioWindows, string ip, string aplicacion, string version);
-        ///
-
         Task<ResultadoReseteo> ValidateContra(ReseteaContra request);
         Task<ResultadoLogin> ValidateUser(AuthRequest request);
+        Task<(string, bool)> ValidateUserForRefresh(RenewTokenRequest renewTokenInfo);
 
     }
 
@@ -184,6 +182,37 @@ namespace NoriAPI.Services
             //TODO:  Completar el método
             return true;
         }
+
+
+
+        /**
+        Validate User For Refresh Method Diseñado por Yoshi
+        */
+
+         public async Task<(string, bool)> ValidateUserForRefresh(RenewTokenRequest renewTokenInfo)
+        {
+
+            var validatePass = await _userRepository.ValidatePasswordEjecutivo((int)renewTokenInfo.IdEjecutivo, renewTokenInfo.Password);
+
+            if (validatePass is null)
+            {
+                return ("Invalid Password", false);
+            }
+
+            var validateSession = await _userRepository.ValidateExistingSession((int)renewTokenInfo.IdEjecutivo);
+
+            if (validateSession is null)
+            {
+                return ("Not Logged In", false);
+            }
+
+            return ("", true);
+        }
+
+
+
+
+
 
         private SqlConnection GetConnection(string connection)
         {

@@ -68,6 +68,33 @@ namespace NoriAPI.Controllers
             return Ok(new { ejecutivo });
         }
 
+
+        /**
+        Renew Token Method Diseñado por Yoshi
+        */
+
+
+        [HttpPost("renew-token")]
+        //[ProducesResponseType(typeof(RenewTokenResult), StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> RenewToken([FromBody] RenewTokenRequest renewTokenInfo)
+        {
+            (string, bool) validationResult = await _userService.ValidateUserForRefresh(renewTokenInfo);
+
+            if (!validationResult.Item2)
+            {
+                return BadRequest(new { token = "", mensaje = validationResult.Item1 });
+            }
+
+            string newToken = GenerateJwtToken(new AuthRequest { Usuario = renewTokenInfo.Usuario});
+
+            return Ok(new { token = newToken, mensaje = "Éxito" });
+        }
+
+
+
+        
+
         private string GenerateJwtToken(AuthRequest user)
         {
             if (string.IsNullOrEmpty(secretKey))
