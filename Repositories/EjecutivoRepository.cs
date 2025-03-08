@@ -7,6 +7,8 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
 using NoriAPI.Models.Ejecutivo;
+using NoriAPI.Models.Phones;
+using System.Net;
 
 namespace NoriAPI.Repositories
 {
@@ -52,6 +54,10 @@ namespace NoriAPI.Repositories
         //Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
         //Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
         //Task<DataTable> GetValidadorAsync(int idProducto);
+        #region Cargo En Linea
+        Task<dynamic> RegisterNewCargo(CargoEnLinea newCargoEnLinea);
+        Task<dynamic> RegisterNewEstado(EstadoDeCuenta newEstadoDeCuenta);
+        #endregion
 
     }
     public class EjecutivoRepository : IEjecutivoRepository
@@ -806,6 +812,109 @@ namespace NoriAPI.Repositories
             var previousResult = await connection.QueryFirstOrDefaultAsync<Recuperacion>(queryFunction, parameters);
 
             return previousResult;
+        }
+        #endregion
+
+        #region Cargos en linea
+        public async Task<dynamic> RegisterNewCargo(CargoEnLinea newCargoEnLinea)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string newPhoneQuery = "[dbCollection].[dbo].[2.11.CargoEnLínea]";
+            var parameters = new
+            {
+                monto = newCargoEnLinea.Monto,
+                tarjeta = newCargoEnLinea.Tarjeta,
+              
+                status = newCargoEnLinea.Status,
+                IdBanco = newCargoEnLinea.idBanco,
+                vencimiento = newCargoEnLinea.Vencimiento,
+                autorizacion = newCargoEnLinea.Autorización,
+                nombre = newCargoEnLinea.Nombre,
+                esClabe = newCargoEnLinea.EsClabe,
+                domiciliado = newCargoEnLinea.Domiciliado,
+                sistema = newCargoEnLinea.Sistema,
+                idCartera = newCargoEnLinea.IdCartera,
+                idCuenta = newCargoEnLinea.IdCuenta, // Agregar el parámetro idCuenta
+                idEjecutivo = newCargoEnLinea.IdEjecutivo,
+                
+            };
+
+            var result = await connection.QueryFirstOrDefaultAsync<dynamic>(
+                newPhoneQuery,
+                parameters,
+                commandType: CommandType.StoredProcedure
+            );
+            if (result == null)
+            {
+                return new { Success = false, Message = "No se recibió respuesta del procedimiento almacenado." };
+            }
+
+            // Convertimos a IDictionary para acceder a los valores sin errores
+            var dict = result as IDictionary<string, object>;
+
+            if (dict != null && dict.ContainsKey("Resultado"))
+            {
+                return new Dictionary<string, object>
+        {
+            { "Success", false },
+            { "Resultado", dict["Resultado"].ToString() }
+        };
+            }
+
+            return new Dictionary<string, object> { { "Success", true }, { "Data ", result } };
+        }
+        #endregion
+
+        #region Estado de cuenta
+        public async Task<dynamic> RegisterNewEstado(EstadoDeCuenta newEstadoDeCuenta)
+        {
+            try
+            {
+                using var connection = GetConnection("Piso2Amex");
+
+                string newPhoneQuery = "[dbCollection].[dbo].[2.14.SolicitaEstadoCuenta]";
+                var parameters = new
+                {
+                    IdCartera = newEstadoDeCuenta.idCartera,
+                    IdCuenta = newEstadoDeCuenta.idCuenta,
+                    IdEjecutivo = newEstadoDeCuenta.idEjecutivo,
+                    fechaInicial = newEstadoDeCuenta.FechaInicial,
+                    fechaFinal = newEstadoDeCuenta.FechaFinal,
+                    consulta = newEstadoDeCuenta.Consulta,
+                    correoElectronico = newEstadoDeCuenta.CorreoElectrónico
+                };
+
+                var result = await connection.QueryFirstOrDefaultAsync<dynamic>(
+                    newPhoneQuery,
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+
+                if (result == null)
+                {
+                    return new { Success = false, Message = "No se recibió respuesta del procedimiento almacenado." };
+                }
+
+                var dict = result as IDictionary<string, object>;
+
+                if (dict != null && dict.ContainsKey("Resultado"))
+                {
+                    return new Dictionary<string, object>
+            {
+                { "Success", false },
+                { "Resultado", dict["Resultado"].ToString() }
+            };
+                }
+
+                return new Dictionary<string, object> { { "Success", true }, { "Data ", result } };
+            }
+            catch (Exception ex)
+            {
+                // Manejo de la excepción (por ejemplo, registrar el error)
+                Console.WriteLine($"Error en RegisterNewEstado: {ex.Message}");
+                return new { Success = false, Message = $"Error: {ex.Message}" };
+            }
         }
         #endregion
 

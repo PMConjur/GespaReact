@@ -7,6 +7,7 @@ using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Models.Login;
 using NoriAPI.Services;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -24,12 +25,15 @@ namespace NoriAPI.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IEjecutivoService _ejecutivoService;
+        private readonly string _connectionString;
 
         public EjecutivoController(IEjecutivoService ejecutivoService, IConfiguration configuration)
         {
             _ejecutivoService = ejecutivoService;
             _configuration = configuration;
+            _connectionString = _configuration.GetConnectionString("Piso2Amex");
         }
+        #region Productividad
 
         [HttpGet("productividad-ejecutivo")]
         public async Task<ActionResult<ResultadoProductividad>> Productividad([FromQuery] int numEmpleado)
@@ -38,6 +42,9 @@ namespace NoriAPI.Controllers
             return Ok(new { Productividad.ProductividadInfo });
         }
 
+        #endregion
+
+        #region Tiempos
         [HttpGet("tiempos-ejecutivo")]
         public async Task<ActionResult<TiemposEjecutivo>> Tiempos([FromQuery] int numEmpleado)
         {
@@ -52,19 +59,9 @@ namespace NoriAPI.Controllers
             return Ok(new { mensaje });
         }
 
-        /**
-        Promedios Ejecutivo
-        Diseñado por Yoshiiiii
-        */
+        #endregion
 
-        [HttpGet("promedio-ejecutivo")]
-        public async Task<ActionResult> Averages([FromQuery] int idEjecutivo)
-        {
-            Dictionary<string, object> mensaje = await _ejecutivoService.Promedios(idEjecutivo);
-            return Ok(new { mensaje });
-        }
-
-
+        #region Seguimientos
         [HttpGet("seguimientos/{idCartera}/{idCuenta}")]
         public async Task<IActionResult> GetSeguimiento(int idCartera, string idCuenta)
         {
@@ -95,20 +92,13 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+        #endregion
 
 
+        #region Recordatorios
 
 
-
-
-
-
-
-
-
-
-
-[HttpGet("recordatorios/{idEjecutivo}")]
+        [HttpGet("recordatorios/{idEjecutivo}")]
         public async Task<IActionResult> GetRecordatorios(int idEjecutivo)
         {
             try
@@ -140,8 +130,9 @@ namespace NoriAPI.Controllers
             }
         }
 
+        #endregion
 
-
+        #region Accionamientos
         [HttpGet("accionamientos/{idCartera}/{idCuenta}")]
         public async Task<IActionResult> GetAccionamiento(int idCartera, string idCuenta)
         {
@@ -173,6 +164,9 @@ namespace NoriAPI.Controllers
             }
         }
 
+        #endregion
+
+        #region Negociaciones
         [HttpGet("get-negociaciones")]
         public async Task<IActionResult> GetNegociaciones([FromQuery] int idEjecutivo)
         {
@@ -185,6 +179,9 @@ namespace NoriAPI.Controllers
             return Ok(negociaciones);
         }
 
+        #endregion
+
+        #region Recuperacion
         [HttpGet("get-recuperacion")]
         public async Task<IActionResult> GetRecuperacion([FromQuery] int idEjecutivo, [FromQuery] int actual)
         {
@@ -207,7 +204,9 @@ namespace NoriAPI.Controllers
 
             return Ok(recuperacion);
         }
+        #endregion
 
+        #region Flujo Preguntas Respuestas
         [HttpGet("flujo-preguntas-respuestas")]
         public async Task<ActionResult<Preguntas_Respuestas_info>> Preguntas_Respuestas()
         {
@@ -215,6 +214,9 @@ namespace NoriAPI.Controllers
             return Ok(preguntas_respuestas);
         }
 
+        #endregion
+
+        #region Directorio
         private List<Dictionary<string, object>> ConvertDataTableToList(DataTable dataTable)
         {
             var list = new List<Dictionary<string, object>>();
@@ -232,6 +234,10 @@ namespace NoriAPI.Controllers
             return list;
         }
 
+        #endregion
+
+        #region Calculadora
+
         [HttpGet("Calculadora-simulador")]
         public async Task<ActionResult<ResultadoCalculadora>> Calculadora_Simulador([FromQuery] int Cartera, string NoCuenta)
         {
@@ -239,14 +245,10 @@ namespace NoriAPI.Controllers
             return Ok(InfoCalculadora);
         }
 
+        #endregion
 
 
-
-
-
-
-
-
+        #region AccionesNegociacion
 
 
 
@@ -259,6 +261,9 @@ namespace NoriAPI.Controllers
                 DataTable Negociaciones = new DataTable();
 
                 Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync( idCartera,  idCuenta);
+
+
+                Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
 
                 // Convertimos el DataTable a una lista de diccionarios
                 var listaNegociaciones = ConvertDataTableToList(Negociaciones);
@@ -445,7 +450,249 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+        #endregion
 
+        #region Busqueda
+        [HttpGet("busqueda/{idCartera}/{idCuenta}/{Jerarquia}")]
+        public async Task<IActionResult> GetBusqueda(int idCartera, string idCuenta, int Jerarquia)
+        {
+            try
+            {
+                DataSet dsTablas = new DataSet();
+                DataTable busquedaTable = dsTablas.Tables.Add("Busqueda");
+                busquedaTable.Columns.Add("idCartera", typeof(int));
+                busquedaTable.Columns.Add("idCuenta", typeof(string));
+                busquedaTable.Columns.Add("Jerarquía", typeof(int));
+
+                DataRow drDatos = busquedaTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
+                drDatos["Jerarquía"] = Jerarquia;
+
+                await _ejecutivoService.ObtenerBusquedaEJE(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("Busqueda") || dsTablas.Tables["Busqueda"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Busquedas para este ejecutivo.");
+                }
+
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Busqueda"]);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpPost("guardar")]
+        public async Task<IActionResult> GuardaBusqueda([FromBody] BusquedaClass busqueda, [FromQuery] int idCartera, [FromQuery] string idCuenta, [FromQuery] int idEjecutivo)
+        {
+            try
+            {
+                TimeSpan tiempoEnCuenta = TimeSpan.Zero; // Debes definir cómo obtener esto en tu lógica
+
+                bool resultado = await _ejecutivoService.GuardaBusquedaAsync(busqueda, idCartera, idCuenta, idEjecutivo, tiempoEnCuenta);
+
+                return Ok(new
+                {
+                    success = resultado,
+                    message = resultado ? "Búsqueda guardada con éxito." : "Error al guardar la búsqueda."
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = $"Error interno: {ex.Message}" });
+            }
+        }
+        #endregion
+
+        #region CargoEnLinea
+
+        [HttpGet("cargosEnLinea/{idCartera}/{idCuenta}")]
+        public async Task<IActionResult> GetCargosEnLinea(int idCartera, string idCuenta)
+        {
+            try
+            {
+                DataSet dsTablas = new DataSet();
+                DataTable CargosTable = dsTablas.Tables.Add("Cargos");
+                CargosTable.Columns.Add("idCartera", typeof(int));
+                CargosTable.Columns.Add("idCuenta", typeof(string));
+                DataRow drDatos = CargosTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
+
+                await _ejecutivoService.ObtenerCargosEnLinea(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("Cargos") || dsTablas.Tables["Cargos"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Cargos En Linea para este ejecutivo.");
+                }
+
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Cargos"]);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+        [HttpPost("SaveCargoEnlinea")]
+        public async Task<IActionResult> SaveCargoEnlinea([FromBody] CargoEnLineaRe newCargoEn)
+        {
+            if (newCargoEn == null)
+            {
+                return BadRequest("Datos de cargo en línea inválidos.");
+            }
+
+            string result = await _ejecutivoService.SaveCargoEnlinea(newCargoEn);
+
+            if (result.StartsWith("Error"))
+            {
+                return BadRequest(result); // Devuelve BadRequest para errores
+            }
+
+            return Ok(result); // Devuelve Ok con el resultado
+        }
+
+        #endregion
+
+        #region Estado de Cuenta
+
+        [HttpGet("estadoDeCuenta/{idCartera}/{idCuenta}")]
+        public async Task<IActionResult> GetEstadoDeCuenta(int idCartera, string idCuenta)
+        {
+            try
+            {
+                DataSet dsTablas = new DataSet();
+                DataTable EstadoTable = dsTablas.Tables.Add("EstadoDeCuenta");
+                EstadoTable.Columns.Add("idCartera", typeof(int));
+                EstadoTable.Columns.Add("idCuenta", typeof(string));
+                DataRow drDatos = EstadoTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
+
+                await _ejecutivoService.ObtenerPagos(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("EstadoDeCuenta") || dsTablas.Tables["EstadoDeCuenta"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Estados De Cuenta para este ejecutivo.");
+                }
+
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["EstadoDeCuenta"]);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpPost("SaveEstadoDeCuenta")]
+        public async Task<IActionResult> SaveCargoEstadoDeCuenta([FromBody] EstadoDeCuentaRe newEstadoCuenta)
+        {
+            if (newEstadoCuenta == null)
+            {
+                return BadRequest("Datos de cargo en línea inválidos.");
+            }
+
+            string result = await _ejecutivoService.SaveEstadoDeCuenta(newEstadoCuenta);
+
+            if (result.StartsWith("Error"))
+            {
+                return BadRequest(result); // Devuelve BadRequest para errores
+            }
+
+            return Ok(result); // Devuelve Ok con el resultado
+        }
+        #endregion
+
+        #region MultiDeudores
+        [HttpGet("multideudores/{idCartera}/{idCuenta}")]
+        public async Task<IActionResult> GetMultideudores(int idCartera, string idCuenta)
+        {
+            try
+            {
+                DataSet dsTablas = new DataSet();
+                DataTable MultideudoresTable = dsTablas.Tables.Add("Multideudores");
+                MultideudoresTable.Columns.Add("idCartera", typeof(int));
+                MultideudoresTable.Columns.Add("idCuenta", typeof(string));
+                MultideudoresTable.Columns.Add("RFC", typeof(string)); // Agrega la columna RFC
+                MultideudoresTable.Columns.Add("NúmeroCliente", typeof(string)); // Agrega la columna NúmeroCliente
+                MultideudoresTable.Columns.Add("idProducto", typeof(int)); // Agrega la columna idProducto
+
+                DataRow drDatos = MultideudoresTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
+                // Asegúrate de que drDatos["RFC"] y drDatos["NúmeroCliente"] tengan valores apropiados
+                // drDatos["RFC"] = "valorRFC"; // Reemplaza con el valor real
+                // drDatos["NúmeroCliente"] = "valorNúmeroCliente"; // Reemplaza con el valor real
+                // drDatos["idProducto"] = 35; // Reemplaza con el valor real
+
+                Hashtable htProducto = new Hashtable();
+                htProducto["nombreempresa"] = "Nombre de la Empresa"; // Reemplaza con el valor real si es necesario
+
+                string sortMultideudores = "idCartera ASC, idCuenta ASC"; // Define el ordenamiento
+
+                await _ejecutivoService.ObtenerMultideudores(drDatos, dsTablas, htProducto, sortMultideudores, _connectionString);
+
+                if (!dsTablas.Tables.Contains("Multideudores") || dsTablas.Tables["Multideudores"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Multideudores para esta cuenta.");
+                }
+
+                var listaMultideudores = ConvertDataTableToList(dsTablas.Tables["Multideudores"]);
+                string jsonString = JsonSerializer.Serialize(listaMultideudores, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region Pagos
+
+        [HttpGet("pagos/{idCartera}/{idCuenta}")]
+        public async Task<IActionResult> GetPagos(int idCartera, string idCuenta)
+        {
+            try
+            {
+                DataSet dsTablas = new DataSet();
+                DataTable PagoTable = dsTablas.Tables.Add("Pagos");
+                PagoTable.Columns.Add("idCartera", typeof(int));
+                PagoTable.Columns.Add("idCuenta", typeof(string));
+                DataRow drDatos = PagoTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
+
+                await _ejecutivoService.ObtenerPago(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("Pagos") || dsTablas.Tables["Pagos"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Pagos para este ejecutivo.");
+                }
+
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Pagos"]);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+        #endregion
 
     }
 }
