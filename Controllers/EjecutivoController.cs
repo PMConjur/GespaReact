@@ -48,7 +48,7 @@ namespace NoriAPI.Controllers
         [HttpPost("pause-ejecutivo")]
         public async Task<ActionResult> ManagePause([FromBody] InfoPausa pauseRequest)
         {
-            string mensaje = await _ejecutivoService.PauseUnpause(pauseRequest);
+            Dictionary<string, object> mensaje = await _ejecutivoService.PauseUnpause(pauseRequest);
             return Ok(new { mensaje });
         }
 
@@ -57,7 +57,7 @@ namespace NoriAPI.Controllers
         Diseñado por Yoshiiiii
         */
 
-         [HttpGet("promedio-ejecutivo")]
+        [HttpGet("promedio-ejecutivo")]
         public async Task<ActionResult> Averages([FromQuery] int idEjecutivo)
         {
             Dictionary<string, object> mensaje = await _ejecutivoService.Promedios(idEjecutivo);
@@ -259,7 +259,7 @@ namespace NoriAPI.Controllers
                 DataTable Negociaciones = new DataTable();
 
                 Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync( idCartera,  idCuenta);
-                             
+
                 // Convertimos el DataTable a una lista de diccionarios
                 var listaNegociaciones = ConvertDataTableToList(Negociaciones);
 
@@ -269,7 +269,7 @@ namespace NoriAPI.Controllers
                 //dsTablas.Tables.Add(Negociaciones);
 
                 return Ok(jsonNegociaciones);
-                
+
             }
             catch (Exception ex)
             {
@@ -296,7 +296,7 @@ namespace NoriAPI.Controllers
                 //dsTablas.Tables.Add(Negociaciones);
 
                 return Ok(jsonPlazos);
-               
+
             }
             catch (Exception ex)
             {
@@ -330,7 +330,7 @@ namespace NoriAPI.Controllers
                     // Aquí, debes agregar lógica para relacionar las negociaciones con los plazos,
                     // por ejemplo, basándote en la fecha de la negociación y los plazos.
 
-                    // Supongamos que la relación es por la fecha o algún otro campo, 
+                    // Supongamos que la relación es por la fecha o algún otro campo,
                     // entonces puedes agregar los plazos correspondientes a cada negociación
                     var plazosRelacionados = listaPlazos
                     .Where(p => {
@@ -394,7 +394,7 @@ namespace NoriAPI.Controllers
 
                     return Ok(jsonPassValidadores);
                 }
-                else 
+                else
                 {
                     DataTable Validador = new DataTable();
 
@@ -409,7 +409,7 @@ namespace NoriAPI.Controllers
                     //dsTablas.Tables.Add(Negociaciones);
 
                     return Ok(jsonValidadores);
-                }                               
+                }
 
             }
             catch (Exception ex)
@@ -423,7 +423,7 @@ namespace NoriAPI.Controllers
         {
             DataSet dsTablas = new DataSet();
             try
-            {                
+            {
                     DataTable Comentarios = new DataTable();
 
                     Comentarios = await _ejecutivoService.GetAccionesComentarioAsync(idCartera, idCuenta, idEjecutivo,Comentario,ModificaSituacion);
@@ -437,7 +437,7 @@ namespace NoriAPI.Controllers
                     //dsTablas.Tables.Add(Negociaciones);
 
                     return Ok(jsonComentarios);
-                
+
 
             }
             catch (Exception ex)

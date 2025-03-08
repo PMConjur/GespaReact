@@ -20,12 +20,12 @@ namespace NoriAPI.Services
     public interface IEjecutivoService
     {
         #region Productividad
-        Task <ResultadoProductividad> ValidateProductividad(int numEmpleado);
+        Task<ResultadoProductividad> ValidateProductividad(int numEmpleado);
         #endregion
 
         #region Tiempos
 
-        Task <TiemposEjecutivo> ValidateTimes(int numEmpleado);
+        Task<TiemposEjecutivo> ValidateTimes(int numEmpleado);
         Task<Dictionary<string, object>> PauseUnpause(InfoPausa pausa);
         Task<Dictionary<string, object>> Promedios(int idEjecutivo);
 
@@ -35,17 +35,17 @@ namespace NoriAPI.Services
         Task ObtenerAccionamiento(DataRow drDatos, DataSet dsTablas);
 
         #endregion
-      
-        Task <NegociacionesResponse> GetNegociaciones(int idEjecutivo);
-        Task <Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
-        Task <List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
+
+        Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo);
+        Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
+        Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
         Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta);
 
         #region Acciones
-        Task <DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
-        Task <DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
-        Task <DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña);
-        Task <DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
+        Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
+        Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
+        Task<DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña);
+        Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
 
         #endregion
 
@@ -58,7 +58,7 @@ namespace NoriAPI.Services
     {
         private readonly IConfiguration _configuration;
         private readonly IEjecutivoRepository _ejecutivoRepository;
-        private readonly ISearchService _searchService; 
+        private readonly ISearchService _searchService;
         private readonly string _connectionString;
 
         #region PropiedadesProductividad
@@ -212,7 +212,7 @@ namespace NoriAPI.Services
 
         public async Task<DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña)
         {
-            if (idEjecutivo!= 0 && Contraseña != "")
+            if (idEjecutivo != 0 && Contraseña != "")
             {
                 DataTable passValidadores = new DataTable();
                 string query = "EXEC dbCollection..[2.8.Validación] @idProducto, @idEjecutivo, @Contraesña"; // Evita inyección SQL
@@ -262,38 +262,38 @@ namespace NoriAPI.Services
 
                 return validadores;
             }
-                       
+
         }
 
-        public async Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta,int idEjecutivo, string Comentario, bool ModificaSituacion)
+        public async Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion)
         {
-            
-                DataTable comentario = new DataTable();
-                string query = "EXEC [2.13.InsertaComentario] @idCartera, @idCuenta, @idEjecutivo, @Comentario, @ModificaSituación "; // Evita inyección SQL
 
-                using (var connection = new SqlConnection(_connectionString))
+            DataTable comentario = new DataTable();
+            string query = "EXEC [2.13.InsertaComentario] @idCartera, @idCuenta, @idEjecutivo, @Comentario, @ModificaSituación "; // Evita inyección SQL
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
                 {
-                    await connection.OpenAsync();
-                    using (var command = new SqlCommand(query, connection))
-                    {
-                        // Usar Add con tipo explícito para evitar problemas con tipos de datos
-                        command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
-                        command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
-                        command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
-                        command.Parameters.Add("@Comentario", SqlDbType.VarChar).Value = Comentario;
-                        command.Parameters.Add("@ModificaSituación", SqlDbType.Bit).Value = ModificaSituacion;
+                    // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+                    command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
+                    command.Parameters.Add("@Comentario", SqlDbType.VarChar).Value = Comentario;
+                    command.Parameters.Add("@ModificaSituación", SqlDbType.Bit).Value = ModificaSituacion;
 
-                        using (var adapter = new SqlDataAdapter(command))
-                        {
-                            adapter.Fill(comentario);
-                        }
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(comentario);
                     }
                 }
+            }
 
-                return comentario;
+            return comentario;
         }
 
-        
+
 
         #endregion
 
@@ -402,7 +402,7 @@ namespace NoriAPI.Services
         }
         #endregion
 
-        #region Pausa
+        #region Tiempos
         public async Task<TiemposEjecutivo> ValidateTimes(int numEmpleado)
         {
             ResultadoTiempos tiempos = null;
@@ -453,6 +453,7 @@ namespace NoriAPI.Services
             var validatePass = await _ejecutivoRepository.ValidatePasswordEjecutivo(tiempos.IdEjecutivo, tiempos.Contrasenia);
             return validatePass != null;
         }
+
         #endregion
 
         #region Promedios
@@ -498,13 +499,6 @@ namespace NoriAPI.Services
             }
         }
 
-        #endregion
-
-        #region Tiempos
-    
-            var validatePass = await _ejecutivoRepository.ValidatePasswordEjecutivo(tiempos.IdEjecutivo, tiempos.Contrasenia);
-            return validatePass != null;
-        }
         #endregion
 
         #region Seguimientos
@@ -665,7 +659,7 @@ namespace NoriAPI.Services
             return actual == 1
                 ? await _ejecutivoRepository.RecuperacionActual(idEjecutivo)
                 : await _ejecutivoRepository.RecuperacionAnterior(idEjecutivo);
-            
+
 
 
 
