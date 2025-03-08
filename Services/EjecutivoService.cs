@@ -32,7 +32,7 @@ namespace NoriAPI.Services
         Task<Dictionary<string, object>> PauseUnpause(InfoPausa pausa);
         Task<Dictionary<string, object>> Promedios(int idEjecutivo);
 
-        #endregion 
+        #endregion
         #region AccionesDropDown
         Task ObtenerSeguimientos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerAccionamiento(DataRow drDatos, DataSet dsTablas);
@@ -51,7 +51,7 @@ namespace NoriAPI.Services
         Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
 
         #endregion
-        Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
+
         Task ObtenerBusquedaEJE(DataRow drDatos, DataSet dsTablas);
 
         Task<bool> GuardaBusquedaAsync(BusquedaClass busqueda, int idCartera, string idCuenta, int idEjecutivo, TimeSpan tiempoEnCuenta);
@@ -64,6 +64,7 @@ namespace NoriAPI.Services
         Task ObtenerMultideudores(DataRow drDatos, DataSet dsTablas, Hashtable htProducto, string sortMultideudores, string connectionString);
         Task ObtenerPagos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerPago(DataRow drDatos, DataSet dsTablas);
+
     }
 
     public class EjecutivoService : IEjecutivoService
@@ -89,7 +90,7 @@ namespace NoriAPI.Services
         private static Hashtable _htNombreId;
         #endregion
 
-        public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository, IBusquedaRepository busquedaRepository, ISearchRepository searchRepository)
+        public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository, IBusquedaRepository busquedaRepository, ISearchRepository searchRepository, ISearchService searchService)
         {
             _configuration = configuration;
             _ejecutivoRepository = ejecutivoRepository;
@@ -724,12 +725,6 @@ namespace NoriAPI.Services
             dsTablas.Tables.Add(recordatorios);
             recordatorios.DefaultView.Sort = "SegundoSeguimiento ASC";
         }
-       
-
-    }
-     #endregion
-}
-
         #region Búsqueda
         public async Task<DataTable> GetBusquedaAsync(int idCartera, string idCuenta, int Jararquia)
         {
@@ -1177,13 +1172,13 @@ namespace NoriAPI.Services
 
             }
         }
-    
 
 
-    #endregion
+
+        #endregion
 
         #region Estado de cuenta
-    public async Task<DataTable> GetEstadoDeCuentaAsync(int idCartera, string idCuenta)
+        public async Task<DataTable> GetEstadoDeCuentaAsync(int idCartera, string idCuenta)
         {
             DataTable estado = new DataTable();
             string query = "WAITFOR DELAY '00:00:00' SELECT * FROM dbo.fn_SolicitudEstadosDeCuenta (@idCuenta, @idCartera)";
@@ -1251,7 +1246,7 @@ namespace NoriAPI.Services
                             IdEjecutivo: Convert.ToInt32(newEstadoEn.idEjecutivo),
                             FechaInicial: FechaInicial,
                             FechaFinal: FechaFinal,
-                            consulta : newEstadoEn.Consulta,
+                            consulta: newEstadoEn.Consulta,
                             correoElectronico: CorreoString
                         );
 
@@ -1445,8 +1440,13 @@ namespace NoriAPI.Services
             dsTablas.Tables.Add(pagosGet);
         }
         #endregion
+
     }
+
 }
+
+
+
 
 
 
