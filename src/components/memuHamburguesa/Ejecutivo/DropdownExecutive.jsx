@@ -8,7 +8,7 @@ function DropdownInfo() {
       <Dropdown.Toggle className="custom-dropdown-toggle d-flex align-items-center" id="dropdown-basic">
        Ejecutivo
       </Dropdown.Toggle>
-      <Dropdown.Menu style={{backgroundColor: '#1d1f20', border: 'none'}}>
+      <Dropdown.Menu style={{backgroundColor: '#1d1f20', border: 'none'}} className='custom-dropdown-menu'>
         <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Gestiones del dia</Dropdown.Item>
         <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Scripts</Dropdown.Item>
         <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Negociaciones</Dropdown.Item>
