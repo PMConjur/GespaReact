@@ -352,30 +352,51 @@ export async function getFollowUpsData(searchResults) {
   }
 }
 
-// export const getTalksData = async (searchResults) => {
-//   try {
-//     const response = await fetch("/negotiations", {
-//       method: "GET",
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//         "Content-Type": "/ejecutivo/acciones-negociaciones",
-//       },
-//     });
 
-//     if (!response.ok) {
-//       throw new Error(`Error al obtener negociaciones: ${response.statusText}`);
-//     }
+export async function getTalksData(searchResults) {
+  try {
+    // Obtener token desde localStorage
+    const responseData = JSON.parse(localStorage.getItem("responseData"));
+    const token = responseData?.ejecutivo?.token;
 
-//     const data = await response.json();
+    if (!token) {
+      throw new Error("Token de autenticación no disponible");
+    }
 
-//     // 🔹 Filtrar negociaciones por idCuenta
-//     const filteredData = data.filter(item => item.idCuenta === idCuenta && item.idCartera === idCartera);
+    // Definir idCartera fijo (siempre 1)
+    const idCartera = 1;
+    
 
-//     return filteredData;
-//   } catch (error) {
-//     console.error("Error al cargar los datos de negociaciones:", error);
-//     return [];
-//   }
-// };
+    // Realizar solicitudes en paralelo para cada idCuenta
+    const talks = await Promise.all(
+      searchResults.map(async (result) => {
+        const idCuenta = result.idCuenta?.trim();
+        console.log("🔍 Buscando negociaciones para idCuenta:", idCuenta, idCartera);
+
+        try {
+          const response = await axios.get(
+            `${apiUrl}/ejecutivo/accionesNegociacion?idCartera=${idCartera}&idCuenta=${idCuenta}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}` 
+            },
+          }
+        );        
+
+          console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
+          return response.data; // Retorna los datos obtenidos
+        } catch (error) {
+          console.error(`❌ Error al obtener negociaciones para idCuenta ${idCuenta}:`, error);
+          return null; // Evita que falle `Promise.all`
+        }
+      })
+    );
+
+    return talks.filter(Boolean); // 🔹 Filtrar valores nulos
+  } catch (error) {
+    console.error("❌ Error al obtener los datos de negociaciones:", error);
+    throw new Error("Error al cargar los datos de negociaciones.");
+  }
+}
 
 

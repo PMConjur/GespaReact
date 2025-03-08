@@ -2,9 +2,9 @@ import { useState, useContext } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { MenuButtonFill } from 'react-bootstrap-icons';
 import FollowUps from './FollowUps'; // Asegúrate de importar el componente
-//import Tañks from './FollowUps';
+import Talks from './Talks';// Asegúrate de importar el component
 import { getFollowUpsData } from '../../../services/gespawebServices';
-//import { getTalksData } from '../../../services/gespawebServices';
+import { getTalksData } from '../../../services/gespawebServices';
 import { AppContext } from '../../../pages/Managment'; // Ajusta la ruta según tu estructura de archivos
 
 
@@ -20,9 +20,9 @@ function DropdownActions() {
 
 
 
-  // const [showTalks, setShowTalks] = useState(false);
-  // const [talksData, setTalksData] = useState([]);
-  // const [loadingtalks, setLoadingtalks] = useState(false);
+  const [showTalks, setShowTalks] = useState(false);
+  const [talksData, setTalksData] = useState([]);
+  const [loadingtalks, setLoadingtalks] = useState(false);
 
 
 
@@ -59,7 +59,7 @@ function DropdownActions() {
     }
   };
 
-  // const handleCloseTalks = () => setShowTalks(false);
+  const handleCloseTalks = () => setShowTalks(false);
 
   return (
     <>
@@ -83,7 +83,7 @@ function DropdownActions() {
       </Dropdown>
 
       <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps} data={followUpsData} loading={loading} />
-      {/* <FollowUps show={showTalks} handleClose={handleCloseTalks} data={talksData} loading={loadingtalks} /> */}
+      <Talks show={showTalks} handleClose={handleCloseTalks} dataTalks={talksData} loading={loadingtalks} />
     </>
   );
 }

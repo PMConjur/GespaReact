@@ -1,9 +1,13 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback,useEffect } from "react";
 import { Table, Form } from "react-bootstrap";
 
 const TableFollowUps = ({ data, customColumnNames = {} }) => {
     const [sortedData, setSortedData] = useState(data || []);
     const [sortByOldest, setSortByOldest] = useState(false);
+
+    useEffect(() => {
+            setSortedData(data);
+        }, [data]);
 
     if (!data || data.length === 0) {
         return <p>No hay datos disponibles.</p>;
