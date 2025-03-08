@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
+import TimePicker from 'react-time-picker';
 import {
   Card,
   Table,
@@ -23,6 +24,7 @@ const Telephones = () => {
   const { searchResults, setSelectedAnswer } = useContext(AppContext);
   const [toastShown, setToastShown] = useState(false);
   const [selectedClaseTelefono, setSelectedClaseTelefono] = useState("");
+  const [horarioContacto, setHorarioContacto] = useState("00:00:00");
 
   const loadData = async () => {
     console.log("searchResults:", searchResults);
@@ -137,12 +139,12 @@ const Telephones = () => {
       phoneNumber: phoneNumber,
       telefonia: "fija", // Ajusta estos valores según sea necesario
       claseTelefono: selectedClaseTelefono,
-      horarioContacto: "05:53:10",
+      horarioContacto: horarioContacto,
       extension: 0
     };
 
     try {
-      const response = await fetchNewTel(newPhoneData);
+       await fetchNewTel(newPhoneData);
       toast.success("Nuevo número de teléfono guardado", {
         position: "top-right",
         style: { transform: "translateY(80vh)" }
@@ -186,6 +188,15 @@ const Telephones = () => {
                   >
                     Llamada de entrada
                   </Button>
+                  {isPhoneNew && (
+                    <TimePicker
+                      onChange={setHorarioContacto}
+                      value={horarioContacto}
+                      format="HH:mm:ss"
+                      disableClock={true}
+                      className="ms-2"
+                    />
+                  )}
                   {isPhoneNew && (
                     <DropdownButton
                       id="dropdown-basic-button"

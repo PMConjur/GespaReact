@@ -825,6 +825,67 @@ $custom-color-2: #00b894; // Verde turquesa
   color: #fff; /* Cambia el color del texto si es necesario */
 }
 
+/* estilos timer picker telephone */
+.react-time-picker {
+  width: auto; /* Ajusta el ancho según sea necesario */
+}
 
+.react-time-picker__wrapper {
+  border: 1px solid #6c757d; /* Cambia el color del borde */
+  border-radius: 4px; /* Cambia el radio del borde */
+  padding: 5px; /* Ajusta el relleno */
+  background-color: #6c757d; /* Cambia el color de fondo */
+  color: #fff; /* Cambia el color del texto */
+  display: flex;
+  height: 38px;
+}
 
+.react-time-picker__inputGroup__input {
+  color: #fff; /* Cambia el color del texto */
+  background-color: #1d1f20; /* Cambia el color de fondo */
+}
 
+.react-time-picker__inputGroup__divider {
+  color: #fff; /* Cambia el color del divisor */
+}
+
+.react-time-picker__clock {
+  background-color: #1d1f20; /* Cambia el color de fondo del reloj */
+  color: #fff; /* Cambia el color del texto del reloj */
+}
+
+.react-time-picker__clock__button {
+  background-color: #333; /* Cambia el color de fondo del botón del reloj */
+  color: #fff; /* Cambia el color del texto del botón del reloj */
+}
+
+.react-time-picker__inputGroup__hour {
+  width: 50px !important;
+  border-radius: 5px;
+  background-color: #4d5154;
+}
+
+.react-time-picker__inputGroup__minute {
+  width: 50px !important;
+  border-radius: 5px;
+  background-color: #4d5154;
+}
+
+.react-time-picker__inputGroup__second {
+  width: 50px !important;
+  border-radius: 5px;
+  background-color: #4d5154;
+}
+.react-time-picker__clear-button {
+  color: #fff;
+  height: 25px; /* Ajusta la altura del botón de limpiar */
+  padding: 1px;
+  background-color: #6c757d;
+}
+.react-time-picker__inputGroup__amPm {
+  height: 20px; /* Ajusta la altura del selector de AM/PM */
+  border-radius: 5px;
+  background-color: #4d5154;
+}
+
+// termina estilos timer picker telephone
