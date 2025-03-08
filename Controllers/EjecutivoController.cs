@@ -97,14 +97,70 @@ namespace NoriAPI.Controllers
         }
 
 
+/**
+Ejecutivo Buqueda 
+Diseñado por Ramon Alias Tony 
 
+*/
 
+        #region Busqueda
+        [HttpGet("busqueda/{idCartera}/{idCuenta}/{Jerarquia}")]
+        public async Task<IActionResult> GetBusqueda(int idCartera, string idCuenta, int Jerarquia)
+        {
+            try
+            {
+                DataSet dsTablas = new DataSet();
+                DataTable busquedaTable = dsTablas.Tables.Add("Busqueda");
+                busquedaTable.Columns.Add("idCartera", typeof(int));
+                busquedaTable.Columns.Add("idCuenta", typeof(string));
+                busquedaTable.Columns.Add("Jerarquía", typeof(int));
 
+                DataRow drDatos = busquedaTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
+                drDatos["Jerarquía"] = Jerarquia;
 
+                await _ejecutivoService.ObtenerBusquedaEJE(drDatos, dsTablas);
 
+                if (!dsTablas.Tables.Contains("Busqueda") || dsTablas.Tables["Busqueda"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Busquedas para este ejecutivo.");
+                }
 
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Busqueda"]);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
 
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
 
+        [HttpPost("guardar")]
+        public async Task<IActionResult> GuardaBusqueda([FromBody] BusquedaClass busqueda, [FromQuery] int idCartera, [FromQuery] string idCuenta, [FromQuery] int idEjecutivo)
+        {
+            try
+            {
+                TimeSpan tiempoEnCuenta = TimeSpan.Zero; // Debes definir cómo obtener esto en tu lógica
+
+                bool resultado = await _ejecutivoService.GuardaBusquedaAsync(busqueda, idCartera, idCuenta, idEjecutivo, tiempoEnCuenta);
+
+                return Ok(new
+                {
+                    success = resultado,
+                    message = resultado ? "Búsqueda guardada con éxito." : "Error al guardar la búsqueda."
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = $"Error interno: {ex.Message}" });
+            }
+        }
+        #endregion
+
+        #endregion
 
 
 

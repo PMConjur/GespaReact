@@ -1867,31 +1867,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Yoshua Rodriguez\\.nuget\\packages\\": {},
-    "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "/Users/urielsaenz/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Users\\Yoshi\\Documentos\\Repos\\GespaReact-BACK\\NoriAPI.csproj",
+      "projectUniqueName": "/Users/urielsaenz/Documents/CodeGit/Back/GespaReact/NoriAPI.csproj",
       "projectName": "NoriAPI",
-      "projectPath": "D:\\Users\\Yoshi\\Documentos\\Repos\\GespaReact-BACK\\NoriAPI.csproj",
-      "packagesPath": "C:\\Users\\Yoshua Rodriguez\\.nuget\\packages\\",
-      "outputPath": "D:\\Users\\Yoshi\\Documentos\\Repos\\GespaReact-BACK\\obj\\",
+      "projectPath": "/Users/urielsaenz/Documents/CodeGit/Back/GespaReact/NoriAPI.csproj",
+      "packagesPath": "/Users/urielsaenz/.nuget/packages/",
+      "outputPath": "/Users/urielsaenz/Documents/CodeGit/Back/GespaReact/obj/",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\Yoshua Rodriguez\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "/Users/urielsaenz/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -1904,13 +1897,7 @@
         "warnAsError": [
           "NU1605"
         ]
-      },
-      "restoreAuditProperties": {
-        "enableAudit": "true",
-        "auditLevel": "low",
-        "auditMode": "direct"
-      },
-      "SdkAnalysisLevel": "9.0.200"
+      }
     },
     "frameworks": {
       "net8.0": {
@@ -1964,7 +1951,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/Cellar/dotnet@8/8.0.12/libexec/sdk/8.0.112/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
