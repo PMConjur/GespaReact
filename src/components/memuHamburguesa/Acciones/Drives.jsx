@@ -5,7 +5,7 @@ import "../../../scss/styles.scss";
 const AccionamientosTable = ({ data }) => {
   return (
     <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-      <Table striped bordered hover>
+      <Table striped bordered hover className="custom-table" variant='dark'>
         <thead>
           <tr>
             <th>Fecha</th>

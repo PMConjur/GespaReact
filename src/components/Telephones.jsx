@@ -7,27 +7,22 @@ import {
   FormControl,
   Placeholder
 } from "react-bootstrap";
-import { fetchPhones, fetchValidationTel } from "../services/gespawebServices";
+import { fetchPhones, fetchValidationTel, fetchNewTel } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 import "../scss/styles.scss";
 import { TelephoneFill } from "react-bootstrap-icons";
 
 const Telephones = () => {
-  // Estado para almacenar los datos de los teléfonos
   const [data, setData] = useState([]);
-  // Estado para manejar la carga de datos
   const [isLoading, setIsLoading] = useState(false);
-  // Estado para almacenar el número de teléfono ingresado
   const [phoneNumber, setPhoneNumber] = useState("");
-  // Consumir el contexto para obtener los resultados de búsqueda y la función para establecer la respuesta seleccionada
+  const [isPhoneNew, setIsPhoneNew] = useState(false); // Estado para manejar si el teléfono es nuevo
   const { searchResults, setSelectedAnswer } = useContext(AppContext);
-  // Estado para manejar la visualización de notificaciones
   const [toastShown, setToastShown] = useState(false);
 
-  // Cargar datos desde la API
   const loadData = async () => {
-    console.log("searchResults:", searchResults); // Inspecciona 
+    console.log("searchResults:", searchResults);
     setIsLoading(true);
     try {
       const phones = await Promise.all(
@@ -50,15 +45,13 @@ const Telephones = () => {
     }
   };
 
-  // Manejo del input de teléfono
   const handlePhoneNumberChange = (e) => {
-    const input = e.target.value.replace(/\D/g, ""); // Elimina caracteres no numéricos
+    const input = e.target.value.replace(/\D/g, "");
     if (input.length <= 11) {
       setPhoneNumber(input);
     }
   };
 
-  // Validar número de teléfono
   const handleValidatePhone = async () => {
     if (!phoneNumber.trim()) {
       toast.warning("Ingrese un número de teléfono", { position: "top-right" });
@@ -88,23 +81,74 @@ const Telephones = () => {
       if (response.exists) {
         toast.success("El número de teléfono existe en la cuenta", {
           position: "top-right",
-          style: { transform: "translateY(20vh)" } // Ajusta verticalmente
+          style: { transform: "translateY(20vh)" }
         });
+        setIsPhoneNew(false); // El teléfono existe, no es nuevo
       } else {
         toast.error("El número de telefono no existe en la cuenta", {
           position: "center-right"
         });
+        setIsPhoneNew(true); // El teléfono no existe, es nuevo
       }
     } catch (error) {
       console.error("Error al validar el teléfono:", error);
       toast.error("El número de teléfono no existe en la cuenta", {
         position: "top-right",
-        style: { transform: "translateY(20vh)" } // Ajusta verticalmente
+        style: { transform: "translateY(20vh)" }
+      });
+      setIsPhoneNew(true); // En caso de error, considerar el teléfono como nuevo
+    }
+  };
+
+  const handleSaveNewPhone = async () => {
+    if (!phoneNumber.trim()) {
+      toast.warning("Ingrese un número de teléfono", { position: "top-right" });
+      return;
+    }
+    if (phoneNumber.length !== 10 && phoneNumber.length !== 11) {
+      toast.warning("El número de teléfono debe tener 10 o 11 dígitos", {
+        position: "top-right"
+      });
+      return;
+    }
+    if (searchResults.length === 0 || !searchResults[0].idCuenta) {
+      toast.warning("No hay una cuenta válida seleccionada", {
+        position: "top-right"
+      });
+      return;
+    }
+
+    const idCuenta = searchResults[0].idCuenta;
+    const idEjecutivo = searchResults[0].idEjecutivo; // Asegúrate de obtener el idEjecutivo correcto
+
+    const newPhoneData = {
+      cuenta: idCuenta,
+      idEjecutivo: idEjecutivo,
+      phoneNumber: phoneNumber,
+      telefonia: "fija", // Ajusta estos valores según sea necesario
+      claseTelefono: "Hogar",
+      horarioContacto: "05:53:10",
+      extension: 0
+    };
+
+    try {
+      const response = await fetchNewTel(newPhoneData);
+      toast.success("Nuevo número de teléfono guardado", {
+        position: "top-right",
+        style: { transform: "translateY(20vh)" }
+      });
+      setIsPhoneNew(false); // Restablecer el estado del teléfono nuevo
+      setPhoneNumber(""); // Limpiar el campo de entrada
+      loadData(); // Recargar los datos de los teléfonos
+    } catch (error) {
+      console.error("Error al guardar el nuevo teléfono:", error);
+      toast.error("Error al guardar el nuevo teléfono", {
+        position: "top-right",
+        style: { transform: "translateY(20vh)" }
       });
     }
   };
 
-  // Buscar datos cuando haya cambios en searchResults
   useEffect(() => {
     if (searchResults.length > 0) {
       loadData();
@@ -139,8 +183,11 @@ const Telephones = () => {
                       onChange={handlePhoneNumberChange}
                       className="input-validation"
                     />
-                    <Button variant="secondary" onClick={handleValidatePhone}>
-                      Validar
+                    <Button
+                      variant="secondary"
+                      onClick={isPhoneNew ? handleSaveNewPhone : handleValidatePhone}
+                    >
+                      {isPhoneNew ? "Nuevo" : "Validar"}
                     </Button>
                   </InputGroup>
                 </div>
@@ -220,47 +267,6 @@ const Telephones = () => {
                       <td>{row.activo ? "Activo" : "Inactivo" || "--"}</td>
                     </tr>
                   ))}
-              {isLoading ? (
-                [...Array(4)].map((_, i) => (
-                  <tr key={i}>
-                    {[...Array(18)].map((_, j) => (
-                      <td key={j}>
-                        <Placeholder as="span" animation="glow">
-                          <Placeholder xs={12} />
-                        </Placeholder>
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              ) : (
-                data.map((row, index) => (
-                  <tr key={index}>
-                    <td>{row.titulares || "--"}</td>
-                    <td>{row.conocidos || "--"}</td>
-                    <td>{row.desconocidos || "--"}</td>
-                    <td>{row.sinContacto || "--"}</td>
-                    <td>{row.intentosViciDial || "--"}</td>
-                    <td>{row.id || "--"}</td>
-                    <td>
-                    <a href="#" className="text-primary" onClick={() => setSelectedAnswer(2)}>
-                        {"XXXXXX" + row.númeroTelefónico.slice(6)}
-                      </a>
-                    </td>
-                    <td>{row.idTelefonía || "--"}</td>
-                    <td>{row.idOrigen || "--"}</td>
-                    <td>{row.idClase || "--"}</td>
-                    <td>{row.estado || "--"}</td>
-                    <td>{row.municipio || "--"}</td>
-                    <td>{row.husoHorario || "--"}</td>
-                    <td>{row.segHorarioContacto || "--"}</td>
-                    <td>{row.extensión || "--"}</td>
-                    <td>{row._Confirmado ? "Sí" : "No" || "--"}</td>
-                    <td>{new Date(row.fecha_Insert).toLocaleDateString() || "--"}</td>
-                    <td>{row.calificacion || "--"}</td>
-                    <td>{row.activo ? "Activo" : "Inactivo" || "--"}</td>
-                  </tr>
-                ))
-              )}
             </tbody>
           </Table>
         </div>

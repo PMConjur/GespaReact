@@ -271,6 +271,29 @@ export const fetchDrives = async (idCartera, idCuenta) => {
   }
 };
 
+// endpoint de agregar nuevo telefono
+export const fetchNewTel = async (newPhoneData) => {
+  try {
+    const response = await servicio.put(
+      `/search-customer/save-new-phone`,
+      newPhoneData
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Validación recibida:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchNewTel:", error);
+    throw error;
+  }
+};
+
 //Error status global
 const getErrorStatus = (status) => {
   switch (status) {
