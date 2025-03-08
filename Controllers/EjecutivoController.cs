@@ -415,6 +415,24 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+
+        [HttpPost("SaveEstadoDeCuenta")]
+        public async Task<IActionResult> SaveCargoEstadoDeCuenta([FromBody] EstadoDeCuentaRe newEstadoCuenta)
+        {
+            if (newEstadoCuenta == null)
+            {
+                return BadRequest("Datos de cargo en línea inválidos.");
+            }
+
+            string result = await _ejecutivoService.SaveEstadoDeCuenta(newEstadoCuenta);
+
+            if (result.StartsWith("Error"))
+            {
+                return BadRequest(result); // Devuelve BadRequest para errores
+            }
+
+            return Ok(result); // Devuelve Ok con el resultado
+        }
         #endregion
 
 

@@ -41,6 +41,7 @@ namespace NoriAPI.Services
         Task ObtenerCargosEnLinea(DataRow drDatos, DataSet dsTablas);
         Task<string> SaveCargoEnlinea(CargoEnLineaRe newCargoEn);
         Task ObtenerEstadoDeCuenta(DataRow drDatos, DataSet dsTablas);
+        Task<string> SaveEstadoDeCuenta(EstadoDeCuentaRe newEstadoEn);
     }
 
     public class EjecutivoService : IEjecutivoService
@@ -1041,6 +1042,102 @@ namespace NoriAPI.Services
             estadoGet.TableName = "EstadoDeCuenta";
             dsTablas.Tables.Add(estadoGet);
         }
+        public async Task<string> SaveEstadoDeCuenta(EstadoDeCuentaRe newEstadoEn)
+        {
+            try
+            {
+                string idCuenta = newEstadoEn.idCuenta.ToString();
+                int idCartera = ObtenerIdCarteraDesdeBaseDeDatos(idCuenta);
+                dynamic cargoData = ObtenerDatosEstadoDeCuenta(idCartera, idCuenta);
+
+                if (cargoData != null)
+                {
+                    try
+                    {
+                        DateTime FechaInicial = newEstadoEn.FechaInicial;
+                        DateTime FechaFinal = newEstadoEn.FechaFinal;
+                        string CorreoString = cargoData.sCorreoElectronico?.ToString();
+
+                        EstadoDeCuenta newEstado = new EstadoDeCuenta(
+                            IdCartera: Convert.ToInt32(idCartera),
+                            IdCuenta: idCuenta,
+                            IdEjecutivo: Convert.ToInt32(newEstadoEn.idEjecutivo),
+                            FechaInicial: FechaInicial,
+                            FechaFinal: FechaFinal,
+                            consulta : newEstadoEn.Consulta,
+                            correoElectronico: CorreoString
+                        );
+
+                        string saveEstadoResult = await ValidateBusqueda(newEstado);
+                        return saveEstadoResult;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error al procesar la solicitud de estado de cuenta: {ex.Message}");
+                        return $"Error al procesar la solicitud de estado de cuenta: {ex.Message}";
+                    }
+                }
+                else
+                {
+                    return "No se encontraron datos para la solicitud de estado de cuenta.";
+                }
+            }
+            catch (Exception ex)
+            {
+                return $"Error al guardar la solicitud de estado de cuenta: {ex.Message}";
+            }
+            return "Error desconocido al procesar la solicitud de estado de cuenta.";
+        }
+        private async Task<string> ValidateBusqueda(EstadoDeCuenta estadoCuenta)
+        {
+            try
+            {
+                // Asumiendo que necesitas pasar algún valor para ValorBusqueda,
+                // puedes obtenerlo del objeto estadoCuenta o de otra fuente.
+                string valorBusqueda = estadoCuenta.idCuenta; // Ejemplo: Usar idCuenta como ValorBusqueda
+
+                var newEstadoResult = await _ejecutivoRepository.RegisterNewEstado(estadoCuenta);
+
+                if (newEstadoResult == null)
+                {
+                    return "Falló al guardar la solicitud de estado de cuenta en la base de datos.";
+                }
+
+                if (newEstadoResult is IDictionary<string, object> estadoResultDict &&
+                    estadoResultDict.TryGetValue("Resultado", out object resultadoObj) && resultadoObj != null)
+                {
+                    return Convert.ToString(resultadoObj);
+                }
+
+                return "";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al validar la solicitud de estado de cuenta: {ex.Message}");
+                return $"Error al validar la solicitud de estado de cuenta: {ex.Message}";
+            }
+        }
+        private dynamic ObtenerDatosEstadoDeCuenta(int idCartera, string idCuenta)
+        {
+            try
+            {
+                using (IDbConnection connection = new SqlConnection(_connectionString))
+                {
+                    string query = "WAITFOR DELAY '00:00:00' SELECT * FROM dbo.fn_SolicitudEstadosDeCuenta (@idCuenta, @idCartera)";
+                    return connection.QueryFirstOrDefault(query, new { idCartera = idCartera, idCuenta = idCuenta }); // Pasar idCartera
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al obtener datos de CargoEnLínea: {ex.Message}");
+                return null;
+            }
+        }
+
+
+
+
+
         #endregion
 
 
