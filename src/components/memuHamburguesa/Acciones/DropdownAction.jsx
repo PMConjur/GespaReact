@@ -1,36 +1,46 @@
-import { useState, useEffect } from 'react';
+import { useState, useContext } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { MenuButtonFill } from 'react-bootstrap-icons';
 import FollowUps from './FollowUps'; // Asegúrate de importar el componente
+//import Tañks from './FollowUps';
 import { getFollowUpsData } from '../../../services/gespawebServices';
-import Talks from './Talks'; // Asegúrate de importar la función
+//import { getTalksData } from '../../../services/gespawebServices';
+import { AppContext } from '../../../pages/Managment'; // Ajusta la ruta según tu estructura de archivos
+
+
+// import Talks from './Talks'; // Asegúrate de importar la función
 
 function DropdownActions() {
   const [showFollowUps, setShowFollowUps] = useState(false);
   const [followUpsData, setFollowUpsData] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [showTalks, setShowTalks] = useState(false);
-  const [talksData, setTalksData] = useState([]);
-  const [loadingtalks, setLoadingtalks] = useState(false);
+    // Consumir el contexto
+    const { searchResults } = useContext(AppContext);
+
+
+
+  // const [showTalks, setShowTalks] = useState(false);
+  // const [talksData, setTalksData] = useState([]);
+  // const [loadingtalks, setLoadingtalks] = useState(false);
+
+
+
 
   const handleShowFollowUps = async () => {
     setLoading(true);
     try {
-      // Aquí debes definir los valores de idCuenta y idCartera según tu aplicación
-      const idCuenta = '370700000000004'; // Ejemplo
-      const idCartera = 1; // Ejemplo
-      const data = await getFollowUpsData(idCuenta, idCartera);
-      console.log('Datos de seguimiento recibidos:', data); // Verificar los datos recibidos
-      setFollowUpsData(data); // Establece los datos recibidos
+      const followUps = await getFollowUpsData(searchResults); // 🔹 Ahora recibe toda la lista
+      setFollowUpsData(followUps.flat()); // 🔹 Asegura que la data es un array plano
+      setShowFollowUps(true);
     } catch (error) {
-      console.error('Error al cargar los datos de seguimiento:', error);
+      console.error("Error al obtener los datos de seguimiento:", error);
     } finally {
       setLoading(false);
     }
-    setShowFollowUps(true);
   };
-
+  
+  
   const handleCloseFollowUps = () => setShowFollowUps(false);
 
   //negociaciones//
@@ -39,20 +49,17 @@ function DropdownActions() {
     setLoadingtalks(true);
     try {
       // Aquí debes definir los valores de idCuenta y idCartera según tu aplicación
-      const idCuenta = '370700000000004'; // Ejemplo
-      const idCartera = 1; // Ejemplo
-      const data = await getTalksData(idCuenta, idCartera);
-      console.log('Datos de negociaciones recibidos:', data); // Verificar los datos recibidos
-      setTalksData(data); // Establece los datos recibidos
+      const talks = await getTalksData(searchResults); // Obtener los datos de negociaciones
+      setTalksData(talks.flat()); // Establece los datos recibidos
+      setShowTalks(true);
     } catch (error) {
       console.error('Error al cargar los datos de negociaciones:', error);
     } finally {
       setLoadingtalks(false);
     }
-    setShowTalks(true);
   };
 
-  const handleCloseTalks = () => setShowTalks(false);
+  // const handleCloseTalks = () => setShowTalks(false);
 
   return (
     <>
@@ -76,7 +83,7 @@ function DropdownActions() {
       </Dropdown>
 
       <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps} data={followUpsData} loading={loading} />
-      <FollowUps show={showTalks} handleClose={handleCloseTalks} data={talksData} loading={loadingtalks} />
+      {/* <FollowUps show={showTalks} handleClose={handleCloseTalks} data={talksData} loading={loadingtalks} /> */}
     </>
   );
 }

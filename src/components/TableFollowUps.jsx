@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { Table, Form } from "react-bootstrap";
 
-const TableFollowUps = ({ data }) => {
+const TableFollowUps = ({ data, customColumnNames = {} }) => {
     const [sortedData, setSortedData] = useState(data || []);
     const [sortByOldest, setSortByOldest] = useState(false);
 
@@ -9,26 +9,49 @@ const TableFollowUps = ({ data }) => {
         return <p>No hay datos disponibles.</p>;
     }
 
-    const hiddenFields = ["idCartera", "idCuenta", "Fecha_Insert", "Segundo_Insert", "idEjecutivo", "idEjecutivoRealizado"];
-    const columnNames = {
-        "FechaSeguimiento": "Fecha de Seguimiento",
-        "SegundoSeguimiento": "Hora de Seguimiento",
-        "idAcercamiento": "Acercamiento",
-        "NúmeroTelefónico": "Número Telefónico",
-        "Ejecutivo": "Ejecutivo",
-        "_Realizado": "Realizado"
-    };
+// 🔹 Campos que NO se mostrarán en la tabla
+const hiddenFields = [
+    "idCartera",
+    "idCuenta",
+    "idEjecutivo",
+    "idEjecutivoRealizado",
+    "FechaSeguimiento",
+    "SegundoSeguimiento"
+];
 
+// 🔹 Nombres de columnas por defecto (se pueden sobrescribir con `customColumnNames`)
+const defaultColumnNames = {
+    "Fecha_Insert": "Fecha",
+    "Segundo_Insert": "Hora",
+    "Herramienta": "Acercamiento",
+    "idAcercamiento": "Acercamiento", // Renombrar sin el "id"
+    "NúmeroTelefónico": "Telefono",
+    "Ofreció": "Ejecutivo",
+    "_Realizado": "Realizado"
+};
+
+// 🔹 Aplicar estilos para que la tabla se ajuste al tamaño del texto
+// const tableStyle = {
+//     tableLayout: "auto",
+//     whiteSpace: "nowrap",
+//     width: "100%"
+// };
+
+
+    // 🔹 Combina los nombres personalizados con los predeterminados
+    const columnNames = { ...defaultColumnNames, ...customColumnNames };
+
+    // 🔹 Ordenar por fecha (más antiguo/más reciente)
     const handleSortChange = useCallback(() => {
-        console.log("Ordenando por fecha más antigua:", sortByOldest);
         setSortByOldest(prev => !prev);
         setSortedData(prevData =>
             !sortByOldest
-                ? [...prevData].sort((a, b) => new Date(a.FechaSeguimiento) - new Date(b.FechaSeguimiento))
-                : [...data]
+                ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
+                : [...data] // Restaurar datos originales si se desmarca el checkbox
         );
     }, [sortByOldest, data]);
 
+    // 🔹 Filtrar claves de los datos, excluyendo los campos ocultos
     const headers = Object.keys(data[0]).filter(header => !hiddenFields.includes(header));
 
     return (
@@ -39,9 +62,9 @@ const TableFollowUps = ({ data }) => {
                 label="Más antiguo"
                 className="mb-3"
                 checked={sortByOldest}
-                onChange={handleSortChange} // ✅ Asegurar que está en uso
+                onChange={handleSortChange}
             />
-
+        
             <Table striped bordered hover responsive variant="dark">
                 <thead>
                     <tr>
@@ -57,11 +80,11 @@ const TableFollowUps = ({ data }) => {
                         <tr key={index}>
                             {headers.map((header) => (
                                 <td key={header}>
-                                    {header === "FechaSeguimiento"
-                                        ? item[header].split("T")[0]
-                                        : typeof item[header] === "object"
-                                        ? JSON.stringify(item[header])
-                                        : item[header] ?? "--"}
+                                    {header === "Fecha_Insert"
+                                        ? item[header].split("T")[0] // Extrae solo la fecha
+                                        : typeof item[header] === "object" && Object.keys(item[header]).length === 0
+                                        ? "--" // Si el valor es un objeto vacío, mostrar "--"
+                                        : item[header] ?? "--"} 
                                 </td>
                             ))}
                         </tr>

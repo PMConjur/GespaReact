@@ -305,29 +305,77 @@ const getErrorStatus = (status) => {
 };
 
 
-export async function getFollowUpsData(idCuenta, idCartera) {
+// Endpoint de seguimientos para múltiples cuentas
+export async function getFollowUpsData(searchResults) {
   try {
-    // Asegúrate de obtener el token de manera correcta
+    // Obtener token de autenticación de localStorage o estado
     const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));
-    const token = responseData?.ejecutivo?.token; // Obtener el token del almacenamiento local o estado
+    const token = responseData?.ejecutivo?.token;
 
     if (!token) {
       throw new Error("Token de autenticación no disponible");
     }
 
-    // Incluir el token en los encabezados de la solicitud
-    const response = await axios.get(
-      `${apiUrl}/ejecutivo/seguimientos/${idCartera}/${idCuenta}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`, // Incluir el token en el encabezado
-        },
-      }
+    // Definir idCartera fijo (siempre 1 según el código original)
+    const idCartera = 1;
+
+    // Realizar múltiples solicitudes en paralelo para cada idCuenta en searchResults
+    const followUps = await Promise.all(
+      searchResults.map(async (result) => {
+        const idCuenta = result.idCuenta.trim(); // Limpieza del idCuenta
+        console.log("🔍 Buscando seguimientos para idCuenta:", idCuenta);
+
+        try {
+          const response = await axios.get(
+            `${apiUrl}/ejecutivo/seguimientos/${idCartera}/${idCuenta}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`, // Autenticación con token
+              },
+            }
+          );
+
+          console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
+          return response.data; // Retornar datos obtenidos
+        } catch (error) {
+          console.error(`❌ Error al obtener datos de seguimiento para idCuenta ${idCuenta}:`, error);
+          return null; // Retornar null en caso de error para evitar fallas en Promise.all
+        }
+      })
     );
-    console.log('Respuesta de la API de seguimiento:', response.data); // Verificar los datos recibidos
-    return response.data;
+
+    // Filtrar valores nulos (en caso de errores individuales)
+    return followUps.filter((data) => data !== null);
   } catch (error) {
     console.error("❌ Error al obtener los datos de seguimiento:", error);
     throw new Error("Error al cargar los datos de gestión.");
   }
 }
+
+// export const getTalksData = async (searchResults) => {
+//   try {
+//     const response = await fetch("/negotiations", {
+//       method: "GET",
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         "Content-Type": "/ejecutivo/acciones-negociaciones",
+//       },
+//     });
+
+//     if (!response.ok) {
+//       throw new Error(`Error al obtener negociaciones: ${response.statusText}`);
+//     }
+
+//     const data = await response.json();
+
+//     // 🔹 Filtrar negociaciones por idCuenta
+//     const filteredData = data.filter(item => item.idCuenta === idCuenta && item.idCartera === idCartera);
+
+//     return filteredData;
+//   } catch (error) {
+//     console.error("Error al cargar los datos de negociaciones:", error);
+//     return [];
+//   }
+// };
+
+

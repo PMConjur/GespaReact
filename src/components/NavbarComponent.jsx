@@ -43,11 +43,11 @@ const NavbarComponent = () => {
         style={{ width: "300px" }}
       >
         <Offcanvas.Header closeButton />
-        <Offcanvas.Body style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
+        <Offcanvas.Body style={{
+          display: 'flex',
+          flexDirection: 'column',
           justifyContent: 'space-between', // Distribuye el espacio entre los elementos
-          height: '100%', 
+          height: '100%',
         }}>
           <Nav className="flex-grow-1 pe-3" >
             <Nav.Link href="/home" className="text-align-center">
@@ -55,10 +55,10 @@ const NavbarComponent = () => {
             </Nav.Link>
             <Nav.Link href="/managment" className="text-align-center">
               <h5><span><KanbanFill/></span> Gestion</h5>
-            </Nav.Link> 
+            </Nav.Link>
             <DropdownsInfo/>
             <DropdownAction/>
-            <DropdownExecutive/>           
+            <DropdownExecutive/>
           </Nav>
           <div style={{marginTop: 'auto', marginBottom: '10px', display: 'flex', justifyContent: 'space-between'}}>
             <div style={{ textAlign: 'center' }}>Grupo Consorcio</div>
