@@ -74,13 +74,13 @@ const Flow = () => {
           valor: valor,
           pregunta: pregunta
         }
-      ]); // Save current question, answer, value, and question to history
+      ]); // Guarda el historial de las preguntas que se van seleccionando
       setCurrentQuestionId(nextQuestion.idPregunta);
     } else {
       toast.info("Información de flujo terminada");
     }
 
-    console.log("Answer History:", answerHistory); // Print answer history to console
+    console.log("Answer History:", answerHistory); // imprime el historial de respuestas para poder verlo en consola
   };
   //Accion de boton de regreso
   const handleBack = () => {
@@ -111,7 +111,7 @@ const Flow = () => {
         ? `${answerHistory[answerHistory.length - 1].pregunta} - ${
             answerHistory[answerHistory.length - 1].valor
           } `
-        : "";
+        : ""; // Elimina la utlima respuesta seleccionada del flujo y del historial de selección
 
     return (
       <Card className="flow-size" border="primary">
@@ -176,7 +176,26 @@ const Flow = () => {
 
   return (
     <Row xs="auto" md="auto" className="g-2">
-      <Col md={12}>{renderQuestions(currentQuestionId)}</Col>
+      <Col md={12}>
+        {currentQuestionId ? (
+          renderQuestions(currentQuestionId)
+        ) : (
+          <Card className="flow-size" border="primary">
+            <Card.Header className="text-white">
+              <i className="h5">
+                <NodePlusFill></NodePlusFill> Flujo
+              </i>
+            </Card.Header>
+            <Card.Body className="scroll-flow text-align-center">
+              <h3>
+                {" "}
+                <Check2Circle></Check2Circle> Selecciona{" "}
+              </h3>
+              <h6>una cuenta para trabajar en el flujo</h6>
+            </Card.Body>
+          </Card>
+        )}
+      </Col>
     </Row>
   );
 };

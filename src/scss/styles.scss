@@ -1,3 +1,5 @@
+@use "sass:color";
+
 body {
   background-color: #000000;
 }
@@ -724,56 +726,56 @@ $custom-color-2: #00b894; // Verde turquesa
 .text-success {
   color: $success !important;
   &.hoverable:hover {
-    color: darken($success, 10%) !important;
+    color: color.scale($success, $lightness: -10%) !important;
   }
 }
 
 .text-info {
   color: $info !important;
   &.hoverable:hover {
-    color: darken($info, 10%) !important;
+    color: color.scale($info, $lightness: -10%) !important;
   }
 }
 
 .text-warning {
   color: $warning !important;
   &.hoverable:hover {
-    color: darken($warning, 10%) !important;
+    color: color.scale($warning, $lightness: -10%) !important;
   }
 }
 
 .text-danger {
   color: $danger !important;
   &.hoverable:hover {
-    color: darken($danger, 10%) !important;
+    color: color.scale($danger, $lightness: -10%) !important;
   }
 }
 
 .text-primary {
   color: $primary !important;
   &.hoverable:hover {
-    color: darken($primary, 10%) !important;
+    color: color.scale($primary, $lightness: -10%) !important;
   }
 }
 
 .text-secondary {
   color: $secondary !important;
   &.hoverable:hover {
-    color: darken($secondary, 10%) !important;
+    color: color.scale($secondary, $lightness: -10%) !important;
   }
 }
 
 .text-light {
   color: $light !important;
   &.hoverable:hover {
-    color: darken($light, 10%) !important;
+    color: color.scale($light, $lightness: -10%) !important;
   }
 }
 
 .text-dark {
   color: $dark !important;
   &.hoverable:hover {
-    color: darken($dark, 10%) !important;
+    color: color.scale($dark, $lightness: -10%) !important;
   }
 }
 
@@ -781,14 +783,14 @@ $custom-color-2: #00b894; // Verde turquesa
 .text-custom-1 {
   color: $custom-color-1 !important;
   &.hoverable:hover {
-    color: darken($custom-color-1, 10%) !important;
+    color: color.scale($custom-color-1, $lightness: -10%) !important;
   }
 }
 
 .text-custom-2 {
   color: $custom-color-2 !important;
   &.hoverable:hover {
-    color: darken($custom-color-2, 10%) !important;
+    color: color.scale($custom-color-2, $lightness: -10%) !important;
   }
 }
 //Estilos flujo
@@ -797,13 +799,16 @@ $custom-color-2: #00b894; // Verde turquesa
   padding: 5px;
   transition: background-color 0.5s ease, color 0.5s ease;
   background-color: #000000;
-  color: darken(
+  color: color.scale(
     $success,
-    10%
+    $lightness: -10%
   ); // Color de texto inicial (blanco para contrastar con el fondo negro)
 
   &:hover {
-    background-color: darken($success, 10%); // Aclara el fondo en un 20%
+    background-color: color.scale(
+      $success,
+      $lightness: -10%
+    ); // Aclara el fondo en un 20%
     color: #000000; // Cambia el color del texto a negro para contrastar con el fondo aclarado
   }
 }
@@ -848,51 +853,51 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
 
   // Botones personalizados
   &-primary {
-    background: darken($primary, 40%);
-    color: darken($light, 0%);
-    border: 1px solid darken($primary, 40%);
+    background: color.scale($primary, $lightness: -40%);
+    color: color.scale($light, $lightness: 0%);
+    border: 1px solid color.scale($primary, $lightness: -40%);
     &:hover {
-      background: darken($dark, 10%);
-      color: darken($primary, 0%);
-      border: 1px solid darken($primary, 0%);
+      background: color.scale($dark, $lightness: -10%);
+      color: color.scale($primary, $lightness: 0%);
+      border: 1px solid color.scale($primary, $lightness: 0%);
     }
   }
 
   &-success {
-    background: darken($success, 35%);
-    color: darken($light, 0%);
-    border: 1px solid darken($success, 35%);
+    background: color.scale($success, $lightness: -50%);
+    color: color.scale($light, $lightness: 0%);
+    border: 1px solid color.scale($success, $lightness: -50%);
     &:hover {
-      background: darken($dark, 10%);
-      color: darken($success, 5%);
-      border: 1px solid darken($success, 5%);
+      background: color.scale($dark, $lightness: -10%);
+      color: color.scale($success, $lightness: -5%);
+      border: 1px solid color.scale($success, $lightness: -5%);
     }
   }
   &-warning {
-    background: darken($warning, 30%);
-    color: darken($light, 0%);
-    border: 1px solid darken($warning, 30%);
+    background: color.scale($warning, $lightness: -30%);
+    color: color.scale($light, $lightness: 0%);
+    border: 1px solid color.scale($warning, $lightness: -30%);
     &:hover {
-      background: darken($dark, 10%);
-      color: darken($warning, 5%);
+      background: color.scale($dark, $lightness: -10%);
+      color: color.scale($warning, $lightness: -5%);
     }
   }
   &-danger {
-    background: darken($danger, 30%);
-    color: darken($light, 0%);
-    border: 1px solid darken($danger, 30%);
+    background: color.scale($danger, $lightness: -30%);
+    color: color.scale($light, $lightness: 0%);
+    border: 1px solid color.scale($danger, $lightness: -30%);
     &:hover {
-      background: darken($dark, 10%);
-      color: darken($danger, 5%);
+      background: color.scale($dark, $lightness: -10%);
+      color: color.scale($danger, $lightness: -5%);
     }
   }
   &-secondary {
-    background: darken($secondary, 10%);
-    color: darken($light, 0%);
-    border: 1px solid darken($secondary, 30%);
+    background: color.scale($secondary, $lightness: -10%);
+    color: color.scale($light, $lightness: 0%);
+    border: 1px solid color.scale($secondary, $lightness: -30%);
     &:hover {
-      background: darken($dark, 10%);
-      color: darken($light, 5%);
+      background: color.scale($dark, $lightness: -10%);
+      color: color.scale($light, $lightness: -5%);
     }
   }
 
@@ -901,7 +906,7 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
     color: rgb(0, 0, 0);
 
     &:hover {
-      background: darken($custom-color-2, 10%);
+      background: color.scale($custom-color-2, $lightness: -10%);
     }
   }
 
@@ -927,8 +932,8 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
     &:hover {
       background: linear-gradient(
         45deg,
-        darken($primary, 10%),
-        darken($info, 10%)
+        color.scale($primary, $lightness: -10%),
+        color.scale($info, $lightness: -10%)
       );
     }
   }

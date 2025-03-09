@@ -60,7 +60,8 @@ const NegotiationsMonth = () => {
                     <tr key={index}>
                       <td
                         onClick={() => handleAccountClick(negotiation.idCuenta)}
-                        style={{ cursor: "pointer", color: "#0d6efd" }}
+                        style={{ cursor: "pointer" }}
+                        className="text-success"
                       >
                         {negotiation.idCuenta}
                       </td>
