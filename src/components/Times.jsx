@@ -1,128 +1,174 @@
-import { useState } from "react";
-import { Modal, Button, Form, Container, Row } from "react-bootstrap";
-import TableTimes from "./TableTimes";
-import { toast, Toaster } from "sonner";
+import { useState } from 'react';
+import { Modal, Button, Form, Container, Row } from 'react-bootstrap';
+import TableTimes from './TableTimes';
+import { toast } from "sonner";
+import axios from 'axios';
+import { userTimesUpdate } from "../services/gespawebServices"; // Asegúrate de importar la función
+
 
 const Times = ({ show, handleClose }) => {
-  const responseData = JSON.parse(localStorage.getItem("responseData"));
-  const numEmpleado = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
-  const userPassword = responseData?.ejecutivo?.infoEjecutivo?.password;
-  const registeredPassword = localStorage.getItem(`password_${numEmpleado}`); // Obtener la contraseña registrada para el numEmpleado
-  console.log(userPassword);
-  const [selectedReason, setSelectedReason] = useState("");
-  const [timers, setTimers] = useState({
-    permiso: 0,
-    curso: 0,
-    calidad: 0,
-    comida: 0,
-    baño: 0
-  });
-  console.log("La contraseña es:" + userPassword);
-  const [currentTimer, setCurrentTimer] = useState(0);
-  const [intervalId, setIntervalId] = useState(null);
-  const [isPaused, setIsPaused] = useState(false);
-  const [password, setPassword] = useState("");
-  const [tableTimes, setTableTimes] = useState(() => {
-    const savedTimes = JSON.parse(localStorage.getItem("timesData")) || {};
-    return {
-      permiso: savedTimes.permiso || 0,
-      curso: savedTimes.curso || 0,
-      calidad: savedTimes.calidad || 0,
-      comida: savedTimes.comida || 0,
-      baño: savedTimes.baño || 0
-    };
-  });
-  const [hasSentData, setHasSentData] = useState(false);
-
-  const handleStartTimer = () => {
-    if (selectedReason && selectedReason !== "Selecciona") {
-      console.log(`Iniciando temporizador para: ${selectedReason}`);
-      setIsPaused(true);
-      setCurrentTimer(0); // Reiniciar el contador de pausa
-      setHasSentData(false); // Reiniciar el estado de envío
-      const newIntervalId = setInterval(() => {
-        setCurrentTimer((prevTimer) => prevTimer + 1);
-      }, 1000);
-      setIntervalId(newIntervalId);
-    } else {
-      toast.error("Error 400: Por favor seleccione una razón válida.");
-    }
-  };
-
-  const handleStopTimer = () => {
-    console.log(`Intentando detener temporizador para: ${selectedReason}`);
-    if (!password) {
-      toast.error("Error 400: Por favor ingrese la contraseña.");
-    } else if (password !== registeredPassword) {
-      toast.error("Error 401: Contraseña incorrecta");
-    } else {
-      console.log(`Temporizador detenido para: ${selectedReason}`);
-      clearInterval(intervalId);
-      setIntervalId(null);
-      setIsPaused(false);
-      setPassword("");
-      setTimers((prevTimers) => {
-        const updatedTimers = {
-          ...prevTimers,
-          [selectedReason]: prevTimers[selectedReason] + currentTimer
-        };
-        localStorage.setItem("timesData", JSON.stringify(updatedTimers));
-        return updatedTimers;
-      });
-      updateTableTimes();
-      if (!hasSentData) {
-        sendDataToServer();
-        setHasSentData(true);
-      }
-    }
-  };
-
-  const updateTableTimes = () => {
-    setTableTimes((prevTableTimes) => {
-      const updatedTableTimes = {
-        ...prevTableTimes,
-        [selectedReason]: prevTableTimes[selectedReason] + currentTimer
-      };
-      console.log("Tabla actualizada con los tiempos:", updatedTableTimes);
-      return updatedTableTimes;
+    const responseData = JSON.parse(localStorage.getItem("responseData"));
+    console.log("Datos almacenados en localStorage:", responseData);
+    const numEmpleado = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+    const registeredPassword = responseData?.ejecutivo?.infoEjecutivo?.password?.trim(); // Obtener la contraseña registrada para el numEmpleado y eliminar espacios en blanco
+    const userPassword = responseData?.ejecutivo?.infoEjecutivo?.password;
+    console.log("La contraseña es:" + userPassword)
+    const [selectedReason, setSelectedReason] = useState('');
+    const [timers, setTimers] = useState({
+        permiso: 0,
+        curso: 0,
+        calidad: 0,
+        comida: 0,
+        baño: 0,
     });
-  };
+    const [currentTimer, setCurrentTimer] = useState(0);
+    const [intervalId, setIntervalId] = useState(null);
+    const [isPaused, setIsPaused] = useState(false);
+    const [password, setPassword] = useState('');
+    const [tableTimes, setTableTimes] = useState(() => {
+        const savedTimes = JSON.parse(localStorage.getItem('timesData')) || {};
+        return {
+            permiso: savedTimes.permiso || 0,
+            curso: savedTimes.curso || 0,
+            calidad: savedTimes.calidad || 0,
+            comida: savedTimes.comida || 0,
+            baño: savedTimes.baño || 0,
+        };
+    });
+    const [hasSentData, setHasSentData] = useState(false);
 
-  const sendDataToServer = () => {
-    const dataToSend = {
-      numEmpleado: numEmpleado, // Usar el ID del empleado real
-      tiempos: {
-        tiempoPermiso: timers.permiso,
-        tiempoCurso: timers.curso,
-        tiempoCalidad: timers.calidad,
-        tiempoComida: timers.comida,
-        tiempoBaño: timers.baño
-      }
+    const handleStartTimer = () => {
+        if (selectedReason && selectedReason !== 'Selecciona') {
+            console.log(`Iniciando temporizador para: ${selectedReason}`);
+            setIsPaused(true);
+            setCurrentTimer(0); // Reiniciar el contador de pausa
+            setHasSentData(false); // Reiniciar el estado de envío
+            const newIntervalId = setInterval(() => {
+                setCurrentTimer((prevTimer) => prevTimer + 1);
+            }, 1000);
+            setIntervalId(newIntervalId);
+        } else {
+            toast.error('Error 400: Por favor seleccione una razón válida.');
+        }
     };
-    console.log("Enviando datos al servidor:", dataToSend);
-    // Aquí puedes agregar la lógica para enviar los datos al servidor
+
+
+    const handleStopTimer = async () => {
+        console.log(`Intentando detener temporizador para: ${selectedReason}`);
+        console.log(`Contraseña ingresada: '${password.trim()}'`);
+        console.log(`Contraseña registrada: '${registeredPassword}'`);
+    
+        if (!password) {
+            toast.error('Error 400: Por favor ingrese la contraseña.');
+            return;
+        } else if (password.trim() !== registeredPassword) {
+            toast.error('Error 401: Contraseña incorrecta');
+            return;
+        }
+    
+        console.log(`✅ Temporizador detenido para: ${selectedReason}`);
+        clearInterval(intervalId);
+        setIntervalId(null);
+        setIsPaused(false);
+        setPassword('');
+    
+        setTimers((prevTimers) => {
+            const updatedTimers = {
+                ...prevTimers,
+                [selectedReason]: (prevTimers[selectedReason] || 0) + currentTimer,
+            };
+    
+            localStorage.setItem('timesData', JSON.stringify(updatedTimers));
+            console.log("📌 Tiempos actualizados en localStorage:", updatedTimers);
+    
+            updateTableTimes(updatedTimers);
+    
+            // ✅ Llamada a userTimesUpdate para enviar los datos
+            const tiempoTotal = updatedTimers[selectedReason] || 0;
+            const duracion = new Date(tiempoTotal * 1000).toISOString().substr(11, 8);
+    
+            const dataToSend = {
+                idEjecutivo: numEmpleado,
+                contrasenia: registeredPassword,
+                peCausa: selectedReason,
+                duracion: duracion, // Formato "hh:mm:ss"
+            };
+    
+            userTimesUpdate(dataToSend);
+    
+            return updatedTimers;
+        });
+    
+        setCurrentTimer(0);
+    };
+    
+  
+
+  const updateTableTimes = (updatedTimers) => {
+    setTableTimes((prevTableTimes) => {
+        const updatedTableTimes = {
+            ...prevTableTimes,
+            ...updatedTimers, // Se aseguran los valores correctos
+        };
+        console.log("📌 Tabla actualizada con los tiempos:", updatedTableTimes);
+        return updatedTableTimes;
+    });
+};
+
+
+
+  const sendDataToServer = async (updatedTimers) => {
+    // Validación de datos requeridos
+    if (!numEmpleado || !registeredPassword || !selectedReason) {
+      toast.error("⚠️ Faltan datos para enviar la pausa.");
+      return;
+    }
+
+    const tiempoTotal = updatedTimers[selectedReason] || 0;
+    const duracion = new Date(tiempoTotal * 1000).toISOString().substr(11, 8);
+
+    const dataToSend = {
+      idEjecutivo: numEmpleado,
+      contrasenia: registeredPassword,
+      peCausa: selectedReason,
+      duracion: duracion // Formato "hh:mm:ss"
+    };
+
+    console.log("📤 Enviando datos actualizados al servidor:", JSON.stringify(dataToSend, null, 2));
+
+    try {
+      const response = await axios.post(
+        "http://192.168.7.33/api/ejecutivo/pause-ejecutivo",
+        dataToSend
+      );
+
+      // Evita que el mensaje se repita asegurando que solo se muestra si el servidor responde bien
+      if (response.status === 200 || response.status === 201) {
+        console.log("✅ Respuesta de la API:", response.data);
+        
+      }
+    } catch (error) {
+      console.error("❌ Error al enviar los datos:", error);
+      toast.error("❌ Error al enviar los tiempos al servidor.");
+    }
   };
 
-  const formatTime = (seconds) => {
-    const hrs = Math.floor(seconds / 3600)
-      .toString()
-      .padStart(2, "0");
-    const mins = Math.floor((seconds % 3600) / 60)
-      .toString()
-      .padStart(2, "0");
-    const secs = Math.floor(seconds % 60)
-      .toString()
-      .padStart(2, "0");
-    return `${hrs}:${mins}:${secs}`;
-  };
 
-  return (
-    <Modal show={show} onHide={isPaused ? null : handleClose} size="xl">
-      <Modal.Header closeButton={!isPaused}>
-        <Modal.Title>Tiempos</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Container>
+
+    const formatTime = (seconds) => {
+        const hrs = Math.floor(seconds / 3600).toString().padStart(2, '0');
+        const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+        const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
+        return `${hrs}:${mins}:${secs}`;
+    };
+
+    return (
+      <Modal show={show} onHide={isPaused ? null : handleClose} size="xl">
+        <Modal.Header closeButton={!isPaused}>
+          <Modal.Title>Tiempos</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+            <Container>
           <div className="row">
             <div className="col">
               <Form.Group className="input-group mb-3">
@@ -186,23 +232,22 @@ const Times = ({ show, handleClose }) => {
               <br />
             </div>
           </Row>
-        </Container>
+          </Container>
 
-        <br />
-        <div className="row">
-          <div className="col">
-            <TableTimes updatedTimes={tableTimes} />
+          <br />
+          <div className="row">
+            <div className="col">
+              <TableTimes updatedTimes={tableTimes} />
+            </div>
           </div>
-        </div>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose} disabled={isPaused}>
-          Cerrar
-        </Button>
-      </Modal.Footer>
-      <Toaster />
-    </Modal>
-  );
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose} disabled={isPaused}>
+            Cerrar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    );
 };
 
 export default Times;

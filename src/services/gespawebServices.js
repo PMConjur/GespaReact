@@ -2,8 +2,11 @@ import servicio from "./axiosServices";
 import { toast } from "sonner";
 import axios from "axios";
 
-//
+const responseData =
+  location.state || JSON.parse(localStorage.getItem("responseData"));
+const token = responseData?.ejecutivo?.token;
 const apiUrl = import.meta.env.VITE_API_URL;
+
 
 //endpoint login
 export async function userReset(dataUserReset) {
@@ -196,7 +199,7 @@ export const fetchValidationTel = async (data) => {
   }
 };
 
-//Uso de endpoint de tiempos
+//Uso de endpoint de tiempos 
 export async function userTimes(numEmpleado) {
   try {
     console.log(numEmpleado);
@@ -204,7 +207,7 @@ export async function userTimes(numEmpleado) {
       `/ejecutivo/tiempos-ejecutivo?numEmpleado=${numEmpleado}`
     );
     const data = response.data;
-
+    
     return data;
   } catch (error) {
     if (error.response) {
@@ -215,6 +218,34 @@ export async function userTimes(numEmpleado) {
       throw new Error("Error al recibir la productividad.");
     }
   }
+}
+
+
+export async function userTimesUpdate(data) {
+    try {
+        console.log("📤 Enviando datos de pausa a la API:", JSON.stringify(data, null, 2));
+
+        // const response = await fetch(`${apiUrl}/search-customer/validate-phone`, {
+        const response = await fetch(`${apiUrl}/ejecutivo/pause-ejecutivo`,
+            {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            }
+        );
+
+        console.log("✅ Respuesta de la API:", response.data);
+        toast.success("Datos enviados correctamente a la base de datos.");
+        return response.data;
+    } catch (error) {
+        console.error("❌ Error al enviar los datos:", error);
+        const errorMessage = error.response?.data?.mensaje || "Error 408: Error al enviar la pausa.";
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
+    }
 }
 
 //Endpoint Flow
