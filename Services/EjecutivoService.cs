@@ -64,6 +64,9 @@ namespace NoriAPI.Services
         Task ObtenerMultideudores(DataRow drDatos, DataSet dsTablas, Hashtable htProducto, string sortMultideudores, string connectionString);
         Task ObtenerPagos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerPago(DataRow drDatos, DataSet dsTablas);
+        Task<DataTable> ObtieneGestionTeAsync(int idCartera, string idCuenta);
+
+
 
     }
 
@@ -1440,6 +1443,51 @@ namespace NoriAPI.Services
             dsTablas.Tables.Add(pagosGet);
         }
         #endregion
+
+        #region GestionTelefonica
+        public async Task<DataTable> ObtieneGestionTeAsync(int idCartera, string idCuenta)
+        {
+            DataTable gestiones = new DataTable();
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                var parameters = new { IdCartera = idCartera, IdCuenta = idCuenta };
+                var gestionesResult = await connection.QueryAsync<dynamic>(
+                    "SELECT * FROM fn_GestionesTelefónicas(@IdCartera, @IdCuenta)",
+                    parameters);
+
+                if (gestionesResult.Any())
+                {
+                    // Crear columnas
+                    var firstItem = gestionesResult.First() as IDictionary<string, object>;
+                    foreach (var key in firstItem.Keys)
+                    {
+                        gestiones.Columns.Add(key);
+                    }
+
+                    // Agregar filas
+                    foreach (var item in gestionesResult)
+                    {
+                        var row = gestiones.NewRow();
+                        var itemDict = item as IDictionary<string, object>;
+                        if (itemDict != null)
+                        {
+                            foreach (var key in itemDict.Keys)
+                            {
+                                row[key] = itemDict[key] ?? DBNull.Value;
+                            }
+                        }
+                        gestiones.Rows.Add(row);
+                    }
+                }
+            }
+
+            return gestiones;
+        }
+        #endregion
+
 
     }
 

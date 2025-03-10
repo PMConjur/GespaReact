@@ -51,6 +51,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 });
 
+
 builder.Services.AddEndpointsApiExplorer();
 // Agregar Swagger con autenticación
 builder.Services.AddSwaggerGen(options =>

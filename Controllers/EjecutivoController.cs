@@ -694,5 +694,34 @@ namespace NoriAPI.Controllers
         }
         #endregion
 
+        #region Gestion Telefonica
+        [HttpGet("gestionTe/{idCartera}/{idCuenta}")]
+        public async Task<IActionResult> GetGestionTe(int idCartera, string idCuenta)
+        {
+            try
+            {
+                // Llamar al servicio para obtener las gestiones
+                DataTable gestiones = await _ejecutivoService.ObtieneGestionTeAsync(idCartera, idCuenta);
+
+                if (gestiones == null || gestiones.Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron gestiones telefónicas para esta cuenta.");
+                }
+
+                // Convertir DataTable a JSON
+                var listaSeguimientos = ConvertDataTableToList(gestiones);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+
+        #endregion
+
     }
 }

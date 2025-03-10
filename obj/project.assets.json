@@ -1867,23 +1867,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Yoshua Rodriguez\\.nuget\\packages\\": {},
-    "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\Ramon Montes\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Users\\Yoshi\\Documentos\\Fusion\\NoriAPI.csproj",
+      "projectUniqueName": "C:\\Users\\Ramon Montes\\Documents\\Back\\NoriAPI.csproj",
       "projectName": "NoriAPI",
-      "projectPath": "D:\\Users\\Yoshi\\Documentos\\Fusion\\NoriAPI.csproj",
-      "packagesPath": "C:\\Users\\Yoshua Rodriguez\\.nuget\\packages\\",
-      "outputPath": "D:\\Users\\Yoshi\\Documentos\\Fusion\\obj\\",
+      "projectPath": "C:\\Users\\Ramon Montes\\Documents\\Back\\NoriAPI.csproj",
+      "packagesPath": "C:\\Users\\Ramon Montes\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Ramon Montes\\Documents\\Back\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\Yoshua Rodriguez\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Ramon Montes\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
