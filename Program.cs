@@ -8,13 +8,17 @@ using Microsoft.OpenApi.Models;
 using NoriAPI.Middleware;
 using NoriAPI.Repositories;
 using NoriAPI.Services;
-using System.ComponentModel;
+using NoriAPI.Swagger; // Asegúrate de incluir este namespace para SwaggerDefaultValues
 using System.Linq;
 using System.Text;
 using static NoriAPI.Services.IEjecutivoService;
 using static NoriAPI.Services.ISearchService;
 
+// 👇 Asegúrate de agregar este "using" con el namespace donde está tu SwaggerIgnoreFilter
+using NoriAPI.Swagger.Filters;
+
 var builder = WebApplication.CreateBuilder(args);
+
 var additionalIssuers = builder.Configuration.GetSection("JwtSettings:AdditionalIssuers").Exists()
     ? builder.Configuration.GetSection("JwtSettings:AdditionalIssuers").Get<string[]>() ?? []
     : [];
@@ -22,8 +26,6 @@ var additionalIssuers = builder.Configuration.GetSection("JwtSettings:Additional
 var additionalAudiences = builder.Configuration.GetSection("JwtSettings:AdditionalAudiences").Exists()
     ? builder.Configuration.GetSection("JwtSettings:AdditionalAudiences").Get<string[]>() ?? []
     : [];
-
-
 
 // Configurar CORS
 builder.Services.AddCors(options =>
@@ -44,15 +46,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidateAudience = false,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-
         ValidIssuers = new[] { builder.Configuration["JwtSettings:Issuer"] }.Concat(additionalIssuers),
         ValidAudiences = new[] { builder.Configuration["JwtSettings:Audience"] }.Concat(additionalAudiences),
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
     };
 });
 
-
 builder.Services.AddEndpointsApiExplorer();
+
 // Agregar Swagger con autenticación
 builder.Services.AddSwaggerGen(options =>
 {
@@ -83,6 +84,12 @@ builder.Services.AddSwaggerGen(options =>
             new string[] {}
         }
     });
+
+    // ✅ PASO 3: Agregamos el filtro para que Swagger ignore propiedades marcadas con [SwaggerIgnore]
+    options.SchemaFilter<SwaggerIgnoreFilter>();
+
+    // ✅ Agregar el filtro SwaggerDefaultValues
+    options.OperationFilter<SwaggerDefaultValues>(); // Agregado el filtro aquí
 });
 
 // Registramos los servicios
@@ -96,7 +103,6 @@ builder.Services.AddScoped<ISearchRepository, SearchRepository>();
 builder.Services.AddScoped<IEjecutivoRepository, EjecutivoRepository>();
 builder.Services.AddScoped<IBusquedaRepository, BusquedaRepository>();
 
-
 var app = builder.Build();
 
 // Configurar Middleware
@@ -108,14 +114,15 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "NoriAPI v1");
-    //c.RoutePrefix = string.Empty; // Hace que Swagger se muestre en la raíz
+    // c.RoutePrefix = string.Empty; // Opcional: muestra Swagger en la raíz
 });
 
 app.UseGlobalErrorHandler();
 app.UseHttpsRedirection();
 app.UseRouting();
-app.UseAuthentication(); // Asegúrate de agregar esta línea para usar autenticación
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 await app.RunAsync();
