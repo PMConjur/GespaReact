@@ -481,6 +481,25 @@ namespace NoriAPI.Controllers
                 string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
 
                 return Ok(jsonString);
+        [HttpGet("ProcesosWLP")]
+        public async Task<IActionResult> GetProcesoWLP(string Proceso, string idCuenta)
+        {           
+            try
+            {
+                DataTable procesoWLP = new DataTable();               
+                
+                procesoWLP = await _ejecutivoService.GetWlpAsync(Proceso, idCuenta);
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var WLP = ConvertDataTableToList(procesoWLP);
+
+                // Serializamos la lista a JSON
+                string jsonWLP = JsonSerializer.Serialize(WLP, new JsonSerializerOptions { WriteIndented = true });
+
+                //dsTablas.Tables.Add(Negociaciones);
+
+                return Ok(jsonWLP);          
+
             }
             catch (Exception ex)
             {

@@ -37,6 +37,17 @@ namespace NoriAPI.Services
         #region AccionesDropDown
         Task ObtenerSeguimientos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerAccionamiento(DataRow drDatos, DataSet dsTablas);
+        Task <NegociacionesResponse> GetNegociaciones(int idEjecutivo);
+        Task <Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
+        Task <List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
+        Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta);
+
+        #region Acciones
+        Task <DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
+        Task <DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
+        Task <DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña);
+        Task <DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
+        Task <DataTable> GetWlpAsync(string Proceso, string idCuenta);
 
         #endregion
 
@@ -312,6 +323,223 @@ namespace NoriAPI.Services
             }
 
             return comentario;
+        }
+
+        public async Task<DataTable> GetWlpAsync(string Proceso, string idCuenta)
+        {
+            DataTable WLP = new DataTable();
+            if (Proceso == "Arrangement")
+            {                
+                string query = "SELECT * FROM [Amex_LSC].[WLP].[OB.Arrangement] WHERE CM15 = @idCuenta "; // Evita inyección SQL
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                        command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                        using (var adapter = new SqlDataAdapter(command))
+                        {
+                            adapter.Fill(WLP);
+                        }
+                    }
+                }
+
+                //return WLP;
+            }
+            else if (Proceso == "ArrangementDetails")
+            {
+                string query = "SELECT * FROM [Amex_LSC].[WLP].[OB.ArrangementDetails] WHERE CM15 = @idCuenta "; // Evita inyección SQL
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                        command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                        using (var adapter = new SqlDataAdapter(command))
+                        {
+                            adapter.Fill(WLP);
+                        }
+                    }
+                }
+
+                //return WLP;
+            }
+            else if (Proceso == "Dispute")
+            {
+                string query = "SELECT * FROM [Amex_LSC].[WLP].[OB.Dispute]  WHERE CM15 = @idCuenta "; // Evita inyección SQL
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                        command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                        using (var adapter = new SqlDataAdapter(command))
+                        {
+                            adapter.Fill(WLP);
+                        }
+                    }
+                }
+
+                //return WLP;
+            }
+            else if (Proceso == "EmailAddress")
+            {
+                string query = "SELECT * FROM [Amex_LSC].[WLP].[OB.EmailAddress] WHERE CM15 = @idCuenta "; // Evita inyección SQL
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                        command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                        using (var adapter = new SqlDataAdapter(command))
+                        {
+                            adapter.Fill(WLP);
+                        }
+                    }
+                }
+
+                //return WLP;
+            }
+            else if (Proceso == "EmailEvent")
+            {
+                string query = "SELECT * FROM [Amex_LSC].[WLP].[OB.EmailEvent] WHERE CM15 = @idCuenta "; // Evita inyección SQL
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                        command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                        using (var adapter = new SqlDataAdapter(command))
+                        {
+                            adapter.Fill(WLP);
+                        }
+                    }
+                }
+
+                //return WLP;
+            }
+            else if (Proceso == "EmailSent")
+            {
+                string query = "SELECT * FROM [Amex_LSC].[WLP].[OB.EmailSent] WHERE CM15 = @idCuenta "; // Evita inyección SQL
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                        command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                        using (var adapter = new SqlDataAdapter(command))
+                        {
+                            adapter.Fill(WLP);
+                        }
+                    }
+                }
+
+                //return WLP;
+            }
+            else if (Proceso == "EmailUnsubscribe")
+            {
+                string query = "SELECT * FROM [Amex_LSC].[WLP].[OB.EmailUnsubscribe] WHERE CM15 = @idCuenta "; // Evita inyección SQL
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                        command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                        using (var adapter = new SqlDataAdapter(command))
+                        {
+                            adapter.Fill(WLP);
+                        }
+                    }
+                }
+
+               // return WLP;
+            }
+            else if (Proceso == "SmsOptOut")
+            {
+                string query = "SELECT * FROM [Amex_LSC].[WLP].[OB.SmsOptOut] WHERE CM15 = @idCuenta "; // Evita inyección SQL
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                        command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                        using (var adapter = new SqlDataAdapter(command))
+                        {
+                            adapter.Fill(WLP);
+                        }
+                    }
+                }
+
+                //return WLP;
+            }
+            else if (Proceso == "SmsSent")
+            {
+                string query = "SELECT * FROM [Amex_LSC].[WLP].[OB.SmsSent] WHERE CM15 = @idCuenta "; // Evita inyección SQL
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                        command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                        using (var adapter = new SqlDataAdapter(command))
+                        {
+                            adapter.Fill(WLP);
+                        }
+                    }
+                }
+
+                //return WLP;
+            }
+            else if (Proceso == "SpecialCircumstances")
+            {
+                string query = "SELECT * FROM [Amex_LSC].[WLP].[OB.SpecialCircumstances] WHERE CM15 = @idCuenta "; // Evita inyección SQL
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                        command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                        using (var adapter = new SqlDataAdapter(command))
+                        {
+                            adapter.Fill(WLP);
+                        }
+                    }
+                }
+
+                //return WLP;
+            }
+            return WLP;
+
         }
 
 
