@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useContext } from "react";
-import TimePicker from 'react-time-picker';
 import {
   Card,
   Table,
@@ -18,6 +17,7 @@ import { TelephoneFill } from "react-bootstrap-icons";
 
 const Telephones = () => {
   const [data, setData] = useState([]);
+  console.log("Lo que trae data:", data);
   const [isLoading, setIsLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isPhoneNew, setIsPhoneNew] = useState(false); // Estado para manejar si el teléfono es nuevo
@@ -25,6 +25,9 @@ const Telephones = () => {
   const [toastShown, setToastShown] = useState(false);
   const [selectedClaseTelefono, setSelectedClaseTelefono] = useState("");
   const [horarioContacto, setHorarioContacto] = useState("00:00:00");
+  const responseData =
+    location.state || JSON.parse(localStorage.getItem("responseData")); 
+   
 
   const loadData = async () => {
     console.log("searchResults:", searchResults);
@@ -131,10 +134,10 @@ const Telephones = () => {
     }
 
     const idCuenta = searchResults[0].idCuenta;
-    const idEjecutivo = searchResults[0].idEjecutivo; // Asegúrate de obtener el idEjecutivo correcto
+    const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
 
     const newPhoneData = {
-      cuenta: idCuenta,
+      cuenta: idCuenta,   
       idEjecutivo: idEjecutivo,
       phoneNumber: phoneNumber,
       telefonia: "fija", // Ajusta estos valores según sea necesario
@@ -142,6 +145,9 @@ const Telephones = () => {
       horarioContacto: horarioContacto,
       extension: 0
     };
+
+    console.log("Horario de contacto:", horarioContacto);
+    console.log("Datos enviados:", newPhoneData); // Agrega este log para verificar los datos
 
     try {
        await fetchNewTel(newPhoneData);
@@ -189,13 +195,18 @@ const Telephones = () => {
                     Llamada de entrada
                   </Button>
                   {isPhoneNew && (
-                    <TimePicker
-                      onChange={setHorarioContacto}
-                      value={horarioContacto}
-                      format="HH:mm:ss"
-                      disableClock={true}
-                      className="ms-2"
-                    />
+                    <input
+                    type="time"
+                    step="2"
+                    value={horarioContacto}
+                    onChange={(e) => {
+                      let hora = e.target.value; // "HH:MM:SS"
+                      let [h, m, s] = hora.split(":");
+                      let formato24h = `${h.padStart(2, "0")}:${m.padStart(2, "0")}:${s || "00"}`;
+                      setHorarioContacto(formato24h);
+                    }}
+                    className="time-input"
+                  />
                   )}
                   {isPhoneNew && (
                     <DropdownButton
