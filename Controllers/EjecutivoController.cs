@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using NoriAPI.Models.Busqueda;
@@ -694,7 +695,7 @@ namespace NoriAPI.Controllers
         }
         #endregion
 
-        #region Gestion Telefonica
+        #region Gestiones
         [HttpGet("gestionTe/{idCartera}/{idCuenta}")]
         public async Task<IActionResult> GetGestionTe(int idCartera, string idCuenta)
         {
@@ -805,6 +806,33 @@ namespace NoriAPI.Controllers
                 // Convertir las tablas a JSON y devolver la respuesta
                 var resultado = new { Cuentas = ConvertDataTableToList(Cuentas), GestionesEjecutivo = ConvertDataTableToList(GestionesEjecutivo) };
                 string jsonString = JsonSerializer.Serialize(resultado, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+        #endregion
+
+        #region Scrips
+        [HttpGet("scripts/{idProducto}")]
+        [AllowAnonymous]
+        public IActionResult BuscaScripts(int idProducto)
+        {
+            try
+            {
+                DataTable scripts = _ejecutivoService.BuscaScripts(idProducto);
+
+                if (scripts == null || scripts.Rows.Count == 0)
+                {
+                    return NotFound($"No se encontraron scripts para el producto con ID {idProducto}.");
+                }
+
+                // Convertir DataTable a JSON usando el método auxiliar
+                var listaScripts = ConvertDataTableToList(scripts);
+                string jsonString = JsonSerializer.Serialize(listaScripts, new JsonSerializerOptions { WriteIndented = true });
 
                 return Ok(jsonString);
             }

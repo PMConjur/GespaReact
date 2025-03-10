@@ -68,7 +68,7 @@ namespace NoriAPI.Services
         Task<DataTable> ObtieneGestionTeAsync(int idCartera, string idCuenta);
         Task ObtenerDomicilios(DataRow drDatos, DataSet dsTablas);
         DataTable ObtieneGestionesDelDia(int idEjecutivo);
-
+        DataTable BuscaScripts(int idProducto);
 
     }
 
@@ -1446,7 +1446,7 @@ namespace NoriAPI.Services
         }
         #endregion
 
-        #region GestionTelefonica
+        #region Gestiones
         public async Task<DataTable> ObtieneGestionTeAsync(int idCartera, string idCuenta)
         {
             DataTable gestiones = new DataTable();
@@ -1597,7 +1597,41 @@ namespace NoriAPI.Services
         }
         #endregion
 
+        #region Scrips
+        public DataTable BuscaScripts(int idProducto)
+        {
+            DataTable scripts = new DataTable();
 
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString)) // Usar la cadena de conexión de tu servicio
+                {
+                    connection.Open();
+
+                    using (SqlCommand command = new SqlCommand($"SELECT * FROM Scripts (NOLOCK) WHERE idProducto = {idProducto}", connection))
+                    {
+                        using (SqlDataAdapter adapter = new SqlDataAdapter(command))
+                        {
+                            adapter.Fill(scripts);
+                        }
+                    }
+                }
+
+                if (scripts.Rows.Count == 0)
+                {
+                    return new DataTable();
+                }
+
+                return scripts;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception or handle it appropriately
+                Console.WriteLine($"Error en BuscaScripts: {ex.Message}");
+                return new DataTable(); // or throw the exception
+            }
+        }
+        #endregion
     }
 
 }
