@@ -17,6 +17,7 @@ using System.Text.Json;
 using NoriAPI.Models.Phones;
 using Dapper;
 using System.Globalization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace NoriAPI.Services
 {
@@ -65,7 +66,8 @@ namespace NoriAPI.Services
         Task ObtenerPagos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerPago(DataRow drDatos, DataSet dsTablas);
         Task<DataTable> ObtieneGestionTeAsync(int idCartera, string idCuenta);
-
+        Task ObtenerDomicilios(DataRow drDatos, DataSet dsTablas);
+        DataTable ObtieneGestionesDelDia(int idEjecutivo);
 
 
     }
@@ -1485,6 +1487,113 @@ namespace NoriAPI.Services
             }
 
             return gestiones;
+        }
+        public async Task<DataTable> GetDomiciliosAsync(int idCartera, string idCuenta)
+        {
+            DataTable domicilio = new DataTable();
+            string query = "SELECT * FROM fn_GestionesDomiciliarias( @idCartera, @idCuenta)";
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(domicilio);
+                    }
+                }
+            }
+            return domicilio;
+        }
+
+        public async Task ObtenerDomicilios(DataRow drDatos, DataSet dsTablas)
+        {
+            if (drDatos == null)
+                return;
+
+            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
+                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
+
+            var idCartera = Convert.ToInt32(drDatos["idCartera"]);
+            var idCuenta = Convert.ToString(drDatos["idCuenta"]);
+
+            DataTable domiciliosGet = await GetDomiciliosAsync(idCartera, idCuenta);
+
+            if (domiciliosGet == null || domiciliosGet.Rows.Count == 0)
+                return;
+
+            if (dsTablas.Tables.Contains("Domicilios"));
+            {
+                dsTablas.Tables.Remove("Domicilios");
+            }
+
+            domiciliosGet.TableName = "Domicilios";
+            dsTablas.Tables.Add(domiciliosGet);
+        }
+        public DataTable ObtieneGestionesDelDia(int idEjecutivo) // Cambiado a DataTable y eliminado async
+        {
+            DataTable tblDelDía = new DataTable();
+
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                connection.Open(); // Eliminado await
+
+                using (SqlCommand command = new SqlCommand($"SELECT * FROM fn_GestionesTelDiaras({idEjecutivo})", connection))
+                {
+                    using (SqlDataAdapter adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(tblDelDía);
+                    }
+                }
+            }
+
+            if (tblDelDía.Rows.Count == 0)
+            {
+                return null; // Devuelve null si no hay gestiones
+            }
+
+            DataTable Cuentas = tblDelDía.Clone();
+            DataTable GestionesEjecutivo = tblDelDía.Clone();
+            bool bSeparador = false;
+
+            foreach (DataColumn columna in tblDelDía.Columns)
+            {
+                if (!bSeparador && columna.ColumnName == "Separador")
+                {
+                    bSeparador = true;
+                    GestionesEjecutivo.Columns.Remove("Separador");
+                    GestionesEjecutivo.Columns.Remove("idEjecutivo");
+                }
+                if (bSeparador)
+                    Cuentas.Columns.Remove(columna.ColumnName);
+                else if (columna.ColumnName != "idCartera" && columna.ColumnName != "idCuenta" && columna.ColumnName != "Fecha_Insert" && columna.ColumnName != "Segundo_Insert")
+                    GestionesEjecutivo.Columns.Remove(columna.ColumnName);
+            }
+
+            foreach (DataRow row in tblDelDía.Rows)
+            {
+                DataRow rowCuentas = Cuentas.NewRow();
+                DataRow rowGestiones = GestionesEjecutivo.NewRow();
+
+                foreach (DataColumn col in Cuentas.Columns)
+                {
+                    rowCuentas[col.ColumnName] = row[col.ColumnName];
+                }
+
+                foreach (DataColumn col in GestionesEjecutivo.Columns)
+                {
+                    rowGestiones[col.ColumnName] = row[col.ColumnName];
+                }
+
+                Cuentas.Rows.Add(rowCuentas);
+                GestionesEjecutivo.Rows.Add(rowGestiones);
+            }
+
+            return tblDelDía; // Devuelve tblDelDía
         }
         #endregion
 

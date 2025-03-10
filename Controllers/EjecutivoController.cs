@@ -720,7 +720,99 @@ namespace NoriAPI.Controllers
             }
         }
 
+        [HttpGet("Domicilios/{idCartera}/{idCuenta}")]
+        public async Task<IActionResult> GetDomicilios(int idCartera, string idCuenta)
+        {
+            try
+            {
+                DataSet dsTablas = new DataSet();
+                DataTable DomiciliosTable = dsTablas.Tables.Add("Domicilios");
+                DomiciliosTable.Columns.Add("idCartera", typeof(int));
+                DomiciliosTable.Columns.Add("idCuenta", typeof(string));
+                DataRow drDatos = DomiciliosTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
 
+                await _ejecutivoService.ObtenerDomicilios(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("Domicilios") || dsTablas.Tables["Domicilios"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Domicilios para este ejecutivo.");
+                }
+
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Domicilios"]);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+        [HttpGet("gestionesDelDia/{idEjecutivo}")]
+        public IActionResult ObtieneGestionesDelDia(int idEjecutivo)
+        {
+            try
+            {
+                DataTable tblDelDía = _ejecutivoService.ObtieneGestionesDelDia(idEjecutivo);
+
+                if (tblDelDía == null)
+                {
+                    return NotFound("No se encontraron gestiones para el ejecutivo en el día actual.");
+                }
+
+                // Crear tablas clonadas para Cuentas y GestionesEjecutivo
+                DataTable Cuentas = tblDelDía.Clone();
+                DataTable GestionesEjecutivo = tblDelDía.Clone();
+                bool bSeparador = false;
+
+                // Eliminar columnas según la lógica original
+                foreach (DataColumn columna in tblDelDía.Columns)
+                {
+                    if (!bSeparador && columna.ColumnName == "Separador")
+                    {
+                        bSeparador = true;
+                        GestionesEjecutivo.Columns.Remove("Separador");
+                        GestionesEjecutivo.Columns.Remove("idEjecutivo");
+                    }
+                    if (bSeparador)
+                        Cuentas.Columns.Remove(columna.ColumnName);
+                    else if (columna.ColumnName != "idCartera" && columna.ColumnName != "idCuenta" && columna.ColumnName != "Fecha_Insert" && columna.ColumnName != "Segundo_Insert")
+                        GestionesEjecutivo.Columns.Remove(columna.ColumnName);
+                }
+
+                // Agregar las filas a las tablas filtradas
+                foreach (DataRow row in tblDelDía.Rows)
+                {
+                    DataRow rowCuentas = Cuentas.NewRow();
+                    DataRow rowGestiones = GestionesEjecutivo.NewRow();
+
+                    foreach (DataColumn col in Cuentas.Columns)
+                    {
+                        rowCuentas[col.ColumnName] = row[col.ColumnName];
+                    }
+
+                    foreach (DataColumn col in GestionesEjecutivo.Columns)
+                    {
+                        rowGestiones[col.ColumnName] = row[col.ColumnName];
+                    }
+
+                    Cuentas.Rows.Add(rowCuentas);
+                    GestionesEjecutivo.Rows.Add(rowGestiones);
+                }
+
+                // Convertir las tablas a JSON y devolver la respuesta
+                var resultado = new { Cuentas = ConvertDataTableToList(Cuentas), GestionesEjecutivo = ConvertDataTableToList(GestionesEjecutivo) };
+                string jsonString = JsonSerializer.Serialize(resultado, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
         #endregion
 
     }
