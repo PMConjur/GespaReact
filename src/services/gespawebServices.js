@@ -95,7 +95,7 @@ export async function userNegotiations(idEjecutivo) {
 export async function searchCustomer(filter, value) {
   try {
     const response = await servicio.get("/search-customer/busqueda-cuenta", {
-      params: { filtro: filter, ValorBusqueda: value }
+      params: { filtro: filter, ValorBusqueda: value },
     });
     return response.data;
   } catch (error) {
@@ -270,6 +270,42 @@ export const fetchDrives = async (idCartera, idCuenta) => {
     throw error;
   }
 };
+
+
+// Endpoint Recordatorios
+
+export const fetchNotes = async (numEmpleado, token) => {
+  try {
+    if (!token) {
+      throw new Error("Token is missing or invalid");
+    }
+
+    const response = await servicio.get(
+      `http://192.168.7.33/api/ejecutivo/recordatorios/${numEmpleado}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    // formato de los datos
+    const data = response.data;
+    const formattedNotes = data.map((item) => ({
+      id: item.idCuenta,
+      title: item.Nombre,
+      content: `Saldo: ${item.Saldo}\nTeléfono: ${item.NúmeroTelefónico}\nSituación: ${item.idSituación}\nFecha Seguimiento: ${item.FechaSeguimiento}\nHora Seguimiento: ${item.SegundoSeguimiento}`,
+      date: item.FechaHoraSeguimiento,
+    }));
+
+    return formattedNotes;
+  } catch (error) {
+    console.error("Error fetching notes:", error);
+    throw error;
+  }
+};
+
+
 
 // endpoint de agregar nuevo telefono
 export const fetchNewTel = async (newPhoneData) => {
