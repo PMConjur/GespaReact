@@ -16,19 +16,14 @@ const DropdownActions = () => {
   const [showModal, setShowModal] = useState(false);
   const [accionamientosData, setAccionamientosData] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const [modalShow, setModalShow] = useState(false);
   const [showFollowUps, setShowFollowUps] = useState(false);
   const [followUpsData, setFollowUpsData] = useState([]);
-<<<<<<< HEAD
-  const [loading, setLoading] = useState(false);
-  const [modalShow, setModalShow] = useState(false);
-=======
   const [loadingFollow, setLoadingFollow] = useState(false);
 
   const [showTalks, setShowTalks] = useState(false);
   const [talksData, setTalksData] = useState([]);
   const [loadingtalks, setLoadingtalks] = useState(false);
->>>>>>> origin/HU19-Trainning
 
   // Consumir el contexto
   const { searchResults } = useContext(AppContext);
@@ -129,12 +124,9 @@ const DropdownActions = () => {
 
       {/* Renderiza el modal */}
       <AccionamientosModal show={showModal} handleClose={handleCloseModal} data={accionamientosData} />
-<<<<<<< HEAD
       <EstadoCuentaModal show={modalShow} handleClose={() => setModalShow(false)} />
-=======
       <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps} data={followUpsData} loadingFollow={loadingFollow} />
       <Talks show={showTalks} handleClose={handleCloseTalks} dataTalks={talksData} loading={loadingtalks} />
->>>>>>> origin/HU19-Trainning
     </>
   );
 }

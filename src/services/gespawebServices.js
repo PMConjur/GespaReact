@@ -348,35 +348,6 @@ export const fetchNewTel = async (newPhoneData) => {
 };
 
 
-//Error status global
-const getErrorStatus = (status) => {
-  switch (status) {
-    case 200:
-      return "Solicitud exitosa (200): La operación se realizó correctamente.";
-    case 201:
-      return "Recurso creado (201): Se ha generado correctamente.";
-    case 202:
-      return "Aceptado (202): La solicitud ha sido aceptada para procesamiento.";
-    case 204:
-      return "Sin contenido (204): La solicitud fue exitosa, pero no hay datos para devolver.";
-    case 400:
-      return "Solicitud incorrecta (400): Verifica los datos enviados.";
-    case 401:
-      return "No autorizado (401): Verifica tus credenciales.";
-    case 403:
-      return "Acceso prohibido (403): No tienes permiso para esta acción.";
-    case 404:
-      return "No encontrado (404): El recurso solicitado no existe.";
-    case 409:
-      return "Conflicto (409): El recurso ya existe o hay un problema con la solicitud.";
-    case 429:
-      return "Demasiadas solicitudes (429): Intenta de nuevo más tarde.";
-    case 500:
-      return "Error interno del servidor (500): Intenta nuevamente más tarde.";
-    default:
-      return `Error inesperado (${status}): Contacta con soporte.`;
-  }
-};
 
 // Endpoint de seguimientos para múltiples cuentas
 export async function getFollowUpsData(searchResults) {
@@ -425,7 +396,6 @@ export async function getFollowUpsData(searchResults) {
   }
 }
 
-<<<<<<< HEAD
 // Endpoint estado de cuenta 
 export const fetchAccoutStatements = async (idCartera, idCuenta) => {
 
@@ -484,35 +454,6 @@ export const fetchSaveAccount = async (data) => {
   }
 };
 
-//Error status global
-const getErrorStatus = (status) => {
-  switch (status) {
-    case 200:
-      return "Solicitud exitosa (200): La operación se realizó correctamente.";
-    case 201:
-      return "Recurso creado (201): Se ha generado correctamente.";
-    case 202:
-      return "Aceptado (202): La solicitud ha sido aceptada para procesamiento.";
-    case 204:
-      return "Sin contenido (204): La solicitud fue exitosa, pero no hay datos para devolver.";
-    case 400:
-      return "Solicitud incorrecta (400): Verifica los datos enviados.";
-    case 401:
-      return "No autorizado (401): Verifica tus credenciales.";
-    case 403:
-      return "Acceso prohibido (403): No tienes permiso para esta acción.";
-    case 404:
-      return "No encontrado (404): El recurso solicitado no existe.";
-    case 409:
-      return "Conflicto (409): El recurso ya existe o hay un problema con la solicitud.";
-    case 429:
-      return "Demasiadas solicitudes (429): Intenta de nuevo más tarde.";
-    case 500:
-      return "Error interno del servidor (500): Intenta nuevamente más tarde.";
-    default:
-      return `Error inesperado (${status}): Contacta con soporte.`;
-=======
-
 export async function getTalksData(searchResults) {
   try {
     // Obtener token desde localStorage
@@ -556,31 +497,37 @@ export async function getTalksData(searchResults) {
   } catch (error) {
     console.error("❌ Error al obtener los datos de negociaciones:", error);
     throw new Error("Error al cargar los datos de negociaciones.");
->>>>>>> origin/HU19-Trainning
   }
 }
+//Error status global
+const getErrorStatus = (status) => {
+  switch (status) {
+    case 200:
+      return "Solicitud exitosa (200): La operación se realizó correctamente.";
+    case 201:
+      return "Recurso creado (201): Se ha generado correctamente.";
+    case 202:
+      return "Aceptado (202): La solicitud ha sido aceptada para procesamiento.";
+    case 204:
+      return "Sin contenido (204): La solicitud fue exitosa, pero no hay datos para devolver.";
+    case 400:
+      return "Solicitud incorrecta (400): Verifica los datos enviados.";
+    case 401:
+      return "No autorizado (401): Verifica tus credenciales.";
+    case 403:
+      return "Acceso prohibido (403): No tienes permiso para esta acción.";
+    case 404:
+      return "No encontrado (404): El recurso solicitado no existe.";
+    case 409:
+      return "Conflicto (409): El recurso ya existe o hay un problema con la solicitud.";
+    case 429:
+      return "Demasiadas solicitudes (429): Intenta de nuevo más tarde.";
+    case 500:
+      return "Error interno del servidor (500): Intenta nuevamente más tarde.";
+    default:
+      return `Error inesperado (${status}): Contacta con soporte.`;
+  }}
 
 
-//const message = getErrorStatus(response.status);
-//jajajajajajaja Pinche uriel
 
-/***
- * 
- * 
- * 
- * 
- *         /////\\\\\
-       /         \
-      /  ~~~~ ~~~\  
-     (  -  -  -  - )  
-      |    ⏜    |  
-      |  \___/  |  
-       \_______/  
-    /  |       |  \  
-   /   |  ---  |   \  
-  /    |       |    \  
- /_____|_______|_____\  
-   (     )   (     )  
 
- * 
- */
