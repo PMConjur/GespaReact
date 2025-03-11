@@ -36,11 +36,11 @@ const Times = ({ show, handleClose }) => {
         }
 
         setTimers({
-            permiso: 0,
-            curso: 0,
-            calidad: 0,
+            Permiso: 0,
+            Curso: 0,
+            Calidad: 0,
             comida: 0,
-            baño: 0,
+            Baño: 0,
         });
     }, [executiveId]);
 
@@ -167,11 +167,11 @@ const Times = ({ show, handleClose }) => {
                                     disabled={isPaused}
                                 >
                                     <option>Selecciona</option>
-                                    <option value="permiso">Permiso</option>
-                                    <option value="curso">Curso</option>
-                                    <option value="calidad">Calidad</option>
-                                    <option value="comida">Comida</option>
-                                    <option value="baño">Baño</option>
+                                    <option value="Permiso">Permiso</option>
+                                    <option value="Curso">Curso</option>
+                                    <option value="Calidad">Calidad</option>
+                                    <option value="Comida">Comida</option>
+                                    <option value="Baño">Baño</option>
                                 </Form.Select>
                             </Form.Group>
                         </div>

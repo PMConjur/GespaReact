@@ -209,7 +209,7 @@ export async function userTimes(numEmpleado) {
     );
 
     // Filtramos la contraseña si estuviera en la respuesta
-    const { contraseña, ...dataSinContraseña } = response.data;
+    const { ...dataSinContraseña } = response.data;
     return dataSinContraseña;
 
   } catch (error) {
@@ -220,7 +220,6 @@ export async function userTimes(numEmpleado) {
   }
 }
 
-// Envío de datos de pausa a la API con solo los campos necesarios
 export async function userTimesUpdate(data) {
   try {
     console.log("📤 Enviando datos de pausa a la API:", JSON.stringify(data, null, 2));
@@ -228,17 +227,25 @@ export async function userTimesUpdate(data) {
     const responseData = JSON.parse(localStorage.getItem("responseData"));
     const token = responseData?.ejecutivo?.token;
 
+    if (!token) {
+      throw new Error("⚠️ No se encontró un token de autenticación.");
+    }
+
+    if (!data.idEjecutivo || !data.contrasenia || !data.peCausa || !data.duracion) {
+      throw new Error("⚠️ Datos incompletos. Verifica que todos los campos estén llenos.");
+    }
+
     const response = await axios.post(
       `${apiUrl}/ejecutivo/pause-ejecutivo`,
       {
         idEjecutivo: data.idEjecutivo,
-        contrasenia: data.contrasenia, // Se envía la contraseña solo en la petición
+        contrasenia: data.contrasenia.trim(),
         peCausa: data.peCausa,
-        duracion: data.duracion, // Aseguramos que el formato sea correcto
+        duracion: data.duracion, 
       },
       {
         headers: {
-          Authorization: `Bearer ${token}`, // Token dinámico
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       }
@@ -246,12 +253,16 @@ export async function userTimesUpdate(data) {
 
     console.log("✅ Respuesta de la API:", response.data);
 
+    if (!response.data || response.data.error) {
+      throw new Error(response.data.error || "Error desconocido en la API.");
+    }
+
     toast.success("Datos enviados correctamente.");
     return response.data;
   } catch (error) {
     console.error("❌ Error al enviar los datos:", error);
     const errorMessage =
-      error.response?.data?.mensaje || "Error al enviar los datos.";
+      error.response?.data?.mensaje || error.message || "Error al enviar los datos.";
     toast.error(errorMessage);
     throw new Error(errorMessage);
   }

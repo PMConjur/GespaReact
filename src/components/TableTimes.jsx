@@ -4,7 +4,7 @@ import { Table } from "react-bootstrap";
 import { userTimes } from "../services/gespawebServices";
 import { toast } from "sonner"; // Notificaciones
 
-const TableTimes = () => {
+const TableTimes = ({ updatedTimes }) => {
     // Obtener responseData de location.state o localStorage
     const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));
     const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
@@ -19,11 +19,12 @@ const TableTimes = () => {
             conocidos: "00:00:00",
             desconocidos: "00:00:00",
             sinContacto: "00:00:00",
-            permiso: "00:00:00",
-            curso: "00:00:00",
-            calidad: "00:00:00",
-            comida: "00:00:00",
-            baño: "00:00:00",
+            Permiso: "00:00:00",
+            Curso: "00:00:00",
+            Calidad: "00:00:00",
+            Comida: "00:00:00",
+            Baño: "00:00:00",
+            Fa: "00:00:00",
         },
         promedio: {
             cuentas: "00:00:00",
@@ -32,11 +33,11 @@ const TableTimes = () => {
             conocidos: "00:00:00",
             desconocidos: "00:00:00",
             sinContacto: "00:00:00",
-            permiso: "00:00:00",
-            curso: "00:00:00",
-            calidad: "00:00:00",
-            comida: "00:00:00",
-            baño: "00:00:00",
+            Permiso: "00:00:00",
+            Curso: "00:00:00",
+            Calidad: "00:00:00",
+            Comida: "00:00:00",
+            Baño: "00:00:00",
         },
     });
 
@@ -113,6 +114,27 @@ const TableTimes = () => {
             });
     }, [executiveId]);
 
+    useEffect(() => {
+        if (updatedTimes) {
+            const formattedTimes = {};
+            for (const key in updatedTimes) {
+                formattedTimes[key] = formatTime(updatedTimes[key]);
+            }
+
+            setTimesData((prevData) => ({
+                ...prevData,
+                total: {
+                    ...prevData.total,
+                    ...formattedTimes,
+                },
+                promedio: {
+                    ...prevData.promedio,
+                    ...formattedTimes,
+                },
+            }));
+        }
+    }, [updatedTimes]);
+
     if (!executiveId) {
         return (
             <div className="alert alert-warning text-center" role="alert">
@@ -143,6 +165,7 @@ const TableTimes = () => {
                     <th style={{ minWidth: "100px" }}>Calidad</th>
                     <th style={{ minWidth: "100px" }}>Comida</th>
                     <th style={{ minWidth: "100px" }}>Baño</th>
+                    <th style={{ minWidth: "100px" }}>Falla Tecnica</th>
                 </tr>
             </thead>
             <tbody>
@@ -160,7 +183,7 @@ const TableTimes = () => {
 };
 
 TableTimes.propTypes = {
-    idEjecutivo: PropTypes.string, // Validación de prop
+    updatedTimes: PropTypes.object, // Validación de prop
 };
 
 export default TableTimes;
