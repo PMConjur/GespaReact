@@ -565,6 +565,7 @@ namespace NoriAPI.Controllers
         #region Estado de Cuenta
 
         [HttpGet("estadoDeCuenta/{idCartera}/{idCuenta}")]
+        
         public async Task<IActionResult> GetEstadoDeCuenta(int idCartera, string idCuenta)
         {
             try
@@ -818,7 +819,6 @@ namespace NoriAPI.Controllers
 
         #region Scrips
         [HttpGet("scripts/{idProducto}")]
-        [AllowAnonymous]
         public IActionResult BuscaScripts(int idProducto)
         {
             try
@@ -840,6 +840,67 @@ namespace NoriAPI.Controllers
             {
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
+        }
+        #endregion
+
+        #region Quejas
+        [HttpGet("Quejas/{idCartera}/{idCuenta}")]
+
+        public async Task<IActionResult> GetQuejas(int idCartera, string idCuenta)
+        {
+            try
+            {
+                DataSet dsTablas = new DataSet();
+                DataTable QuejasTable = dsTablas.Tables.Add("Quejas");
+                QuejasTable.Columns.Add("idCartera", typeof(int));
+                QuejasTable.Columns.Add("idCuenta", typeof(string));
+                DataRow drDatos = QuejasTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
+
+                await _ejecutivoService.ObtenerQuejas(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("Quejas") || dsTablas.Tables["Quejas"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Quejas para este ejecutivo.");
+                }
+
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Quejas"]);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpPost("reportar")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ReportaQueja([FromBody] QuejaRe queja)
+        {
+            try
+            {
+                string resultado = await _ejecutivoService.ReportaQueja(queja);
+
+                if (resultado.StartsWith("Falló"))
+                {
+                    return BadRequest(resultado);
+                }
+
+                return Ok(resultado);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        // Modelo para la solicitud de obtener quejas
+        public class QuejaRequest
+        {
+            public string idCuenta { get; set; }
         }
         #endregion
 

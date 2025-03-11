@@ -69,7 +69,8 @@ namespace NoriAPI.Services
         Task ObtenerDomicilios(DataRow drDatos, DataSet dsTablas);
         DataTable ObtieneGestionesDelDia(int idEjecutivo);
         DataTable BuscaScripts(int idProducto);
-
+        Task ObtenerQuejas(DataRow drDatos, DataSet dsTablas);
+        Task<string> ReportaQueja(QuejaRe Queja);
     }
 
     public class EjecutivoService : IEjecutivoService
@@ -1629,6 +1630,145 @@ namespace NoriAPI.Services
                 // Log the exception or handle it appropriately
                 Console.WriteLine($"Error en BuscaScripts: {ex.Message}");
                 return new DataTable(); // or throw the exception
+            }
+        }
+        #endregion
+
+        #region Quejas
+        public async Task<DataTable> GetQuejasAsync(int idCartera, string idCuenta)
+        {
+            DataTable quejas = new DataTable();
+            string query = "WAITFOR DELAY '00:00:00' SELECT * FROM dbo.fn_Quejas(@idCartera, @idCuenta)";
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(quejas);
+                    }
+                }
+            }
+            return quejas;
+        }
+
+        public async Task ObtenerQuejas(DataRow drDatos, DataSet dsTablas)
+        {
+            if (drDatos == null)
+                return;
+
+            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
+                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
+
+            var idCartera = Convert.ToInt32(drDatos["idCartera"]);
+            var idCuenta = Convert.ToString(drDatos["idCuenta"]);
+
+            DataTable quejasGet = await GetQuejasAsync(idCartera, idCuenta);
+
+            if (quejasGet == null || quejasGet.Rows.Count == 0)
+                return;
+
+            if (dsTablas.Tables.Contains("Quejas"))
+            {
+                dsTablas.Tables.Remove("Quejas");
+            }
+
+            quejasGet.TableName = "Quejas";
+            dsTablas.Tables.Add(quejasGet);
+        }
+        public async Task<string> ReportaQueja(QuejaRe Queja)
+        {
+            try
+            {
+                var _drInfo = await ObtenerDrInfoDesdeBaseDeDatos(Queja.idCuenta);
+                var Ejecutivo = await ObtenerEjecutivoDesdeBaseDeDatos(Queja.idEjecutivo_Insert);
+
+                if (_drInfo == null || Ejecutivo == null)
+                {
+                    return "No se encontraron los datos necesarios para procesar la queja.";
+                }
+
+                using (IDbConnection connection = new SqlConnection(_connectionString))
+                {
+                    await connection.ExecuteAsync(@"
+                INSERT INTO dbo.Quejas (
+                    idCartera, idCuenta, Fecha_Insert, Segundo_Insert, Folio, idEjecutivo_Insert, 
+                    idQueja, idInstitución, Solicitante, LlamadaEntrada, NúmeroTelefónico, 
+                    CorreoElectrónico, idDomicilio, Comentario, idEjecutivo_Queja, NúmeroTelefónico_Contacto, 
+                    CorreoElectrónico_Contacto
+                ) VALUES (
+                    @idCartera, @idCuenta, @Fecha_Insert, @Segundo_Insert, @Folio, @idEjecutivo_Insert, 
+                    @idQueja, @idInstitución, @Solicitante, @LlamadaEntrada, @NúmeroTelefónico, 
+                    @CorreoElectrónico, @idDomicilio, @Comentario, @idEjecutivo_Queja, @TeléfonoContacto, @CorreoContacto
+                )", new
+                    {
+                        idCartera = Queja.idCartera,
+                        idCuenta = Queja.idCuenta,
+                        Fecha_Insert = DateTime.Now,
+                        Segundo_Insert = DateTime.Now.TimeOfDay,
+                        idEjecutivo_Insert = Ejecutivo.idEjecutivo,
+                        Folio = string.IsNullOrEmpty(Queja.Folio) ? (object)DBNull.Value : Queja.Folio,
+                        idQueja = Queja.idQueja,
+                        idInstitución = Queja.idInstitución,
+                        idValor = Queja.idValor,
+                        Solicitante = Queja.Solicitante,
+                        LlamadaEntrada = Queja.LlamadaEntrada,
+                        NúmeroTelefónico = Queja.NúmeroTelefónico == 0 ? (object)DBNull.Value : Queja.NúmeroTelefónico,
+                        CorreoElectrónico = string.IsNullOrWhiteSpace(Queja.CorreoElectrónico) ? (object)DBNull.Value : Queja.CorreoElectrónico,
+                        idDomicilio = Queja.idDomicilio == 0 ? (object)DBNull.Value : Queja.idDomicilio,
+                        Comentario = string.IsNullOrWhiteSpace(Queja.Comentario) ? (object)DBNull.Value : Queja.Comentario,
+                        idEjecutivo_Queja = Ejecutivo.idEjecutivo,
+                        TeléfonoContacto = string.IsNullOrWhiteSpace(Queja.NúmeroTelefónico_Contacto) ? (object)DBNull.Value : Queja.NúmeroTelefónico_Contacto,
+                        CorreoContacto = string.IsNullOrWhiteSpace(Queja.CorreoElectrónico_Contacto) ? (object)DBNull.Value : Queja.CorreoElectrónico_Contacto
+                    });
+                }
+
+                return "Queja registrada correctamente.";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en ReportaQueja: {ex.Message}");
+                return $"Falló al registrar la queja: {ex.Message}";
+            }
+        }
+
+        // Métodos auxiliares para obtener DataRow (ahora como objetos dinámicos)
+        private async Task<dynamic> ObtenerDrInfoDesdeBaseDeDatos(string idCuenta)
+        {
+            try
+            {
+                using (IDbConnection connection = new SqlConnection(_connectionString))
+                {
+                    string query = "SELECT idCuenta, idCartera FROM [dbCollection].[dbo].[Cuentas] WHERE idCuenta = (@idCuenta)";
+                    return await connection.QueryFirstOrDefaultAsync(query, new { idCuenta });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al obtener drInfo: {ex.Message}");
+                return null;
+            }
+        }
+
+        private async Task<dynamic> ObtenerEjecutivoDesdeBaseDeDatos(int idEjecutivo)
+        {
+            try
+            {
+                using (IDbConnection connection = new SqlConnection(_connectionString))
+                {
+                    string query = "SELECT idEjecutivo FROM [dbCollection].[dbo].[Ejecutivos] WHERE idEjecutivo = (@idEjecutivo)";
+                    return await connection.QueryFirstOrDefaultAsync(query, new { idEjecutivo });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al obtener ejecutivo: {ex.Message}");
+                return null;
             }
         }
         #endregion
