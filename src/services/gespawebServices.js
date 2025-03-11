@@ -341,6 +341,63 @@ export async function getFollowUpsData(searchResults) {
   }
 }
 
+// Endpoint estado de cuenta 
+export const fetchAccoutStatements = async (idCartera, idCuenta) => {
+
+  try {
+    console.log("Iniciando llamada a la API...");
+    console.log(
+      "URL de la API:",
+      `${apiUrl}/ejecutivo/estadoDeCuenta/${idCartera}/${idCuenta}`
+    );
+
+    const response = await servicio.get(
+      `${apiUrl}/ejecutivo/estadoDeCuenta/${idCartera}/${idCuenta}`
+    );
+
+    const message = getErrorStatus(response.status);
+
+    console.log("Respuesta de la API recibida. Estado:", response.status);
+
+    if (response.status !== 200) {
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
+    }
+
+    const data = response.data;
+
+    console.log("Datos obtenidos de la API:", data); // Agrega este console.log para mostrar los datos obtenidos
+
+    return data;
+  } catch (error) {
+    console.error("Error en getErrorStatus:", error);
+    throw error;
+  }
+};
+
+// Endpoint guardar estado de cuentas
+export const fetchSaveAccount = async (data) => {
+  try {
+    const response = await servicio.post(
+      `/ejecutivo/SaveEstadoDeCuenta`,
+      data
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Cuenta guardada:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchSaveAccount:", error);
+    throw error;
+  }
+};
+
 //Error status global
 const getErrorStatus = (status) => {
   switch (status) {

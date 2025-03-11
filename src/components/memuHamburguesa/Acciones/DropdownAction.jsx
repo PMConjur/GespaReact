@@ -4,6 +4,7 @@ import AccionamientosModal from './Drives'; // Importa el componente del modal
 import { fetchDrives } from '../../../services/gespawebServices'; // Importa la función que obtiene los datos de accionamientos
 import { AppContext } from '../../../pages/Managment'; // Ajusta la ruta según tu estructura de archivos
 import "../../../scss/styles.scss";
+import EstadoCuentaModal from './AccountStatements'; // Importa el componente del modal
 
 const DropdownActions = () => {
   const [showModal, setShowModal] = useState(false);
@@ -11,6 +12,7 @@ const DropdownActions = () => {
   const [showFollowUps, setShowFollowUps] = useState(false);
   const [followUpsData, setFollowUpsData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [modalShow, setModalShow] = useState(false);
 
   // Consumir el contexto
   const { searchResults } = useContext(AppContext);
@@ -76,7 +78,7 @@ const DropdownActions = () => {
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Busqueda</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Cargos en linea</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Comentarios</Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Estados de cuenta</Dropdown.Item>
+          <Dropdown.Item href="/maintenance" className="custom-dropdown-item" onClick={() => setModalShow(true)}>Estados de cuenta</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Quejas</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Simuladores</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Procesos WLP</Dropdown.Item>
@@ -85,6 +87,7 @@ const DropdownActions = () => {
 
       {/* Renderiza el modal */}
       <AccionamientosModal show={showModal} handleClose={handleCloseModal} data={accionamientosData} />
+      <EstadoCuentaModal show={modalShow} handleClose={() => setModalShow(false)} />
     </>
   );
 }
