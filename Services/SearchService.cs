@@ -9,6 +9,9 @@ using System.Data;
 using System.Text.RegularExpressions;
 using NoriAPI.Models.Phones;
 using Microsoft.IdentityModel.Tokens;
+using NoriAPI.Models.Domicilios;
+using NoriAPI.Models;
+using System.Collections;
 
 
 namespace NoriAPI.Services
@@ -21,6 +24,13 @@ namespace NoriAPI.Services
         Task<Dictionary<string, object>> CalculateProductData(string idCuenta);
         Task<bool> ValidatePhone(string telefono, string idCuenta);
         Task<string> SaveNewPhone(NewPhoneRequest newPhoneData);
+
+        #region Domicilios
+        Task<DomiciliosVisitasResult> DomiciliosVisitas(int idCartera, string idCuenta);
+        Task<CatalogoDomicilios> RelacionesDomicilios();
+
+        #endregion
+
         Task<int> GetIdValor(DataTable catalogos, string catalogo, object valor);
 
 
@@ -77,7 +87,6 @@ namespace NoriAPI.Services
             return new ResultadoBusqueda(mensaje, listaBusquedaInfo);
 
         }
-
 
         public async Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado)
         {
@@ -314,8 +323,6 @@ namespace NoriAPI.Services
 
         #endregion
 
-
-
         #region InfoProductos
         public async Task<Dictionary<string, object>> CalculateProductData(string idCuenta)
         {
@@ -491,6 +498,133 @@ namespace NoriAPI.Services
                         DateTime.TryParseExact(Text, new string[] { "yyyyMMdd" }, null, System.Globalization.DateTimeStyles.None, out Date))
                 return true;
             return false;
+        }
+
+        #endregion
+
+        #region Domicilios
+
+        /// <summary>
+        /// Obtiene los domicilios y visitas asociadas a una cuenta y cartera.
+        /// </summary>
+        /// <param name="idCartera">Identificador de la cartera.</param>
+        /// <param name="idCuenta">Identificador de la cuenta.</param>
+        /// <returns>Un objeto anónimo con las listas de domicilios y visitas.</returns>
+        public async Task<DomiciliosVisitasResult> DomiciliosVisitas(int idCartera, string idCuenta)
+        {
+            // Obtiene la lista de domicilios
+            var domicilios = await _searchRepository.GetDomicilios(idCuenta, idCartera);
+
+            // Obtiene la lista de visitas
+            var visitas = await _searchRepository.GetVisitas(idCuenta, idCartera);
+
+            // Validación de resultados
+            if (domicilios == null || visitas == null)
+            {
+                return new DomiciliosVisitasResult { Error = "No se encontraron domicilios o visitas para la cuenta y cartera especificadas." };
+            }
+
+            visitas = visitas.OrderByDescending(v => v.Fecha).ThenByDescending(v => v.Hora).ToList();
+
+
+            // Devuelve un objeto DomiciliosVisitasResult con las listas de domicilios y visitas
+            return new DomiciliosVisitasResult { Domicilios = domicilios, Visitas = visitas };
+
+        }
+
+        /// <summary>
+        /// Obtiene las relaciones de catálogos para los dropdowns de domicilios.
+        /// </summary>
+        /// <returns>Un objeto CatalogoDomicilios con las listas de catálogos.</returns>
+        public async Task<CatalogoDomicilios> RelacionesDomicilios()
+        {
+            ClasesGespaNonStatic gespaDomicilios = new();
+
+            // Cargar catálogos y relaciones sobre la instancia de ClasesGespa.
+            gespaDomicilios.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            gespaDomicilios.CargaCatalogos();
+
+            gespaDomicilios.dtRelaciones = await _ejecutivoRepository.VwRelaciones();
+            gespaDomicilios.Relaciones();
+
+            // Obtener Hashtables de relaciones y valores de catálogos.
+            Hashtable htInformacion = gespaDomicilios.Relaciones("Información", "Modificables", "Positivo", "Negativo");
+            Hashtable htClases = gespaDomicilios.Relaciones("Clases", "Modificables", "Positivo");
+            Hashtable htValoresCatalogo = gespaDomicilios._htValoresCatálogo;
+
+            // Obtener listas de catálogos.
+            List<CatalogoItem> listaInformacion = ObtenerCatalogoInformacion(htInformacion, htValoresCatalogo);
+            List<CatalogoItem> listaClases = ObtenerCatalogoClases(htClases, htValoresCatalogo);
+
+            // Crear un objeto para devolver ambas listas.
+            CatalogoDomicilios catalogos = new()
+            {
+                Informacion = listaInformacion,
+                Clases = listaClases
+            };
+
+            return catalogos;
+        }
+
+        /// <summary>
+        /// Obtiene la lista de catálogos de "Información" a partir de un Hashtable de relaciones y valores.
+        /// </summary>
+        /// <param name="htInformacion">Hashtable de relaciones de "Información".</param>
+        /// <param name="htValoresCatalogo">Hashtable de valores de catálogos.</param>
+        /// <returns>Lista de objetos CatalogoItem para el catálogo de "Información".</returns>
+        public static List<CatalogoItem> ObtenerCatalogoInformacion(Hashtable htInformacion, Hashtable htValoresCatalogo)
+        {
+            List<CatalogoItem> listaInformacion = new List<CatalogoItem>();
+
+            // Itera a través de las claves del Hashtable de relaciones
+            foreach (string idValor in htInformacion.Keys)
+            {
+                // Verifica si la clave existe en el Hashtable de valores de catálogos
+                if (htValoresCatalogo.ContainsKey(idValor))
+                {
+                    // Crea un nuevo objeto CatalogoItem con el ID y el valor correspondiente
+                    // y lo agrega a la lista
+                    listaInformacion.Add(new CatalogoItem { Id = idValor, Valor = htValoresCatalogo[idValor].ToString() });
+                }
+            }
+
+            // Remueve los elementos de la lista cuyo valor sea "Verificada"
+            listaInformacion.RemoveAll(item => item.Valor == "Verificada");
+
+            return listaInformacion;
+        }
+
+        /// <summary>
+        /// Obtiene la lista de catálogos de "Clases" a partir de un Hashtable de relaciones y valores.
+        /// </summary>
+        /// <param name="htClases">Hashtable de relaciones de "Clases".</param>
+        /// <param name="htValoresCatalogo">Hashtable de valores de catálogos.</param>
+        /// <returns>Lista de objetos CatalogoItem para el catálogo de "Clases".</returns>
+        public static List<CatalogoItem> ObtenerCatalogoClases(Hashtable htClases, Hashtable htValoresCatalogo)
+        {
+            List<CatalogoItem> listaClases = new List<CatalogoItem>();
+
+            // Itera a través de las claves del Hashtable de relaciones
+            foreach (string idClase in htClases.Keys)
+            {
+                // Verifica si la clave existe en el Hashtable de valores de catálogos
+                if (htValoresCatalogo.ContainsKey(idClase))
+                {
+                    // Crea un nuevo objeto CatalogoItem con el ID y el valor correspondiente
+                    // y lo agrega a la lista
+                    listaClases.Add(new CatalogoItem { Id = idClase, Valor = htValoresCatalogo[idClase].ToString() });
+                }
+            }
+
+            // Remueve los elementos de la lista cuyos valores sean "Fax", "Celular", "Conmutador", "Erroneo" o "Recados"
+            listaClases.RemoveAll(item => item.Valor == "Fax");
+            listaClases.RemoveAll(item => item.Valor == "Celular");
+            listaClases.RemoveAll(item => item.Valor == "Conmutador");
+            listaClases.RemoveAll(item => item.Valor == "Erroneo");
+            listaClases.RemoveAll(item => item.Valor == "Recados");
+
+
+            return listaClases;
         }
 
         #endregion

@@ -208,7 +208,7 @@ namespace NoriAPI.Controllers
 
         #region Flujo Preguntas Respuestas
         [HttpGet("flujo-preguntas-respuestas")]
-        public async Task<ActionResult<Preguntas_Respuestas_info>> Preguntas_Respuestas()
+        public async Task<ActionResult<PreguntasRespuestasInfo>> Preguntas_Respuestas()
         {
             var preguntas_respuestas = await _ejecutivoService.ValidatePreguntas_Respuestas();
             return Ok(preguntas_respuestas);
@@ -595,6 +595,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost("SaveEstadoDeCuenta")]
+        [AllowAnonymous]
         public async Task<IActionResult> SaveCargoEstadoDeCuenta([FromBody] EstadoDeCuentaRe newEstadoCuenta)
         {
             if (newEstadoCuenta == null)

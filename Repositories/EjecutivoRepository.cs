@@ -24,7 +24,7 @@ namespace NoriAPI.Repositories
         #endregion
 
         #region PreguntasRespuestas
-        Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
+        Task<List<PreguntasRespuestasInfo>> ValidatePreguntas_Respuestas();
         #endregion
 
         #region calculadora
@@ -535,7 +535,7 @@ namespace NoriAPI.Repositories
         #endregion
 
         #region Preguntas_Respuestas
-        public async Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas()
+        public async Task<List<PreguntasRespuestasInfo>> ValidatePreguntas_Respuestas()
         {
             using var connection = GetConnection("Piso2Amex");
             string preg_resp_Query = "select FP.[idPregunta],\r\n" +
@@ -556,7 +556,7 @@ namespace NoriAPI.Repositories
                 "on VC.idValor = FR.idValor \r\n" +
                 "order by fr.idPregunta";
 
-            var preg_resp_list = await connection.QueryAsync<Preguntas_Respuestas_info>(
+            var preg_resp_list = await connection.QueryAsync<PreguntasRespuestasInfo>(
                 preg_resp_Query,
                 commandType: CommandType.Text);
 

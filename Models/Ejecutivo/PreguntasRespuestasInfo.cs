@@ -1,6 +1,6 @@
 ﻿namespace NoriAPI.Models.Ejecutivo
 {
-    public class Preguntas_Respuestas_info
+    public class PreguntasRespuestasInfo
     {
         public int IdPregunta { get; set; }
         public string Pregunta { get; set; }

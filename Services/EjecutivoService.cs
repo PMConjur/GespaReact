@@ -34,6 +34,7 @@ namespace NoriAPI.Services
         Task<Dictionary<string, object>> Promedios(int idEjecutivo);
 
         #endregion
+
         #region AccionesDropDown
         Task ObtenerSeguimientos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerAccionamiento(DataRow drDatos, DataSet dsTablas);
@@ -42,7 +43,7 @@ namespace NoriAPI.Services
 
         Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo);
         Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
-        Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
+        Task<List<PreguntasRespuestasInfo>> ValidatePreguntas_Respuestas();
         Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta);
 
         #region Acciones
@@ -175,7 +176,7 @@ namespace NoriAPI.Services
         #endregion
 
         #region Preguntas_Respuestas
-        public async Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas()
+        public async Task<List<PreguntasRespuestasInfo>> ValidatePreguntas_Respuestas()
         {
             var validatePreg_Resp_list = await _ejecutivoRepository.ValidatePreguntas_Respuestas();
             return validatePreg_Resp_list;
@@ -1243,7 +1244,7 @@ namespace NoriAPI.Services
                     {
                         DateTime FechaInicial = newEstadoEn.FechaInicial;
                         DateTime FechaFinal = newEstadoEn.FechaFinal;
-                        string CorreoString = cargoData.sCorreoElectronico?.ToString();
+                        //string CorreoString = cargoData.sCorreoElectronico?.ToString();
 
                         EstadoDeCuenta newEstado = new EstadoDeCuenta(
                             IdCartera: Convert.ToInt32(idCartera),
@@ -1252,7 +1253,7 @@ namespace NoriAPI.Services
                             FechaInicial: FechaInicial,
                             FechaFinal: FechaFinal,
                             consulta: newEstadoEn.Consulta,
-                            correoElectronico: CorreoString
+                            correoElectronico: newEstadoEn.CorreoElectrónico
                         );
 
                         string saveEstadoResult = await ValidateBusqueda(newEstado);

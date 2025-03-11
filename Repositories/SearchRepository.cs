@@ -2,6 +2,7 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using NoriAPI.Models.Busqueda.InfoProducto;
+using NoriAPI.Models.Domicilios;
 using NoriAPI.Models.Phones;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,11 @@ namespace NoriAPI.Repositories
         Task<dynamic> RegisterNewPhone(NewPhone newPhoneToRegister);
         Task<List<CamposPantalla>> GetCamposPantalla(int idCartera, int idProducto);
         Task<dynamic> GetProducto(string idCuenta);
+
+        #region Domicilios
+        Task<List<Domicilio>> GetDomicilios(string idCuenta, int idCartera);
+        Task<List<GestionDomiciliaria>> GetVisitas(string idCuenta, int idCartera);
+        #endregion
     }
 
     public class SearchRepository : ISearchRepository
@@ -30,6 +36,7 @@ namespace NoriAPI.Repositories
         {
             _configuration = configuration;
         }
+
         public async Task<dynamic> ValidateBusqueda(string filtro, string ValorBusqueda)
         {
             string validacion = null;
@@ -125,6 +132,7 @@ namespace NoriAPI.Repositories
 
 
         }
+
         public async Task<dynamic> ValidateAutomatico(int numEmpleado)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -142,6 +150,7 @@ namespace NoriAPI.Repositories
             return automatico;
 
         }
+
         public async Task<List<Phone>> GetPhones(string idCuenta, int idCartera)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -201,7 +210,6 @@ namespace NoriAPI.Repositories
             return new Dictionary<string, object> { { "Success", true }, { "Data ", result } };
         }
 
-
         public async Task<List<CamposPantalla>> GetCamposPantalla(int idCartera, int idProducto)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -238,6 +246,108 @@ namespace NoriAPI.Repositories
                 );
 
             return product;
+        }
+
+        #region Domicilios
+
+        /// <summary>
+        /// Obtiene la lista de domicilios asociados a una cuenta y cartera.
+        /// </summary>
+        /// <param name="idCuenta">Identificador de la cuenta.</param>
+        /// <param name="idCartera">Identificador de la cartera.</param>
+        /// <returns>Lista de objetos Domicilio.</returns>
+        public async Task<List<Domicilio>> GetDomicilios(string idCuenta, int idCartera)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string domiciliosQuery = "SELECT " +
+                "idCartera AS IdCartera, " +
+                "idCuenta AS IdCuenta, " +
+                "idDomicilio AS IdDomicilio, " +
+                "Fecha_Insert AS FechaInsert, " +
+                "idEjecutivo AS IdEjecutivo, " +
+                "idInformación AS IdInformacion, " +
+                "Calle AS Calle, " +
+                "NúmeroExterior AS NumeroExterior, " +
+                "NúmeroInterior AS NumeroInterior, " +
+                "idCódigoPostal AS IdCodigoPostal, " +
+                "CódigoPostal AS CodigoPostal, " +
+                "ColoniaLocalidad AS ColoniaLocalidad, " +
+                "DelegaciónMunicipio AS DelegacionMunicipio, " +
+                "Estado AS Estado, " +
+                "idEjecutivoInformación AS IdEjecutivoInformacion, " +
+                "FechaHora_Información AS FechaHoraInformacion, " +
+                "idLogProceso AS IdLogProceso, " +
+                "idClase AS IdClase, " +
+                "idOrígen AS IdOrigen " +
+                "FROM " +
+                "Domicilios " +
+                "(NOLOCK) WHERE idCartera = @IdCartera AND idCuenta = @IdCuenta";
+
+            var parameters = new { IdCuenta = idCuenta, IdCartera = idCartera };
+
+            // Ejecuta la consulta y mapea los resultados a una lista de objetos Domicilio
+            var domicilios = (await connection.QueryAsync<Domicilio>(
+                domiciliosQuery,
+                parameters,
+                commandType: CommandType.Text
+            )).ToList();
+
+            return domicilios;
+        }
+
+        /// <summary>
+        /// Obtiene la lista de visitas asociadas a una cuenta y cartera.
+        /// </summary>
+        /// <param name="idCuenta">Identificador de la cuenta.</param>
+        /// <param name="idCartera">Identificador de la cartera.</param>
+        /// <returns>Lista de objetos GestionDomiciliaria.</returns>
+        public async Task<List<GestionDomiciliaria>> GetVisitas(string idCuenta, int idCartera)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string visitasQuery = "SELECT * FROM fn_GestionesDomiciliarias(@IdCartera,@IdCuenta)";
+
+            var parameters = new { IdCuenta = idCuenta, IdCartera = idCartera };
+
+            // Ejecuta la consulta y mapea los resultados a una lista de objetos GestionDomiciliaria.
+            var visitas = (await connection.QueryAsync<GestionDomiciliaria>(
+                visitasQuery,
+                parameters,
+                commandType: CommandType.Text
+            )).ToList();
+
+            return visitas;
+        }
+
+        #endregion
+
+
+        private static DataTable ConvertToDataTable(IEnumerable<dynamic> data, string tableName)
+        {
+            DataTable table = new DataTable(tableName);
+
+            if (!data.Any())
+                return table; // Retorna tabla vacía si no hay datos
+
+            // 🔹 Crear columnas en el DataTable a partir de las claves del primer elemento
+            foreach (var key in ((IDictionary<string, object>)data.First()).Keys)
+            {
+                table.Columns.Add(key);
+            }
+
+            // 🔹 Agregar las filas al DataTable
+            foreach (var item in data)
+            {
+                var row = table.NewRow();
+                foreach (var key in ((IDictionary<string, object>)item).Keys)
+                {
+                    row[key] = ((IDictionary<string, object>)item)[key] ?? DBNull.Value;
+                }
+                table.Rows.Add(row);
+            }
+
+            return table;
         }
 
         private SqlConnection GetConnection(string connection)
