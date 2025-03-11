@@ -24,7 +24,6 @@ const TableTimes = ({ updatedTimes }) => {
             Calidad: "00:00:00",
             Comida: "00:00:00",
             Baño: "00:00:00",
-            Fa: "00:00:00",
         },
         promedio: {
             cuentas: "00:00:00",
@@ -165,7 +164,6 @@ const TableTimes = ({ updatedTimes }) => {
                     <th style={{ minWidth: "100px" }}>Calidad</th>
                     <th style={{ minWidth: "100px" }}>Comida</th>
                     <th style={{ minWidth: "100px" }}>Baño</th>
-                    <th style={{ minWidth: "100px" }}>Falla Tecnica</th>
                 </tr>
             </thead>
             <tbody>

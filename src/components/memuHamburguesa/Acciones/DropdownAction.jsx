@@ -6,11 +6,10 @@ import { AppContext } from '../../../pages/Managment'; // Ajusta la ruta según 
 import "../../../scss/styles.scss";
 import EstadoCuentaModal from './AccountStatements'; // Importa el componente del modal
 
-
 import FollowUps from './FollowUps'; // Asegúrate de importar el componente
-import Talks from './Talks';// Asegúrate de importar el component
-import { getFollowUpsData } from '../../../services/gespawebServices';
-import { getTalksData } from '../../../services/gespawebServices';
+import Talks from './Talks'; // Asegúrate de importar el componente
+import Onlinecharge from './OnlineCharges'; // Importa el nuevo componente
+import { getFollowUpsData, getTalksData, getOnlinechargeData } from '../../../services/gespawebServices';
 
 const DropdownActions = () => {
   const [showModal, setShowModal] = useState(false);
@@ -24,6 +23,10 @@ const DropdownActions = () => {
   const [showTalks, setShowTalks] = useState(false);
   const [talksData, setTalksData] = useState([]);
   const [loadingtalks, setLoadingtalks] = useState(false);
+
+  const [showOnlinecharge, setShowOnlinecharge] = useState(false);
+  const [onlinechargeData, setOnlinechargeData] = useState([]);
+  const [loadingOnlinecharge, setLoadingonlinecharge] = useState(false);
 
   // Consumir el contexto
   const { searchResults } = useContext(AppContext);
@@ -100,7 +103,21 @@ const DropdownActions = () => {
   
     const handleCloseTalks = () => setShowTalks(false);
 
+    // cargos en línea
+    const handleShowOnlinecharge = async () => {
+      setLoadingonlinecharge(true);
+      try {
+        const onlinecharge = await getOnlinechargeData(searchResults); // Obtener los datos de cargos en línea
+        setOnlinechargeData(onlinecharge.flat()); // Establece los datos recibidos
+        setShowOnlinecharge(true);
+      } catch (error) {
+        console.error('Error al cargar los datos de cargos en línea:', error);
+      } finally {
+        setLoadingonlinecharge(false);
+      }
+    };
 
+    const handleCloseOnlinecharge = () => setShowOnlinecharge(false);
 
   return (
     <>
@@ -112,8 +129,8 @@ const DropdownActions = () => {
           <Dropdown.Item onClick={handleShowTalks} className="custom-dropdown-item">Negociaciones</Dropdown.Item>
           <Dropdown.Item onClick={handleShowFollowUps} className="custom-dropdown-item">Seguimientos</Dropdown.Item>
           <Dropdown.Item onClick={handleShowModal} className="custom-dropdown-item">Accionamientos</Dropdown.Item>
+          <Dropdown.Item onClick={handleShowOnlinecharge} className="custom-dropdown-item">Cargos en línea</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Busqueda</Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Cargos en linea</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Comentarios</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item" onClick={() => setModalShow(true)}>Estados de cuenta</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Quejas</Dropdown.Item>
@@ -127,6 +144,7 @@ const DropdownActions = () => {
       <EstadoCuentaModal show={modalShow} handleClose={() => setModalShow(false)} />
       <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps} data={followUpsData} loadingFollow={loadingFollow} />
       <Talks show={showTalks} handleClose={handleCloseTalks} dataTalks={talksData} loading={loadingtalks} />
+      <Onlinecharge show={showOnlinecharge} handleClose={handleCloseOnlinecharge} data={onlinechargeData} loading={loadingOnlinecharge} />
     </>
   );
 }

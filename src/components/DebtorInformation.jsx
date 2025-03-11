@@ -11,6 +11,7 @@ const DebtorInformation = () => {
   const [showModal, setShowModal] = useState(false);
   const handleShowModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
+  
   const [showModalR, setShowModalR] = useState(false);
   const handleShowModalR = () => setShowModalR(true);
   const handleCloseModalR = () => setShowModalR(false);

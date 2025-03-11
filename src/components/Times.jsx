@@ -39,7 +39,7 @@ const Times = ({ show, handleClose }) => {
             Permiso: 0,
             Curso: 0,
             Calidad: 0,
-            comida: 0,
+            Comida: 0,
             Baño: 0,
         });
     }, [executiveId]);
