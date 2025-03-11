@@ -1,9 +1,13 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback,useEffect } from "react";
 import { Table, Form } from "react-bootstrap";
 
 const TableFollowUps = ({ data, customColumnNames = {} }) => {
     const [sortedData, setSortedData] = useState(data || []);
     const [sortByOldest, setSortByOldest] = useState(false);
+
+    useEffect(() => {
+            setSortedData(data);
+        }, [data]);
 
     if (!data || data.length === 0) {
         return <p>No hay datos disponibles.</p>;
@@ -64,7 +68,13 @@ const defaultColumnNames = {
                 checked={sortByOldest}
                 onChange={handleSortChange}
             />
-        
+        <div style={{
+                maxHeight: "400px",  // Altura máxima del contenedor
+                overflowY: "auto",   // Scroll vertical si es necesario
+                overflowX: "auto",   // Scroll horizontal si es necesario
+                width: "100%",       // Que la tabla use el ancho disponible
+            }}>
+
             <Table striped bordered hover responsive variant="dark">
                 <thead>
                     <tr>
@@ -91,6 +101,7 @@ const defaultColumnNames = {
                     ))}
                 </tbody>
             </Table>
+            </div>
         </>
     );
 };

@@ -28,8 +28,8 @@ const Managment = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
-  const responseData =
-    location.state || JSON.parse(localStorage.getItem("responseData")); // Retrieve responseData from localStorage if not in location state
+   const responseData =
+    location.state || JSON.parse(localStorage.getItem("responseData"));// Retrieve responseData from localStorage if not in location state
   const [showToast, setShowToast] = useState(false);
   const [numeroTelefonico, setNumeroTelefonico] = useState("");
   const [flowMessage, setFlowMessage] = useState(""); // Estado para el mensaje del flujo

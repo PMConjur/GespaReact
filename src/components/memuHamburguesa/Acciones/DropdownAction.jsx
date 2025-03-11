@@ -6,16 +6,33 @@ import { AppContext } from '../../../pages/Managment'; // Ajusta la ruta según 
 import "../../../scss/styles.scss";
 import EstadoCuentaModal from './AccountStatements'; // Importa el componente del modal
 
+
+import FollowUps from './FollowUps'; // Asegúrate de importar el componente
+import Talks from './Talks';// Asegúrate de importar el component
+import { getFollowUpsData } from '../../../services/gespawebServices';
+import { getTalksData } from '../../../services/gespawebServices';
+
 const DropdownActions = () => {
   const [showModal, setShowModal] = useState(false);
   const [accionamientosData, setAccionamientosData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   const [showFollowUps, setShowFollowUps] = useState(false);
   const [followUpsData, setFollowUpsData] = useState([]);
+<<<<<<< HEAD
   const [loading, setLoading] = useState(false);
   const [modalShow, setModalShow] = useState(false);
+=======
+  const [loadingFollow, setLoadingFollow] = useState(false);
+
+  const [showTalks, setShowTalks] = useState(false);
+  const [talksData, setTalksData] = useState([]);
+  const [loadingtalks, setLoadingtalks] = useState(false);
+>>>>>>> origin/HU19-Trainning
 
   // Consumir el contexto
   const { searchResults } = useContext(AppContext);
+
 
   const handleShowModal = async () => {
     
@@ -49,21 +66,46 @@ const DropdownActions = () => {
     }
   };
 
-   const handleShowFollowUps = async () => {
-      setLoading(true);
+  const handleCloseModal = () => setShowModal(false);
+
+
+  //seguimiwntos
+  const handleShowFollowUps = async () => {
+    setLoadingFollow(true);
+    try {
+      const followUps = await getFollowUpsData(searchResults); // 🔹 Ahora recibe toda la lista
+      setFollowUpsData(followUps.flat()); // 🔹 Asegura que la data es un array plano
+      setShowFollowUps(true);
+    } catch (error) {
+      console.error("Error al obtener los datos de seguimiento:", error);
+    } finally {
+      setLoadingFollow(false);
+    }
+  };
+  
+  
+  const handleCloseFollowUps = () => setShowFollowUps(false);
+
+
+    //negociaciones//
+
+    const handleShowTalks = async () => {
+      setLoadingtalks(true);
       try {
-        const followUps = await getFollowUpsData(searchResults); // 🔹 Ahora recibe toda la lista
-        setFollowUpsData(followUps.flat()); // 🔹 Asegura que la data es un array plano
-        setShowFollowUps(true);
+        // Aquí debes definir los valores de idCuenta y idCartera según tu aplicación
+        const talks = await getTalksData(searchResults); // Obtener los datos de negociaciones
+        setTalksData(talks.flat()); // Establece los datos recibidos
+        setShowTalks(true);
       } catch (error) {
-        console.error("Error al obtener los datos de seguimiento:", error);
+        console.error('Error al cargar los datos de negociaciones:', error);
       } finally {
-        setLoading(false);
+        setLoadingtalks(false);
       }
     };
-    
-  const handleCloseModal = () => setShowModal(false);
-  const handleCloseFollowUps = () => setShowFollowUps(false);
+  
+    const handleCloseTalks = () => setShowTalks(false);
+
+
 
   return (
     <>
@@ -72,7 +114,7 @@ const DropdownActions = () => {
           Acciones
         </Dropdown.Toggle>
         <Dropdown.Menu style={{backgroundColor: '#1d1f20', border: 'none'}} className='custom-dropdown-menu'>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Negociaciones</Dropdown.Item>
+          <Dropdown.Item onClick={handleShowTalks} className="custom-dropdown-item">Negociaciones</Dropdown.Item>
           <Dropdown.Item onClick={handleShowFollowUps} className="custom-dropdown-item">Seguimientos</Dropdown.Item>
           <Dropdown.Item onClick={handleShowModal} className="custom-dropdown-item">Accionamientos</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Busqueda</Dropdown.Item>
@@ -87,7 +129,12 @@ const DropdownActions = () => {
 
       {/* Renderiza el modal */}
       <AccionamientosModal show={showModal} handleClose={handleCloseModal} data={accionamientosData} />
+<<<<<<< HEAD
       <EstadoCuentaModal show={modalShow} handleClose={() => setModalShow(false)} />
+=======
+      <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps} data={followUpsData} loadingFollow={loadingFollow} />
+      <Talks show={showTalks} handleClose={handleCloseTalks} dataTalks={talksData} loading={loadingtalks} />
+>>>>>>> origin/HU19-Trainning
     </>
   );
 }
