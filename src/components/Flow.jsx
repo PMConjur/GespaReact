@@ -8,6 +8,7 @@ import {
 } from "react-bootstrap-icons";
 import { toast } from "sonner"; // Import toast and Toaster
 import { AppContext } from "../pages/Managment"; // Import AppContext
+import { handleFlowLogic } from "../utils/flowLogic"; // Importar la lógica del flujo
 
 const Flow = () => {
   const [userFlowData, setUserFlowData] = useState([]);
@@ -15,6 +16,8 @@ const Flow = () => {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [selectedValues, setSelectedValues] = useState({});
   const [answerHistory, setAnswerHistory] = useState([]); // Guarda el historial de las respuestas que se van seleccioando
+  const [comment, setComment] = useState(""); // Estado para manejar comentarios
+  const [phoneNumber, setPhoneNumber] = useState(""); // Estado para manejar números telefónicos
   const { selectedAnswer } = useContext(AppContext); // Contexto de llamada de entrada
 
   useEffect(() => {
@@ -51,7 +54,8 @@ const Flow = () => {
     idRespuesta,
     idSiguientePregunta,
     valor,
-    pregunta
+    pregunta,
+    idValor
   ) => {
     setSelectedAnswers((prev) => ({
       ...prev,
@@ -61,6 +65,8 @@ const Flow = () => {
       ...prev,
       [idPregunta]: idSiguientePregunta
     }));
+
+    handleFlowLogic(idValor, setComment, setPhoneNumber); // Ejecutar la lógica del flujo
 
     const nextQuestion = userFlowData.find(
       (item) => item.idPregunta === idSiguientePregunta
@@ -154,12 +160,15 @@ const Flow = () => {
                     question.idRespuesta,
                     question.idSiguientePregunta,
                     question.valor,
-                    question.pregunta
+                    question.pregunta,
+                    question.idValor
                   )
                 }
               />
             ))}
           </Form>
+          {comment && <p>Comentario: {comment}</p>}
+          {phoneNumber && <p>Número Telefónico: {phoneNumber}</p>}
         </Card.Body>
         <Card.Footer className="text-white">
           <Row>
