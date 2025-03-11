@@ -19,7 +19,7 @@ const Flow = () => {
   const [comment, setComment] = useState(""); // Estado para manejar comentarios
   const [phoneNumber, setPhoneNumber] = useState(""); // Estado para manejar números telefónicos
   const { selectedAnswer } = useContext(AppContext); // Contexto de llamada de entrada
-
+  console.log(selectedAnswer);
   useEffect(() => {
     userFlow()
       .then((response) => {
@@ -35,12 +35,12 @@ const Flow = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedAnswer !== null) {
-      if (selectedAnswer === 2 || selectedAnswer === 10) {
-        setCurrentQuestionId(selectedAnswer);
+    if (selectedAnswer && selectedAnswer.value !== null) {
+      if (selectedAnswer.value === 2 || selectedAnswer.value === 10) {
+        setCurrentQuestionId(selectedAnswer.value);
       } else {
         const firstQuestion = userFlowData.find(
-          (item) => item.idSiguientePregunta === selectedAnswer
+          (item) => item.idSiguientePregunta === selectedAnswer.value
         );
         if (firstQuestion) {
           setCurrentQuestionId(firstQuestion.idPregunta);
@@ -66,7 +66,13 @@ const Flow = () => {
       [idPregunta]: idSiguientePregunta
     }));
 
-    handleFlowLogic(idValor, setComment, setPhoneNumber); // Ejecutar la lógica del flujo
+    handleFlowLogic(
+      idValor,
+      setComment,
+      setPhoneNumber,
+      selectedAnswer.idClase,
+      idSiguientePregunta
+    ); // Ejecutar la lógica del flujo
 
     const nextQuestion = userFlowData.find(
       (item) => item.idPregunta === idSiguientePregunta

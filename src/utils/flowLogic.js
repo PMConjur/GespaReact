@@ -49,7 +49,13 @@ let _idModo, _idClase;
 
 let _Duración = null;
 
-export const handleFlowLogic = (idValor, setComment, setPhoneNumber) => {
+export const handleFlowLogic = (
+  idValor,
+  setComment,
+  setPhoneNumber,
+  idClase,
+  idSiguientePregunta
+) => {
   switch (idValor) {
     case 1:
       // Acción para idValor 1: Crear un comentario
@@ -58,12 +64,18 @@ export const handleFlowLogic = (idValor, setComment, setPhoneNumber) => {
       break;
     case 2:
       // Acción para idValor 2: Ingresar un número telefónico
-      const phoneNumber = prompt("Ingrese un número telefónico:");
+      { const phoneNumber = prompt("Ingrese un número telefónico:");
       setPhoneNumber(phoneNumber);
       _NombreContacto = phoneNumber;
-      break;
+      break; }
     // Agregar más casos según sea necesario
     default:
       console.log("No se requiere acción específica para este idValor.");
+  }
+
+  // Lógica adicional para manejar idClase cuando idSiguientePregunta sea 12 o 13
+  if (idSiguientePregunta === 12 || idSiguientePregunta === 13) {
+    console.log(`Acción específica para idClase: ${idClase}`);
+    // Aquí puedes agregar la lógica adicional que necesites
   }
 };

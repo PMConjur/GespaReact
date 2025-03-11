@@ -9,7 +9,11 @@ import {
   DropdownButton,
   Dropdown
 } from "react-bootstrap";
-import { fetchPhones, fetchValidationTel, fetchNewTel } from "../services/gespawebServices";
+import {
+  fetchPhones,
+  fetchValidationTel,
+  fetchNewTel
+} from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 import "../scss/styles.scss";
@@ -26,8 +30,7 @@ const Telephones = () => {
   const [selectedClaseTelefono, setSelectedClaseTelefono] = useState("");
   const [horarioContacto, setHorarioContacto] = useState("00:00:00");
   const responseData =
-    location.state || JSON.parse(localStorage.getItem("responseData")); 
-   
+    location.state || JSON.parse(localStorage.getItem("responseData"));
 
   const loadData = async () => {
     console.log("searchResults:", searchResults);
@@ -62,9 +65,10 @@ const Telephones = () => {
 
   const handleValidatePhone = async () => {
     if (!phoneNumber.trim()) {
-      toast.warning("Ingrese un número de teléfono", { position: "top-right",
+      toast.warning("Ingrese un número de teléfono", {
+        position: "top-right",
         style: { transform: "translateY(80vh)" }
-       });
+      });
       return;
     }
     if (phoneNumber.length !== 10 && phoneNumber.length !== 13) {
@@ -113,11 +117,10 @@ const Telephones = () => {
 
   const handleSaveNewPhone = async () => {
     if (!phoneNumber.trim()) {
-      toast.warning("Ingrese un número de teléfono", { position: "top-right", 
+      toast.warning("Ingrese un número de teléfono", {
+        position: "top-right",
         style: { transform: "translateY(80vh)" }
-       }
-        
-      );
+      });
       return;
     }
     if (phoneNumber.length !== 10 && phoneNumber.length !== 13) {
@@ -137,7 +140,7 @@ const Telephones = () => {
     const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
 
     const newPhoneData = {
-      cuenta: idCuenta,   
+      cuenta: idCuenta,
       idEjecutivo: idEjecutivo,
       phoneNumber: phoneNumber,
       telefonia: "fija", // Ajusta estos valores según sea necesario
@@ -150,7 +153,7 @@ const Telephones = () => {
     console.log("Datos enviados:", newPhoneData); // Agrega este log para verificar los datos
 
     try {
-       await fetchNewTel(newPhoneData);
+      await fetchNewTel(newPhoneData);
       toast.success("Nuevo número de teléfono guardado", {
         position: "top-right",
         style: { transform: "translateY(80vh)" }
@@ -196,17 +199,20 @@ const Telephones = () => {
                   </Button>
                   {isPhoneNew && (
                     <input
-                    type="time"
-                    step="2"
-                    value={horarioContacto}
-                    onChange={(e) => {
-                      let hora = e.target.value; // "HH:MM:SS"
-                      let [h, m, s] = hora.split(":");
-                      let formato24h = `${h.padStart(2, "0")}:${m.padStart(2, "0")}:${s || "00"}`;
-                      setHorarioContacto(formato24h);
-                    }}
-                    className="time-input"
-                  />
+                      type="time"
+                      step="2"
+                      value={horarioContacto}
+                      onChange={(e) => {
+                        let hora = e.target.value; // "HH:MM:SS"
+                        let [h, m, s] = hora.split(":");
+                        let formato24h = `${h.padStart(2, "0")}:${m.padStart(
+                          2,
+                          "0"
+                        )}:${s || "00"}`;
+                        setHorarioContacto(formato24h);
+                      }}
+                      className="time-input"
+                    />
                   )}
                   {isPhoneNew && (
                     <DropdownButton
@@ -217,8 +223,12 @@ const Telephones = () => {
                     >
                       <Dropdown.Item eventKey="Hogar">Hogar</Dropdown.Item>
                       <Dropdown.Item eventKey="Tercero">Tercero</Dropdown.Item>
-                      <Dropdown.Item eventKey="Familiar">Familiar</Dropdown.Item>
-                      <Dropdown.Item eventKey="Empresa Trabajo">Empresa Trabajo</Dropdown.Item>
+                      <Dropdown.Item eventKey="Familiar">
+                        Familiar
+                      </Dropdown.Item>
+                      <Dropdown.Item eventKey="Empresa Trabajo">
+                        Empresa Trabajo
+                      </Dropdown.Item>
                       <Dropdown.Item eventKey="Celular">Celular</Dropdown.Item>
                       <Dropdown.Item eventKey="Recados">Recados</Dropdown.Item>
                       <Dropdown.Item eventKey="Oficina">Oficina</Dropdown.Item>
@@ -234,7 +244,9 @@ const Telephones = () => {
                     />
                     <Button
                       variant="secondary"
-                      onClick={isPhoneNew ? handleSaveNewPhone : handleValidatePhone}
+                      onClick={
+                        isPhoneNew ? handleSaveNewPhone : handleValidatePhone
+                      }
                     >
                       {isPhoneNew ? "Nuevo" : "Validar"}
                     </Button>
@@ -294,7 +306,13 @@ const Telephones = () => {
                         <a
                           href="#"
                           className="text-primary"
-                          onClick={() => setSelectedAnswer(2)}
+                          onClick={() =>
+                            setSelectedAnswer((prev) => ({
+                              ...prev,
+                              value: 2,
+                              idClase: row.idClase
+                            }))
+                          } //Pasa la clase para verificar mediante el flujo
                         >
                           {"XXXXXX" + row.númeroTelefónico.slice(6)}
                         </a>
