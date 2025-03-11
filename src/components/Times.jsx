@@ -2,9 +2,13 @@ import { useState, useEffect } from "react";
 import { Modal, Button, Form, Container, Row } from "react-bootstrap";
 import TableTimes from "./TableTimes";
 import { toast } from "sonner";
-import { userTimesUpdate } from "../services/gespawebServices"; 
+import { userTimesUpdate } from "../services/gespawebServices";
 
-const Times = ({ show, handleClose, idEjecutivo }) => {
+const Times = ({ show, handleClose }) => {
+    // Obtener responseData de location.state o localStorage
+    const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));
+    const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+
     // Si `idEjecutivo` no se pasa como prop, intentamos obtenerlo de sessionStorage
     const [executiveId, setExecutiveId] = useState(idEjecutivo || null);
     const [selectedReason, setSelectedReason] = useState("");

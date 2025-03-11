@@ -1,11 +1,16 @@
-import React, { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import PropTypes from "prop-types"; // Importar PropTypes
 import { Table } from "react-bootstrap";
 import { userTimes } from "../services/gespawebServices";
 import { toast } from "sonner"; // Notificaciones
 
-const TableTimes = ({ idEjecutivo: propIdEjecutivo }) => {
-    // Obtener idEjecutivo de prop o sessionStorage
-    const [idEjecutivo, setIdEjecutivo] = useState(propIdEjecutivo || null);
+const TableTimes = () => {
+    // Obtener responseData de location.state o localStorage
+    const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));
+    const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+
+    // Si `idEjecutivo` no se pasa como prop, intentamos obtenerlo de sessionStorage
+    const [executiveId, setExecutiveId] = useState(idEjecutivo || null);
     const [timesData, setTimesData] = useState({
         total: {
             cuentas: "00:00:00",
@@ -37,11 +42,22 @@ const TableTimes = ({ idEjecutivo: propIdEjecutivo }) => {
 
     // Verificar si idEjecutivo no se pasó como prop, intentar obtenerlo de sessionStorage
     useEffect(() => {
-        if (!idEjecutivo) {
-            const responseData = JSON.parse(sessionStorage.getItem("responseData"));
-            setIdEjecutivo(responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo || null);
+        if (!executiveId) {
+            const responseDataString = sessionStorage.getItem("responseData");
+
+            if (responseDataString) {
+                try {
+                    const responseData = JSON.parse(responseDataString);
+                    console.log("📌 Datos obtenidos de sessionStorage:", responseData);
+                    setExecutiveId(responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo || null);
+                } catch (error) {
+                    console.error("❌ Error al parsear responseData:", error);
+                }
+            } else {
+                console.warn("⚠️ No se encontró responseData en sessionStorage.");
+            }
         }
-    }, [propIdEjecutivo]);
+    }, [executiveId]);
 
     const formatTime = (seconds) => {
         if (!seconds) return "00:00:00";
@@ -52,14 +68,14 @@ const TableTimes = ({ idEjecutivo: propIdEjecutivo }) => {
     };
 
     useEffect(() => {
-        if (!idEjecutivo) {
+        if (!executiveId) {
             console.warn("⚠️ No se encontró un ID de ejecutivo válido.");
             return;
         }
 
-        console.log(`📡 Consultando tiempos para el ejecutivo con ID: ${idEjecutivo}`);
+        console.log(`📡 Consultando tiempos para el ejecutivo con ID: ${executiveId}`);
 
-        userTimes(idEjecutivo)
+        userTimes(executiveId)
             .then((data) => {
                 if (!data || !data.resultadosTiempos) {
                     console.warn("⚠️ La API no devolvió resultados válidos.");
@@ -95,9 +111,9 @@ const TableTimes = ({ idEjecutivo: propIdEjecutivo }) => {
                 console.error("❌ Error al obtener los tiempos:", error);
                 toast.error("❌ Error al cargar los tiempos.");
             });
-    }, [idEjecutivo]);
+    }, [executiveId]);
 
-    if (!idEjecutivo) {
+    if (!executiveId) {
         return (
             <div className="alert alert-warning text-center" role="alert">
                 ⚠️ No se encontró un ID de ejecutivo válido. Verifica tu sesión.
@@ -141,6 +157,10 @@ const TableTimes = ({ idEjecutivo: propIdEjecutivo }) => {
             </tbody>
         </Table>
     );
+};
+
+TableTimes.propTypes = {
+    idEjecutivo: PropTypes.string, // Validación de prop
 };
 
 export default TableTimes;

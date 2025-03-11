@@ -220,13 +220,13 @@ export async function userTimes(numEmpleado) {
   }
 }
 
-
 // Envío de datos de pausa a la API con solo los campos necesarios
 export async function userTimesUpdate(data) {
   try {
     console.log("📤 Enviando datos de pausa a la API:", JSON.stringify(data, null, 2));
 
-    const token = localStorage.getItem("token"); // Token desde localStorage
+    const responseData = JSON.parse(localStorage.getItem("responseData"));
+    const token = responseData?.ejecutivo?.token;
 
     const response = await axios.post(
       `${apiUrl}/ejecutivo/pause-ejecutivo`,
