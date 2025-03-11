@@ -41,7 +41,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
     }
   };
 
-  seEffect(() => {
+  useEffect(() => {
     console.log("Modal abierto:", show); // Verifica que el modal se abra correctamente
     if (show) {
       handleAccountStatement();
