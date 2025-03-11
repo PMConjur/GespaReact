@@ -199,54 +199,64 @@ export const fetchValidationTel = async (data) => {
   }
 };
 
-//Uso de endpoint de tiempos 
+// Obtener tiempos del ejecutivo
 export async function userTimes(numEmpleado) {
   try {
-    console.log(numEmpleado);
+    console.log(`📡 Solicitando tiempos para empleado: ${numEmpleado}`);
+
     const response = await servicio.get(
       `/ejecutivo/tiempos-ejecutivo?numEmpleado=${numEmpleado}`
     );
-    const data = response.data;
-    
-    return data;
+
+    // Filtramos la contraseña si estuviera en la respuesta
+    const { contraseña, ...dataSinContraseña } = response.data;
+    return dataSinContraseña;
+
   } catch (error) {
-    if (error.response) {
-      const errorMessage =
-        error.response.data?.mensaje || "Error al recibir la productividad";
-      throw new Error(errorMessage);
-    } else {
-      throw new Error("Error al recibir la productividad.");
-    }
+    console.error("❌ Error al recibir la productividad:", error);
+    const errorMessage =
+      error.response?.data?.mensaje || "Error al recibir la productividad.";
+    throw new Error(errorMessage);
   }
 }
 
 
+// Envío de datos de pausa a la API con solo los campos necesarios
 export async function userTimesUpdate(data) {
-    try {
-        console.log("📤 Enviando datos de pausa a la API:", JSON.stringify(data, null, 2));
+  try {
+    console.log("📤 Enviando datos de pausa a la API:", JSON.stringify(data, null, 2));
 
-        // const response = await fetch(`${apiUrl}/search-customer/validate-phone`, {
-        const response = await fetch(`${apiUrl}/ejecutivo/pause-ejecutivo`,
-            {
-                method: "POST",
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-            }
-        );
+    const token = localStorage.getItem("token"); // Token desde localStorage
 
-        console.log("✅ Respuesta de la API:", response.data);
-        toast.success("Datos enviados correctamente a la base de datos.");
-        return response.data;
-    } catch (error) {
-        console.error("❌ Error al enviar los datos:", error);
-        const errorMessage = error.response?.data?.mensaje || "Error 408: Error al enviar la pausa.";
-        toast.error(errorMessage);
-        throw new Error(errorMessage);
-    }
+    const response = await axios.post(
+      `${apiUrl}/ejecutivo/pause-ejecutivo`,
+      {
+        idEjecutivo: data.idEjecutivo,
+        contrasenia: data.contrasenia, // Se envía la contraseña solo en la petición
+        peCausa: data.peCausa,
+        duracion: data.duracion, // Aseguramos que el formato sea correcto
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Token dinámico
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("✅ Respuesta de la API:", response.data);
+
+    toast.success("Datos enviados correctamente.");
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error al enviar los datos:", error);
+    const errorMessage =
+      error.response?.data?.mensaje || "Error al enviar los datos.";
+    toast.error(errorMessage);
+    throw new Error(errorMessage);
+  }
 }
+
 
 //Endpoint Flow
 
