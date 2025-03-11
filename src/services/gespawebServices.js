@@ -378,6 +378,7 @@ export const fetchAccoutStatements = async (idCartera, idCuenta) => {
 // Endpoint guardar estado de cuentas
 export const fetchSaveAccount = async (data) => {
   try {
+    console.log("Enviando datos al endpoint..."); // Verifica que esto aparezca en la consola
     const response = await servicio.post(
       `/ejecutivo/SaveEstadoDeCuenta`,
       data

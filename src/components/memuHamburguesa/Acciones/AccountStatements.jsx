@@ -1,6 +1,6 @@
-import React, { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect } from "react";
 import { Modal, Table, Button, Card, Form } from "react-bootstrap";
-import { fetchAccoutStatements } from "../../../services/gespawebServices";
+import { fetchAccoutStatements, fetchSaveAccount } from "../../../services/gespawebServices";
 import { AppContext } from "../../../pages/Managment";
 
 const EstadoCuentaModal = ({ show, handleClose }) => {
@@ -11,9 +11,13 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
     endDate: "",
   });
   const [selectedEmail, setSelectedEmail] = useState("");
+  const [selectedOption, setSelectedOption] = useState("consulta");
+  const responseData =
+  location.state || JSON.parse(localStorage.getItem("responseData"));
 
   const { searchResults } = useContext(AppContext);
 
+  // Obtener datos de estado de cuenta
   const handleAccountStatement = async () => {
     if (!searchResults || searchResults.length === 0) {
       console.error("No hay resultados de búsqueda disponibles");
@@ -29,8 +33,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
         })
       );
 
-      const flatAccounts = accounts.flat();
-      setAccountData(flatAccounts);
+      setAccountData(accounts.flat());
     } catch (error) {
       console.error("Error al obtener los datos de la API:", error);
     } finally {
@@ -38,31 +41,67 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
     }
   };
 
+  seEffect(() => {
+    console.log("Modal abierto:", show); // Verifica que el modal se abra correctamente
+    if (show) {
+      handleAccountStatement();
+    }
+  }, [show, searchResults]);
+  // Manejo de cambios en fecha y correo
   const handleDateChange = (e) => {
     const { name, value } = e.target;
-    setSelectedDateRange((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setSelectedDateRange((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleEmailChange = (e) => {
     setSelectedEmail(e.target.value);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Fechas seleccionadas:", selectedDateRange);
-    console.log("Correo seleccionado:", selectedEmail);
+  const handleOptionChange = (e) => {
+    setSelectedOption(e.target.value);
   };
 
-  useEffect(() => {
-    if (show) {
-      handleAccountStatement();
-    }
-  }, [show, searchResults]);
+  // Envío de datos al endpoint
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("handleSubmit ejecutado"); 
 
-  // Filtra los correos electrónicos válidos (solo cadenas)
+    console.log("Iniciando handleSubmit...");
+
+    // Validar campos obligatorios
+    if (!selectedDateRange.startDate || !selectedDateRange.endDate || !selectedEmail) {
+      alert("Por favor, complete todos los campos antes de enviar la solicitud.");
+      return;
+    }
+
+    console.log("Campos validados correctamente.");
+
+    const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+    // Construir el objeto de datos para enviar al endpoint
+    const requestData = {
+      idCartera: 1, // Ajusta según necesidad
+      idCuenta: searchResults?.[0]?.idCuenta.trim() || "string", // Obtener idCuenta del primer resultado
+      idEjecutivo: idEjecutivo, // Ajusta según necesidad o obtén del contexto
+      fechaInicial: new Date(selectedDateRange.startDate).toISOString(),
+      fechaFinal: new Date(selectedDateRange.endDate).toISOString(),
+      consulta: selectedOption === "consulta", // true si es consulta, false si es envío
+      correoElectrónico: selectedEmail,
+    };
+
+    console.log("Datos a enviar:", requestData);
+
+    try {
+      console.log("Enviando datos al endpoint...");
+      const response = await fetchSaveAccount(requestData);
+      console.log("Respuesta del servidor:", response);
+      alert("Solicitud enviada correctamente.");
+    } catch (error) {
+      console.error("Error al enviar la solicitud:", error);
+      alert("Hubo un error al enviar la solicitud.");
+    }
+  };
+
+  // Filtrar correos válidos
   const validEmails = accountData
     .map((item) => item["Correo Electrónico"])
     .filter((email) => typeof email === "string");
@@ -112,6 +151,8 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
               </Table>
             )}
           </div>
+
+          {/* Card para ingresar datos */}
           <Card className="ml-3" style={{ width: "18rem" }}>
             <Card.Body>
               <Card.Title>Solicitar Estado de Cuenta</Card.Title>
@@ -123,6 +164,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                     name="startDate"
                     value={selectedDateRange.startDate}
                     onChange={handleDateChange}
+                    required
                   />
                 </Form.Group>
                 <Form.Group className="mb-3">
@@ -132,6 +174,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                     name="endDate"
                     value={selectedDateRange.endDate}
                     onChange={handleDateChange}
+                    required
                   />
                 </Form.Group>
                 <Form.Group className="mb-3">
@@ -139,6 +182,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                   <Form.Select
                     value={selectedEmail}
                     onChange={handleEmailChange}
+                    required
                   >
                     <option value="">Seleccione un correo</option>
                     {validEmails.map((email, index) => (
@@ -148,24 +192,35 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                     ))}
                   </Form.Select>
                 </Form.Group>
-                <div className="d-grid gap-2">
-                <Form.Check
-                      type="radio"
-                      label="Consulta"
-                      name="option"
-                      value="consulta"
-                      checked={"selectedOption" === "consulta"}
-                      onChange={"handleOptionChange"}
-                    />
-                    <Form.Check
-                      type="radio"
-                      label="Envío"
-                      name="option"
-                      value="envio"
-                      checked={"selectedOption" === "envio"}
-                      onChange={"handleOptionChange"}
-                    />
+
+                {/* Opciones de consulta o envío */}
+                <div className="d-grid gap-2 mb-3">
+                  <Form.Check
+                    type="radio"
+                    label="Consulta"
+                    name="option"
+                    value="consulta"
+                    checked={selectedOption === "consulta"}
+                    onChange={handleOptionChange}
+                  />
+                  <Form.Check
+                    type="radio"
+                    label="Envío"
+                    name="option"
+                    value="envio"
+                    checked={selectedOption === "envio"}
+                    onChange={handleOptionChange}
+                  />
                 </div>
+
+                {/* Botón de Solicitar */}
+                <Button
+                  variant="primary"
+                  type="submit"
+                  style={{ borderRadius: "20px" }}
+                >
+                  Solicitar
+                </Button>
               </Form>
             </Card.Body>
           </Card>
