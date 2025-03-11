@@ -636,7 +636,6 @@ namespace NoriAPI.Controllers
 
         #region Scripts
         [HttpGet("scripts/{idProducto}")]
-        [AllowAnonymous]
         public IActionResult BuscaScripts(int idProducto)
         {
             try
@@ -858,6 +857,34 @@ namespace NoriAPI.Controllers
                 return Ok(jsonComentarios);
 
 
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+        #endregion
+        #region Relaciones
+        [HttpGet("relaciones")]
+        [AllowAnonymous]
+        public IActionResult CargaRelaciones()
+        {
+            try
+            {
+                DataTable relaciones = _ejecutivoService.CargaRelaciones();
+
+                if (relaciones == null || relaciones.Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron relaciones.");
+                }
+
+                // Transformar DataTable a lista de diccionarios
+                var listaRelaciones = relaciones.AsEnumerable()
+                    .Select(row => relaciones.Columns.Cast<DataColumn>()
+                        .ToDictionary(column => column.ColumnName, column => row[column]))
+                    .ToList();
+
+                return Ok(listaRelaciones); // Devuelve la lista de diccionarios
             }
             catch (Exception ex)
             {

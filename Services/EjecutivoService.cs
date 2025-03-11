@@ -60,6 +60,8 @@ namespace NoriAPI.Services
         DataTable ObtieneGestionesDelDia(int idEjecutivo);
         DataTable BuscaScripts(int idProducto);
 
+        DataTable CargaRelaciones();
+
 
         #region Acciones
         Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
@@ -1846,6 +1848,48 @@ namespace NoriAPI.Services
                 // Log the exception or handle it appropriately
                 Console.WriteLine($"Error en BuscaScripts: {ex.Message}");
                 return new DataTable(); // or throw the exception
+            }
+        }
+        #endregion
+
+        #region Relaciones
+        public DataTable CargaRelaciones()
+        {
+            DataTable dtRelaciones = new DataTable();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString)) // _connectionString debe estar disponible
+                {
+                    connection.Open();
+
+                    using (SqlCommand command = new SqlCommand("SELECT * FROM vw_Relaciones", connection))
+                    {
+                        using (SqlDataAdapter adapter = new SqlDataAdapter(command))
+                        {
+                            adapter.Fill(dtRelaciones);
+                        }
+                    }
+                }
+
+                if (dtRelaciones.Rows.Count == 0)
+                {
+                    return new DataTable(); // Retorna una tabla vacía si no hay resultados
+                }
+
+                // Crea llave primaria.
+                dtRelaciones.PrimaryKey = new DataColumn[] { dtRelaciones.Columns["idValor1"], dtRelaciones.Columns["idValor2"] };
+
+                dtRelaciones.TableName = "Relaciones";
+                // Ya no manejamos _dsTablas aquí
+
+                return dtRelaciones;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception or handle it appropriately
+                Console.WriteLine($"Error en CargaRelaciones: {ex.Message}");
+                return new DataTable(); // Retorna una tabla vacía en caso de error
             }
         }
         #endregion
