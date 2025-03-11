@@ -102,7 +102,6 @@ const DataCard = () => {
             </div>
           </Card.Body>
         </Card>
-        <br />
       </Col>
 
       <Col xxl={3} xl={6} md={6}>
@@ -129,7 +128,6 @@ const DataCard = () => {
             </div>
           </Card.Body>
         </Card>
-        <br />
       </Col>
       <Col xxl={3} xl={6} md={6}>
         <Card className="warning-card text-light">
@@ -157,7 +155,6 @@ const DataCard = () => {
             </div>
           </Card.Body>
         </Card>
-        <br />
       </Col>
       <Col xxl={3} xl={6} md={6}>
         <Card className="warning-card text-light">

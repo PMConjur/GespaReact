@@ -143,6 +143,7 @@ const Recovery = ({ show, handleClose }) => {
                               data.montoNegociado / data.negociaciones
                             )
                           : "0"}
+                        {/**Calculo de promedio */}
                       </h2>
                     )}
                     <span>Promedio</span>
@@ -288,6 +289,8 @@ const Recovery = ({ show, handleClose }) => {
                 </div>
               </ListGroup.Item>
             </ListGroup>
+          </div>
+          <div className="col-sm-12">
             {/* Negociaciones del mes */}
             <NegotiationsMonth negotiations={negotiations} />
           </div>
@@ -297,7 +300,7 @@ const Recovery = ({ show, handleClose }) => {
       </Modal.Body>
 
       <Modal.Footer className="bg-dark text-white">
-        <Button variant="secondary" onClick={handleClose}>
+        <Button variant="primary" onClick={handleClose}>
           Cerrar
         </Button>
       </Modal.Footer>

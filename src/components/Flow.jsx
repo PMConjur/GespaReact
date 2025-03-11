@@ -1,9 +1,14 @@
 import { useEffect, useState, useContext } from "react";
-import { Row, Col, Card, Form, Button, Stack } from "react-bootstrap";
+import { Row, Col, Card, Form, Button } from "react-bootstrap";
 import { userFlow } from "../services/gespawebServices";
-import { NodePlusFill } from "react-bootstrap-icons";
-import { toast, Toaster } from "sonner"; // Import toast and Toaster
+import {
+  NodePlusFill,
+  Check2Circle,
+  ArrowLeftCircleFill
+} from "react-bootstrap-icons";
+import { toast } from "sonner"; // Import toast and Toaster
 import { AppContext } from "../pages/Managment"; // Import AppContext
+import { handleFlowLogic } from "../utils/flowLogic"; // Importar la lógica del flujo
 
 const Flow = () => {
   const [userFlowData, setUserFlowData] = useState([]);
@@ -11,6 +16,8 @@ const Flow = () => {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [selectedValues, setSelectedValues] = useState({});
   const [answerHistory, setAnswerHistory] = useState([]); // Guarda el historial de las respuestas que se van seleccioando
+  const [comment, setComment] = useState(""); // Estado para manejar comentarios
+  const [phoneNumber, setPhoneNumber] = useState(""); // Estado para manejar números telefónicos
   const { selectedAnswer } = useContext(AppContext); // Contexto de llamada de entrada
 
   useEffect(() => {
@@ -47,7 +54,8 @@ const Flow = () => {
     idRespuesta,
     idSiguientePregunta,
     valor,
-    pregunta
+    pregunta,
+    idValor
   ) => {
     setSelectedAnswers((prev) => ({
       ...prev,
@@ -57,6 +65,8 @@ const Flow = () => {
       ...prev,
       [idPregunta]: idSiguientePregunta
     }));
+
+    handleFlowLogic(idValor, setComment, setPhoneNumber); // Ejecutar la lógica del flujo
 
     const nextQuestion = userFlowData.find(
       (item) => item.idPregunta === idSiguientePregunta
@@ -70,13 +80,13 @@ const Flow = () => {
           valor: valor,
           pregunta: pregunta
         }
-      ]); // Save current question, answer, value, and question to history
+      ]); // Guarda el historial de las preguntas que se van seleccionando
       setCurrentQuestionId(nextQuestion.idPregunta);
     } else {
       toast.info("Información de flujo terminada");
     }
 
-    console.log("Answer History:", answerHistory); // Print answer history to console
+    console.log("Answer History:", answerHistory); // imprime el historial de respuestas para poder verlo en consola
   };
   //Accion de boton de regreso
   const handleBack = () => {
@@ -106,8 +116,8 @@ const Flow = () => {
       answerHistory.length > 0
         ? `${answerHistory[answerHistory.length - 1].pregunta} - ${
             answerHistory[answerHistory.length - 1].valor
-          }`
-        : "";
+          } `
+        : ""; // Elimina la utlima respuesta seleccionada del flujo y del historial de selección
 
     return (
       <Card className="flow-size" border="primary">
@@ -115,13 +125,17 @@ const Flow = () => {
           <Row>
             <Col>
               {" "}
-              <i className="h5">
+              <i className="h5 card-title">
                 <NodePlusFill></NodePlusFill> Flujo
               </i>
             </Col>
-            <Col md="auto">
+            <Col md="auto  text-right">
               {" "}
-              <span> {lastAnswer}</span>
+              <span className="elemento">
+                {" "}
+                {lastAnswer}
+                <Check2Circle></Check2Circle>
+              </span>
             </Col>
           </Row>
         </Card.Header>
@@ -146,18 +160,21 @@ const Flow = () => {
                     question.idRespuesta,
                     question.idSiguientePregunta,
                     question.valor,
-                    question.pregunta
+                    question.pregunta,
+                    question.idValor
                   )
                 }
               />
             ))}
           </Form>
+          {comment && <p>Comentario: {comment}</p>}
+          {phoneNumber && <p>Número Telefónico: {phoneNumber}</p>}
         </Card.Body>
         <Card.Footer className="text-white">
           <Row>
             <Col>
-              <Button variant="primary" className="mt-3" onClick={handleBack}>
-                Regresar
+              <Button variant="primary" className="mt-3 " onClick={handleBack}>
+                <ArrowLeftCircleFill></ArrowLeftCircleFill> Regresar
               </Button>
             </Col>
           </Row>
@@ -168,7 +185,26 @@ const Flow = () => {
 
   return (
     <Row xs="auto" md="auto" className="g-2">
-      <Col md={12}>{renderQuestions(currentQuestionId)}</Col>
+      <Col md={12}>
+        {currentQuestionId ? (
+          renderQuestions(currentQuestionId)
+        ) : (
+          <Card className="flow-size" border="primary">
+            <Card.Header className="text-white">
+              <i className="h5">
+                <NodePlusFill></NodePlusFill> Flujo
+              </i>
+            </Card.Header>
+            <Card.Body className="scroll-flow text-align-center">
+              <h3>
+                {" "}
+                <Check2Circle></Check2Circle> Selecciona{" "}
+              </h3>
+              <h6>una cuenta para trabajar en el flujo</h6>
+            </Card.Body>
+          </Card>
+        )}
+      </Col>
     </Row>
   );
 };
