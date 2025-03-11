@@ -164,7 +164,6 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
-
         #endregion
 
         #region Negociaciones
@@ -209,7 +208,7 @@ namespace NoriAPI.Controllers
 
         #region Flujo Preguntas Respuestas
         [HttpGet("flujo-preguntas-respuestas")]
-        public async Task<ActionResult<Preguntas_Respuestas_info>> Preguntas_Respuestas()
+        public async Task<ActionResult<PreguntasRespuestasInfo>> Preguntas_Respuestas()
         {
             var preguntas_respuestas = await _ejecutivoService.ValidatePreguntas_Respuestas();
             return Ok(preguntas_respuestas);
@@ -249,245 +248,45 @@ namespace NoriAPI.Controllers
         #endregion
 
 
-        #region AccionesNegociacion
-
-
-
-        [HttpGet("accionesNegociacion")]
-        public async Task<IActionResult> GetAccionNegociacion(int idCartera, string idCuenta)
-        {
-            DataSet dsTablas = new DataSet();
-            try
-            {
-                DataTable Negociaciones = new DataTable();
-
-                Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync( idCartera,  idCuenta);
-
-
-                Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
-
-                // Convertimos el DataTable a una lista de diccionarios
-                var listaNegociaciones = ConvertDataTableToList(Negociaciones);
-
-                // Serializamos la lista a JSON
-                string jsonNegociaciones = JsonSerializer.Serialize(listaNegociaciones, new JsonSerializerOptions { WriteIndented = true });
-
-                //dsTablas.Tables.Add(Negociaciones);
-
-                return Ok(jsonNegociaciones);
-
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
-            }
-        }
-
-        [HttpGet("accionesPlazos")]
-        public async Task<IActionResult> GetAccionPlazos(int idCartera, string idCuenta)
-        {
-            DataSet dsTablas = new DataSet();
-            try
-            {
-                DataTable Plazos = new DataTable();
-
-                Plazos = await _ejecutivoService.GetAccionesPlazosAsync(idCartera, idCuenta);
-
-                // Convertimos el DataTable a una lista de diccionarios
-                var listaPlazos = ConvertDataTableToList(Plazos);
-
-                // Serializamos la lista a JSON
-                string jsonPlazos = JsonSerializer.Serialize(listaPlazos, new JsonSerializerOptions { WriteIndented = true });
-
-                //dsTablas.Tables.Add(Negociaciones);
-
-                return Ok(jsonPlazos);
-
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
-            }
-        }
-
-        [HttpGet("accionesNegociacionConPlazos")]
-        public async Task<IActionResult> GetAccionNegociacionConPlazos(int idCartera, string idCuenta)
-        {
-            try
-            {
-                // Obtener las negociaciones
-                DataTable Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
-
-                // Convertir el DataTable de Negociaciones a una lista de diccionarios
-                var listaNegociaciones = ConvertDataTableToList(Negociaciones);
-
-                // Obtener los plazos
-                DataTable Plazos = await _ejecutivoService.GetAccionesPlazosAsync(idCartera, idCuenta);
-
-                // Convertir el DataTable de Plazos a una lista de diccionarios
-                var listaPlazos = ConvertDataTableToList(Plazos);
-
-                // Combinar la información de negociaciones y plazos
-                var resultadoCombinado = new List<object>();
-
-                foreach (var negociacion in listaNegociaciones)
-                {
-                    var fechaInsert = negociacion.ContainsKey("FechaHora") ? Convert.ToDateTime(negociacion["FechaHora"]) : DateTime.MinValue;
-                    // Aquí, debes agregar lógica para relacionar las negociaciones con los plazos,
-                    // por ejemplo, basándote en la fecha de la negociación y los plazos.
-
-                    // Supongamos que la relación es por la fecha o algún otro campo,
-                    // entonces puedes agregar los plazos correspondientes a cada negociación
-                    var plazosRelacionados = listaPlazos
-                    .Where(p => {
-                        // Verificar si existen los campos necesarios en el diccionario
-                        if (p.ContainsKey("Fecha_Insert") && p.ContainsKey("Segundo_Insert"))
-                        {
-                            // Obtener la fecha de Fecha_Insert
-                            var fechaPlazo = Convert.ToDateTime(p["Fecha_Insert"]).Date;
-
-                            // Obtener la hora de Segundo_Insert y combinarla con la fecha
-                            var horaPlazo = (TimeSpan)p["Segundo_Insert"];
-
-                            // Crear la fecha completa de plazo combinando la fecha de Fecha_Insert con la hora de Segundo_Insert
-                            var fechaHoraPlazo = fechaPlazo.Add(horaPlazo);
-
-                            // Comparar si la fecha y hora combinadas coinciden con la fecha completa de la negociación
-                            return fechaHoraPlazo == fechaInsert;
-                        }
-                        return false;
-                    }).ToList();
-                    // Agregar la negociación junto con los plazos relacionados
-                    var negociacionConPlazos = new
-                    {
-                        Negociacion = negociacion,
-                        Plazos = plazosRelacionados
-                    };
-
-                    resultadoCombinado.Add(negociacionConPlazos);
-                }
-
-                // Serializar la respuesta combinada a JSON
-                string jsonResultado = JsonSerializer.Serialize(resultadoCombinado, new JsonSerializerOptions { WriteIndented = true });
-
-                return Ok(jsonResultado);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
-            }
-        }
-
-        [HttpGet("validador")]
-        public async Task<IActionResult> GetValidador(int idProducto, int idEjecutivo, string Contraseña)
-        {
-            DataSet dsTablas = new DataSet();
-            try
-            {
-                if (idEjecutivo != 0 && Contraseña != "")
-                {
-                    DataTable passValidador = new DataTable();
-
-                    passValidador = await _ejecutivoService.GetValidadorAsync(idProducto, idEjecutivo,Contraseña);
-
-                    // Convertimos el DataTable a una lista de diccionarios
-                    var passValidadores = ConvertDataTableToList(passValidador);
-
-                    // Serializamos la lista a JSON
-                    string jsonPassValidadores = JsonSerializer.Serialize(passValidadores, new JsonSerializerOptions { WriteIndented = true });
-
-                    //dsTablas.Tables.Add(Negociaciones);
-
-                    return Ok(jsonPassValidadores);
-                }
-                else
-                {
-                    DataTable Validador = new DataTable();
-
-                    Validador = await _ejecutivoService.GetValidadorAsync(idProducto, idEjecutivo, Contraseña);
-
-                    // Convertimos el DataTable a una lista de diccionarios
-                    var Validadores = ConvertDataTableToList(Validador);
-
-                    // Serializamos la lista a JSON
-                    string jsonValidadores = JsonSerializer.Serialize(Validadores, new JsonSerializerOptions { WriteIndented = true });
-
-                    //dsTablas.Tables.Add(Negociaciones);
-
-                    return Ok(jsonValidadores);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
-            }
-        }
-
-        [HttpGet("accionesComentario")]
-        public async Task<IActionResult> GetAccionesComentario(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion)
-        {
-            DataSet dsTablas = new DataSet();
-            try
-            {
-                    DataTable Comentarios = new DataTable();
-
-                    Comentarios = await _ejecutivoService.GetAccionesComentarioAsync(idCartera, idCuenta, idEjecutivo,Comentario,ModificaSituacion);
-
-                    // Convertimos el DataTable a una lista de diccionarios
-                    var insertaComentario = ConvertDataTableToList(Comentarios);
-
-                    // Serializamos la lista a JSON
-                    string jsonComentarios = JsonSerializer.Serialize(insertaComentario, new JsonSerializerOptions { WriteIndented = true });
-
-                    //dsTablas.Tables.Add(Negociaciones);
-
-                    return Ok(jsonComentarios);
-
-
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
-            }
-        }
-        #endregion
+       
 
         #region Busqueda
         [HttpGet("busqueda/{idCartera}/{idCuenta}/{Jerarquia}")]
         public async Task<IActionResult> GetBusqueda(int idCartera, string idCuenta, int Jerarquia)
         {
-            try
+
+            DataSet dsTablas = new DataSet();
+            DataTable busquedaTable = dsTablas.Tables.Add("Busqueda");
+            busquedaTable.Columns.Add("idCartera", typeof(int));
+            busquedaTable.Columns.Add("idCuenta", typeof(string));
+            busquedaTable.Columns.Add("Jerarquía", typeof(int));
+
+            DataRow drDatos = busquedaTable.NewRow();
+            drDatos["idCartera"] = idCartera;
+            drDatos["idCuenta"] = idCuenta;
+            drDatos["Jerarquía"] = Jerarquia;
+
+            await _ejecutivoService.ObtenerBusquedaEJE(drDatos, dsTablas);
+
+            if (!dsTablas.Tables.Contains("Busqueda") || dsTablas.Tables["Busqueda"].Rows.Count == 0)
             {
-                DataSet dsTablas = new DataSet();
-                DataTable busquedaTable = dsTablas.Tables.Add("Busqueda");
-                busquedaTable.Columns.Add("idCartera", typeof(int));
-                busquedaTable.Columns.Add("idCuenta", typeof(string));
-                busquedaTable.Columns.Add("Jerarquía", typeof(int));
+                return NotFound("No se encontraron Busquedas para este ejecutivo.");
+            }
 
-                DataRow drDatos = busquedaTable.NewRow();
-                drDatos["idCartera"] = idCartera;
-                drDatos["idCuenta"] = idCuenta;
-                drDatos["Jerarquía"] = Jerarquia;
+            var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Busqueda"]);
+            string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
 
-                await _ejecutivoService.ObtenerBusquedaEJE(drDatos, dsTablas);
+            return Ok(jsonString);
 
-                if (!dsTablas.Tables.Contains("Busqueda") || dsTablas.Tables["Busqueda"].Rows.Count == 0)
-                {
-                    return NotFound("No se encontraron Busquedas para este ejecutivo.");
-                }
+        }
 
-                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Busqueda"]);
-                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
-
-                return Ok(jsonString);
         [HttpGet("ProcesosWLP")]
         public async Task<IActionResult> GetProcesoWLP(string Proceso, string idCuenta)
-        {           
+        {
             try
             {
-                DataTable procesoWLP = new DataTable();               
-                
+                DataTable procesoWLP = new DataTable();
+
                 procesoWLP = await _ejecutivoService.GetWlpAsync(Proceso, idCuenta);
 
                 // Convertimos el DataTable a una lista de diccionarios
@@ -498,7 +297,7 @@ namespace NoriAPI.Controllers
 
                 //dsTablas.Tables.Add(Negociaciones);
 
-                return Ok(jsonWLP);          
+                return Ok(jsonWLP);
 
             }
             catch (Exception ex)
@@ -835,7 +634,7 @@ namespace NoriAPI.Controllers
         }
         #endregion
 
-        #region Scrips
+        #region Scripts
         [HttpGet("scripts/{idProducto}")]
         [AllowAnonymous]
         public IActionResult BuscaScripts(int idProducto)
@@ -854,6 +653,211 @@ namespace NoriAPI.Controllers
                 string jsonString = JsonSerializer.Serialize(listaScripts, new JsonSerializerOptions { WriteIndented = true });
 
                 return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+        #endregion
+
+        #region AccionesNegociacion
+
+
+
+        [HttpGet("accionesNegociacion")]
+        public async Task<IActionResult> GetAccionNegociacion(int idCartera, string idCuenta)
+        {
+            DataSet dsTablas = new DataSet();
+            try
+            {
+                DataTable Negociaciones = new DataTable();
+
+                Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
+
+
+                Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var listaNegociaciones = ConvertDataTableToList(Negociaciones);
+
+                // Serializamos la lista a JSON
+                string jsonNegociaciones = JsonSerializer.Serialize(listaNegociaciones, new JsonSerializerOptions { WriteIndented = true });
+
+                //dsTablas.Tables.Add(Negociaciones);
+
+                return Ok(jsonNegociaciones);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpGet("accionesPlazos")]
+        public async Task<IActionResult> GetAccionPlazos(int idCartera, string idCuenta)
+        {
+            DataSet dsTablas = new DataSet();
+            try
+            {
+                DataTable Plazos = new DataTable();
+
+                Plazos = await _ejecutivoService.GetAccionesPlazosAsync(idCartera, idCuenta);
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var listaPlazos = ConvertDataTableToList(Plazos);
+
+                // Serializamos la lista a JSON
+                string jsonPlazos = JsonSerializer.Serialize(listaPlazos, new JsonSerializerOptions { WriteIndented = true });
+
+                //dsTablas.Tables.Add(Negociaciones);
+
+                return Ok(jsonPlazos);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpGet("accionesNegociacionConPlazos")]
+        public async Task<IActionResult> GetAccionNegociacionConPlazos(int idCartera, string idCuenta)
+        {
+            try
+            {
+                // Obtener las negociaciones
+                DataTable Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
+
+                // Convertir el DataTable de Negociaciones a una lista de diccionarios
+                var listaNegociaciones = ConvertDataTableToList(Negociaciones);
+
+                // Obtener los plazos
+                DataTable Plazos = await _ejecutivoService.GetAccionesPlazosAsync(idCartera, idCuenta);
+
+                // Convertir el DataTable de Plazos a una lista de diccionarios
+                var listaPlazos = ConvertDataTableToList(Plazos);
+
+                // Combinar la información de negociaciones y plazos
+                var resultadoCombinado = new List<object>();
+
+                foreach (var negociacion in listaNegociaciones)
+                {
+                    var fechaInsert = negociacion.ContainsKey("FechaHora") ? Convert.ToDateTime(negociacion["FechaHora"]) : DateTime.MinValue;
+                    // Aquí, debes agregar lógica para relacionar las negociaciones con los plazos,
+                    // por ejemplo, basándote en la fecha de la negociación y los plazos.
+
+                    // Supongamos que la relación es por la fecha o algún otro campo,
+                    // entonces puedes agregar los plazos correspondientes a cada negociación
+                    var plazosRelacionados = listaPlazos
+                    .Where(p =>
+                    {
+                        // Verificar si existen los campos necesarios en el diccionario
+                        if (p.ContainsKey("Fecha_Insert") && p.ContainsKey("Segundo_Insert"))
+                        {
+                            // Obtener la fecha de Fecha_Insert
+                            var fechaPlazo = Convert.ToDateTime(p["Fecha_Insert"]).Date;
+
+                            // Obtener la hora de Segundo_Insert y combinarla con la fecha
+                            var horaPlazo = (TimeSpan)p["Segundo_Insert"];
+
+                            // Crear la fecha completa de plazo combinando la fecha de Fecha_Insert con la hora de Segundo_Insert
+                            var fechaHoraPlazo = fechaPlazo.Add(horaPlazo);
+
+                            // Comparar si la fecha y hora combinadas coinciden con la fecha completa de la negociación
+                            return fechaHoraPlazo == fechaInsert;
+                        }
+                        return false;
+                    }).ToList();
+                    // Agregar la negociación junto con los plazos relacionados
+                    var negociacionConPlazos = new
+                    {
+                        Negociacion = negociacion,
+                        Plazos = plazosRelacionados
+                    };
+
+                    resultadoCombinado.Add(negociacionConPlazos);
+                }
+
+                // Serializar la respuesta combinada a JSON
+                string jsonResultado = JsonSerializer.Serialize(resultadoCombinado, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonResultado);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpGet("validador")]
+        public async Task<IActionResult> GetValidador(int idProducto, int idEjecutivo, string Contraseña)
+        {
+            DataSet dsTablas = new DataSet();
+            try
+            {
+                if (idEjecutivo != 0 && Contraseña != "")
+                {
+                    DataTable passValidador = new DataTable();
+
+                    passValidador = await _ejecutivoService.GetValidadorAsync(idProducto, idEjecutivo, Contraseña);
+
+                    // Convertimos el DataTable a una lista de diccionarios
+                    var passValidadores = ConvertDataTableToList(passValidador);
+
+                    // Serializamos la lista a JSON
+                    string jsonPassValidadores = JsonSerializer.Serialize(passValidadores, new JsonSerializerOptions { WriteIndented = true });
+
+                    //dsTablas.Tables.Add(Negociaciones);
+
+                    return Ok(jsonPassValidadores);
+                }
+                else
+                {
+                    DataTable Validador = new DataTable();
+
+                    Validador = await _ejecutivoService.GetValidadorAsync(idProducto, idEjecutivo, Contraseña);
+
+                    // Convertimos el DataTable a una lista de diccionarios
+                    var Validadores = ConvertDataTableToList(Validador);
+
+                    // Serializamos la lista a JSON
+                    string jsonValidadores = JsonSerializer.Serialize(Validadores, new JsonSerializerOptions { WriteIndented = true });
+
+                    //dsTablas.Tables.Add(Negociaciones);
+
+                    return Ok(jsonValidadores);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpGet("accionesComentario")]
+        public async Task<IActionResult> GetAccionesComentario(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion)
+        {
+            DataSet dsTablas = new DataSet();
+            try
+            {
+                DataTable Comentarios = new DataTable();
+
+                Comentarios = await _ejecutivoService.GetAccionesComentarioAsync(idCartera, idCuenta, idEjecutivo, Comentario, ModificaSituacion);
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var insertaComentario = ConvertDataTableToList(Comentarios);
+
+                // Serializamos la lista a JSON
+                string jsonComentarios = JsonSerializer.Serialize(insertaComentario, new JsonSerializerOptions { WriteIndented = true });
+
+                //dsTablas.Tables.Add(Negociaciones);
+
+                return Ok(jsonComentarios);
+
+
             }
             catch (Exception ex)
             {

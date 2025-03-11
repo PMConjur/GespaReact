@@ -37,32 +37,11 @@ namespace NoriAPI.Services
         #region AccionesDropDown
         Task ObtenerSeguimientos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerAccionamiento(DataRow drDatos, DataSet dsTablas);
-        Task <NegociacionesResponse> GetNegociaciones(int idEjecutivo);
-        Task <Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
-        Task <List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
-        Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta);
-
-        #region Acciones
-        Task <DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
-        Task <DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
-        Task <DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña);
-        Task <DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
-        Task <DataTable> GetWlpAsync(string Proceso, string idCuenta);
-
-        #endregion
 
         Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo);
         Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
-        Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
+        Task<List<PreguntasRespuestasInfo>> ValidatePreguntas_Respuestas();
         Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta);
-
-        #region Acciones
-        Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
-        Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
-        Task<DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña);
-        Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
-
-        #endregion
 
         Task ObtenerBusquedaEJE(DataRow drDatos, DataSet dsTablas);
 
@@ -80,6 +59,16 @@ namespace NoriAPI.Services
         Task ObtenerDomicilios(DataRow drDatos, DataSet dsTablas);
         DataTable ObtieneGestionesDelDia(int idEjecutivo);
         DataTable BuscaScripts(int idProducto);
+
+
+        #region Acciones
+        Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
+        Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
+        Task<DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña);
+        Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
+        Task<DataTable> GetWlpAsync(string Proceso, string idCuenta);
+        #endregion
+
 
     }
 
@@ -157,7 +146,7 @@ namespace NoriAPI.Services
             var productividad = MapToInfoProductividad(prod);
             var resultadoProductividad = new ResultadoProductividad(mensaje, productividad);
             return resultadoProductividad;
-        }
+        } 
 
         private static ProductividadInfo MapToInfoProductividad(IDictionary<string, object> prod)
         {
@@ -186,7 +175,7 @@ namespace NoriAPI.Services
         #endregion
 
         #region Preguntas_Respuestas
-        public async Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas()
+        public async Task<List<PreguntasRespuestasInfo>> ValidatePreguntas_Respuestas()
         {
             var validatePreg_Resp_list = await _ejecutivoRepository.ValidatePreguntas_Respuestas();
             return validatePreg_Resp_list;
@@ -1863,16 +1852,4 @@ namespace NoriAPI.Services
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
+#endregion
