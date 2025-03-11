@@ -472,27 +472,50 @@ export async function getTalksData(searchResults) {
   }
 }
 
+// Endpoint de cargos en línea para múltiples cuentas
+export async function getOnlinechargeData(searchResults) {
+  try {
+    // Obtener token de autenticación de localStorage o estado
+    const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));
+    const token = responseData?.ejecutivo?.token;
 
-//const message = getErrorStatus(response.status);
-//jajajajajajaja Pinche uriel
+    if (!token) {
+      throw new Error("Token de autenticación no disponible");
+    }
 
-/***
- * 
- * 
- * 
- * 
- *         /////\\\\\
-       /         \
-      /  ~~~~ ~~~\  
-     (  -  -  -  - )  
-      |    ⏜    |  
-      |  \___/  |  
-       \_______/  
-    /  |       |  \  
-   /   |  ---  |   \  
-  /    |       |    \  
- /_____|_______|_____\  
-   (     )   (     )  
+    // Definir idCartera fijo (siempre 1 según el código original)
+    const idCartera = 1;
 
- * 
- */
+    // Realizar múltiples solicitudes en paralelo para cada idCuenta en searchResults
+    const onlinecharge = await Promise.all(
+      searchResults.map(async (result) => {
+        const idCuenta = result.idCuenta.trim(); // Limpieza del idCuenta
+        console.log("🔍 Buscando cargos en línea para idCuenta:", idCuenta);
+
+        try {
+          const response = await axios.get(
+            `${apiUrl}/ejecutivo/cargosEnLinea/${idCartera}/${idCuenta}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`, // Autenticación con token
+              },
+            }
+          );
+
+          console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
+          return response.data; // Retornar datos obtenidos
+        } catch (error) {
+          console.error(`❌ Error al obtener datos de cargos en línea para idCuenta ${idCuenta}:`, error);
+          return null; // Retornar null en caso de error para evitar fallas en Promise.all
+        }
+      })
+    );
+
+    // Filtrar valores nulos (en caso de errores individuales)
+    return onlinecharge.filter((data) => data !== null);
+  } catch (error) {
+    console.error("❌ Error al obtener los datos de cargos en línea:", error);
+    throw new Error("Error al cargar los datos de cargos en línea.");
+  }
+}
+
