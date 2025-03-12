@@ -17,8 +17,8 @@ function DropdownInfo() {
 
     // Consumir el contexto
     const { searchResults } = useContext(AppContext);
-     //pagos//
-  
+    
+    //pagos//
       const handleShowPayments = async () => {
         setLoadingPayments(true);
         try {
@@ -51,8 +51,6 @@ function DropdownInfo() {
 
       {/* Renderiza el modal */} 
       <Payments show={showPayments} handleClose={handleClosePayments} data={paymentsData} loadingPayments={loadingPayments} />
-      {/* <Complaints show={showComplaints} handleClose={handleCloseComplaints} data={complaintsData} loading={loadingComplaints} /> */}
-      {/* <Comments show={showComments} handleClose={handleCloseComments} data={commentsData} loading={loadingComments} /> */}
     </>
   );
 }

@@ -1,20 +1,52 @@
-import { PersonLinesFill } from 'react-bootstrap-icons';
-import Dropdown from 'react-bootstrap/Dropdown';
-import "../../../scss/styles.scss";
+import { useState, useContext } from 'react';
+import { AppContext } from '../../../pages/Managment'; // Ajusta la ruta según tu estructura de archivos
 
-function DropdownInfo() {
+import Dropdown from 'react-bootstrap/Dropdown';
+import Scripts from './Scripts'; // Asegúrate de importar el componente
+import "../../../scss/styles.scss";
+import { fetchScripts } from '../../../services/gespawebServices';
+
+function DropdownExecutive() {
+  const [showScripts, setShowScripts] = useState(false);
+  const [scriptsData, setScriptsData] = useState([]);
+  const [loadingScripts, setLoadingScripts] = useState(false);
+
+  // Consumir el contexto
+  const { searchResults } = useContext(AppContext);
+
+  // Mostrar scripts
+  const handleShowScripts = async () => {
+    setLoadingScripts(true);
+    try {
+      const scripts = await fetchScripts(1); // Obtener los datos de scripts
+      setScriptsData(scripts); // Establece los datos recibidos
+      setShowScripts(true);
+    } catch (error) {
+      console.error('Error al cargar los datos de scripts:', error);
+    } finally {
+      setLoadingScripts(false);
+    }
+  };
+
+  const handleCloseScripts = () => setShowScripts(false);
+
   return (
-    <Dropdown className=''>
-      <Dropdown.Toggle className="custom-dropdown-toggle d-flex align-items-center" id="dropdown-basic">
-       Ejecutivo
-      </Dropdown.Toggle>
-      <Dropdown.Menu style={{backgroundColor: '#1d1f20', border: 'none'}} className='custom-dropdown-menu'>
-        <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Gestiones del dia</Dropdown.Item>
-        <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Scripts</Dropdown.Item>
-        <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Negociaciones</Dropdown.Item>
-      </Dropdown.Menu>
-    </Dropdown>
+    <>
+      <Dropdown className=''>
+        <Dropdown.Toggle className="custom-dropdown-toggle d-flex align-items-center" id="dropdown-basic">
+          Ejecutivo
+        </Dropdown.Toggle>
+        <Dropdown.Menu style={{backgroundColor: '#1d1f20', border: 'none'}} className='custom-dropdown-menu'>
+          <Dropdown.Item href="/maintenance" className="custom-dropdown-item text-center">Gestiones del dia</Dropdown.Item>
+          <Dropdown.Item onClick={handleShowScripts} className="custom-dropdown-item text-center">Scripts</Dropdown.Item>
+          <Dropdown.Item href="/maintenance" className="custom-dropdown-item text-center">Negociaciones</Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+
+      {/* Renderiza el modal */}
+      <Scripts show={showScripts} handleCloseScripts={handleCloseScripts} data={scriptsData} loadingScripts={loadingScripts} />
+    </>
   );
 }
 
-export default DropdownInfo;
+export default DropdownExecutive;

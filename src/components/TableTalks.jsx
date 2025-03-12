@@ -91,7 +91,7 @@ const TableTalks = ({ dataTalks, customColumnNames }) => {
                     </thead>
                     <tbody style={{
                             // 🔹 Altura máxima para el scroll
-                        overflowY: "scroll",   // 🔹 Scroll SIEMPRE visible
+                        overflow: "auto",   // 🔹 Scroll SIEMPRE visible
                         width: "100%"          // 🔹 Evita que la tabla se desconfigure
                     }}>
                     
