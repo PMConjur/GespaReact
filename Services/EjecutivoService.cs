@@ -69,6 +69,7 @@ namespace NoriAPI.Services
         Task<string> IdentificaCorreoAsync(string CorreoElectronico, int idInformacion, int idCartera, string idCuenta, int idEjecutivoInformacion);
         Task<string> EnviaCorreoAsync(string CorreoElectronico, string Asunto, string Mensaje, int idCartera, string idCuenta, int idEjecutivo);
         Task<dynamic> RegisterNewCorreo(CorreosEn newCorreos);
+        Task<DataTable> ObtieneGestionesAsync(DataRow drInfo);
 
 
 
@@ -2297,6 +2298,76 @@ namespace NoriAPI.Services
             return new SqlConnection(connectionString);
         }
 
+        #endregion
+
+        #region Gestiones Telefonicas
+        public async Task<DataTable> ObtieneGestionesAsync(DataRow drInfo)
+        {
+            if (drInfo == null)
+                return null;
+
+            DataTable gestiones = new DataTable();
+            List<string> cuentas = new List<string>();
+
+            if ((drInfo["idCartera"].ToString() == "7" || drInfo["idCartera"].ToString() == "13") && !string.IsNullOrEmpty(drInfo["NúmeroCliente"].ToString()))
+            {
+                string queryCuentas = "SELECT idCuenta FROM Cuentas WHERE CuentaActiva = 1 AND idCartera = @idCartera AND NúmeroCliente = @NúmeroCliente";
+
+                using (var connection = GetConnection("Piso2Amex")) // Asumiendo que DataBaseConn tiene una propiedad ConnectionString
+                {
+                    await connection.OpenAsync();
+                    using (var command = new SqlCommand(queryCuentas, connection))
+                    {
+                        command.Parameters.Add("@NúmeroCliente", SqlDbType.VarChar).Value = drInfo["NúmeroCliente"];
+                        command.Parameters.Add("@idCartera", SqlDbType.Int).Value = drInfo["idCartera"];
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                cuentas.Add(reader["idCuenta"].ToString());
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                cuentas.Add(drInfo["idCuenta"].ToString());
+            }
+
+            foreach (string cuenta in cuentas)
+            {
+                string queryGestiones = "SELECT * FROM fn_GestionesTelefónicas(@idCartera, @idCuenta)";
+
+                using (var connection = GetConnection("Piso2Amex"))
+                {
+                    await connection.OpenAsync();
+                    using (var command = new SqlCommand(queryGestiones, connection))
+                    {
+                        command.Parameters.Add("@idCartera", SqlDbType.Int).Value = drInfo["idCartera"];
+                        command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = cuenta;
+
+                        using (var adapter = new SqlDataAdapter(command))
+                        {
+                            DataTable tempGestiones = new DataTable();
+                            adapter.Fill(tempGestiones);
+
+                            if (gestiones.Columns.Count == 0)
+                            {
+                                gestiones = tempGestiones.Clone();
+                            }
+
+                            foreach (DataRow row in tempGestiones.Rows)
+                            {
+                                gestiones.ImportRow(row);
+                            }
+                        }
+                    }
+                }
+            }
+            return gestiones;
+        }
         #endregion
     }
 

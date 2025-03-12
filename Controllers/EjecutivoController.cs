@@ -896,8 +896,8 @@ namespace NoriAPI.Controllers
         #region Correos
         [HttpGet("CorreosObtiene/{idCartera}/{idCuenta}")]
         [AllowAnonymous]
-        
-    
+
+
         public async Task<IActionResult> GetCorreos(int idCartera, string idCuenta)
         {
 
@@ -926,8 +926,8 @@ namespace NoriAPI.Controllers
 
         [HttpGet("CorreosEnviados/{idCartera}/{idCuenta}")]
         [AllowAnonymous]
-        
-    
+
+
         public async Task<IActionResult> GetCorreosEnviados(int idCartera, string idCuenta)
         {
 
@@ -956,7 +956,7 @@ namespace NoriAPI.Controllers
 
         [HttpGet("CorreosCarga/{idCartera}/{idCuenta}")]
         [AllowAnonymous]
-       
+
         public async Task<IActionResult> GetCorreosCarga(int idCartera, string idCuenta)
         {
 
@@ -983,8 +983,8 @@ namespace NoriAPI.Controllers
 
         }
 
-        [HttpPost("nuevoCorreo")] 
-        
+        [HttpPost("nuevoCorreo")]
+
         public async Task<IActionResult> NuevoCorreo([FromBody] CorreosRe nuevoCorreoRe, [FromQuery] int idEjecutivo, [FromQuery] int idOrigen = 1805, [FromQuery] bool ValidarDuplicidad = true)
         {
             try
@@ -1028,7 +1028,7 @@ namespace NoriAPI.Controllers
             }
         }
         [HttpPost("EnviarCorreo")]
-        [AllowAnonymous]
+
         public async Task<IActionResult> EnviarCorreo(string CorreoElectronico, string Asunto, string Mensaje, int idCartera, string idCuenta, int idEjecutivo)
         {
             try
@@ -1050,5 +1050,52 @@ namespace NoriAPI.Controllers
         }
         #endregion
 
+        #region Gestiones Telefonicas
+
+
+        [HttpGet("ObtenerGestiones")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ObtenerGestiones([FromQuery] int idCartera, [FromQuery] string idCuenta, [FromQuery] string numeroCliente)
+        {
+            try
+            {
+                DataTable table = new DataTable();
+                table.Columns.Add("idCartera", typeof(int));
+                table.Columns.Add("idCuenta", typeof(string));
+                table.Columns.Add("NúmeroCliente", typeof(string));
+
+                DataRow drInfo = table.NewRow();
+                drInfo["idCartera"] = idCartera;
+                drInfo["idCuenta"] = idCuenta;
+                drInfo["NúmeroCliente"] = numeroCliente;
+
+                DataTable gestiones = await _ejecutivoService.ObtieneGestionesAsync(drInfo);
+
+                if (gestiones == null || gestiones.Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron gestiones para los parámetros proporcionados.");
+                }
+
+                var listaGestiones = ConvertDataTableToList(gestiones); // Asume que tienes este método
+
+                string jsonString = JsonSerializer.Serialize(listaGestiones, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+
+        // Clase para representar el DataRow en el cuerpo de la solicitud
+        public class DataRowRequest
+        {
+            public DataRow DataRow { get; set; }
+        }
+        #endregion
+
     }
 }
+
