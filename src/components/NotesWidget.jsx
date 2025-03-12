@@ -83,13 +83,13 @@ function NotesWidget() {
       } catch (error) {
         console.error("Error fetching notes:", error);
         if (error.response && error.response.status === 404) {
-          alert(
-            "No se encontraron Recordatorios para el ID de empleado proporcionado."
-          );
+          // alert(
+          //    "No se encontraron Recordatorios para el ID de empleado proporcionado."
+          //  );
         } else {
-          alert(
-            "Se produjo un error al recuperar Recordatorios. Por favor inténtalo de nuevo más tarde.."
-          );
+          //  alert(
+          //    "Se produjo un error al recuperar Recordatorios. Por favor inténtalo de nuevo más tarde.."
+          //  );
         }
       }
     };

@@ -3,9 +3,9 @@ import { Row, Breadcrumb } from "react-bootstrap";
 import ProductivityModal from "./ProductivityModal"; // Import ProductivityModal component
 import Recovery from "./Recovery";
 import Times from "./Times";
-import DropdownsInfo from "../../src/components/memuHamburguesa/Informacion/DropdownInfo"
-import DropdownAction from "../../src/components/memuHamburguesa/Acciones/DropdownAction"
-import DropdownExecutive from "../../src/components/memuHamburguesa/Ejecutivo/DropdownExecutive"
+import DropdownsInfo from "../../src/components/memuHamburguesa/Informacion/DropdownInfo";
+import DropdownAction from "../../src/components/memuHamburguesa/Acciones/DropdownAction";
+import DropdownExecutive from "../../src/components/memuHamburguesa/Ejecutivo/DropdownExecutive";
 
 const DebtorInformation = () => {
   const [showModal, setShowModal] = useState(false);
@@ -19,12 +19,16 @@ const DebtorInformation = () => {
   const handleShowModalTim = () => setShowModalTim(true);
   const handleCloseModalTim = () => setShowModalTim(false);
 
+  const [showModalMultideudores, setShowModalMultideudores] = useState(false); //para MultiDeudor
+  const handleShowModalMultideudores = () => setShowModalMultideudores(true); //para MultiDeudor
+  const handleCloseModalMultideudores = () => setShowModalMultideudores(false); //para MultiDeudor
+
   return (
     <Row>
       <h4 className="text-secondary">
         Cartera: <strong className="text-white">American Express</strong>
       </h4>{" "}
-      <Breadcrumb style={{zIndex: '100'}}>
+      <Breadcrumb style={{ zIndex: "100" }}>
         <Breadcrumb.Item href="#" onClick={handleShowModal}>
           Productividad
         </Breadcrumb.Item>
