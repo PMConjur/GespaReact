@@ -922,6 +922,10 @@ namespace NoriAPI.Repositories
         }
         #endregion
 
+        #region EnviarCorreo
+        
+        #endregion
+
         private SqlConnection GetConnection(string connection)
         {
             return new SqlConnection(_configuration.GetConnectionString(connection));
@@ -1052,7 +1056,7 @@ namespace NoriAPI.Repositories
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
-                SqlCommand command = new SqlCommand("SELECT idCuenta FROM [dbCollection].[dbo].[Cuentas] WHERE idCuenta = @idCuenta", connection); // Reemplaza ... con tu lógica
+                SqlCommand command = new SqlCommand("select * from CorreosEnviados where idCuenta = @idCuenta", connection); // Reemplaza ... con tu lógica
                 return command.ExecuteScalar().ToString();
             }
         }
@@ -1074,7 +1078,7 @@ namespace NoriAPI.Repositories
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
-                SqlCommand command = new SqlCommand("SELECT NombreEjecutivo FROM Ejecutivos WHERE ...", connection); // Reemplaza ... con tu lógica
+                SqlCommand command = new SqlCommand("SELECT NombreEjecutivo FROM [dbCollection].[dbo].[Ejecutivos] WHERE NombreEjecutivo = @NombreEjecutivo", connection); // Reemplaza ... con tu lógica
                 return command.ExecuteScalar().ToString();
             }
         }

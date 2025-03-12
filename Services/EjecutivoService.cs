@@ -67,7 +67,8 @@ namespace NoriAPI.Services
         Task ObtenerCargaEJE(DataRow drDatos, DataSet dsTablas);
         Task<string> NuevoCorreoAsync(CorreosRe nuevoCorreoRe, int idEjecutivo, int idOrigen = 1805, bool ValidarDuplicidad = true);
         Task<string> IdentificaCorreoAsync(string CorreoElectronico, int idInformacion, int idCartera, string idCuenta, int idEjecutivoInformacion);
-        string EnviaCorreo(string CorreoElectrónico, string Asunto, string Mensaje);
+        Task<string> EnviaCorreoAsync(string CorreoElectronico, string Asunto, string Mensaje, int idCartera, string idCuenta, int idEjecutivo);
+        Task<dynamic> RegisterNewCorreo(CorreosEn newCorreos);
 
 
 
@@ -121,26 +122,28 @@ namespace NoriAPI.Services
             _searchService = searchService;
             _busquedaRepository = busquedaRepository;
             _catalogos = catalogos;
-            _correos = correos;
-            _enviados = CreaTablaEnviados();
-            _correos = CreaTablaCorreos();
-
-
-        }
-        private DataTable CreaTablaCorreos()
-        {
-            DataTable correos = new DataTable();
-            correos.Columns.Add("CorreoElectrónico", typeof(string));
-            correos.PrimaryKey = new DataColumn[] { correos.Columns["CorreoElectrónico"] };
-            // Aquí puedes agregar filas a la tabla si es necesario
-            return correos;
+            
         }
         private DataTable CreaTablaEnviados()
         {
             DataTable enviados = new DataTable();
-            // Aquí puedes agregar las columnas a la tabla de enviados
+
+            // Agregar las columnas que corresponden a la tabla CorreosEnviados
+            enviados.Columns.Add("idCartera", typeof(int));
+            enviados.Columns.Add("idCuenta", typeof(string));
+            enviados.Columns.Add("Fecha_Insert", typeof(DateTime));
+            enviados.Columns.Add("Segundo_Insert", typeof(TimeSpan));
+            enviados.Columns.Add("idEjecutivo_Insert", typeof(int));
+            enviados.Columns.Add("CorreoElectrónico", typeof(string));
+            enviados.Columns.Add("idEtapa", typeof(short));
+            enviados.Columns.Add("Asunto", typeof(string));
+            enviados.Columns.Add("Mensaje", typeof(string));
+            enviados.Columns.Add("Ejecutivo", typeof(string));
+
             return enviados;
         }
+
+
 
         #region Productividad
         public async Task<ResultadoProductividad> ValidateProductividad(int numEmpleado)
@@ -1931,7 +1934,6 @@ namespace NoriAPI.Services
         }
         #endregion
 
-
         #region Correos
         public async Task<DataTable> GetCorreosAsync(int idCartera, string idCuenta)
         {
@@ -2189,85 +2191,112 @@ namespace NoriAPI.Services
                 return $"Fallo en base de datos al identificar correo electrónico: {ex.Message}";
             }
         }
-        public string EnviaCorreo(string CorreoElectrónico, string Asunto, string Mensaje)
+
+        public async Task<string> EnviaCorreoAsync(string CorreoElectronico, string Asunto, string Mensaje, int idCartera, string idCuenta, int idEjecutivo)
         {
             try
             {
-                CorreoElectrónico = CorreoElectrónico.Trim();
-
-                if (_correos != null && _correos.Rows.Find(CorreoElectrónico) == null)
-                    return "Dicha dirección de correo no está asignada a la cuenta.";
-
-                if (Asunto.Trim().Length < 5)
-                    return "El asunto del correo es ambiguo o vacío.";
-
-                if (Mensaje.Trim().Length < 10)
-                    return "El mensaje del correo debe contener mayor información.";
-
-                // Obtener los datos necesarios de IEjecutivoRepository
-                int idCartera = _ejecutivoRepository.ObtenerIdCartera();
-                string idCuenta = _ejecutivoRepository.ObtenerIdCuenta();
-                int idEjecutivo = _ejecutivoRepository.ObtenerIdEjecutivo();
-                string NombreEjecutivo = _ejecutivoRepository.ObtenerNombreEjecutivo();
-
-                string query = "EXEC [2.5.1.EnviaCorreo] " +
-                               "@idCartera , " +
-                               "@idCuenta, " +
-                               "@CorreoElectrónico," +
-                               "@Asunto," +
-                               "@Mensaje," +
-                               "@idEjecutivo ";
-
-                var parameters = new
+                using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
-                    idCartera = idCartera,
-                    idCuenta = idCuenta,
-                    CorreoElectrónico = CorreoElectrónico,
-                    Asunto = Asunto,
-                    Mensaje = Mensaje,
-                    idEjecutivo = idEjecutivo
-                };
+                    await connection.OpenAsync();
 
-                var tblResultado = EjecutarConsulta(query, parameters);
+                    // Verificar si el correo existe en la base de datos
+                    string checkQuery = "SELECT COUNT(*) FROM CorreosEnviados WHERE idCartera = @idCartera AND idCuenta = @idCuenta AND CorreoElectronico = @CorreoElectronico";
+                    using (SqlCommand checkCommand = new SqlCommand(checkQuery, connection))
+                    {
+                        checkCommand.Parameters.AddWithValue("@idCartera", idCartera);
+                        checkCommand.Parameters.AddWithValue("@idCuenta", idCuenta);
+                        checkCommand.Parameters.AddWithValue("@CorreoElectronico", CorreoElectronico);
+                        checkCommand.Parameters.AddWithValue("@idEjecutivo", idEjecutivo);
 
-                if (tblResultado == null)
-                    return "Falló al crear validación de envió de correo el electrónico.";
+                        int count = (int)await checkCommand.ExecuteScalarAsync();
+                        if (count == 0)
+                        {
+                            return "La dirección de correo no está asignada a la cuenta.";
+                        }
+                    }
 
-                if (_enviados == null)
-                    return "";
+                    // Actualizar la información del correo (sin idInformacion)
+                    string updateQuery = "UPDATE CorreosCuentas SET FechaHora_Informacion = GETDATE() WHERE idCartera = @idCartera AND idCuenta = @idCuenta AND CorreoElectronico = @CorreoElectronico";
+                    using (SqlCommand updateCommand = new SqlCommand(updateQuery, connection))
+                    {
+                        updateCommand.Parameters.AddWithValue("@idCartera", idCartera);
+                        updateCommand.Parameters.AddWithValue("@idCuenta", idCuenta);
+                        updateCommand.Parameters.AddWithValue("@CorreoElectronico", CorreoElectronico);
 
-                DataRow drEnvío = _enviados.NewRow();
-                //Funciones.AddParametersToRow(command.Parameters, drEnvío); // Asegúrate de que Funciones esté disponible
-                drEnvío["idEtapa"] = 2301;
-                drEnvío["Fecha_Insert"] = tblResultado.Fecha_Insert;
-                drEnvío["Segundo_Insert"] = tblResultado.Segundo_Insert;
-                drEnvío["Ejecutivo"] = NombreEjecutivo;
-                _enviados.Rows.Add(drEnvío);
+                        await updateCommand.ExecuteNonQueryAsync();
+                    }
 
-                return "";
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error en EnviaCorreo: {ex.Message}");
-                return $"Fallo al enviar correo electrónico: {ex.Message}";
-            }
-        }
-
-        private dynamic EjecutarConsulta(string query, object parameters = null)
-        {
-            try
-            {
-                using (IDbConnection connection = new SqlConnection(_connectionString))
-                {
-                    return connection.QueryFirstOrDefault(query, parameters);
+                    return ""; // Éxito
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error al ejecutar consulta: {ex.Message}");
-                return null;
+                Console.WriteLine($"Error en EnviaCorreoAsync: {ex.Message}");
+                return $"Fallo en base de datos al identificar correo electrónico: {ex.Message}";
+            }
+
+            // Agregar un valor de retorno predeterminado o un mensaje de error
+            return "Error desconocido al procesar el correo electrónico.";
+        }
+
+
+        public async Task<dynamic> RegisterNewCorreo(CorreosEn newCorreos)
+        {
+            try
+            {
+                using (var connection = GetConnection("Piso2Amex"))
+                {
+                    string newPhoneQuery = "[dbCollection].[dbo].[2.5.1.EnviaCorreo]";
+                    var parameters = new
+                    {
+                        correoElectronico = newCorreos.CorreoElectronico,
+                        idCartera = newCorreos.IdCartera,
+                        idCuenta = newCorreos.IdCuenta,
+                        idEjecutivo = newCorreos.IdEjecutivo,
+                        mensaje = newCorreos.Mensaje,
+                        asunto = newCorreos.Asunto,
+                        idEtapa = newCorreos.IdEtapa
+                    };
+
+                    var result = await connection.QueryFirstOrDefaultAsync<dynamic>(
+                        newPhoneQuery,
+                        parameters,
+                        commandType: CommandType.StoredProcedure
+                    );
+
+                    if (result == null)
+                    {
+                        return new { Success = false, Message = "No se recibió respuesta del procedimiento almacenado." };
+                    }
+
+                    var dict = result as IDictionary<string, object>;
+
+                    if (dict != null && dict.ContainsKey("Resultado"))
+                    {
+                        return new Dictionary<string, object>
+                {
+                    { "Success", false },
+                    { "Resultado", dict["Resultado"].ToString() }
+                };
+                    }
+
+                    return new Dictionary<string, object> { { "Success", true }, { "Data ", result } };
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de la excepción (por ejemplo, registrar el error)
+                Console.WriteLine($"Error en RegisterNewEstado: {ex.Message}");
+                return new { Success = false, Message = $"Error: {ex.Message}" };
             }
         }
+        private SqlConnection GetConnection(string connectionStringName)
+        {
+            var connectionString = _configuration.GetConnectionString(connectionStringName);
+            return new SqlConnection(connectionString);
+        }
+
         #endregion
     }
 

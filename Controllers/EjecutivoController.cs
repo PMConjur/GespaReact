@@ -895,6 +895,7 @@ namespace NoriAPI.Controllers
 
         #region Correos
         [HttpGet("CorreosObtiene/{idCartera}/{idCuenta}")]
+        [AllowAnonymous]
         
     
         public async Task<IActionResult> GetCorreos(int idCartera, string idCuenta)
@@ -924,6 +925,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("CorreosEnviados/{idCartera}/{idCuenta}")]
+        [AllowAnonymous]
         
     
         public async Task<IActionResult> GetCorreosEnviados(int idCartera, string idCuenta)
@@ -953,7 +955,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("CorreosCarga/{idCartera}/{idCuenta}")]
-        
+        [AllowAnonymous]
        
         public async Task<IActionResult> GetCorreosCarga(int idCartera, string idCuenta)
         {
@@ -1026,13 +1028,12 @@ namespace NoriAPI.Controllers
             }
         }
         [HttpPost("EnviarCorreo")]
-        
-        public ActionResult<string> EnviarCorreo(string correoElectronico, string asunto, string mensaje)
+        [AllowAnonymous]
+        public async Task<IActionResult> EnviarCorreo(string CorreoElectronico, string Asunto, string Mensaje, int idCartera, string idCuenta, int idEjecutivo)
         {
             try
             {
-                string resultado = _ejecutivoService.EnviaCorreo(correoElectronico, asunto, mensaje);
-
+                var resultado = await _ejecutivoService.EnviaCorreoAsync(CorreoElectronico, Asunto, Mensaje, idCartera, idCuenta, idEjecutivo);
                 if (string.IsNullOrEmpty(resultado))
                 {
                     return Ok("Correo enviado correctamente.");

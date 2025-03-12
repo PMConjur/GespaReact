@@ -2,6 +2,16 @@
 {
     public class CorreosRe
     {
+        public CorreosRe(string correoElectronico, int idCartera, string idCuenta, int idEjecutivo, int idOrigen, int idInformacion)
+        {
+            CorreoElectronico = correoElectronico;
+            IdCartera = idCartera;
+            IdCuenta = idCuenta;
+            IdEjecutivo = idEjecutivo;
+            IdOrigen = idOrigen;
+            IdInformacion = idInformacion;
+        }
+
         public string CorreoElectronico { get; set; }
         public int IdCartera { get; set; }
         public string IdCuenta { get; set; }
