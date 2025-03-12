@@ -10,12 +10,17 @@ import FollowUps from './FollowUps'; // Asegúrate de importar el componente
 import Talks from './Talks'; // Asegúrate de importar el componente
 import Onlinecharge from './OnlineCharges'; // Importa el nuevo componente
 import { getFollowUpsData, getTalksData, getOnlinechargeData } from '../../../services/gespawebServices';
+// import Complaints from './Complaints'; // Importa el nuevo componente
+// import { getComplaintsData } from '../../../services/gespawebServices'; // Importa la función que obtiene los datos de quejas
+//import Comments from './Comments'; // Importa el nuevo componente
+//import { getCommentsData } from '../../../services/gespawebServices'; // Importa la función que obtiene los datos de comentarios
 
 const DropdownActions = () => {
   const [showModal, setShowModal] = useState(false);
   const [accionamientosData, setAccionamientosData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalShow, setModalShow] = useState(false);
+  
   const [showFollowUps, setShowFollowUps] = useState(false);
   const [followUpsData, setFollowUpsData] = useState([]);
   const [loadingFollow, setLoadingFollow] = useState(false);
@@ -27,6 +32,14 @@ const DropdownActions = () => {
   const [showOnlinecharge, setShowOnlinecharge] = useState(false);
   const [onlinechargeData, setOnlinechargeData] = useState([]);
   const [loadingOnlinecharge, setLoadingonlinecharge] = useState(false);
+
+  // const [showComplaints, setShowComplaints] = useState(false); // Estado para mostrar el modal de quejas
+  // const [complaintsData, setComplaintsData] = useState([]); // Estado para los datos de quejas
+  // const [loadingComplaints, setLoadingComplaints] = useState(false); // Estado de carga para quejas
+
+  const [showComments, setShowComments] = useState(false); // Estado para mostrar el modal de comentarios
+  const [commentsData, setCommentsData] = useState([]); // Estado para los datos de comentarios
+  const [loadingComments, setLoadingComments] = useState(false); // Estado de carga para comentarios
 
   // Consumir el contexto
   const { searchResults } = useContext(AppContext);
@@ -119,6 +132,38 @@ const DropdownActions = () => {
 
     const handleCloseOnlinecharge = () => setShowOnlinecharge(false);
 
+    // // quejas
+    // const handleShowComplaints = async () => {
+    //   setLoadingComplaints(true);
+    //   try {
+    //     const complaints = await getComplaintsData(searchResults); // Obtener los datos de quejas
+    //     setComplaintsData(complaints.flat()); // Establece los datos recibidos
+    //     setShowComplaints(true);
+    //   } catch (error) {
+    //     console.error('Error al cargar los datos de quejas:', error);
+    //   } finally {
+    //     setLoadingComplaints(false);
+    //   }
+    // };
+
+    // const handleCloseComplaints = () => setShowComplaints(false);
+
+    // comentarios
+    const handleShowComments = async () => {
+      setLoadingComments(true);
+      try {
+        const comments = await getCommentsData(searchResults); // Obtener los datos de comentarios
+        setCommentsData(comments.flat()); // Establece los datos recibidos
+        setShowComments(true);
+      } catch (error) {
+        console.error('Error al cargar los datos de comentarios:', error);
+      } finally {
+        setLoadingComments(false);
+      }
+    };
+
+    const handleCloseComments = () => setShowComments(false);
+
   return (
     <>
        <Dropdown className='' >
@@ -131,9 +176,9 @@ const DropdownActions = () => {
           <Dropdown.Item onClick={handleShowModal} className="custom-dropdown-item">Accionamientos</Dropdown.Item>
           <Dropdown.Item onClick={handleShowOnlinecharge} className="custom-dropdown-item">Cargos en línea</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Busqueda</Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Comentarios</Dropdown.Item>
+          <Dropdown.Item onClick={handleShowComments} className="custom-dropdown-item">Comentarios</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item" onClick={() => setModalShow(true)}>Estados de cuenta</Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Quejas</Dropdown.Item>
+          {/* <Dropdown.Item onClick={handleShowComplaints} className="custom-dropdown-item">Quejas</Dropdown.Item> */}
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Simuladores</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Procesos WLP</Dropdown.Item>
         </Dropdown.Menu>
@@ -145,6 +190,8 @@ const DropdownActions = () => {
       <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps} data={followUpsData} loadingFollow={loadingFollow} />
       <Talks show={showTalks} handleClose={handleCloseTalks} dataTalks={talksData} loading={loadingtalks} />
       <Onlinecharge show={showOnlinecharge} handleClose={handleCloseOnlinecharge} data={onlinechargeData} loading={loadingOnlinecharge} />
+      {/* <Complaints show={showComplaints} handleClose={handleCloseComplaints} data={complaintsData} loading={loadingComplaints} /> */}
+      {/* <Comments show={showComments} handleClose={handleCloseComments} data={commentsData} loading={loadingComments} /> */}
     </>
   );
 }
