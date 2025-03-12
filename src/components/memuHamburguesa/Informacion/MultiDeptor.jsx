@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Modal, Button, Form, Container, Row, Table } from "react-bootstrap";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import servicio from "../../../services/axiosServices";
 
 const Multideudores = ({ show, handleClose }) => {
@@ -29,9 +29,15 @@ const Multideudores = ({ show, handleClose }) => {
     } catch (error) {
       console.error("Error fetching multideudores data:", error);
       if (error.response) {
-        toast.error(
-          `Error ${error.response.status}: ${error.response.data.message}`
-        );
+        if (error.response.status === 404) {
+          toast.error(
+            "Error 404: No se encontró la cuenta especificada. Por favor, verifique el ID de cuenta e intente nuevamente."
+          );
+        } else {
+          toast.error(
+            `Error ${error.response.status}: ${error.response.data.message}`
+          );
+        }
       } else if (error.request) {
         toast.error("Error: No se recibió respuesta del servidor.");
       } else {
@@ -106,7 +112,6 @@ const Multideudores = ({ show, handleClose }) => {
         </Container>
       </Modal.Body>
       <Modal.Footer></Modal.Footer>
-      <Toaster />
     </Modal>
   );
 };
