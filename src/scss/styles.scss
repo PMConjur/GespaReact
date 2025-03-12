@@ -990,3 +990,12 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
     box-shadow: 0 0 5px rgba(26, 188, 156, 0.5);
   }
 }
+
+//estilos de componente AccountStatements
+.custom-table-account{
+  thead{
+    th{
+      padding: .5rem 1rem;
+    }
+  }
+}
