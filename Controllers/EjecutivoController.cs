@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using NoriAPI.Models.Acciones;
 using NoriAPI.Models.Busqueda;
 using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Models.Login;
@@ -61,6 +62,8 @@ namespace NoriAPI.Controllers
         }
 
         #endregion
+
+
 
         #region Seguimientos
         [HttpGet("seguimientos/{idCartera}/{idCuenta}")]
@@ -246,9 +249,6 @@ namespace NoriAPI.Controllers
         }
 
         #endregion
-
-
-       
 
         #region Busqueda
         [HttpGet("busqueda/{idCartera}/{idCuenta}/{Jerarquia}")]
@@ -663,8 +663,6 @@ namespace NoriAPI.Controllers
 
         #region AccionesNegociacion
 
-
-
         [HttpGet("accionesNegociacion")]
         public async Task<IActionResult> GetAccionNegociacion(int idCartera, string idCuenta)
         {
@@ -864,6 +862,22 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+
+        [HttpPost("quejas")]
+        [AllowAnonymous]
+        public async Task<ActionResult> NewQueja([FromBody] Queja quejaNueva)
+        {
+            (string, bool) mensaje = await _ejecutivoService.ValidateNewQueja(quejaNueva);
+
+            if (!mensaje.Item2)
+            {
+                return BadRequest(new { mensaje = mensaje.Item1, exito = false });
+            }
+
+            return Ok(new { mensaje = mensaje.Item1, exito = true });
+        }
+
+
         #endregion
 
     }

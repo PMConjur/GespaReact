@@ -18,6 +18,7 @@ using NoriAPI.Models.Phones;
 using Dapper;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
+using NoriAPI.Models.Acciones;
 
 namespace NoriAPI.Services
 {
@@ -32,11 +33,12 @@ namespace NoriAPI.Services
         Task<TiemposEjecutivo> ValidateTimes(int numEmpleado);
         Task<Dictionary<string, object>> PauseUnpause(InfoPausa pausa);
         Task<Dictionary<string, object>> Promedios(int idEjecutivo);
-
         #endregion
+
         #region AccionesDropDown
         Task ObtenerSeguimientos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerAccionamiento(DataRow drDatos, DataSet dsTablas);
+        #endregion
 
         Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo);
         Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
@@ -67,6 +69,7 @@ namespace NoriAPI.Services
         Task<DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña);
         Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
         Task<DataTable> GetWlpAsync(string Proceso, string idCuenta);
+        Task<(string, bool)> ValidateNewQueja(Queja quejaInsert);
         #endregion
 
 
@@ -530,6 +533,8 @@ namespace NoriAPI.Services
             return WLP;
 
         }
+
+
 
 
 
@@ -1849,7 +1854,22 @@ namespace NoriAPI.Services
             }
         }
         #endregion
-    }
 
+        #region Acciones
+
+        public async Task<(string, bool)> ValidateNewQueja(Queja quejaInsert)
+        {
+            bool insertado = await _ejecutivoRepository.InsertQueja(quejaInsert);
+            if (insertado)
+            {
+                return("Queja insertada con éxito.", true);
+            }
+            else
+            {
+                return ("Error al insertar la queja.", false);
+            }
+        }
+        
+        #endregion
+    }
 }
-#endregion

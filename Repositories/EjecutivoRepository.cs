@@ -9,6 +9,7 @@ using System.Linq;
 using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Models.Phones;
 using System.Net;
+using NoriAPI.Models.Acciones;
 
 namespace NoriAPI.Repositories
 {
@@ -57,6 +58,10 @@ namespace NoriAPI.Repositories
         #region Cargo En Linea
         Task<dynamic> RegisterNewCargo(CargoEnLinea newCargoEnLinea);
         Task<dynamic> RegisterNewEstado(EstadoDeCuenta newEstadoDeCuenta);
+        #endregion
+
+        #region Acciones
+        Task<bool> InsertQueja(Queja insertQueja);
         #endregion
 
     }
@@ -776,6 +781,46 @@ namespace NoriAPI.Repositories
 
         #endregion
 
+        #region Acciones
+        public async Task<bool> InsertQueja(Queja insertQueja)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string query = @"INSERT INTO dbo.Quejas (idCartera, idCuenta, Fecha_Insert, Segundo_Insert, Folio, idEjecutivo_Insert, 
+                                                                            idQueja, idInstitución, Solicitante, LlamadaEntrada, NúmeroTelefónico, CorreoElectrónico, 
+                                                                            idDomicilio, Comentario, NúmeroTelefónico_Contacto, CorreoElectrónico_Contacto) 
+                                                                VALUES(@idCartera ,@idCuenta ,@Fecha_Insert ,@Segundo_Insert ,@Folio ,@idEjecutivo_Insert ,
+                                                                             @idQueja ,@idInstitución ,@Solicitante ,@LlamadaEntrada ,@NúmeroTelefónico ,@CorreoElectrónico ,
+                                                                             @idDomicilio ,@Comentario ,@TeléfonoContacto ,@CorreoContacto)";
+
+            var parameters = new
+            {
+                idCartera = insertQueja.IdCartera,
+                idCuenta = insertQueja.IdCuenta,
+                Fecha_Insert = insertQueja.FechaInsert,
+                Segundo_Insert = insertQueja.SegundoInsert,
+                Folio = insertQueja.Folio,
+                idEjecutivo_Insert = insertQueja.IdEjecutivoInsert,
+                idQueja = insertQueja.IdQueja,
+                idInstitución = insertQueja.IdInstitucion,
+                Solicitante = insertQueja.Solicitante,
+                LlamadaEntrada = insertQueja.LlamadaEntrada,
+                NúmeroTelefónico = insertQueja.NumeroTelefonico,
+                CorreoElectrónico = insertQueja.CorreoElectronico,
+                idDomicilio = insertQueja.IdDomicilio,
+                Comentario = insertQueja.Comentario,
+                TeléfonoContacto = insertQueja.NumeroTelefonicoContacto,
+                CorreoContacto = insertQueja.CorreoElectronicoContacto
+            };
+
+
+            int filasAfectadas = await connection.ExecuteAsync(query, parameters, commandType: CommandType.Text);
+
+            return filasAfectadas > 0;
+        }
+        #endregion
+
+
         #region NegociacionesRecuperacion
 
         public async Task<IEnumerable<Negociacion>> Negociaciones(int idEjecutivo)
@@ -825,7 +870,7 @@ namespace NoriAPI.Repositories
             {
                 monto = newCargoEnLinea.Monto,
                 tarjeta = newCargoEnLinea.Tarjeta,
-              
+
                 status = newCargoEnLinea.Status,
                 IdBanco = newCargoEnLinea.idBanco,
                 vencimiento = newCargoEnLinea.Vencimiento,
@@ -837,7 +882,7 @@ namespace NoriAPI.Repositories
                 idCartera = newCargoEnLinea.IdCartera,
                 idCuenta = newCargoEnLinea.IdCuenta, // Agregar el parámetro idCuenta
                 idEjecutivo = newCargoEnLinea.IdEjecutivo,
-                
+
             };
 
             var result = await connection.QueryFirstOrDefaultAsync<dynamic>(
