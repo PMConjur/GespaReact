@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using NoriAPI.Models.Domicilios;
 using NoriAPI.Models;
 using System.Collections;
+using System.Reflection;
 
 
 namespace NoriAPI.Services
@@ -30,9 +31,6 @@ namespace NoriAPI.Services
         Task<CatalogoDomicilios> RelacionesDomicilios();
 
         #endregion
-
-        Task<int> GetIdValor(DataTable catalogos, string catalogo, object valor);
-
 
     }
 
@@ -203,10 +201,12 @@ namespace NoriAPI.Services
         {
             DataTable catalogosTable = await _ejecutivoRepository.VwCatalogos();
 
+            ClasesGespaNonStatic gespaPhones = new();
+
             //Obtener los idValor para el constructor del nuevo teléfono.
-            int idTelefonia = await GetIdValor(catalogosTable, "Telefonía", newPhoneData.Telefonia);
-            int idOrigen = await GetIdValor(catalogosTable, "Orígenes", "Gestión");
-            int idClase = await GetIdValor(catalogosTable, "Clases", newPhoneData.ClaseTelefono);
+            int idTelefonia = gespaPhones.GetIdValor(catalogosTable, "Telefonía", newPhoneData.Telefonia);
+            int idOrigen = gespaPhones.GetIdValor(catalogosTable, "Orígenes", "Gestión");
+            int idClase = gespaPhones.GetIdValor(catalogosTable, "Clases", newPhoneData.ClaseTelefono);
 
             NewPhone newPhone = new NewPhone(
                 numeroTelefonico: newPhoneData.PhoneNumber,
@@ -526,6 +526,7 @@ namespace NoriAPI.Services
 
             visitas = visitas.OrderByDescending(v => v.Fecha).ThenByDescending(v => v.Hora).ToList();
 
+            await TraduceListaIdAValores(domicilios, "idDomicilio, Comentario");
 
             // Devuelve un objeto DomiciliosVisitasResult con las listas de domicilios y visitas
             return new DomiciliosVisitasResult { Domicilios = domicilios, Visitas = visitas };
@@ -556,7 +557,6 @@ namespace NoriAPI.Services
             List<CatalogoItem> listaInformacion = ObtenerCatalogoInformacion(htInformacion, htValoresCatalogo);
             List<CatalogoItem> listaClases = ObtenerCatalogoClases(htClases, htValoresCatalogo);
 
-            // Crear un objeto para devolver ambas listas.
             CatalogoDomicilios catalogos = new()
             {
                 Informacion = listaInformacion,
@@ -627,24 +627,79 @@ namespace NoriAPI.Services
             return listaClases;
         }
 
-        #endregion
 
-
-        public async Task<int> GetIdValor(DataTable catalogos, string catalogo, object valor)
+        public async Task TraduceListaIdAValores<T>(List<T> lista, string columnasAOcultar = "")
         {
-            if (valor == null)
-                return 0;
-            // Verifica que la DataTable no sea nula y contenga filas
-            if (catalogos == null || catalogos.Rows.Count == 0)
-                return 0;
+            // Definir qué columnas deben ocultarse
+            HashSet<string> columnasExcluidas = new(columnasAOcultar.Replace(" ", "").Split(','));
 
-            // Filtra las filas que coincidan con el catálogo y el valor buscado
-            DataRow[] drFilas = catalogos.Select($"Catálogo = '{catalogo}' AND Valor = '{valor}'");
+            ClasesGespaNonStatic gespaTraduce = new();
 
-            // Si hay coincidencias, retorna el idValor, de lo contrario, retorna 0
-            return drFilas.Length > 0 ? Convert.ToInt32(drFilas[0]["idValor"]) : 0;
+            gespaTraduce.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            gespaTraduce.CargaCatalogos();
+
+            foreach (var item in lista)
+            {
+                foreach (PropertyInfo propiedad in typeof(T).GetProperties())
+                {
+                    string nombreColumna = propiedad.Name;
+
+                    // Omitimos las columnas que deben ocultarse
+                    if (columnasExcluidas.Contains(nombreColumna)) continue;
+
+                    // Si es un ID de catálogo, traducirlo a su valor real
+                    if (gespaTraduce._htNombreId.ContainsValue(nombreColumna))
+                    {
+                        string idValor = propiedad.GetValue(item)?.ToString()?.Trim() ?? "";
+                        if (gespaTraduce._htValoresCatálogo.ContainsKey(idValor))
+                        {
+                            propiedad.SetValue(item, gespaTraduce._htValoresCatálogo[idValor]?.ToString());
+                        }
+                    }
+                    // Formateo específico de columnas
+                    else if (nombreColumna == "idCuenta")
+                    {
+                        string idValor = propiedad.GetValue(item)?.ToString() ?? "";
+                        propiedad.SetValue(item, idValor.Length >= 4 ? idValor.Substring(idValor.Length - 4) : idValor);
+                    }
+                    else if (nombreColumna == "NúmeroTelefónico")
+                    {
+                        string idValor = propiedad.GetValue(item)?.ToString() ?? "";
+                        propiedad.SetValue(item, gespaTraduce.MáscaraTeléfono(idValor));
+                    }
+                    else if (nombreColumna.StartsWith("FechaHora") || nombreColumna == "Seguimiento")
+                    {
+                        string idValor = propiedad.GetValue(item)?.ToString() ?? "";
+                        if (!string.IsNullOrEmpty(idValor) && DateTime.TryParse(idValor, out DateTime fechaHora))
+                        {
+                            // Verificamos si la propiedad es de tipo DateTime o string
+                            if (propiedad.PropertyType == typeof(DateTime) || propiedad.PropertyType == typeof(DateTime?))
+                            {
+                                propiedad.SetValue(item, fechaHora); // Asignar como DateTime
+                            }
+                            else
+                            {
+                                propiedad.SetValue(item, fechaHora.ToString("dd/MM/yyyy HH:mm")); // Asignar como string si aplica
+                            }
+                        }
+                    }
+                    else if (nombreColumna.StartsWith("Monto") || nombreColumna.Contains("Descuento"))
+                    {
+                        string idValor = propiedad.GetValue(item)?.ToString() ?? "";
+                        if (decimal.TryParse(idValor, out decimal monto))
+                        {
+                            propiedad.SetValue(item, gespaTraduce.FormatoPesos(monto)); // Aplicando formato directamente                        }
+                        }
+                    }
+                }
+            }
+
+
+            #endregion
+
+
+
 
         }
-
     }
 }

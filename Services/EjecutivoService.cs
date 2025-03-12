@@ -453,9 +453,10 @@ namespace NoriAPI.Services
 
 
                 DataTable catalogosTable = await _ejecutivoRepository.VwCatalogos();
+                ClasesGespaNonStatic gespaPause = new();
 
                 // Obtener IdPeCausa desde los catálogos
-                int idPeCausa = await _searchService.GetIdValor(catalogosTable, "Pausas", pausa.PeCausa);
+                int idPeCausa = gespaPause.GetIdValor(catalogosTable, "Pausas", pausa.PeCausa);
 
 
                 await _ejecutivoRepository.ChangeEjecutivoMode(pausa.IdEjecutivo, "Consulta");
@@ -1527,7 +1528,7 @@ namespace NoriAPI.Services
             if (domiciliosGet == null || domiciliosGet.Rows.Count == 0)
                 return;
 
-            if (dsTablas.Tables.Contains("Domicilios"));
+            if (dsTablas.Tables.Contains("Domicilios")) ;
             {
                 dsTablas.Tables.Remove("Domicilios");
             }

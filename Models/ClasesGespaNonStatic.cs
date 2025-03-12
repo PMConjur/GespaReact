@@ -3,6 +3,7 @@ using System.Collections;
 using System.Data;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
+using System.Threading.Tasks;
 using NoriAPI.Repositories;
 
 namespace NoriAPI.Models
@@ -380,6 +381,43 @@ namespace NoriAPI.Models
             return sNombreColumna;
         }
 
+        #endregion
+
+        #region FuncionesMetodos
+
+        public string MáscaraTeléfono(object NúmeroTelefónico)
+        {
+            if (NúmeroTelefónico == null)
+                return "";
+
+            string sTeléfono = NúmeroTelefónico.ToString().Trim();
+            return sTeléfono.Length > 4 ? "XXX-XXX-" + sTeléfono.Substring(sTeléfono.Length - 4, 4) : "";
+        }
+
+
+        public int GetIdValor(DataTable catalogos, string catalogo, object valor)
+        {
+            if (valor == null)
+                return 0;
+            // Verifica que la DataTable no sea nula y contenga filas
+            if (catalogos == null || catalogos.Rows.Count == 0)
+                return 0;
+
+            // Filtra las filas que coincidan con el catálogo y el valor buscado
+            DataRow[] drFilas = catalogos.Select($"Catálogo = '{catalogo}' AND Valor = '{valor}'");
+
+            // Si hay coincidencias, retorna el idValor, de lo contrario, retorna 0
+            return drFilas.Length > 0 ? Convert.ToInt32(drFilas[0]["idValor"]) : 0;
+
+        }
+
+        #endregion
+
+        #region FuncionesCatalogos
+        public string FormatoPesos(decimal monto)
+        {
+            return monto.ToString("$ #,0.00");
+        }
         #endregion
 
 
