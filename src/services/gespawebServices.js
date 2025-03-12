@@ -499,6 +499,62 @@ export async function getTalksData(searchResults) {
     throw new Error("Error al cargar los datos de negociaciones.");
   }
 }
+
+//endpoint acciones-busquedas
+export const fetchActionsSearch = async (idCuenta) => {
+  try {
+    console.log("Iniciando llamada a la API...");
+    console.log(
+      "URL de la API:",
+      `${apiUrl}/ejecutivo/busqueda/1/${idCuenta}/0`
+    );
+
+    const response = await servicio.get(
+      `${apiUrl}/ejecutivo/busqueda/1/${idCuenta}/0`
+    );
+
+    const message = getErrorStatus(response.status);
+
+    console.log("Respuesta de la API recibida. Estado:", response.status);
+
+    if (response.status !== 200) {
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
+    }
+
+    const data = response.data;
+
+    return data;
+  } catch (error) {
+    console.error("Error en fetchActionsSearch:", error);
+    throw error;
+  }
+};
+
+//endpoint guardar busqueda ejecutivo
+export const fetchSaveExecutive = async (data) => {
+  try {
+    console.log("Enviando datos al endpoint..."); // Verifica que esto aparezca en la consola
+    const response = await servicio.post(
+      `/ejecutivo/guardar`,
+     data
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Busqueda guardada:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchSaveAccount:", error);
+    throw error;
+  }
+};
+
 //Error status global
 const getErrorStatus = (status) => {
   switch (status) {

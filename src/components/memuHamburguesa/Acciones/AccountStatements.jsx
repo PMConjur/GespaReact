@@ -120,7 +120,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
             <div
               className="flex-grow-1"
               style={{
-                overflow: "auto",
+                overflow: "auto ",
                 maxWidth: "550px",
                 maxHeight: "375px",
                 marginBottom: "auto",

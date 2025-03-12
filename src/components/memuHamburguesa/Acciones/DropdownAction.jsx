@@ -7,6 +7,7 @@ import FollowUps from './FollowUps';
 import Talks from './Talks';
 import Drives from './Drives';
 import { getFollowUpsData, getTalksData } from '../../../services/gespawebServices';
+import Search from './Search';
 
 const DropdownActions = () => {
   const [modalShow, setModalShow] = useState(false);
@@ -17,6 +18,10 @@ const DropdownActions = () => {
   const [talksData, setTalksData] = useState([]);
   const [loadingtalks, setLoadingtalks] = useState(false);
   const [showDrives, setShowDrives] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleOpenModal = () => setShowModal(true);
+  const handleCloseModal = () => setShowModal(false);
 
   const { searchResults } = useContext(AppContext);
 
@@ -65,7 +70,7 @@ const DropdownActions = () => {
         <Dropdown.Menu style={{backgroundColor: '#1d1f20', border: 'none'}} className='custom-dropdown-menu'>
           <Dropdown.Item onClick={handleShowTalks} className="custom-dropdown-item">Negociaciones</Dropdown.Item>
           <Dropdown.Item onClick={handleShowFollowUps} className="custom-dropdown-item">Seguimientos</Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Busqueda</Dropdown.Item>
+          <Dropdown.Item onClick={handleOpenModal} href="/maintenance" className="custom-dropdown-item">Busqueda</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Cargos en linea</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Comentarios</Dropdown.Item>
           <Dropdown.Item onClick={handleShowDrives} className="custom-dropdown-item">Accionamientos</Dropdown.Item>
@@ -81,6 +86,7 @@ const DropdownActions = () => {
       <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps} data={followUpsData} loadingFollow={loadingFollow} />
       <Talks show={showTalks} handleClose={handleCloseTalks} dataTalks={talksData} loading={loadingtalks} />
       <Drives showModal={showDrives} handleCloseModal={handleCloseDrives} />
+      <Search show={showModal} handleClose={handleCloseModal} />
     </>
   );
 }
