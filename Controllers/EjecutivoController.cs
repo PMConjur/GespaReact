@@ -248,7 +248,7 @@ namespace NoriAPI.Controllers
         #endregion
 
 
-       
+
 
         #region Busqueda
         [HttpGet("busqueda/{idCartera}/{idCuenta}/{Jerarquia}")]
@@ -864,9 +864,9 @@ namespace NoriAPI.Controllers
             }
         }
         #endregion
+
         #region Relaciones
         [HttpGet("relaciones")]
-        [AllowAnonymous]
         public IActionResult CargaRelaciones()
         {
             try
@@ -885,6 +885,162 @@ namespace NoriAPI.Controllers
                     .ToList();
 
                 return Ok(listaRelaciones); // Devuelve la lista de diccionarios
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+        #endregion
+
+        #region Correos
+        [HttpGet("CorreosObtiene/{idCartera}/{idCuenta}")]
+        
+    
+        public async Task<IActionResult> GetCorreos(int idCartera, string idCuenta)
+        {
+
+            DataSet dsTablas = new DataSet();
+            DataTable correosTable = dsTablas.Tables.Add("Correos");
+            correosTable.Columns.Add("idCartera", typeof(int));
+            correosTable.Columns.Add("idCuenta", typeof(string));
+
+            DataRow drDatos = correosTable.NewRow();
+            drDatos["idCartera"] = idCartera;
+            drDatos["idCuenta"] = idCuenta;
+
+            await _ejecutivoService.ObtenerCorreosEJE(drDatos, dsTablas);
+
+            if (!dsTablas.Tables.Contains("Correos") || dsTablas.Tables["Correos"].Rows.Count == 0)
+            {
+                return NotFound("No se encontraron Correos para este ejecutivo.");
+            }
+
+            var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Correos"]);
+            string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+            return Ok(jsonString);
+
+        }
+
+        [HttpGet("CorreosEnviados/{idCartera}/{idCuenta}")]
+        
+    
+        public async Task<IActionResult> GetCorreosEnviados(int idCartera, string idCuenta)
+        {
+
+            DataSet dsTablas = new DataSet();
+            DataTable correosTable = dsTablas.Tables.Add("Correos");
+            correosTable.Columns.Add("idCartera", typeof(int));
+            correosTable.Columns.Add("idCuenta", typeof(string));
+
+            DataRow drDatos = correosTable.NewRow();
+            drDatos["idCartera"] = idCartera;
+            drDatos["idCuenta"] = idCuenta;
+
+            await _ejecutivoService.ObtenerEnviadosEJE(drDatos, dsTablas);
+
+            if (!dsTablas.Tables.Contains("Correos") || dsTablas.Tables["Correos"].Rows.Count == 0)
+            {
+                return NotFound("No se encontraron Correos para este ejecutivo.");
+            }
+
+            var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Correos"]);
+            string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+            return Ok(jsonString);
+
+        }
+
+        [HttpGet("CorreosCarga/{idCartera}/{idCuenta}")]
+        
+       
+        public async Task<IActionResult> GetCorreosCarga(int idCartera, string idCuenta)
+        {
+
+            DataSet dsTablas = new DataSet();
+            DataTable correosTable = dsTablas.Tables.Add("Correos");
+            correosTable.Columns.Add("idCartera", typeof(int));
+            correosTable.Columns.Add("idCuenta", typeof(string));
+
+            DataRow drDatos = correosTable.NewRow();
+            drDatos["idCartera"] = idCartera;
+            drDatos["idCuenta"] = idCuenta;
+
+            await _ejecutivoService.ObtenerCargaEJE(drDatos, dsTablas);
+
+            if (!dsTablas.Tables.Contains("Correos") || dsTablas.Tables["Correos"].Rows.Count == 0)
+            {
+                return NotFound("No se encontraron Correos para este ejecutivo.");
+            }
+
+            var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Correos"]);
+            string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+            return Ok(jsonString);
+
+        }
+
+        [HttpPost("nuevoCorreo")] 
+        
+        public async Task<IActionResult> NuevoCorreo([FromBody] CorreosRe nuevoCorreoRe, [FromQuery] int idEjecutivo, [FromQuery] int idOrigen = 1805, [FromQuery] bool ValidarDuplicidad = true)
+        {
+            try
+            {
+                string resultado = await _ejecutivoService.NuevoCorreoAsync(nuevoCorreoRe, idEjecutivo, idOrigen, ValidarDuplicidad);
+
+                if (string.IsNullOrEmpty(resultado))
+                {
+                    return Ok("Correo electrónico agregado con éxito.");
+                }
+                else
+                {
+                    return BadRequest(resultado); // Devuelve el mensaje de error
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+        [HttpPut("identificar")]
+        // Ruta para IdentificaCorreoAsync: /api/correos/identificar
+        public async Task<IActionResult> IdentificarCorreo([FromQuery] string correoElectronico, [FromQuery] int idInformacion, [FromQuery] int idCartera, [FromQuery] string idCuenta, [FromQuery] int idEjecutivoInformacion)
+        {
+            try
+            {
+                string resultado = await _ejecutivoService.IdentificaCorreoAsync(correoElectronico, idInformacion, idCartera, idCuenta, idEjecutivoInformacion);
+
+                if (string.IsNullOrEmpty(resultado))
+                {
+                    return Ok("Correo electrónico identificado con éxito.");
+                }
+                else
+                {
+                    return BadRequest(resultado); // Devuelve el mensaje de error
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+        [HttpPost("EnviarCorreo")]
+        
+        public ActionResult<string> EnviarCorreo(string correoElectronico, string asunto, string mensaje)
+        {
+            try
+            {
+                string resultado = _ejecutivoService.EnviaCorreo(correoElectronico, asunto, mensaje);
+
+                if (string.IsNullOrEmpty(resultado))
+                {
+                    return Ok("Correo enviado correctamente.");
+                }
+                else
+                {
+                    return BadRequest(resultado);
+                }
             }
             catch (Exception ex)
             {

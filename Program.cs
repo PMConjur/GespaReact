@@ -16,6 +16,8 @@ using static NoriAPI.Services.ISearchService;
 
 // 👇 Asegúrate de agregar este "using" con el namespace donde está tu SwaggerIgnoreFilter
 using NoriAPI.Swagger.Filters;
+using NoriAPI.Models;
+using System.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -95,13 +97,26 @@ builder.Services.AddSwaggerGen(options =>
 // Registramos los servicios
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
-builder.Services.AddScoped<IEjecutivoService, EjecutivoService>();
+//builder.Services.AddScoped<IEjecutivoService, EjecutivoService>();
 
 // Registramos los Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISearchRepository, SearchRepository>();
 builder.Services.AddScoped<IEjecutivoRepository, EjecutivoRepository>();
 builder.Services.AddScoped<IBusquedaRepository, BusquedaRepository>();
+
+builder.Services.AddScoped<Catalogos>();
+builder.Services.AddScoped<IEjecutivoService, EjecutivoService>(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    var ejecutivoRepository = provider.GetRequiredService<IEjecutivoRepository>();
+    var busquedaRepository = provider.GetRequiredService<IBusquedaRepository>();
+    var searchRepository = provider.GetRequiredService<ISearchRepository>();
+    var searchService = provider.GetRequiredService<ISearchService>();
+    var connectionString = configuration.GetConnectionString("Piso2Amex");
+    return new EjecutivoService(configuration, ejecutivoRepository, busquedaRepository, searchRepository, searchService, new Catalogos(), new DataTable(), new DataTable());
+});
+
 
 var app = builder.Build();
 

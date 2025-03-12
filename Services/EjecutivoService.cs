@@ -18,6 +18,7 @@ using NoriAPI.Models.Phones;
 using Dapper;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Mail;
 
 namespace NoriAPI.Services
 {
@@ -61,6 +62,13 @@ namespace NoriAPI.Services
         DataTable BuscaScripts(int idProducto);
 
         DataTable CargaRelaciones();
+        Task ObtenerCorreosEJE(DataRow drDatos, DataSet dsTablas);
+        Task ObtenerEnviadosEJE(DataRow drDatos, DataSet dsTablas);
+        Task ObtenerCargaEJE(DataRow drDatos, DataSet dsTablas);
+        Task<string> NuevoCorreoAsync(CorreosRe nuevoCorreoRe, int idEjecutivo, int idOrigen = 1805, bool ValidarDuplicidad = true);
+        Task<string> IdentificaCorreoAsync(string CorreoElectronico, int idInformacion, int idCartera, string idCuenta, int idEjecutivoInformacion);
+        string EnviaCorreo(string CorreoElectrónico, string Asunto, string Mensaje);
+
 
 
         #region Acciones
@@ -82,6 +90,14 @@ namespace NoriAPI.Services
         private readonly ISearchService _searchService;
         private readonly string _connectionString;
         private readonly IBusquedaRepository _busquedaRepository;
+        private List<Correos> _correosList = new List<Correos>();
+        private readonly Catalogos _catalogos;
+        private readonly DataTable _correos;
+        private readonly DataTable _enviados;
+      
+
+
+
 
 
         #region PropiedadesProductividad
@@ -97,13 +113,33 @@ namespace NoriAPI.Services
         private static Hashtable _htNombreId;
         #endregion
 
-        public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository, IBusquedaRepository busquedaRepository, ISearchRepository searchRepository, ISearchService searchService)
+        public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository, IBusquedaRepository busquedaRepository, ISearchRepository searchRepository, ISearchService searchService, Catalogos catalogos, DataTable correos, DataTable enviados)
         {
             _configuration = configuration;
             _ejecutivoRepository = ejecutivoRepository;
             _connectionString = _configuration.GetConnectionString("Piso2Amex");
             _searchService = searchService;
             _busquedaRepository = busquedaRepository;
+            _catalogos = catalogos;
+            _correos = correos;
+            _enviados = CreaTablaEnviados();
+            _correos = CreaTablaCorreos();
+
+
+        }
+        private DataTable CreaTablaCorreos()
+        {
+            DataTable correos = new DataTable();
+            correos.Columns.Add("CorreoElectrónico", typeof(string));
+            correos.PrimaryKey = new DataColumn[] { correos.Columns["CorreoElectrónico"] };
+            // Aquí puedes agregar filas a la tabla si es necesario
+            return correos;
+        }
+        private DataTable CreaTablaEnviados()
+        {
+            DataTable enviados = new DataTable();
+            // Aquí puedes agregar las columnas a la tabla de enviados
+            return enviados;
         }
 
         #region Productividad
@@ -148,7 +184,7 @@ namespace NoriAPI.Services
             var productividad = MapToInfoProductividad(prod);
             var resultadoProductividad = new ResultadoProductividad(mensaje, productividad);
             return resultadoProductividad;
-        } 
+        }
 
         private static ProductividadInfo MapToInfoProductividad(IDictionary<string, object> prod)
         {
@@ -320,7 +356,7 @@ namespace NoriAPI.Services
         {
             DataTable WLP = new DataTable();
             if (Proceso == "Arrangement")
-            {                
+            {
                 string query = "SELECT * FROM [Amex_LSC].[WLP].[OB.Arrangement] WHERE CM15 = @idCuenta "; // Evita inyección SQL
 
                 using (var connection = new SqlConnection(_connectionString))
@@ -464,7 +500,7 @@ namespace NoriAPI.Services
                     }
                 }
 
-               // return WLP;
+                // return WLP;
             }
             else if (Proceso == "SmsOptOut")
             {
@@ -1544,6 +1580,7 @@ namespace NoriAPI.Services
 
 
 
+
         #endregion
 
         #region MultiDeudores
@@ -1745,7 +1782,7 @@ namespace NoriAPI.Services
             if (domiciliosGet == null || domiciliosGet.Rows.Count == 0)
                 return;
 
-            if (dsTablas.Tables.Contains("Domicilios"));
+            if (dsTablas.Tables.Contains("Domicilios")) ;
             {
                 dsTablas.Tables.Remove("Domicilios");
             }
@@ -1890,6 +1927,345 @@ namespace NoriAPI.Services
                 // Log the exception or handle it appropriately
                 Console.WriteLine($"Error en CargaRelaciones: {ex.Message}");
                 return new DataTable(); // Retorna una tabla vacía en caso de error
+            }
+        }
+        #endregion
+
+
+        #region Correos
+        public async Task<DataTable> GetCorreosAsync(int idCartera, string idCuenta)
+        {
+            DataTable correos = new DataTable();
+            string query = "SELECT * FROM fn_CorreosEnviados(@idCartera, @idCuenta)";
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+                  
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(correos);
+                    }
+                }
+            }
+            return correos;
+        }
+
+        public async Task ObtenerCorreosEJE(DataRow drDatos, DataSet dsTablas)
+        {
+            if (drDatos == null)
+                return;
+
+            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
+                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
+
+            var idCartera = Convert.ToInt32(drDatos["idCartera"]);
+            var idCuenta = Convert.ToString(drDatos["idCuenta"]);
+
+            DataTable CorreosGet = await GetCorreosAsync(idCartera, idCuenta);
+
+            if (CorreosGet == null || CorreosGet.Rows.Count == 0)
+                return;
+
+            if (dsTablas.Tables.Contains("Correos"))
+            {
+                dsTablas.Tables.Remove("Correos");
+            }
+
+            CorreosGet.TableName = "Correos";
+            dsTablas.Tables.Add(CorreosGet);
+        }
+
+        public async Task<DataTable> GetCorreosEnviadosAsync(int idCartera, string idCuenta)
+        {
+            DataTable correos = new DataTable();
+            string query = "SELECT * FROM fn_Correos(@idCartera, @idCuenta)";
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(correos);
+                    }
+                }
+            }
+            return correos;
+        }
+
+        public async Task ObtenerEnviadosEJE(DataRow drDatos, DataSet dsTablas)
+        {
+            if (drDatos == null)
+                return;
+
+            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
+                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
+
+            var idCartera = Convert.ToInt32(drDatos["idCartera"]);
+            var idCuenta = Convert.ToString(drDatos["idCuenta"]);
+
+            DataTable CorreosGet = await GetCorreosEnviadosAsync(idCartera, idCuenta);
+
+            if (CorreosGet == null || CorreosGet.Rows.Count == 0)
+                return;
+
+            if (dsTablas.Tables.Contains("Correos"))
+            {
+                dsTablas.Tables.Remove("Correos");
+            }
+
+            CorreosGet.TableName = "Correos";
+            dsTablas.Tables.Add(CorreosGet);
+        }
+
+        public async Task<DataTable> GetCorreosCargaAsync(int idCartera, string idCuenta)
+        {
+            DataTable correos = new DataTable();
+            string query = "SELECT * FROM fn_Correos(@idCartera, @idCuenta)";
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(correos);
+                    }
+                }
+            }
+            return correos;
+        }
+
+        public async Task ObtenerCargaEJE(DataRow drDatos, DataSet dsTablas)
+        {
+            if (drDatos == null)
+                return;
+
+            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
+                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
+
+            var idCartera = Convert.ToInt32(drDatos["idCartera"]);
+            var idCuenta = Convert.ToString(drDatos["idCuenta"]);
+
+            DataTable CorreosGet = await GetCorreosCargaAsync(idCartera, idCuenta);
+
+            if (CorreosGet == null || CorreosGet.Rows.Count == 0)
+                return;
+
+            if (dsTablas.Tables.Contains("Correos"))
+            {
+                dsTablas.Tables.Remove("Correos");
+            }
+
+            CorreosGet.TableName = "Correos";
+            dsTablas.Tables.Add(CorreosGet);
+        }
+        public async Task<string> NuevoCorreoAsync(CorreosRe nuevoCorreoRe, int idEjecutivo, int idOrigen = 1805, bool ValidarDuplicidad = true)
+        {
+            string CorreoElectronico = nuevoCorreoRe.CorreoElectronico?.Trim();
+
+            if (string.IsNullOrEmpty(CorreoElectronico))
+                return "La dirección de correo electrónica es inválida.";
+
+            try
+            {
+                MailAddress m = new MailAddress(CorreoElectronico);
+            }
+            catch (FormatException)
+            {
+                return "La dirección de correo electrónica es inválida.";
+            }
+
+            // Verificar duplicados en la lista CorreosList
+            if (_correosList.Find(c => c.CorreoElectronico == CorreoElectronico) != null)
+                if (ValidarDuplicidad)
+                    return "Dicha dirección de correo ya está dada de alta.";
+                else
+                    return "";
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    using (SqlCommand command = new SqlCommand("[2.5.0.GuardaCorreo]", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+
+                        command.Parameters.AddWithValue("@idCartera", nuevoCorreoRe.IdCartera);
+                        command.Parameters.AddWithValue("@idCuenta", nuevoCorreoRe.IdCuenta);
+                        command.Parameters.AddWithValue("@CorreoElectronico", CorreoElectronico);
+                        command.Parameters.AddWithValue("@idEjecutivo", idEjecutivo);
+
+                        await command.ExecuteNonQueryAsync();
+                    }
+                }
+
+                // Agregar el objeto Correos a la lista CorreosList
+                Correos nuevoCorreo = new Correos(
+                    CorreoElectronico,
+                    nuevoCorreoRe.IdCartera,
+                    nuevoCorreoRe.IdCuenta,
+                    idEjecutivo,
+                    idOrigen,
+                    nuevoCorreoRe.IdInformacion
+                );
+
+                _correosList.Add(nuevoCorreo);
+
+                return "";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en NuevoCorreoAsync: {ex.Message}");
+                return $"Falló al dar de alta nuevo correo: {ex.Message}";
+            }
+        }
+        public async Task<string> IdentificaCorreoAsync(string CorreoElectronico, int idInformacion, int idCartera, string idCuenta, int idEjecutivoInformacion)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    // Verificar si el correo existe en la base de datos
+                    string checkQuery = "SELECT COUNT(*) FROM CorreosCuentas WHERE idCartera = @idCartera AND idCuenta = @idCuenta AND CorreoElectronico = @CorreoElectronico";
+                    using (SqlCommand checkCommand = new SqlCommand(checkQuery, connection))
+                    {
+                        checkCommand.Parameters.AddWithValue("@idCartera", idCartera);
+                        checkCommand.Parameters.AddWithValue("@idCuenta", idCuenta);
+                        checkCommand.Parameters.AddWithValue("@CorreoElectronico", CorreoElectronico);
+
+                        int count = (int)await checkCommand.ExecuteScalarAsync();
+                        if (count == 0)
+                        {
+                            return "La dirección de correo no está asignada a la cuenta.";
+                        }
+                    }
+
+                    // Verificar si idInformación es válido usando _catalogos.IdsInformacionValidos
+                    if (!_catalogos.IdsInformacionValidos.Contains(idInformacion.ToString()))
+                    {
+                        return "Ingrese un id de Información válido.";
+                    }
+
+                    // Actualizar la información del correo
+                    string updateQuery = "UPDATE CorreosCuentas SET idInformacion = @idInformacion, idEjecutivoInformacion = @idEjecutivoInformacion, FechaHora_Informacion = GETDATE() WHERE idCartera = @idCartera AND idCuenta = @idCuenta AND CorreoElectronico = @CorreoElectronico";
+                    using (SqlCommand updateCommand = new SqlCommand(updateQuery, connection))
+                    {
+                        updateCommand.Parameters.AddWithValue("@idCartera", idCartera);
+                        updateCommand.Parameters.AddWithValue("@idCuenta", idCuenta);
+                        updateCommand.Parameters.AddWithValue("@CorreoElectronico", CorreoElectronico);
+                        updateCommand.Parameters.AddWithValue("@idInformacion", idInformacion);
+                        updateCommand.Parameters.AddWithValue("@idEjecutivoInformacion", idEjecutivoInformacion);
+
+                        await updateCommand.ExecuteNonQueryAsync();
+                    }
+
+                    return ""; // Éxito
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en IdentificaCorreoAsync: {ex.Message}");
+                return $"Fallo en base de datos al identificar correo electrónico: {ex.Message}";
+            }
+        }
+        public string EnviaCorreo(string CorreoElectrónico, string Asunto, string Mensaje)
+        {
+            try
+            {
+                CorreoElectrónico = CorreoElectrónico.Trim();
+
+                if (_correos != null && _correos.Rows.Find(CorreoElectrónico) == null)
+                    return "Dicha dirección de correo no está asignada a la cuenta.";
+
+                if (Asunto.Trim().Length < 5)
+                    return "El asunto del correo es ambiguo o vacío.";
+
+                if (Mensaje.Trim().Length < 10)
+                    return "El mensaje del correo debe contener mayor información.";
+
+                // Obtener los datos necesarios de IEjecutivoRepository
+                int idCartera = _ejecutivoRepository.ObtenerIdCartera();
+                string idCuenta = _ejecutivoRepository.ObtenerIdCuenta();
+                int idEjecutivo = _ejecutivoRepository.ObtenerIdEjecutivo();
+                string NombreEjecutivo = _ejecutivoRepository.ObtenerNombreEjecutivo();
+
+                string query = "EXEC [2.5.1.EnviaCorreo] " +
+                               "@idCartera , " +
+                               "@idCuenta, " +
+                               "@CorreoElectrónico," +
+                               "@Asunto," +
+                               "@Mensaje," +
+                               "@idEjecutivo ";
+
+                var parameters = new
+                {
+                    idCartera = idCartera,
+                    idCuenta = idCuenta,
+                    CorreoElectrónico = CorreoElectrónico,
+                    Asunto = Asunto,
+                    Mensaje = Mensaje,
+                    idEjecutivo = idEjecutivo
+                };
+
+                var tblResultado = EjecutarConsulta(query, parameters);
+
+                if (tblResultado == null)
+                    return "Falló al crear validación de envió de correo el electrónico.";
+
+                if (_enviados == null)
+                    return "";
+
+                DataRow drEnvío = _enviados.NewRow();
+                //Funciones.AddParametersToRow(command.Parameters, drEnvío); // Asegúrate de que Funciones esté disponible
+                drEnvío["idEtapa"] = 2301;
+                drEnvío["Fecha_Insert"] = tblResultado.Fecha_Insert;
+                drEnvío["Segundo_Insert"] = tblResultado.Segundo_Insert;
+                drEnvío["Ejecutivo"] = NombreEjecutivo;
+                _enviados.Rows.Add(drEnvío);
+
+                return "";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en EnviaCorreo: {ex.Message}");
+                return $"Fallo al enviar correo electrónico: {ex.Message}";
+            }
+        }
+
+        private dynamic EjecutarConsulta(string query, object parameters = null)
+        {
+            try
+            {
+                using (IDbConnection connection = new SqlConnection(_connectionString))
+                {
+                    return connection.QueryFirstOrDefault(query, parameters);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al ejecutar consulta: {ex.Message}");
+                return null;
             }
         }
         #endregion

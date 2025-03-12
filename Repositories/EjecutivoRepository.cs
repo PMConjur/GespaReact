@@ -58,6 +58,10 @@ namespace NoriAPI.Repositories
         Task<dynamic> RegisterNewCargo(CargoEnLinea newCargoEnLinea);
         Task<dynamic> RegisterNewEstado(EstadoDeCuenta newEstadoDeCuenta);
         #endregion
+        int ObtenerIdCartera();
+        string ObtenerIdCuenta();
+        int ObtenerIdEjecutivo();
+        string ObtenerNombreEjecutivo();
 
     }
     public class EjecutivoRepository : IEjecutivoRepository
@@ -1029,6 +1033,52 @@ namespace NoriAPI.Repositories
 
 
         //#endregion
+
+        #region Datos
+        public int ObtenerIdCartera()
+        {
+            
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("SELECT idCartera FROM [dbCollection].[dbo].[Cuentas] WHERE idCuenta = @idCuenta", connection); // Reemplaza ... con tu lógica
+                return (int)command.ExecuteScalar();
+            }
+        }
+
+        public string ObtenerIdCuenta()
+        {
+            
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("SELECT idCuenta FROM [dbCollection].[dbo].[Cuentas] WHERE idCuenta = @idCuenta", connection); // Reemplaza ... con tu lógica
+                return command.ExecuteScalar().ToString();
+            }
+        }
+
+        public int ObtenerIdEjecutivo()
+        {
+            
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("SELECT idEjecutivo FROM [dbCollection].[dbo].[Ejecutivos] WHERE idEjecutivo = @idEjecutivo ", connection); // Reemplaza ... con tu lógica
+                return (int)command.ExecuteScalar();
+            }
+        }
+
+        public string ObtenerNombreEjecutivo()
+        {
+            
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("SELECT NombreEjecutivo FROM Ejecutivos WHERE ...", connection); // Reemplaza ... con tu lógica
+                return command.ExecuteScalar().ToString();
+            }
+        }
+        #endregion
 
     }
 }
