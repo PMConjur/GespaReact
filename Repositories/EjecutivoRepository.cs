@@ -728,6 +728,15 @@ namespace NoriAPI.Repositories
 
         #endregion
 
+        #region Calculadora.2daparte
+
+
+
+
+
+        #endregion
+
+
         #region Tiempos
         public async Task<ResultadoTiempos> ValidateTimes(int numEmpleado)
         {
