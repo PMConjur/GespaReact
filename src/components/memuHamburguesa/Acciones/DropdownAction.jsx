@@ -37,9 +37,9 @@ const DropdownActions = () => {
   // const [complaintsData, setComplaintsData] = useState([]); // Estado para los datos de quejas
   // const [loadingComplaints, setLoadingComplaints] = useState(false); // Estado de carga para quejas
 
-  const [showComments, setShowComments] = useState(false); // Estado para mostrar el modal de comentarios
-  const [commentsData, setCommentsData] = useState([]); // Estado para los datos de comentarios
-  const [loadingComments, setLoadingComments] = useState(false); // Estado de carga para comentarios
+  // const [showComments, setShowComments] = useState(false); // Estado para mostrar el modal de comentarios
+  // const [commentsData, setCommentsData] = useState([]); // Estado para los datos de comentarios
+  // const [loadingComments, setLoadingComments] = useState(false); // Estado de carga para comentarios
 
   // Consumir el contexto
   const { searchResults } = useContext(AppContext);
@@ -149,20 +149,20 @@ const DropdownActions = () => {
     // const handleCloseComplaints = () => setShowComplaints(false);
 
     // comentarios
-    const handleShowComments = async () => {
-      setLoadingComments(true);
-      try {
-        const comments = await getCommentsData(searchResults); // Obtener los datos de comentarios
-        setCommentsData(comments.flat()); // Establece los datos recibidos
-        setShowComments(true);
-      } catch (error) {
-        console.error('Error al cargar los datos de comentarios:', error);
-      } finally {
-        setLoadingComments(false);
-      }
-    };
+    // const handleShowComments = async () => {
+    //   setLoadingComments(true);
+    //   try {
+    //     const comments = await getCommentsData(searchResults); // Obtener los datos de comentarios
+    //     setCommentsData(comments.flat()); // Establece los datos recibidos
+    //     setShowComments(true);
+    //   } catch (error) {
+    //     console.error('Error al cargar los datos de comentarios:', error);
+    //   } finally {
+    //     setLoadingComments(false);
+    //   }
+    // };
 
-    const handleCloseComments = () => setShowComments(false);
+    // const handleCloseComments = () => setShowComments(false);
 
   return (
     <>
@@ -176,7 +176,7 @@ const DropdownActions = () => {
           <Dropdown.Item onClick={handleShowModal} className="custom-dropdown-item">Accionamientos</Dropdown.Item>
           <Dropdown.Item onClick={handleShowOnlinecharge} className="custom-dropdown-item">Cargos en línea</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Busqueda</Dropdown.Item>
-          <Dropdown.Item onClick={handleShowComments} className="custom-dropdown-item">Comentarios</Dropdown.Item>
+          {/* <Dropdown.Item onClick={handleShowComments} className="custom-dropdown-item">Comentarios</Dropdown.Item> */}
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item" onClick={() => setModalShow(true)}>Estados de cuenta</Dropdown.Item>
           {/* <Dropdown.Item onClick={handleShowComplaints} className="custom-dropdown-item">Quejas</Dropdown.Item> */}
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Simuladores</Dropdown.Item>
