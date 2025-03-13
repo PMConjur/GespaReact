@@ -2537,6 +2537,50 @@ namespace NoriAPI.Services
             }
         }
         #endregion
+
+        #region NegociacionesEjecutivo
+        public async Task<DataTable> GetNegiciacionesEjecutivoAsync(int idEjecutivo)
+        {
+            DataTable negociaciones = new DataTable();
+            string query = "SELECT * FROM fn_NegociacionesEjecutivo(@idEjecutivo)"; // Evita inyección SQL
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                    command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(negociaciones);
+                    }
+                }
+            }
+            //string jsonString = JsonSerializer.Serialize();
+            return negociaciones;
+        }
+        public async Task ObtieneNegociacionesEjecutivosAsync(DataRow drDatos, DataSet dsTablas)
+        {
+            if (drDatos == null || dsTablas.Tables.Contains("Negociaciones"))
+                return;
+
+            // Verifica que drDatos tenga la columna 'idEjecutivo'
+            if (!drDatos.Table.Columns.Contains("idEjecutivo"))
+                throw new ArgumentException("La columna 'idEjecutivo' no existe en el DataRow");
+
+            var idEjecutivo = drDatos["idEjecutivo"];
+            DataTable negociacionesget = await GetSeguimientosEjecutivoAsync(Convert.ToInt32(idEjecutivo));
+
+            if (negociacionesget == null || negociacionesget.Rows.Count == 0)
+                return;
+
+            negociacionesget.TableName = "Negociaciones";
+            dsTablas.Tables.Add(negociacionesget);
+            negociacionesget.DefaultView.Sort = "Negociaciones";
+        }
+        #endregion
     }
 
 }
