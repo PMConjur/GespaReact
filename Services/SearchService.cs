@@ -374,11 +374,11 @@ namespace NoriAPI.Services
                 }
             }
 
-            if (expresion.StartsWith("#"))
+            if (expresion.StartsWith('#'))
             {
                 return EvaluateDate(resultado.Replace("#", ""));
             }
-            else if (campos.Length > 1 && (expresion.Contains("+") || expresion.Contains("-") || expresion.Contains("*") || expresion.Contains("/") || expresion.Contains("^")))
+            else if (campos.Length > 1 && (expresion.Contains('+') || expresion.Contains('-') || expresion.Contains('*') || expresion.Contains('/') || expresion.Contains('^')))
             {
                 return Evaluate(resultado);
             }
@@ -524,12 +524,20 @@ namespace NoriAPI.Services
                 return new DomiciliosVisitasResult { Error = "No se encontraron domicilios o visitas para la cuenta y cartera especificadas." };
             }
 
+            //Ordenar las visitas por fecha y hora, de más reciente a más antigua.
             visitas = visitas.OrderByDescending(v => v.Fecha).ThenByDescending(v => v.Hora).ToList();
 
-            await TraduceListaIdAValores(domicilios, "idDomicilio, Comentario");
+            // Mapear los domicilios a una lista de DomicilioTranslated con nuevos campos (Información y Clase)para traducir los valores de sus IDs.
+            var domiciliosTraducidos = MapearDomicilios(domicilios);
+
+
+            await TraduceListaIdAValores(domiciliosTraducidos, "idDomicilio, Comentario");
+
+            await LlenaDomicilios(domiciliosTraducidos, 1);
+
 
             // Devuelve un objeto DomiciliosVisitasResult con las listas de domicilios y visitas
-            return new DomiciliosVisitasResult { Domicilios = domicilios, Visitas = visitas };
+            return new DomiciliosVisitasResult { Domicilios = domiciliosTraducidos, Visitas = visitas };
 
         }
 
@@ -627,6 +635,41 @@ namespace NoriAPI.Services
             return listaClases;
         }
 
+        public List<DomicilioTranslated> MapearDomicilios(List<Domicilio> listaDomicilios)
+        {
+            List<DomicilioTranslated> listaTraducida = [];
+
+            foreach (var domicilio in listaDomicilios)
+            {
+                DomicilioTranslated domicilioTraducido = new()
+                {
+                    IdCartera = domicilio.IdCartera,
+                    IdCuenta = domicilio.IdCuenta,
+                    IdDomicilio = domicilio.IdDomicilio,
+                    Fecha_Insert = domicilio.Fecha_Insert,
+                    IdEjecutivo = domicilio.IdEjecutivo,
+                    IdInformación = domicilio.IdInformación, // 🔹 Se mantiene igual, sin traducir
+                    Calle = domicilio.Calle,
+                    NúmeroExterior = domicilio.NúmeroExterior,
+                    NúmeroInterior = domicilio.NúmeroInterior,
+                    IdCódigoPostal = domicilio.IdCódigoPostal,
+                    CódigoPostal = domicilio.CódigoPostal,
+                    ColoniaLocalidad = domicilio.ColoniaLocalidad,
+                    DelegaciónMunicipio = domicilio.DelegaciónMunicipio,
+                    Estado = domicilio.Estado,
+                    FechaHora_Información = domicilio.FechaHora_Información,
+                    IdLogProceso = domicilio.IdLogProceso,
+                    IdClase = domicilio.IdClase, // 🔹 Se mantiene igual, sin traducir
+                    IdOrígen = domicilio.IdOrígen
+                };
+
+                listaTraducida.Add(domicilioTraducido);
+            }
+
+            return listaTraducida;
+        }
+
+
 
         public async Task TraduceListaIdAValores<T>(List<T> lista, string columnasAOcultar = "")
         {
@@ -657,7 +700,7 @@ namespace NoriAPI.Services
                         }
                     }
                     // Formateo específico de columnas
-                    else if (nombreColumna == "idCuenta")
+                    else if (nombreColumna == "IdCuenta" || nombreColumna == "idCuenta")
                     {
                         string idValor = propiedad.GetValue(item)?.ToString() ?? "";
                         propiedad.SetValue(item, idValor.Length >= 4 ? idValor.Substring(idValor.Length - 4) : idValor);
@@ -695,11 +738,120 @@ namespace NoriAPI.Services
             }
 
 
-            #endregion
-
-
 
 
         }
+
+        public async Task LlenaDomicilios(List<DomicilioTranslated> listaDomicilios, int iDomicilio)
+        {
+
+            if (listaDomicilios == null || listaDomicilios.Count < iDomicilio || iDomicilio <= 0)
+            {
+                return; // No hay datos para procesar
+            }
+
+
+            ClasesGespaNonStatic gespaDomicilio = new()
+            {
+                dtCatalogos = await _ejecutivoRepository.VwCatalogos()
+            };
+
+            gespaDomicilio.CargaCatalogos();
+
+            // Obtener el domicilio correspondiente
+            foreach (var domicilio in listaDomicilios)
+            {
+                // Convertir y obtener idClase
+                int.TryParse(domicilio.IdClase?.ToString(), out int idClase);
+                int.TryParse(domicilio.IdOrígen?.ToString(), out int idOrigen);
+
+                InformacionDomicilio(domicilio, gespaDomicilio._htValoresCatálogo, idClase == 0 ? 1901 : idClase);
+
+                domicilio.Orígen = gespaDomicilio._htValoresCatálogo.ContainsKey(idOrigen.ToString())
+                    ? gespaDomicilio._htValoresCatálogo[idOrigen.ToString()].ToString()
+                    : "Sin Clase";
+
+                domicilio.Estado = gespaDomicilio.ObtenerNombreEstado(domicilio.Estado?.Trim() ?? "");
+
+                domicilio.Fecha_Insert = DateTime.TryParse(gespaDomicilio.Fecha(domicilio.Fecha_Insert), out DateTime fechaInsert) ? fechaInsert : (DateTime?)null;
+
+                // Aquí va el nuevo método que actualiza la información de los domicilios
+                if (int.TryParse(domicilio.IdCódigoPostal?.ToString(), out int idCodigoPostal) && idCodigoPostal > 0)
+                {
+                    var codigosPostales = await _searchRepository.SearchCodigosPostales(idCodigoPostal);
+
+                    if (codigosPostales != null && codigosPostales.Count > 0)
+                    {
+                        var codigoPostal = codigosPostales[0]; // Tomamos el primer resultado (suponiendo que es único)
+
+                        // Actualizamos el domicilio con la información del código postal
+                        domicilio.CódigoPostal = codigoPostal.CódigoPostal;
+                        domicilio.ColoniaLocalidad = string.IsNullOrEmpty(domicilio.ColoniaLocalidad) ? codigoPostal.Colonia : domicilio.ColoniaLocalidad;
+                        domicilio.DelegaciónMunicipio = codigoPostal.Municipio;
+                        domicilio.Estado = codigoPostal.Estado;
+                    }
+                }
+
+
+
+            }
+
+
+        }
+
+        public static void InformacionDomicilio(DomicilioTranslated domicilio, Hashtable valoresCatalogo, int idClase)
+        {
+            if (domicilio.IdInformación == 1901 && domicilio.IdClase == 1901)
+            {
+                string valorInformacion = BuscarEnValoresHashtable(valoresCatalogo, domicilio.IdInformación.ToString());
+
+                if (string.IsNullOrWhiteSpace(valorInformacion))
+                    domicilio.Información = valorInformacion;
+                else
+                    domicilio.Información = "Desconocido";
+            }
+            else
+            {
+
+                if (domicilio.IdInformación is not null)
+                {
+                    string? valorInformacion = BuscarEnValoresHashtable(valoresCatalogo, domicilio.IdInformación.ToString());
+
+                    if (valorInformacion is not null)
+                        domicilio.Información = valorInformacion;
+                    else
+                        domicilio.Información = "Desconocido";
+                }
+
+                if (idClase.ToString() is not null)
+                {
+                    string? valorClase = BuscarEnValoresHashtable(valoresCatalogo, idClase.ToString());
+
+                    if (valorClase is not null)
+                        domicilio.Clase = valorClase;
+                    else
+                        domicilio.Clase = "Sin Clase";
+                }
+            }
+        }
+
+
+
+        public static string BuscarEnValoresHashtable(Hashtable valoresCatalogo, string valorBuscado)
+        {
+            foreach (DictionaryEntry entry in valoresCatalogo)
+            {
+                if (entry.Key.ToString() == valorBuscado)
+                {
+                    return entry.Value.ToString(); // Devuelve la clave asociada al valor encontrado
+                }
+            }
+            return null; // No se encontró el valor
+        }
+
+
+        #endregion
+
+
     }
 }

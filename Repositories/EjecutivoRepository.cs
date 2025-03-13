@@ -99,7 +99,7 @@ namespace NoriAPI.Repositories
         {
             using var connection = GetConnection("Piso2Amex");
 
-            string queryCatalogos = "SELECT * FROM vw_Catálogos";
+            string queryCatalogos = "SELECT * FROM vw_Catálogos ORDER BY idValor ASC";
             var catalogos = (await connection.QueryAsync<dynamic>(
                 queryCatalogos,
                 commandType: CommandType.Text

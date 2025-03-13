@@ -25,6 +25,7 @@ namespace NoriAPI.Repositories
         #region Domicilios
         Task<List<Domicilio>> GetDomicilios(string idCuenta, int idCartera);
         Task<List<GestionDomiciliaria>> GetVisitas(string idCuenta, int idCartera);
+        Task<List<CodigosPostales>> SearchCodigosPostales(int codigoPostal);
         #endregion
     }
 
@@ -261,25 +262,24 @@ namespace NoriAPI.Repositories
             using var connection = GetConnection("Piso2Amex");
 
             string domiciliosQuery = "SELECT " +
-                "idCartera AS IdCartera, " +
-                "idCuenta AS IdCuenta, " +
-                "idDomicilio AS IdDomicilio, " +
-                "Fecha_Insert AS FechaInsert, " +
-                "idEjecutivo AS IdEjecutivo, " +
-                "idInformación AS IdInformacion, " +
-                "Calle AS Calle, " +
-                "NúmeroExterior AS NumeroExterior, " +
-                "NúmeroInterior AS NumeroInterior, " +
-                "idCódigoPostal AS IdCodigoPostal, " +
-                "CódigoPostal AS CodigoPostal, " +
-                "ColoniaLocalidad AS ColoniaLocalidad, " +
-                "DelegaciónMunicipio AS DelegacionMunicipio, " +
-                "Estado AS Estado, " +
-                "idEjecutivoInformación AS IdEjecutivoInformacion, " +
-                "FechaHora_Información AS FechaHoraInformacion, " +
-                "idLogProceso AS IdLogProceso, " +
-                "idClase AS IdClase, " +
-                "idOrígen AS IdOrigen " +
+                "idCartera, " +
+                "idCuenta, " +
+                "idDomicilio, " +
+                "Fecha_Insert, " +
+                "idEjecutivo, " +
+                "idInformación, " +
+                "Calle, " +
+                "NúmeroExterior, " +
+                "NúmeroInterior, " +
+                "idCódigoPostal, " +
+                "CódigoPostal, " +
+                "ColoniaLocalidad, " +
+                "DelegaciónMunicipio, " +
+                "Estado, " +
+                "FechaHora_Información, " +
+                "idLogProceso, " +
+                "idClase, " +
+                "idOrígen " +
                 "FROM " +
                 "Domicilios " +
                 "(NOLOCK) WHERE idCartera = @IdCartera AND idCuenta = @IdCuenta";
@@ -318,6 +318,23 @@ namespace NoriAPI.Repositories
             )).ToList();
 
             return visitas;
+        }
+
+        public async Task<List<CodigosPostales>> SearchCodigosPostales(int codigoPostal)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string codigosPostalesQuery = "SELECT * FROM [dbAllocation].[dbo].[CódigosPostales] (NOLOCK) WHERE idCódigoPostal = @CodigoPostal";
+
+            var parameters = new { CodigoPostal = codigoPostal };
+
+            var codigosPostales = await connection.QueryAsync<CodigosPostales>(
+                codigosPostalesQuery,
+                parameters,
+                commandType: CommandType.Text
+            );
+
+            return codigosPostales.ToList();
         }
 
         #endregion

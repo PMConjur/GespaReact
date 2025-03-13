@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
@@ -411,6 +412,51 @@ namespace NoriAPI.Models
 
         }
 
+        /// <summary>
+        /// Devuelve el nombre de la Entidad Federativa de acuerdo a su abreviación.
+        /// </summary>
+        /// <param name="codigoEstado">Abreviación del Estado de la República Mexicana.</param>
+        /// <returns></returns>
+        public string ObtenerNombreEstado(string codigoEstado)
+        {
+            Dictionary<string, string> estados = new()
+            {
+                { "AG", "Aguascalientes" }, { "AGS", "Aguascalientes" },
+                { "BN", "Baja California" }, { "BC", "Baja California" },
+                { "BS", "Baja California Sur" }, { "BCS", "Baja California Sur" }, { "BAJA", "Baja California Sur" },
+                { "CA", "Campeche" }, { "CAMP", "Campeche" },
+                { "CH", "Chihuahua" }, { "CHIH", "Chihuahua" },
+                { "CS", "Chiapas" }, { "CHIS", "Chiapas" }, { "CHIA", "Chiapas" },
+                { "DF", "Ciudad de México" }, { "CDMX", "Ciudad de México" }, { "D.F.", "Ciudad de México" }, { "CIUD", "Ciudad de México" },
+                { "GTO", "Guanajuato" }, { "GRO", "Guerrero" },
+                { "MEX", "Estado de México" }, { "EDO.", "Estado de México" }, { "EDO", "Estado de México" },
+                { "VER", "Veracruz" }, { "YUC", "Yucatán" }, { "ZAC", "Zacatecas" }
+            };
+
+            return estados.TryGetValue(codigoEstado.ToUpper(), out string nombre) ? nombre : codigoEstado;
+        }
+
+        /// <summary>
+        /// Traduce el id por la fecha.
+        /// </summary>
+        /// <param name="Fecha">Id de fecha. 1 - 01/01/2015.</param>
+        /// <param name="Formato">Formato de la fecha. ("corto", "largo" o específica)</param>
+        public string Fecha(object Fecha, string Formato = "corto")
+        {
+            if (Fecha == null || Fecha.ToString() == "" || !DateTime.TryParse(Fecha.ToString(), out DateTime dtFecha))
+            {
+                return "";
+            }
+
+            if (Formato == "corto")
+                return dtFecha.ToShortDateString();
+            else if (Formato == "largo")
+                return dtFecha.ToLongDateString();
+            else
+                return dtFecha.ToString(Formato);
+        }
+
+
         #endregion
 
         #region FuncionesCatalogos
@@ -418,6 +464,8 @@ namespace NoriAPI.Models
         {
             return monto.ToString("$ #,0.00");
         }
+
+
         #endregion
 
 

@@ -816,7 +816,7 @@ namespace NoriAPI.Services
                             int count = (int)await checkCommand.ExecuteScalarAsync();
                             if (count > 0)
                             {
-                                transaction.Rollback();
+                                await transaction.RollbackAsync();
                                 return false; // Ya existe una búsqueda con esos datos hoy
                             }
                         }
@@ -855,24 +855,24 @@ namespace NoriAPI.Services
                                 string mensaje = GuardaNuevoTelefono(telefono, true, connection, transaction);
                                 if (!string.IsNullOrEmpty(mensaje))
                                 {
-                                    transaction.Rollback();
+                                    await transaction.RollbackAsync();
                                     return false; // Error al guardar teléfono, rollback
                                 }
                             }
                         }
 
-                        transaction.Commit();
+                        await transaction.CommitAsync();
                         return true;
                     }
                     catch (SqlException sqlEx)
                     {
-                        transaction.Rollback();
+                        await transaction.RollbackAsync();
                         Console.WriteLine($"Error en SQL: {sqlEx.Number} - {sqlEx.Message} - idCartera: {idCartera}, idCuenta: {idCuenta}, idEjecutivo: {idEjecutivo}, idDato: {busqueda.idDato}, idFuente: {busqueda.idFuente}, validador: {busqueda.validador}");
                         return false;
                     }
                     catch (Exception ex)
                     {
-                        transaction.Rollback();
+                        await transaction.RollbackAsync();
                         Console.WriteLine($"Error general: {ex.Message}");
                         return false;
                     }
