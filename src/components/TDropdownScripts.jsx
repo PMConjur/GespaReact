@@ -3,17 +3,19 @@ import { Dropdown } from "react-bootstrap";
 
 const TDropdownScripts = ({ data }) => {
     const [selectedScript, setSelectedScript] = useState(null);
+    const [selectedLabel, setSelectedLabel] = useState("Selecciona un Script");
 
     const handleSelect = (eventKey) => {
         const script = data.find(script => script.idScript === parseInt(eventKey));
         setSelectedScript(script);
+        setSelectedLabel(script.Nombre);
     };
 
     return (
         <div className="text-center">
             <Dropdown onSelect={handleSelect}>
                 <Dropdown.Toggle variant="success" id="dropdown-basic">
-                    Selecciona un Script
+                    {selectedLabel}
                 </Dropdown.Toggle>
                 <Dropdown.Menu style={{ maxHeight: '400px', overflowY: 'auto', margin: '0 auto' }}>
                     {data.map(script => (
