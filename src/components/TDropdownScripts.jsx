@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Dropdown } from "react-bootstrap";
 
 const TDropdownScripts = ({ data }) => {
@@ -27,9 +27,9 @@ const TDropdownScripts = ({ data }) => {
             </Dropdown>
             {selectedScript && (
                 <div className="mt-3 text-center">
-                    <h5>{selectedScript.Nombre}</h5>
+                    
                     <p>{selectedScript.Descripción}</p>
-                    <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', textAlign: 'justify' }}>
+                    <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', textAlign: 'justify', fontFamily: 'Arial' }}>
                         {selectedScript.Script.replace(/[*&]/g, '')}
                     </pre>
                 </div>
