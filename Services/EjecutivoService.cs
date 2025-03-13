@@ -19,7 +19,7 @@ using Dapper;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mail;
-using NoriAPI.Models.Ejecutivo; // Asegúrate de tener esto
+using NoriAPI.Models.Acciones;
 
 namespace NoriAPI.Services
 {
@@ -581,6 +581,27 @@ namespace NoriAPI.Services
 
 
 
+        #endregion
+        #region Acciones
+        public async Task<(string, bool)> ValidateNewQueja(Queja quejaInsert)
+        {
+            bool insertado = await _ejecutivoRepository.InsertQueja(quejaInsert);
+            if (insertado)
+            {
+                return ("Queja insertada con éxito.", true);
+            }
+            else
+            {
+                return ("Error al insertar la queja.", false);
+            }
+        }
+
+        public async Task<string> AccionesComentario(AccionesComentarioRequest insertComment)
+        {
+            string insertado = await _ejecutivoRepository.InsertComments(insertComment);
+
+            return ("Comentario insertado con éxito.");
+        }
         #endregion
 
         #region Calculadora

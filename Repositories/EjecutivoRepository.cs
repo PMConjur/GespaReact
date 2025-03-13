@@ -9,6 +9,7 @@ using System.Linq;
 using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Models.Phones;
 using System.Net;
+using NoriAPI.Models.Acciones;
 
 namespace NoriAPI.Repositories
 {
