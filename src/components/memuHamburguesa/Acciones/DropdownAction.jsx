@@ -2,8 +2,7 @@ import { useState, useContext } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { AppContext } from '../../../pages/Managment';
 import "../../../scss/styles.scss";
-import EstadoCuentaModal from './AccountStatements'; // Importa el componente del modal
-
+import EstadoCuentaModal from './AccountStatements';
 import FollowUps from './FollowUps'; // Asegúrate de importar el componente
 import Talks from './Talks'; // Asegúrate de importar el componente
 import Onlinecharge from './OnlineCharges'; // Importa el nuevo componente
@@ -12,7 +11,6 @@ import { getFollowUpsData, getTalksData, getOnlinechargeData } from '../../../se
 // import { getComplaintsData } from '../../../services/gespawebServices'; // Importa la función que obtiene los datos de quejas
 //import Comments from './Comments'; // Importa el nuevo componente
 //import { getCommentsData } from '../../../services/gespawebServices'; // Importa la función que obtiene los datos de comentarios
-import EstadoCuentaModal from './AccountStatements';
 import Drives from './Drives';
 import Search from './Search';
 
@@ -174,6 +172,7 @@ const DropdownActions = () => {
           <Dropdown.Item onClick={handleShowModal} className="custom-dropdown-item">Accionamientos</Dropdown.Item>
           <Dropdown.Item onClick={handleShowOnlinecharge} className="custom-dropdown-item">Cargos en línea</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Busqueda</Dropdown.Item>
+          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Quejas</Dropdown.Item>
           <Dropdown.Item onClick={handleShowComments} className="custom-dropdown-item">Comentarios</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item" onClick={() => setModalShow(true)}>Estados de cuenta</Dropdown.Item>
           {/* <Dropdown.Item onClick={handleShowComplaints} className="custom-dropdown-item">Quejas</Dropdown.Item> */}
