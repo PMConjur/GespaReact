@@ -841,8 +841,8 @@ namespace NoriAPI.Controllers
         }
 
 
-          [HttpPost("accionesComentarios")]
-        public async Task<ActionResult> NewComentario( AccionesComentarioRequest request)
+        [HttpPost("accionesComentarios")]
+        public async Task<ActionResult> NewComentario(AccionesComentarioRequest request)
         {
             string mensaje = await _ejecutivoService.AccionesComentario(request);
 
@@ -864,34 +864,34 @@ namespace NoriAPI.Controllers
         }
 
 
-    /*[HttpGet("accionesComentario")]
-        public async Task<IActionResult> GetAccionesComentario(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion)
-        {
-            DataSet dsTablas = new DataSet();
-            try
+        /*[HttpGet("accionesComentario")]
+            public async Task<IActionResult> GetAccionesComentario(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion)
             {
-                DataTable Comentarios = new DataTable();
+                DataSet dsTablas = new DataSet();
+                try
+                {
+                    DataTable Comentarios = new DataTable();
 
-                Comentarios = await _ejecutivoService.GetAccionesComentarioAsync(idCartera, idCuenta, idEjecutivo, Comentario, ModificaSituacion);
+                    Comentarios = await _ejecutivoService.GetAccionesComentarioAsync(idCartera, idCuenta, idEjecutivo, Comentario, ModificaSituacion);
 
-                // Convertimos el DataTable a una lista de diccionarios
-                var insertaComentario = ConvertDataTableToList(Comentarios);
+                    // Convertimos el DataTable a una lista de diccionarios
+                    var insertaComentario = ConvertDataTableToList(Comentarios);
 
-                // Serializamos la lista a JSON
-                string jsonComentarios = JsonSerializer.Serialize(insertaComentario, new JsonSerializerOptions { WriteIndented = true });
+                    // Serializamos la lista a JSON
+                    string jsonComentarios = JsonSerializer.Serialize(insertaComentario, new JsonSerializerOptions { WriteIndented = true });
 
-                //dsTablas.Tables.Add(Negociaciones);
+                    //dsTablas.Tables.Add(Negociaciones);
 
-                return Ok(jsonComentarios);
+                    return Ok(jsonComentarios);
 
 
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
-            }
-        }
-        **/ 
+            **/
         #endregion
 
         #region Relaciones
@@ -924,7 +924,7 @@ namespace NoriAPI.Controllers
 
         #region Correos
         [HttpGet("CorreosObtiene/{idCartera}/{idCuenta}")]
-      
+
 
 
         public async Task<IActionResult> GetCorreos(int idCartera, string idCuenta)
@@ -954,7 +954,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("CorreosEnviados/{idCartera}/{idCuenta}")]
-      
+
 
 
         public async Task<IActionResult> GetCorreosEnviados(int idCartera, string idCuenta)
@@ -984,7 +984,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("CorreosCarga/{idCartera}/{idCuenta}")]
-    
+
 
         public async Task<IActionResult> GetCorreosCarga(int idCartera, string idCuenta)
         {
@@ -1083,7 +1083,7 @@ namespace NoriAPI.Controllers
 
 
         [HttpGet("ObtenerGestiones")]
-      
+
         public async Task<IActionResult> ObtenerGestiones([FromQuery] int idCartera, [FromQuery] string idCuenta, [FromQuery] string numeroCliente)
         {
             try
@@ -1255,6 +1255,40 @@ namespace NoriAPI.Controllers
             }
             return catalogos;
         }
+
+        [HttpGet("NegociacionesDelMesEje/{idEjecutivo}")]
+        
+        public async Task<IActionResult> GetNegociacionesEjecutivo(int idEjecutivo)
+        {
+            try
+            {
+                DataSet dsTablas = new DataSet();
+                DataTable ejecutivosTable = dsTablas.Tables.Add("Ejecutivos");
+                ejecutivosTable.Columns.Add("idEjecutivo", typeof(int));
+                DataRow drDatos = ejecutivosTable.NewRow();
+                drDatos["idEjecutivo"] = idEjecutivo;
+
+                await _ejecutivoService.ObtieneNegociacionesEjecutivosAsync(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("Negociaciones") || dsTablas.Tables["Negociaciones"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron recordatorios para este ejecutivo.");
+                }
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Negociaciones"]);
+
+                // Serializamos la lista a JSON
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
     }
 
     public class AñadirAdicionalRequest
@@ -1267,7 +1301,14 @@ namespace NoriAPI.Controllers
 
         public JObject Catalogos { get; set; }
     }
-    #endregion
+
+
+
+    
+        #endregion
+
+
 }
+
 
 

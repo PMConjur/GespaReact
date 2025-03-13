@@ -84,7 +84,7 @@ namespace NoriAPI.Services
         Task<(string, bool)> ValidateNewQueja(Queja quejaInsert);
 
         Task<DataTable> GetWlpAsync(string Proceso, string idCuenta);
-
+        Task ObtieneNegociacionesEjecutivosAsync(DataRow drDatos, DataSet dsTablas);
         #endregion
 
 
@@ -2571,14 +2571,14 @@ namespace NoriAPI.Services
                 throw new ArgumentException("La columna 'idEjecutivo' no existe en el DataRow");
 
             var idEjecutivo = drDatos["idEjecutivo"];
-            DataTable negociacionesget = await GetSeguimientosEjecutivoAsync(Convert.ToInt32(idEjecutivo));
+            DataTable negociacionesget = await GetNegiciacionesEjecutivoAsync(Convert.ToInt32(idEjecutivo));
 
             if (negociacionesget == null || negociacionesget.Rows.Count == 0)
                 return;
 
             negociacionesget.TableName = "Negociaciones";
             dsTablas.Tables.Add(negociacionesget);
-            negociacionesget.DefaultView.Sort = "Negociaciones";
+          
         }
         #endregion
     }
