@@ -15,6 +15,7 @@ namespace NoriAPI.Models
         public HashSet<string> IdsInformacionValidos { get; } = new HashSet<string>(); // Reemplazado NombresId
         public Dictionary<string, string> PalabrasProhibidas { get; } = new Dictionary<string, string>();
         public List<int> EstadosContingencia { get; } = new List<int>();
+        public string respuesta { get; set; }
 
         // Tablas de datos
         public DataTable RespuestasFlujo { get; set; }
@@ -63,6 +64,40 @@ namespace NoriAPI.Models
         }
 
         // Agrega métodos para cargar otros catálogos y tablas de datos
+
+        private Dictionary<string, Dictionary<string, int>> catalogos = new Dictionary<string, Dictionary<string, int>>()
+        {
+            {
+                "Telefonía", new Dictionary<string, int>()
+                {
+                    { "México", 1 },
+                    { "Estados Unidos", 2 }
+                }
+            },
+            {
+                "Orígenes", new Dictionary<string, int>()
+                {
+                    { "Adicional", 1 },
+                    { "Llamada entrante", 2 }
+                }
+            },
+            {
+                "Clases", new Dictionary<string, int>()
+                {
+                    { "Nuevo", 1 },
+                    { "Existente", 2 }
+                }
+            }
+        };
+
+        public int idValor(string tipo, string nombre)
+        {
+            if (catalogos.ContainsKey(tipo) && catalogos[tipo].ContainsKey(nombre))
+            {
+                return catalogos[tipo][nombre];
+            }
+            return 0; // O lanza una excepción si el valor no se encuentra
+        }
     }
 
     // Modelos auxiliares
@@ -89,3 +124,4 @@ namespace NoriAPI.Models
         // Agrega otras propiedades según sea necesario
     }
 }
+

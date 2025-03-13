@@ -37,6 +37,7 @@ namespace NoriAPI.Models.Phones
         public int? IdCartera { get; set; }
         public string? IdCuenta { get; set; }
         public int? IdEjecutivo { get; set; }
+        public int IdTelefonía { get; set; }
 
         /// <summary>
         /// Valida y limpia el número telefónico, regresa el mensaje de error.

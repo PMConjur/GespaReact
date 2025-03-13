@@ -19,6 +19,7 @@ using Dapper;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mail;
+using NoriAPI.Models.Ejecutivo; // Asegúrate de tener esto
 
 namespace NoriAPI.Services
 {
@@ -70,7 +71,8 @@ namespace NoriAPI.Services
         Task<string> EnviaCorreoAsync(string CorreoElectronico, string Asunto, string Mensaje, int idCartera, string idCuenta, int idEjecutivo);
         Task<dynamic> RegisterNewCorreo(CorreosEn newCorreos);
         Task<DataTable> ObtieneGestionesAsync(DataRow drInfo);
-
+        Task ObtenerAdicionalesEJE(DataRow drDatos, DataSet dsTablas);
+        Task<string> AñadeAdicionalAsync(Adicional AdicionalCuenta, DataRow drInfo, Ejecutivo ejecutivo, DataTable Adicionales, Catalogos catalogos);
 
 
         #region Acciones
@@ -2367,6 +2369,147 @@ namespace NoriAPI.Services
                 }
             }
             return gestiones;
+        }
+        #endregion
+
+        #region Adicionales
+        public async Task<DataTable> GetAdiccionalesAsync(int idCartera, string idCuenta)
+        {
+            DataTable adicionales = new DataTable();
+            string query = "SELECT * FROM fn_Adicionales(@idCartera, @idCuenta)";
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(adicionales);
+                    }
+                }
+            }
+            return adicionales;
+        }
+
+        public async Task ObtenerAdicionalesEJE(DataRow drDatos, DataSet dsTablas)
+        {
+            if (drDatos == null)
+                return;
+
+            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
+                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
+
+            var idCartera = Convert.ToInt32(drDatos["idCartera"]);
+            var idCuenta = Convert.ToString(drDatos["idCuenta"]);
+
+            DataTable AdicionalesGet = await GetCorreosAsync(idCartera, idCuenta);
+
+            if (AdicionalesGet == null || AdicionalesGet.Rows.Count == 0)
+                return;
+
+            if (dsTablas.Tables.Contains("Adicionales"))
+            {
+                dsTablas.Tables.Remove("Adicionales");
+            }
+
+            AdicionalesGet.TableName = "Adicionales";
+            dsTablas.Tables.Add(AdicionalesGet);
+        }
+        public async Task<string> AñadeAdicionalAsync(Adicional AdicionalCuenta, DataRow drInfo, Ejecutivo ejecutivo, DataTable Adicionales, Catalogos catalogos)
+        {
+            try
+            {
+                if (AdicionalCuenta.Nombre.Trim().Length < 5)
+                    return "El adicional debe de tener un nombre real.";
+
+                NewPhone TeléfonoAdicional = new NewPhone(
+                    AdicionalCuenta.NumeroTelefonico,
+                    catalogos.idValor("Telefonía", "México"),
+                    catalogos.idValor("Orígenes", "Adicional"),
+                    catalogos.idValor("Clases", "Nuevo"),
+                    new TimeSpan(0),
+                    "",
+                    0,
+                    (int)drInfo["idCartera"],
+                    drInfo["idCuenta"].ToString(),
+                    (int)ejecutivo.Datos["idEjecutivo"]
+                );
+
+                // Convertir NewPhone a NewPhoneRequest
+                NewPhoneRequest newPhoneRequest = new NewPhoneRequest
+                {
+                    NumeroTelefonico = TeléfonoAdicional.NumeroTelefonico,
+                    IdTelefonía = TeléfonoAdicional.IdTelefonía,
+                    IdOrigen = TeléfonoAdicional.IdOrigen,
+                    IdClase = TeléfonoAdicional.IdClase,
+                    HorarioContacto = (TimeSpan)TeléfonoAdicional.HorarioContacto,
+                    Estado = TeléfonoAdicional.Estado,
+                    Extension = TeléfonoAdicional.Extension,
+                    IdCartera = (int)TeléfonoAdicional.IdCartera,
+                    IdCuenta = TeléfonoAdicional.IdCuenta,
+                    IdEjecutivo = (int)TeléfonoAdicional.IdEjecutivo
+                };
+
+                string sMensaje = await _searchService.SaveNewPhone(newPhoneRequest);
+                if (!string.IsNullOrEmpty(sMensaje))
+                    return sMensaje;
+
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (SqlCommand command = new SqlCommand("[2.4.AñadirAdicional]", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+
+                        command.Parameters.AddWithValue("@idCartera", drInfo["idCartera"]);
+                        command.Parameters.AddWithValue("@idCuenta", drInfo["idCuenta"]);
+                        command.Parameters.AddWithValue("@NombreAdicional", AdicionalCuenta.Nombre);
+                        command.Parameters.AddWithValue("@idParentesco", AdicionalCuenta.IdParentesco);
+                        command.Parameters.AddWithValue("@NúmeroTelefónico", string.IsNullOrEmpty(TeléfonoAdicional.NumeroTelefonico) ? DBNull.Value : (object)TeléfonoAdicional.NumeroTelefonico);
+                        command.Parameters.AddWithValue("@idEjecutivo", ejecutivo.Datos["idEjecutivo"]);
+
+                        int rowsAffected = await command.ExecuteNonQueryAsync();
+                        if (rowsAffected == 0)
+                            return "Falló al añadir el adicional en la base de datos.";
+
+                        DataRow drAdicional = Adicionales.NewRow();
+                        Funciones.AddParametersToRow(command.Parameters, drAdicional);
+                        Adicionales.Rows.Add(drAdicional);
+                    }
+                }
+
+                return "";
+            }
+            catch (Exception ex)
+            {
+                return $"Error interno del servidor: {ex.Message}";
+            }
+        }
+
+        public static class Funciones
+        {
+            public static void AddParametersToRow(SqlParameterCollection parameters, DataRow row)
+            {
+                try
+                {
+                    foreach (SqlParameter parameter in parameters)
+                    {
+                        if (parameter.Value != DBNull.Value)
+                        {
+                            row[parameter.ParameterName.Replace("@", "")] = parameter.Value;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error en AddParametersToRow: {ex.Message}");
+                }
+            }
         }
         #endregion
     }

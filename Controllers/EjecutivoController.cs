@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using NoriAPI.Models;
 using NoriAPI.Models.Busqueda;
 using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Models.Login;
@@ -15,6 +16,8 @@ using System.Data.Common;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+
 
 
 namespace NoriAPI.Controllers
@@ -895,7 +898,7 @@ namespace NoriAPI.Controllers
 
         #region Correos
         [HttpGet("CorreosObtiene/{idCartera}/{idCuenta}")]
-        [AllowAnonymous]
+      
 
 
         public async Task<IActionResult> GetCorreos(int idCartera, string idCuenta)
@@ -925,7 +928,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("CorreosEnviados/{idCartera}/{idCuenta}")]
-        [AllowAnonymous]
+      
 
 
         public async Task<IActionResult> GetCorreosEnviados(int idCartera, string idCuenta)
@@ -955,7 +958,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("CorreosCarga/{idCartera}/{idCuenta}")]
-        [AllowAnonymous]
+    
 
         public async Task<IActionResult> GetCorreosCarga(int idCartera, string idCuenta)
         {
@@ -1054,7 +1057,7 @@ namespace NoriAPI.Controllers
 
 
         [HttpGet("ObtenerGestiones")]
-        [AllowAnonymous]
+      
         public async Task<IActionResult> ObtenerGestiones([FromQuery] int idCartera, [FromQuery] string idCuenta, [FromQuery] string numeroCliente)
         {
             try
@@ -1096,6 +1099,149 @@ namespace NoriAPI.Controllers
         }
         #endregion
 
+        #region Adicionales
+        [HttpGet("adicionales/{idCartera}/{idCuenta}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAdicionales(int idCartera, string idCuenta)
+        {
+            try
+            {
+                DataSet dsTablas = new DataSet();
+                DataTable AdicionalesTable = dsTablas.Tables.Add("Adicionales");
+                AdicionalesTable.Columns.Add("idCartera", typeof(int));
+                AdicionalesTable.Columns.Add("idCuenta", typeof(string));
+                DataRow drDatos = AdicionalesTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
+
+                await _ejecutivoService.ObtenerAdicionalesEJE(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("Adicionales") || dsTablas.Tables["Adicionales"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Adicionales para este ejecutivo.");
+                }
+
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Adicionales"]);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+        [HttpPost("AñadirAdicional")]
+        public async Task<IActionResult> AñadirAdicional([FromBody] AñadirAdicionalRequest request)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                NoriAPI.Models.Ejecutivo.Adicional adicional = new NoriAPI.Models.Ejecutivo.Adicional
+                {
+                    Nombre = request.Nombre,
+                    IdParentesco = request.IdParentesco,
+                    NumeroTelefonico = request.NumeroTelefonico
+                };
+
+                DataTable drInfoTable = ConvertJObjectToDataTable(request.DrInfo);
+                NoriAPI.Models.Ejecutivo.Ejecutivo ejecutivo = ConvertJObjectToEjecutivo(request.Ejecutivo);
+                NoriAPI.Models.Catalogos catalogos = ConvertJObjectToCatalogos(request.Catalogos);
+
+                DataRow drInfoRow = drInfoTable.Rows.Count > 0 ? drInfoTable.Rows[0] : null;
+
+                DataTable adicionales = new DataTable();
+
+                string resultado = await _ejecutivoService.AñadeAdicionalAsync(adicional, drInfoRow, ejecutivo, adicionales, catalogos);
+
+                if (string.IsNullOrEmpty(resultado))
+                {
+                    return Ok("Adicional añadido correctamente.");
+                }
+                else
+                {
+                    return BadRequest(resultado);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        private DataTable ConvertJObjectToDataTable(JObject jObject)
+        {
+            DataTable dataTable = new DataTable();
+
+            if (jObject != null && jObject["itemArray"] is JArray itemArray)
+            {
+                if (itemArray.Count > 0 && itemArray[0] is JObject firstRow)
+                {
+                    foreach (var property in firstRow.Properties())
+                    {
+                        dataTable.Columns.Add(property.Name, typeof(string));
+                    }
+
+                    foreach (JObject row in itemArray)
+                    {
+                        DataRow dataRow = dataTable.NewRow();
+                        foreach (DataColumn column in dataTable.Columns)
+                        {
+                            dataRow[column.ColumnName] = row[column.ColumnName]?.ToString();
+                        }
+                        dataTable.Rows.Add(dataRow);
+                    }
+                }
+            }
+            return dataTable;
+        }
+
+        private NoriAPI.Models.Ejecutivo.Ejecutivo ConvertJObjectToEjecutivo(JObject jObject)
+        {
+            if (jObject != null && jObject["datos"] is JObject datos)
+            {
+                DataTable dt = new DataTable();
+                foreach (var property in datos.Properties())
+                {
+                    dt.Columns.Add(property.Name, typeof(object));
+                }
+                DataRow dr = dt.NewRow();
+                foreach (var property in datos.Properties())
+                {
+                    dr[property.Name] = property.Value;
+                }
+                dt.Rows.Add(dr);
+                return new NoriAPI.Models.Ejecutivo.Ejecutivo(dt.Rows[0]);
+            }
+            return null;
+        }
+
+        private NoriAPI.Models.Catalogos ConvertJObjectToCatalogos(JObject jObject)
+        {
+            NoriAPI.Models.Catalogos catalogos = new NoriAPI.Models.Catalogos();
+            if (jObject != null && jObject["respuestasFlujo"] is JObject respuestasFlujo)
+            {
+                catalogos.respuesta = respuestasFlujo["respuesta"]?.ToString();
+            }
+            return catalogos;
+        }
     }
+
+    public class AñadirAdicionalRequest
+    {
+        public string Nombre { get; set; }
+        public int IdParentesco { get; set; }
+        public string NumeroTelefonico { get; set; }
+        public JObject DrInfo { get; set; }
+        public JObject Ejecutivo { get; set; }
+
+        public JObject Catalogos { get; set; }
+    }
+    #endregion
 }
+
 

@@ -195,12 +195,12 @@ namespace NoriAPI.Services
             DataTable catalogosTable = await _ejecutivoRepository.VwCatalogos();
 
             //Obtener los idValor para el constructor del nuevo teléfono.
-            int idTelefonia = await GetIdValor(catalogosTable, "Telefonía", newPhoneData.Telefonia);
+            int idTelefonia = await GetIdValor(catalogosTable, "Telefonía", newPhoneData.NumeroTelefonico);
             int idOrigen = await GetIdValor(catalogosTable, "Orígenes", "Gestión");
-            int idClase = await GetIdValor(catalogosTable, "Clases", newPhoneData.ClaseTelefono);
+            int idClase = await GetIdValor(catalogosTable, "Clases", newPhoneData.IdClase);
 
             NewPhone newPhone = new NewPhone(
-                numeroTelefonico: newPhoneData.PhoneNumber,
+                numeroTelefonico: newPhoneData.NumeroTelefonico,
                 idTelefonia,
                 idOrigen,
                 idClase,
@@ -208,7 +208,7 @@ namespace NoriAPI.Services
                 estado: "",
                 newPhoneData.Extension,
                 1,
-                newPhoneData.Cuenta,
+                newPhoneData.IdCuenta,
                 newPhoneData.IdEjecutivo
                 );
 
