@@ -795,38 +795,48 @@ namespace NoriAPI.Controllers
             DataSet dsTablas = new DataSet();
             try
             {
-                if (idEjecutivo != 0 && Contraseña != "")
-                {
-                    DataTable passValidador = new DataTable();
 
-                    passValidador = await _ejecutivoService.GetValidadorAsync(idProducto, idEjecutivo, Contraseña);
+                DataTable Validador = new DataTable();
 
-                    // Convertimos el DataTable a una lista de diccionarios
-                    var passValidadores = ConvertDataTableToList(passValidador);
+                Validador = await _ejecutivoService.GetValidadorAsync(idProducto, idEjecutivo, Contraseña);
 
-                    // Serializamos la lista a JSON
-                    string jsonPassValidadores = JsonSerializer.Serialize(passValidadores, new JsonSerializerOptions { WriteIndented = true });
+                // Convertimos el DataTable a una lista de diccionarios
+                var Validadores = ConvertDataTableToList(Validador);
 
-                    //dsTablas.Tables.Add(Negociaciones);
+                // Serializamos la lista a JSON
+                string jsonValidadores = JsonSerializer.Serialize(Validadores, new JsonSerializerOptions { WriteIndented = true });
 
-                    return Ok(jsonPassValidadores);
-                }
-                else
-                {
-                    DataTable Validador = new DataTable();
+                //dsTablas.Tables.Add(Negociaciones);
 
-                    Validador = await _ejecutivoService.GetValidadorAsync(idProducto, idEjecutivo, Contraseña);
+                return Ok(jsonValidadores);
+                
 
-                    // Convertimos el DataTable a una lista de diccionarios
-                    var Validadores = ConvertDataTableToList(Validador);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
 
-                    // Serializamos la lista a JSON
-                    string jsonValidadores = JsonSerializer.Serialize(Validadores, new JsonSerializerOptions { WriteIndented = true });
+        [HttpGet("validadores")]
+        public async Task<IActionResult> GetValidadores(int idProducto)
+        {
+            DataSet dsTablas = new DataSet();
+            try
+            {
+                DataTable Validador = new DataTable();
 
-                    //dsTablas.Tables.Add(Negociaciones);
+                Validador = await _ejecutivoService.GetValidadoresAsync(idProducto);
 
-                    return Ok(jsonValidadores);
-                }
+                // Convertimos el DataTable a una lista de diccionarios
+                var Validadores = ConvertDataTableToList(Validador);
+
+                // Serializamos la lista a JSON
+                string jsonValidadores = JsonSerializer.Serialize(Validadores, new JsonSerializerOptions { WriteIndented = true });
+
+                //dsTablas.Tables.Add(Negociaciones);
+
+                return Ok(jsonValidadores);
 
             }
             catch (Exception ex)
@@ -864,7 +874,6 @@ namespace NoriAPI.Controllers
         //}
 
         [HttpPost("accionesComentarios")]
-        [AllowAnonymous]
         public async Task<ActionResult> NewComentario( AccionesComentarioRequest request)
         {
             string mensaje = await _ejecutivoService.AccionesComentario(request);
@@ -874,7 +883,6 @@ namespace NoriAPI.Controllers
 
 
         [HttpPost("quejas")]
-        [AllowAnonymous]
         public async Task<ActionResult> NewQueja([FromBody] Queja quejaNueva)
         {
             (string, bool) mensaje = await _ejecutivoService.ValidateNewQueja(quejaNueva);
