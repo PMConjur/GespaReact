@@ -1,8 +1,6 @@
 import { useState, useContext } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
-import AccionamientosModal from './Drives'; // Importa el componente del modal
-import { fetchDrives } from '../../../services/gespawebServices'; // Importa la función que obtiene los datos de accionamientos
-import { AppContext } from '../../../pages/Managment'; // Ajusta la ruta según tu estructura de archivos
+import { AppContext } from '../../../pages/Managment';
 import "../../../scss/styles.scss";
 import EstadoCuentaModal from './AccountStatements'; // Importa el componente del modal
 
@@ -14,20 +12,21 @@ import { getFollowUpsData, getTalksData, getOnlinechargeData } from '../../../se
 // import { getComplaintsData } from '../../../services/gespawebServices'; // Importa la función que obtiene los datos de quejas
 //import Comments from './Comments'; // Importa el nuevo componente
 //import { getCommentsData } from '../../../services/gespawebServices'; // Importa la función que obtiene los datos de comentarios
+import EstadoCuentaModal from './AccountStatements';
+import Drives from './Drives';
+import Search from './Search';
 
 const DropdownActions = () => {
-  const [showModal, setShowModal] = useState(false);
-  const [accionamientosData, setAccionamientosData] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [modalShow, setModalShow] = useState(false);
   
   const [showFollowUps, setShowFollowUps] = useState(false);
   const [followUpsData, setFollowUpsData] = useState([]);
   const [loadingFollow, setLoadingFollow] = useState(false);
-
   const [showTalks, setShowTalks] = useState(false);
   const [talksData, setTalksData] = useState([]);
   const [loadingtalks, setLoadingtalks] = useState(false);
+  const [showDrives, setShowDrives] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const [showOnlinecharge, setShowOnlinecharge] = useState(false);
   const [onlinechargeData, setOnlinechargeData] = useState([]);
@@ -77,15 +76,14 @@ const DropdownActions = () => {
     }
   };
 
+  const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
 
-
-  //seguimiwntos
   const handleShowFollowUps = async () => {
     setLoadingFollow(true);
     try {
-      const followUps = await getFollowUpsData(searchResults); // 🔹 Ahora recibe toda la lista
-      setFollowUpsData(followUps.flat()); // 🔹 Asegura que la data es un array plano
+      const followUps = await getFollowUpsData(searchResults);
+      setFollowUpsData(followUps.flat());
       setShowFollowUps(true);
     } catch (error) {
       console.error("Error al obtener los datos de seguimiento:", error);
@@ -93,28 +91,23 @@ const DropdownActions = () => {
       setLoadingFollow(false);
     }
   };
-  
-  
+
   const handleCloseFollowUps = () => setShowFollowUps(false);
 
+  const handleShowTalks = async () => {
+    setLoadingtalks(true);
+    try {
+      const talks = await getTalksData(searchResults);
+      setTalksData(talks.flat());
+      setShowTalks(true);
+    } catch (error) {
+      console.error('Error al cargar los datos de negociaciones:', error);
+    } finally {
+      setLoadingtalks(false);
+    }
+  };
 
-    //negociaciones//
-
-    const handleShowTalks = async () => {
-      setLoadingtalks(true);
-      try {
-        // Aquí debes definir los valores de idCuenta y idCartera según tu aplicación
-        const talks = await getTalksData(searchResults); // Obtener los datos de negociaciones
-        setTalksData(talks.flat()); // Establece los datos recibidos
-        setShowTalks(true);
-      } catch (error) {
-        console.error('Error al cargar los datos de negociaciones:', error);
-      } finally {
-        setLoadingtalks(false);
-      }
-    };
-  
-    const handleCloseTalks = () => setShowTalks(false);
+  const handleCloseTalks = () => setShowTalks(false);
 
     // cargos en línea
     const handleShowOnlinecharge = async () => {
@@ -163,10 +156,15 @@ const DropdownActions = () => {
     };
 
     const handleCloseComments = () => setShowComments(false);
+  const handleShowDrives = () => {
+    setShowDrives(true);
+  };
+
+  const handleCloseDrives = () => setShowDrives(false);
 
   return (
     <>
-       <Dropdown className='' >
+      <Dropdown className='' >
         <Dropdown.Toggle className="custom-dropdown-toggle d-flex align-items-center" id="dropdown-basic">
           Acciones
         </Dropdown.Toggle>
@@ -181,17 +179,18 @@ const DropdownActions = () => {
           {/* <Dropdown.Item onClick={handleShowComplaints} className="custom-dropdown-item">Quejas</Dropdown.Item> */}
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Simuladores</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Procesos WLP</Dropdown.Item>
+          
         </Dropdown.Menu>
       </Dropdown>
 
-      {/* Renderiza el modal */}
-      <AccionamientosModal show={showModal} handleClose={handleCloseModal} data={accionamientosData} />
       <EstadoCuentaModal show={modalShow} handleClose={() => setModalShow(false)} />
       <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps} data={followUpsData} loadingFollow={loadingFollow} />
       <Talks show={showTalks} handleClose={handleCloseTalks} dataTalks={talksData} loading={loadingtalks} />
       <Onlinecharge show={showOnlinecharge} handleClose={handleCloseOnlinecharge} data={onlinechargeData} loading={loadingOnlinecharge} />
       {/* <Complaints show={showComplaints} handleClose={handleCloseComplaints} data={complaintsData} loading={loadingComplaints} /> */}
       {/* <Comments show={showComments} handleClose={handleCloseComments} data={commentsData} loading={loadingComments} /> */}
+      <Drives showModal={showDrives} handleCloseModal={handleCloseDrives} />
+      <Search show={showModal} handleClose={handleCloseModal} />
     </>
   );
 }
