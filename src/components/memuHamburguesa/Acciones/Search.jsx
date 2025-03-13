@@ -44,7 +44,7 @@ const Search = ({ show, handleClose }) => {
         Persona: Object.keys(item.Persona).length ? JSON.stringify(item.Persona) : '--', // Convertir objeto a cadena JSON o mostrar 'N/A'
         Puesto: Object.keys(item.Puesto).length ? JSON.stringify(item.Puesto) : '--', // Convertir objeto a cadena JSON o mostrar 'N/A'
         Lugar: Object.keys(item.Lugar).length ? JSON.stringify(item.Lugar) : '--', // Convertir objeto a cadena JSON o mostrar 'N/A'
-        idEjecutivo: item.idEjecutivo, // Mapear idEjecutivo
+        idEjecutivo: item.idEjecutivo, // Mapear idEjecutivo 
         InfoEncontrada: Object.keys(item.InfoEncontrada).length ? JSON.stringify(item.InfoEncontrada) : '--', // Convertir objeto a cadena JSON o mostrar 'N/A'
         Confirmado: item._Confirmado, // Mapear _Confirmado
         Link: item.Link || '--', // Mapear Link o mostrar 'N/A'
@@ -109,16 +109,16 @@ const Search = ({ show, handleClose }) => {
   };
 
   return (
-    <Modal show={show} onHide={handleClose} size="lg" centered>
+    <Modal show={show} onHide={handleClose} size="xl" centered>
       <Modal.Header closeButton>
         <Modal.Title>Búsquedas - Gespa</Modal.Title>
       </Modal.Header>
       <Modal.Body style={{ display: 'flex' }}>
-        <Form>
+        <Form style={{width: 'auto'}}>
           <Form.Group className="mb-3">
             <Form.Label>Dato</Form.Label>
             <Dropdown onSelect={(value) => handleChange('dato', value)}>
-              <Dropdown.Toggle variant="primary" id="dropdown-dato">
+              <Dropdown.Toggle variant="primary" id="dropdown-dato" style={{width: '100%'}}>
                 {searchData.dato}
               </Dropdown.Toggle>
               <Dropdown.Menu>
@@ -179,7 +179,7 @@ const Search = ({ show, handleClose }) => {
             </Spinner>
           </div>
         ) : (
-          <div style={{ overflow: 'auto', maxHeight: '400px', width: 'auto' }}>
+          <div style={{ overflow: 'auto', maxHeight: '400px', maxWidth: '700px' }}>
             <Table striped bordered hover variant="dark" className="mt-3">
               <thead>
                 <tr>
