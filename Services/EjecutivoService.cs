@@ -18,8 +18,12 @@ using NoriAPI.Models.Phones;
 using Dapper;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
+<<<<<<< HEAD
 using System.Net.Mail;
 using NoriAPI.Models.Ejecutivo; // Asegúrate de tener esto
+=======
+using NoriAPI.Models.Acciones;
+>>>>>>> origin/Mark29-Validador
 
 namespace NoriAPI.Services
 {
@@ -34,11 +38,12 @@ namespace NoriAPI.Services
         Task<TiemposEjecutivo> ValidateTimes(int numEmpleado);
         Task<Dictionary<string, object>> PauseUnpause(InfoPausa pausa);
         Task<Dictionary<string, object>> Promedios(int idEjecutivo);
-
         #endregion
+
         #region AccionesDropDown
         Task ObtenerSeguimientos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerAccionamiento(DataRow drDatos, DataSet dsTablas);
+        #endregion
 
         Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo);
         Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
@@ -79,8 +84,12 @@ namespace NoriAPI.Services
         Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
         Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
         Task<DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña);
-        Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
+        Task<DataTable> GetValidadoresAsync(int idProducto);
+        
+        //Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
+        Task<string> AccionesComentario(AccionesComentarioRequest insertCommit);
         Task<DataTable> GetWlpAsync(string Proceso, string idCuenta);
+        Task<(string, bool)> ValidateNewQueja(Queja quejaInsert);
         #endregion
 
 
@@ -275,88 +284,87 @@ namespace NoriAPI.Services
             return plazos;
         }
 
-        public async Task<DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña)
-        {
-            if (idEjecutivo != 0 && Contraseña != "")
-            {
-                DataTable passValidadores = new DataTable();
-                string query = "EXEC dbCollection..[2.8.Validación] @idProducto, @idEjecutivo, @Contraesña"; // Evita inyección SQL
+        public async Task<DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña)//GetValidadoresAsync
+        {            
+              DataTable passValidadores = new DataTable();
+              string query = "EXEC dbCollection..[2.8.Validación] @idProducto, @idEjecutivo, @Contraesña"; // Evita inyección SQL
 
-                using (var connection = new SqlConnection(_connectionString))
-                {
-                    await connection.OpenAsync();
-                    using (var command = new SqlCommand(query, connection))
-                    {
-                        // Usar Add con tipo explícito para evitar problemas con tipos de datos
-                        command.Parameters.Add("@idProducto", SqlDbType.Int).Value = idProducto;
-                        command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
-                        command.Parameters.Add("@Contraesña", SqlDbType.VarChar).Value = Contraseña;
+              using (var connection = new SqlConnection(_connectionString))
+              {
+                  await connection.OpenAsync();
+                  using (var command = new SqlCommand(query, connection))
+                  {
+                      // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                      command.Parameters.Add("@idProducto", SqlDbType.Int).Value = idProducto;
+                      command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
+                      command.Parameters.Add("@Contraesña", SqlDbType.VarChar).Value = Contraseña;
 
-                        using (var adapter = new SqlDataAdapter(command))
-                        {
-                            adapter.Fill(passValidadores);
-                        }
-                    }
-                }
+                      using (var adapter = new SqlDataAdapter(command))
+                      {
+                          adapter.Fill(passValidadores);
+                      }
+                  }
+              }
 
-                return passValidadores;
-            }
-            else
-            {
-                DataTable validadores = new DataTable();
-                string query = "SELECT  E.idEjecutivo, E.NombreEjecutivo Nombre " +
-                    "FROM Ejecutivos E (NOLOCK) " +
-                    "INNER JOIN Validadores V (NOLOCK) " +
-                    "ON E.idEjecutivo = V.idEjecutivo " +
-                    "WHERE V.idProducto = @idProducto"; // Evita inyección SQL
-
-                using (var connection = new SqlConnection(_connectionString))
-                {
-                    await connection.OpenAsync();
-                    using (var command = new SqlCommand(query, connection))
-                    {
-                        // Usar Add con tipo explícito para evitar problemas con tipos de datos
-                        command.Parameters.Add("@idProducto", SqlDbType.Int).Value = idProducto;
-
-                        using (var adapter = new SqlDataAdapter(command))
-                        {
-                            adapter.Fill(validadores);
-                        }
-                    }
-                }
-
-                return validadores;
-            }
+              return passValidadores;           
 
         }
 
-        public async Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion)
-        {
+        public async Task<DataTable> GetValidadoresAsync(int idProducto)
+        {            
+             DataTable validadores = new DataTable();
+             string query = "SELECT  E.idEjecutivo, E.NombreEjecutivo Nombre " +
+                 "FROM Ejecutivos E (NOLOCK) " +
+                 "INNER JOIN Validadores V (NOLOCK) " +
+                 "ON E.idEjecutivo = V.idEjecutivo " +
+                 "WHERE V.idProducto = @idProducto"; // Evita inyección SQL
 
-            DataTable comentario = new DataTable();
-            string query = "EXEC [2.13.InsertaComentario] @idCartera, @idCuenta, @idEjecutivo, @Comentario, @ModificaSituación "; // Evita inyección SQL
+             using (var connection = new SqlConnection(_connectionString))
+             {
+                 await connection.OpenAsync();
+                 using (var command = new SqlCommand(query, connection))
+                 {
+                     // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                     command.Parameters.Add("@idProducto", SqlDbType.Int).Value = idProducto;
 
-            using (var connection = new SqlConnection(_connectionString))
-            {
-                await connection.OpenAsync();
-                using (var command = new SqlCommand(query, connection))
-                {
-                    // Usar Add con tipo explícito para evitar problemas con tipos de datos
-                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
-                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
-                    command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
-                    command.Parameters.Add("@Comentario", SqlDbType.VarChar).Value = Comentario;
-                    command.Parameters.Add("@ModificaSituación", SqlDbType.Bit).Value = ModificaSituacion;
+                     using (var adapter = new SqlDataAdapter(command))
+                     {
+                         adapter.Fill(validadores);
+                     }
+                 }
+             }
 
-                    using (var adapter = new SqlDataAdapter(command))
-                    {
-                        adapter.Fill(comentario);
-                    }
-                }
-            }
+             return validadores;            
 
-            return comentario;
         }
+
+        //public async Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion)
+        //{
+
+        //    DataTable comentario = new DataTable();
+        //    string query = "EXEC [2.13.InsertaComentario] @idCartera, @idCuenta, @idEjecutivo, @Comentario, @ModificaSituación "; // Evita inyección SQL
+
+        //    using (var connection = new SqlConnection(_connectionString))
+        //    {
+        //        await connection.OpenAsync();
+        //        using (var command = new SqlCommand(query, connection))
+        //        {
+        //            // Usar Add con tipo explícito para evitar problemas con tipos de datos
+        //            command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+        //            command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+        //            command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
+        //            command.Parameters.Add("@Comentario", SqlDbType.VarChar).Value = Comentario;
+        //            command.Parameters.Add("@ModificaSituación", SqlDbType.Bit).Value = ModificaSituacion;
+
+        //            using (var adapter = new SqlDataAdapter(command))
+        //            {
+        //                adapter.Fill(comentario);
+        //            }
+        //        }
+        //    }
+
+        //    return comentario;
+        //}
 
         public async Task<DataTable> GetWlpAsync(string Proceso, string idCuenta)
         {
@@ -575,7 +583,25 @@ namespace NoriAPI.Services
 
         }
 
+        public async Task<(string, bool)> ValidateNewQueja(Queja quejaInsert)
+        {
+            bool insertado = await _ejecutivoRepository.InsertQueja(quejaInsert);
+            if (insertado)
+            {
+                return ("Queja insertada con éxito.", true);
+            }
+            else
+            {
+                return ("Error al insertar la queja.", false);
+            }
+        }
 
+        public async Task<string> AccionesComentario(AccionesComentarioRequest insertComment)
+        {
+            string insertado = await _ejecutivoRepository.InsertComments(insertComment);
+
+            return ("Comentario insertado con éxito.");
+        }
 
         #endregion
 
@@ -991,6 +1017,7 @@ namespace NoriAPI.Services
             dsTablas.Tables.Add(recordatorios);
             recordatorios.DefaultView.Sort = "SegundoSeguimiento ASC";
         }
+
         #region Búsqueda
         public async Task<DataTable> GetBusquedaAsync(int idCartera, string idCuenta, int Jararquia)
         {
@@ -1894,6 +1921,7 @@ namespace NoriAPI.Services
             }
         }
         #endregion
+<<<<<<< HEAD
 
         #region Relaciones
         public DataTable CargaRelaciones()
@@ -2513,6 +2541,13 @@ namespace NoriAPI.Services
         }
         #endregion
     }
+=======
+>>>>>>> origin/Mark29-Validador
 
+
+    }
 }
+<<<<<<< HEAD
 #endregion
+=======
+>>>>>>> origin/Mark29-Validador

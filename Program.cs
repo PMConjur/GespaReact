@@ -140,4 +140,5 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapGet("/", () => "Hello World!");
 await app.RunAsync();
