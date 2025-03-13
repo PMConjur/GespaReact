@@ -431,12 +431,12 @@ export const fetchAccoutStatements = async (idCartera, idCuenta) => {
 };
 
 // Endpoint guardar estado de cuentas
-export const fetchSaveAccount = async (data) => {
+export const fetchSaveAccount = async (requestData) => {
   try {
     console.log("Enviando datos al endpoint..."); // Verifica que esto aparezca en la consola
     const response = await servicio.post(
       `/ejecutivo/SaveEstadoDeCuenta`,
-      data
+      requestData
     );
 
     if (response.status !== 200) {
@@ -499,6 +499,62 @@ export async function getTalksData(searchResults) {
     throw new Error("Error al cargar los datos de negociaciones.");
   }
 }
+
+//endpoint acciones-busquedas
+export const fetchActionsSearch = async (idCuenta) => {
+  try {
+    console.log("Iniciando llamada a la API...");
+    console.log(
+      "URL de la API:",
+      `${apiUrl}/ejecutivo/busqueda/1/${idCuenta}/0`
+    );
+
+    const response = await servicio.get(
+      `${apiUrl}/ejecutivo/busqueda/1/${idCuenta}/0`
+    );
+
+    const message = getErrorStatus(response.status);
+
+    console.log("Respuesta de la API recibida. Estado:", response.status);
+
+    if (response.status !== 200) {
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
+    }
+
+    const data = response.data;
+
+    return data;
+  } catch (error) {
+    console.error("Error en fetchActionsSearch:", error);
+    throw error;
+  }
+};
+
+//endpoint guardar busqueda ejecutivo
+export const fetchSaveExecutive = async (data) => {
+  try {
+    console.log("Enviando datos al endpoint..."); // Verifica que esto aparezca en la consola
+    const response = await servicio.post(
+      `/ejecutivo/guardar`,
+     data
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Busqueda guardada:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchSaveAccount:", error);
+    throw error;
+  }
+};
+
 //Error status global
 const getErrorStatus = (status) => {
   switch (status) {
@@ -624,44 +680,63 @@ export async function getPaymentsData(searchResults) {
 }
 
 // Endpoint para obtener datos de scripts
+
 export async function getScriptsData(searchResults) {
   try {
-    const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));
+    const responseData =
+      location.state || JSON.parse(localStorage.getItem('responseData'));
     const token = responseData?.ejecutivo?.token;
 
+    console.log('Token obtenido:', token); // Registro del token
+
     if (!token) {
-      throw new Error("Token de autenticación no disponible");
+      throw new Error('Token de autenticación no disponible');
     }
 
-    const idProducto = 1
-
-    const Scripts = await Promise.all(
+    const scripts = await Promise.all(
       searchResults.map(async (result) => {
         const idProducto = result.idProducto.trim();
-        console.log("🔍 Buscando scripts:", idProducto);
+        console.log(' Buscando scripts para idProducto:', idProducto);
 
         try {
-          const response = await axios.get(
-            `${apiUrl}/ejecutivo/scripts/${idProducto}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`, // Autenticación con token
-              },
-            }
-          );
+          const url = `${apiUrl}/ejecutivo/scripts/${idProducto}`; // Registro de la URL
+          console.log('URL de la API:', url);
 
-          console.log(`✅ Respuesta recibida para idCuenta ${idProducto}:`, response.data);
-          return response.data; // Retornar datos obtenidos
+          const response = await axios.get(url, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          console.log(
+            `✅ Respuesta recibida para idProducto ${idProducto}:`,
+            response.data
+          );
+          return response.data;
         } catch (error) {
-          console.error(`❌ Error al obtener datos de scripts para:  ${idProducto}:`, error);
-          return null; // Retornar null en caso de error para evitar fallas en Promise.all
+          if (axios.isAxiosError(error)) {
+            // Manejo específico de errores de axios
+            console.error(
+              `❌ Error de axios al obtener scripts para ${idProducto}:`,
+              error.response ? error.response.data : error.message
+            );
+          } else {
+            console.error(
+              `❌ Error al obtener datos de scripts para ${idProducto}:`,
+              error
+            );
+          }
+          return null;
         }
       })
     );
+
+    return scripts; // Retornar el array de scripts
   } catch (error) {
-    console.error("❌ Error al obtener los datos de scripts:", error);
-    throw new Error("Error al cargar los datos de scripts.");
-  }}
+    console.error('❌ Error al obtener los datos de scripts:', error);
+    throw new Error('Error al cargar los datos de scripts.');
+  }
+}
 
 // Nueva función para obtener datos de scripts
 export async function fetchScripts(idProducto) {

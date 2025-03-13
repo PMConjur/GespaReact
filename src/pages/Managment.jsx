@@ -139,7 +139,7 @@ const Managment = () => {
         "Error en la búsqueda automática:",
         error.response?.data || error.message
       );
-      alert(`Error: ${error.response?.data?.errors || error.message}`);
+      toast.error(`Error: ${error.response?.data?.errors || error.message}`);
     }
   };
 
