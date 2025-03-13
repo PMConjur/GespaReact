@@ -79,8 +79,12 @@ namespace NoriAPI.Services
         Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
         Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
         Task<DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña);
-        Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
+        // Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
+        Task<string> AccionesComentario(AccionesComentarioRequest insertCommit);
+        Task<(string, bool)> ValidateNewQueja(Queja quejaInsert);
+
         Task<DataTable> GetWlpAsync(string Proceso, string idCuenta);
+
         #endregion
 
 
@@ -98,7 +102,7 @@ namespace NoriAPI.Services
         private readonly Catalogos _catalogos;
         private readonly DataTable _correos;
         private readonly DataTable _enviados;
-      
+
 
 
 
@@ -125,7 +129,7 @@ namespace NoriAPI.Services
             _searchService = searchService;
             _busquedaRepository = busquedaRepository;
             _catalogos = catalogos;
-            
+
         }
         private DataTable CreaTablaEnviados()
         {
@@ -1950,7 +1954,7 @@ namespace NoriAPI.Services
                 {
                     command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
                     command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
-                  
+
 
                     using (var adapter = new SqlDataAdapter(command))
                     {

@@ -839,7 +839,31 @@ namespace NoriAPI.Controllers
             }
         }
 
-        [HttpGet("accionesComentario")]
+
+          [HttpPost("accionesComentarios")]
+        public async Task<ActionResult> NewComentario( AccionesComentarioRequest request)
+        {
+            string mensaje = await _ejecutivoService.AccionesComentario(request);
+
+            return Ok(new { mensaje = mensaje });
+        }
+
+
+        [HttpPost("quejas")]
+        public async Task<ActionResult> NewQueja([FromBody] Queja quejaNueva)
+        {
+            (string, bool) mensaje = await _ejecutivoService.ValidateNewQueja(quejaNueva);
+
+            if (!mensaje.Item2)
+            {
+                return BadRequest(new { mensaje = mensaje.Item1, exito = false });
+            }
+
+            return Ok(new { mensaje = mensaje.Item1, exito = true });
+        }
+
+
+    /*[HttpGet("accionesComentario")]
         public async Task<IActionResult> GetAccionesComentario(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion)
         {
             DataSet dsTablas = new DataSet();
@@ -866,6 +890,7 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+        **/ 
         #endregion
 
         #region Relaciones
