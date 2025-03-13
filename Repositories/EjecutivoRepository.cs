@@ -62,6 +62,7 @@ namespace NoriAPI.Repositories
 
         #region Acciones
         Task<bool> InsertQueja(Queja insertQueja);
+        Task<string> InsertComments(AccionesComentarioRequest insertComment);
         #endregion
 
     }
@@ -818,6 +819,33 @@ namespace NoriAPI.Repositories
 
             return filasAfectadas > 0;
         }
+
+        public async Task<string> InsertComments(AccionesComentarioRequest insertCommit)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string query = "[dbCollection].[dbo].[2.13.InsertaComentario]";
+
+            var parameters = new
+            {
+                idCartera = insertCommit.IdCartera,
+                idCuenta = insertCommit.IdCuenta,
+                idEjecutivo = insertCommit.IdEjecutivo,
+                Comentario = insertCommit.Comentario,
+                ModificaSituación = insertCommit.ModificaSituacion,
+                
+            };
+
+            var filasAfectadas = await connection.ExecuteScalarAsync<dynamic>(
+                query,
+                parameters,
+                commandType: CommandType.StoredProcedure);
+
+            //int filasAfectadas = await connection.ExecuteAsync(query, parameters, commandType: CommandType.StoredProcedure);
+
+            return Convert.ToString(filasAfectadas);
+        }
+
         #endregion
 
 

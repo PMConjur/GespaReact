@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\CésarRdz\\Sprit 3\\NoriAPI.csproj": {}
+    "D:\\CésarRdz\\1 Gespa Web React\\NoriAPI.csproj": {}
   },
   "projects": {
-    "D:\\CésarRdz\\Sprit 3\\NoriAPI.csproj": {
+    "D:\\CésarRdz\\1 Gespa Web React\\NoriAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\CésarRdz\\Sprit 3\\NoriAPI.csproj",
+        "projectUniqueName": "D:\\CésarRdz\\1 Gespa Web React\\NoriAPI.csproj",
         "projectName": "NoriAPI",
-        "projectPath": "D:\\CésarRdz\\Sprit 3\\NoriAPI.csproj",
+        "projectPath": "D:\\CésarRdz\\1 Gespa Web React\\NoriAPI.csproj",
         "packagesPath": "C:\\Users\\César Rodríguez\\.nuget\\packages\\",
-        "outputPath": "D:\\CésarRdz\\Sprit 3\\obj\\",
+        "outputPath": "D:\\CésarRdz\\1 Gespa Web React\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

@@ -67,7 +67,8 @@ namespace NoriAPI.Services
         Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
         Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
         Task<DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña);
-        Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
+        //Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
+        Task<string> AccionesComentario(AccionesComentarioRequest insertCommit);
         Task<DataTable> GetWlpAsync(string Proceso, string idCuenta);
         Task<(string, bool)> ValidateNewQueja(Queja quejaInsert);
         #endregion
@@ -149,7 +150,7 @@ namespace NoriAPI.Services
             var productividad = MapToInfoProductividad(prod);
             var resultadoProductividad = new ResultadoProductividad(mensaje, productividad);
             return resultadoProductividad;
-        } 
+        }
 
         private static ProductividadInfo MapToInfoProductividad(IDictionary<string, object> prod)
         {
@@ -289,39 +290,39 @@ namespace NoriAPI.Services
 
         }
 
-        public async Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion)
-        {
+        //public async Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion)
+        //{
 
-            DataTable comentario = new DataTable();
-            string query = "EXEC [2.13.InsertaComentario] @idCartera, @idCuenta, @idEjecutivo, @Comentario, @ModificaSituación "; // Evita inyección SQL
+        //    DataTable comentario = new DataTable();
+        //    string query = "EXEC [2.13.InsertaComentario] @idCartera, @idCuenta, @idEjecutivo, @Comentario, @ModificaSituación "; // Evita inyección SQL
 
-            using (var connection = new SqlConnection(_connectionString))
-            {
-                await connection.OpenAsync();
-                using (var command = new SqlCommand(query, connection))
-                {
-                    // Usar Add con tipo explícito para evitar problemas con tipos de datos
-                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
-                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
-                    command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
-                    command.Parameters.Add("@Comentario", SqlDbType.VarChar).Value = Comentario;
-                    command.Parameters.Add("@ModificaSituación", SqlDbType.Bit).Value = ModificaSituacion;
+        //    using (var connection = new SqlConnection(_connectionString))
+        //    {
+        //        await connection.OpenAsync();
+        //        using (var command = new SqlCommand(query, connection))
+        //        {
+        //            // Usar Add con tipo explícito para evitar problemas con tipos de datos
+        //            command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+        //            command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+        //            command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
+        //            command.Parameters.Add("@Comentario", SqlDbType.VarChar).Value = Comentario;
+        //            command.Parameters.Add("@ModificaSituación", SqlDbType.Bit).Value = ModificaSituacion;
 
-                    using (var adapter = new SqlDataAdapter(command))
-                    {
-                        adapter.Fill(comentario);
-                    }
-                }
-            }
+        //            using (var adapter = new SqlDataAdapter(command))
+        //            {
+        //                adapter.Fill(comentario);
+        //            }
+        //        }
+        //    }
 
-            return comentario;
-        }
+        //    return comentario;
+        //}
 
         public async Task<DataTable> GetWlpAsync(string Proceso, string idCuenta)
         {
             DataTable WLP = new DataTable();
             if (Proceso == "Arrangement")
-            {                
+            {
                 string query = "SELECT * FROM [Amex_LSC].[WLP].[OB.Arrangement] WHERE CM15 = @idCuenta "; // Evita inyección SQL
 
                 using (var connection = new SqlConnection(_connectionString))
@@ -465,7 +466,7 @@ namespace NoriAPI.Services
                     }
                 }
 
-               // return WLP;
+                // return WLP;
             }
             else if (Proceso == "SmsOptOut")
             {
@@ -534,9 +535,25 @@ namespace NoriAPI.Services
 
         }
 
+        public async Task<(string, bool)> ValidateNewQueja(Queja quejaInsert)
+        {
+            bool insertado = await _ejecutivoRepository.InsertQueja(quejaInsert);
+            if (insertado)
+            {
+                return ("Queja insertada con éxito.", true);
+            }
+            else
+            {
+                return ("Error al insertar la queja.", false);
+            }
+        }
 
+        public async Task<string> AccionesComentario(AccionesComentarioRequest insertComment)
+        {
+            string insertado = await _ejecutivoRepository.InsertComments(insertComment);
 
-
+            return ("Comentario insertado con éxito.");
+        }
 
         #endregion
 
@@ -952,6 +969,7 @@ namespace NoriAPI.Services
             dsTablas.Tables.Add(recordatorios);
             recordatorios.DefaultView.Sort = "SegundoSeguimiento ASC";
         }
+
         #region Búsqueda
         public async Task<DataTable> GetBusquedaAsync(int idCartera, string idCuenta, int Jararquia)
         {
@@ -1748,7 +1766,7 @@ namespace NoriAPI.Services
             if (domiciliosGet == null || domiciliosGet.Rows.Count == 0)
                 return;
 
-            if (dsTablas.Tables.Contains("Domicilios"));
+            if (dsTablas.Tables.Contains("Domicilios")) ;
             {
                 dsTablas.Tables.Remove("Domicilios");
             }
@@ -1855,21 +1873,6 @@ namespace NoriAPI.Services
         }
         #endregion
 
-        #region Acciones
 
-        public async Task<(string, bool)> ValidateNewQueja(Queja quejaInsert)
-        {
-            bool insertado = await _ejecutivoRepository.InsertQueja(quejaInsert);
-            if (insertado)
-            {
-                return("Queja insertada con éxito.", true);
-            }
-            else
-            {
-                return ("Error al insertar la queja.", false);
-            }
-        }
-        
-        #endregion
     }
 }
