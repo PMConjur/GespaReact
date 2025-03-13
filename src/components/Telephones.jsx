@@ -21,7 +21,7 @@ import { TelephoneFill } from "react-bootstrap-icons";
 
 const Telephones = () => {
   const [data, setData] = useState([]);
-  console.log("Lo que trae data:", data);
+  //console.log("Lo que trae data:", data);
   const [isLoading, setIsLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isPhoneNew, setIsPhoneNew] = useState(false); // Estado para manejar si el teléfono es nuevo
@@ -33,7 +33,7 @@ const Telephones = () => {
     location.state || JSON.parse(localStorage.getItem("responseData"));
 
   const loadData = async () => {
-    console.log("searchResults:", searchResults);
+    //console.log("searchResults:", searchResults);
     setIsLoading(true);
     try {
       const phones = await Promise.all(
@@ -307,11 +307,30 @@ const Telephones = () => {
                           href="#"
                           className="text-primary"
                           onClick={() =>
-                            setSelectedAnswer((prev) => ({
-                              ...prev,
+                            setSelectedAnswer({
                               value: 2,
-                              idClase: row.idClase
-                            }))
+                              dataPhone: {
+                                idClase: row.idClase,
+                                titulares: row.titulares,
+                                conocidos: row.conocidos,
+                                desconocidos: row.desconocidos,
+                                sinContacto: row.sinContacto,
+                                intentosViciDial: row.intentosViciDial,
+                                id: row.id,
+                                númeroTelefónico: row.númeroTelefónico,
+                                idTelefonía: row.idTelefonía,
+                                idOrigen: row.idOrigen,
+                                estado: row.estado,
+                                municipio: row.municipio,
+                                husoHorario: row.husoHorario,
+                                segHorarioContacto: row.segHorarioContacto,
+                                extensión: row.extensión,
+                                _Confirmado: row._Confirmado,
+                                fecha_Insert: row.fecha_Insert,
+                                calificacion: row.calificacion,
+                                activo: row.activo
+                              }
+                            })
                           } //Pasa la clase para verificar mediante el flujo
                         >
                           {"XXXXXX" + row.númeroTelefónico.slice(6)}

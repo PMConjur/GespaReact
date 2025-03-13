@@ -1,4 +1,5 @@
 // Atributos
+import { Relations, userFlow } from "../services/gespawebServices";
 let _Contestaciones = [];
 let _Respuestas = [];
 let _htContestaciones = new Map();
@@ -49,33 +50,154 @@ let _idModo, _idClase;
 
 let _Duración = null;
 
-export const handleFlowLogic = (
-  idValor,
-  setComment,
-  setPhoneNumber,
-  idClase,
-  idSiguientePregunta
+/// <summary>
+/// Evalua la opción, guarda la respuesta y carga la siguiente pregunta en el flujo.
+/// </summary>
+/// <param name="Opción">Número de la respuesta. Valores comienzan en 1. La opción "-1" vuelve a pregunta anterior.</param>
+export const getResponse = async (
+  selectedAnswer, // Contexto de llamada de entrada y manual
+  userFlowData, //Datos seleccionados por el usuario
+  setCurrentQuestionId //idPregunta seleccionada
 ) => {
-  switch (idValor) {
-    case 1:
-      // Acción para idValor 1: Crear un comentario
-      setComment("Comentario generado automáticamente.");
-      _Comentario = "Comentario generado automáticamente.";
+  const { value, idClase, idSiguientePregunta } = selectedAnswer;
+
+  switch (value) {
+    case 10:
       break;
     case 2:
-      // Acción para idValor 2: Ingresar un número telefónico
-      { const phoneNumber = prompt("Ingrese un número telefónico:");
-      setPhoneNumber(phoneNumber);
-      _NombreContacto = phoneNumber;
-      break; }
-    // Agregar más casos según sea necesario
+      switch (userFlowData.idSiguientePregunta) {
+        case 2:
+          if (value === 2 && userFlowData.valor === "No") {
+            _ContestaróOtro = false;
+            _Contacto = false;
+          }
+          break;
+        case 3:
+          _Contacto = false;
+          break;
+        case 10:
+          if (selectedAnswer.result.idCuenta === 1) {
+            console.log("Aqui omitiremos en el flujo 1608,1610,1611");
+          }
+          break;
+        case 5:
+          break;
+        case 6:
+          break;
+        default:
+          console.log("No se requiere acción específica para este value.");
+      }
+
+      break;
+
     default:
-      console.log("No se requiere acción específica para este idValor.");
+      console.log("No se requiere acción específica para este value.");
   }
 
-  // Lógica adicional para manejar idClase cuando idSiguientePregunta sea 12 o 13
-  if (idSiguientePregunta === 12 || idSiguientePregunta === 13) {
-    console.log(`Acción específica para idClase: ${idClase}`);
-    // Aquí puedes agregar la lógica adicional que necesites
+  // Lógica para actualizar la pregunta actual
+  const nextQuestion = userFlowData.find(
+    (item) => item.idPregunta === idSiguientePregunta
+  );
+  if (nextQuestion) {
+    setCurrentQuestionId(nextQuestion.idPregunta);
+  } else {
+    console.log("No se encontró la siguiente pregunta.");
   }
+};
+
+export const getValidateResponse = async (
+  { idPregunta, idRespuesta, idSiguientePregunta, valor, pregunta, idClase }, // Añadir idClase a los parámetros
+  userFlowData, //Datos seleccionados por el usuario
+  setCurrentQuestionId //idPregunta seleccionada
+) => {
+  let Respuesta = pregunta;
+  let idValor = valor;
+  let Contestacion = true;
+  // Si la pregunta fue ¿Contestaron? y la respuesta No.
+  if (idRespuesta == 2 && Respuesta == "No") {
+    _ContestaróOtro = false;
+    _Contacto = false;
+  }
+  // Si la pregunta fue ¿Quién contestó?
+  if (idRespuesta == 3) {
+    // #idCatálogo - Le conoce, no le conoce.
+    if (idValor == "1102" || idValor == "1103") _ContestaróOtro = true;
+    else _ContestaróOtro = false;
+    // #idCatálogo - Titular o Le conoce.
+    if (idValor == "1101" || idValor == "1102") _Contacto = true;
+    else _Contacto = false;
+  }
+  // Si la pregunta fue ¿Con quién escribiste?
+  if (idRespuesta == "21" || idRespuesta == "70") {
+    // #idCatálogo - Le conoce, no le conoce.
+    if (idValor == "1102" || idValor == "1103") _ContestaróOtro = true;
+    else _ContestaróOtro = false;
+  }
+  // Si la pregunta fue ¿Parentesco?
+  if (idRespuesta == "6" || idRespuesta == "72") {
+    // #idCatálogo - Intermediario o - Preexistente
+    if (Contestacion && (idValor == "1132" || idValor == "1133"))
+      _Intermediario = true;
+    else _Intermediario = false;
+  }
+  const relations = await Relations();
+  _Contestaciones = relations.Contestaciones;
+  _Respuestas = relations.Respuestas;
+  _htContestaciones = relations.htContestaciones;
+
+  // Buscar idClase en Relations y traer los datos a un objeto
+  console.log("Buscando relación para idClase:", idClase);
+  const relation = relations.find((rel) => rel.idValor2 === idClase);
+  if (relation) {
+    const {
+      idValor1,
+      idValor2,
+      Relación,
+      Valor1,
+      Valor2,
+      Catálogo1,
+      Catálogo2
+    } = relation;
+    const relationData = {
+      idValor1,
+      idValor2,
+      Relación,
+      Valor1,
+      Valor2,
+      Catálogo1,
+      Catálogo2
+    };
+    console.log("Relación encontrada:", relationData);
+    // Si la siguiente pregunta es  ¿Clase de teléfono?
+    if (
+      idSiguientePregunta == "12" ||
+      idSiguientePregunta == "13" ||
+      (Catálogo1 === "Clases" &&
+        Catálogo2 === "Modificables" &&
+        Valor2 === "Modificable")
+    ) {
+      // Lógica adicional para manejar idClase cuando idSiguientePregunta sea 12 o 13
+      try {
+        const userFlowResponse = await userFlow();
+        const nextQuestion = userFlowResponse.find(
+          (item) => item.idPregunta === idSiguientePregunta
+        );
+        if (nextQuestion) {
+          idValor = 0; // Fijar idValor en 0 por defecto
+          console.log(
+            "Siguiente pregunta encontrada:",
+            nextQuestion.idPregunta
+          );
+          return { idPregunta: nextQuestion.idPregunta }; // Devolver idPregunta del resultado
+        } else {
+          console.log("No se encontró la siguiente pregunta.");
+        }
+      } catch (error) {
+        console.error("Error al obtener la siguiente pregunta:", error);
+      }
+    }
+  } else {
+    console.log("No se encontró una relación para el idClase proporcionado.");
+  }
+  return { idPregunta: idSiguientePregunta }; // Devolver idSiguientePregunta si no se cumple ninguna condición
 };

@@ -8,23 +8,38 @@ import {
 } from "react-bootstrap-icons";
 import { toast } from "sonner"; // Import toast and Toaster
 import { AppContext } from "../pages/Managment"; // Import AppContext
-import { handleFlowLogic } from "../utils/flowLogic"; // Importar la lógica del flujo
+import { getResponse, getValidateResponse } from "../utils/flowLogic"; // Import Response function, para la logica del funcionamiento del flujo
 
 const Flow = () => {
   const [userFlowData, setUserFlowData] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [selectedValues, setSelectedValues] = useState({});
-  const [answerHistory, setAnswerHistory] = useState([]); // Guarda el historial de las respuestas que se van seleccioando
-  const [comment, setComment] = useState(""); // Estado para manejar comentarios
-  const [phoneNumber, setPhoneNumber] = useState(""); // Estado para manejar números telefónicos
-  const { selectedAnswer } = useContext(AppContext); // Contexto de llamada de entrada
-  console.log(selectedAnswer);
+  const [answerHistory, setAnswerHistory] = useState([]); // Guarda el historial de las respuestas que se van seleccionando
+  const { selectedAnswer } = useContext(AppContext); // Contexto de llamada de entrada o manual
+  console.log("Selected Answer:", selectedAnswer);
+  //No modificar
   useEffect(() => {
     userFlow()
       .then((response) => {
         if (response && response.length > 0) {
           setUserFlowData(response);
+          if (selectedAnswer && selectedAnswer.value !== null) {
+            if (selectedAnswer.value === 2 || selectedAnswer.value === 10) {
+              const firstQuestions = response.filter(
+                (item) => item.idPregunta === selectedAnswer.value
+              );
+              if (firstQuestions.length > 0) {
+                setCurrentQuestionId(firstQuestions[0].idPregunta);
+                console.log(
+                  "First Questions:",
+                  firstQuestions.map((q) => q.idPregunta)
+                );
+              }
+            } else {
+              getResponse(selectedAnswer, response, setCurrentQuestionId);
+            }
+          }
         } else {
           console.error("No data received from userFlow");
         }
@@ -32,30 +47,14 @@ const Flow = () => {
       .catch((error) => {
         console.error("Error fetching user flow data:", error);
       });
-  }, []);
+  }, [selectedAnswer]); //Aqui se recibe el flujo por defecto y se maneja el selectedAnswer.value
 
-  useEffect(() => {
-    if (selectedAnswer && selectedAnswer.value !== null) {
-      if (selectedAnswer.value === 2 || selectedAnswer.value === 10) {
-        setCurrentQuestionId(selectedAnswer.value);
-      } else {
-        const firstQuestion = userFlowData.find(
-          (item) => item.idSiguientePregunta === selectedAnswer.value
-        );
-        if (firstQuestion) {
-          setCurrentQuestionId(firstQuestion.idPregunta);
-        }
-      }
-    }
-  }, [selectedAnswer, userFlowData]);
-
-  const handleAnswerChange = (
+  const handleAnswerChange = async (
     idPregunta,
     idRespuesta,
     idSiguientePregunta,
     valor,
-    pregunta,
-    idValor
+    pregunta
   ) => {
     setSelectedAnswers((prev) => ({
       ...prev,
@@ -66,16 +65,29 @@ const Flow = () => {
       [idPregunta]: idSiguientePregunta
     }));
 
-    handleFlowLogic(
-      idValor,
-      setComment,
-      setPhoneNumber,
-      selectedAnswer.idClase,
-      idSiguientePregunta
-    ); // Ejecutar la lógica del flujo
+    const idClase = userFlowData.find(
+      (item) => item.idPregunta === idPregunta
+    )?.idClase;
+
+    const validatedNextQuestion = await getValidateResponse(
+      {
+        idPregunta: selectedAnswer.dataPhone.idPregunta,
+        idRespuesta: selectedAnswer.dataPhone.idRespuesta,
+        idSiguientePregunta: selectedAnswer.dataPhone.idSiguientePregunta,
+        valor: selectedAnswer.dataPhone.valor,
+        pregunta: selectedAnswer.dataPhone.pregunta,
+        idClase: selectedAnswer.dataPhone.idClase
+      },
+      userFlowData,
+      setCurrentQuestionId
+    );
+
+    const nextQuestionId = validatedNextQuestion
+      ? validatedNextQuestion.idPregunta
+      : idSiguientePregunta;
 
     const nextQuestion = userFlowData.find(
-      (item) => item.idPregunta === idSiguientePregunta
+      (item) => item.idPregunta === nextQuestionId
     );
     if (nextQuestion) {
       setAnswerHistory((prev) => [
@@ -84,7 +96,8 @@ const Flow = () => {
           idPregunta: idPregunta,
           idRespuesta: idRespuesta,
           valor: valor,
-          pregunta: pregunta
+          pregunta: pregunta,
+          idSiguientePregunta: nextQuestionId
         }
       ]); // Guarda el historial de las preguntas que se van seleccionando
       setCurrentQuestionId(nextQuestion.idPregunta);
@@ -94,6 +107,7 @@ const Flow = () => {
 
     console.log("Answer History:", answerHistory); // imprime el historial de respuestas para poder verlo en consola
   };
+
   //Accion de boton de regreso
   const handleBack = () => {
     if (answerHistory.length > 0) {
@@ -107,6 +121,7 @@ const Flow = () => {
       setAnswerHistory((prev) => prev.slice(0, -1)); // Remove last answer from history
     }
   };
+
   //Renderiza las preguntas e historial que guarda en un objeto los datos que va seleccionando
   const renderQuestions = (idPregunta) => {
     if (!userFlowData || userFlowData.length === 0 || idPregunta === null)
@@ -166,15 +181,12 @@ const Flow = () => {
                     question.idRespuesta,
                     question.idSiguientePregunta,
                     question.valor,
-                    question.pregunta,
-                    question.idValor
+                    question.pregunta
                   )
                 }
               />
             ))}
           </Form>
-          {comment && <p>Comentario: {comment}</p>}
-          {phoneNumber && <p>Número Telefónico: {phoneNumber}</p>}
         </Card.Body>
         <Card.Footer className="text-white">
           <Row>
@@ -201,12 +213,8 @@ const Flow = () => {
                 <NodePlusFill></NodePlusFill> Flujo
               </i>
             </Card.Header>
-            <Card.Body className="scroll-flow text-align-center">
-              <h3>
-                {" "}
-                <Check2Circle></Check2Circle> Selecciona{" "}
-              </h3>
-              <h6>una cuenta para trabajar en el flujo</h6>
+            <Card.Body className="scroll-flow">
+              <h5>Selecciona una cuenta para trabajar en el flujo</h5>
             </Card.Body>
           </Card>
         )}

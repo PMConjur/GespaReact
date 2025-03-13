@@ -1,6 +1,9 @@
 import { useContext, useState, useEffect } from "react";
 import { Modal, Table, Button, Card, Form } from "react-bootstrap";
-import { fetchAccoutStatements, fetchSaveAccount } from "../../../services/gespawebServices";
+import {
+  fetchAccoutStatements,
+  fetchSaveAccount
+} from "../../../services/gespawebServices";
 import { AppContext } from "../../../pages/Managment";
 
 const EstadoCuentaModal = ({ show, handleClose }) => {
@@ -8,12 +11,12 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   const [loading, setLoading] = useState(false);
   const [selectedDateRange, setSelectedDateRange] = useState({
     startDate: "",
-    endDate: "",
+    endDate: ""
   });
   const [selectedEmail, setSelectedEmail] = useState("");
   const [selectedOption, setSelectedOption] = useState("consulta");
   const responseData =
-  location.state || JSON.parse(localStorage.getItem("responseData"));
+    location.state || JSON.parse(localStorage.getItem("responseData"));
 
   const { searchResults } = useContext(AppContext);
 
@@ -42,7 +45,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   };
 
   useEffect(() => {
-    console.log("Modal abierto:", show); // Verifica que el modal se abra correctamente
+    //console.log("Modal abierto:", show); // Verifica que el modal se abra correctamente
     if (show) {
       handleAccountStatement();
     }
@@ -64,13 +67,19 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   // Envío de datos al endpoint
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("handleSubmit ejecutado"); 
+    console.log("handleSubmit ejecutado");
 
     console.log("Iniciando handleSubmit...");
 
     // Validar campos obligatorios
-    if (!selectedDateRange.startDate || !selectedDateRange.endDate || !selectedEmail) {
-      alert("Por favor, complete todos los campos antes de enviar la solicitud.");
+    if (
+      !selectedDateRange.startDate ||
+      !selectedDateRange.endDate ||
+      !selectedEmail
+    ) {
+      alert(
+        "Por favor, complete todos los campos antes de enviar la solicitud."
+      );
       return;
     }
 
@@ -85,7 +94,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
       fechaInicial: new Date(selectedDateRange.startDate).toISOString(),
       fechaFinal: new Date(selectedDateRange.endDate).toISOString(),
       consulta: selectedOption === "consulta", // true si es consulta, false si es envío
-      correoElectrónico: selectedEmail,
+      correoElectrónico: selectedEmail
     };
 
     console.log("Datos a enviar:", requestData);
