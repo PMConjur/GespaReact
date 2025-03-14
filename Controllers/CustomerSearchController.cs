@@ -11,6 +11,7 @@ using System.Data;
 using System.Text.Json;
 using System;
 using System.Globalization;
+using NoriAPI.Models.Domicilios;
 
 namespace NoriAPI.Controllers
 {
@@ -101,6 +102,58 @@ namespace NoriAPI.Controllers
             }
             return Ok(new { result = "Teléfono insertado con éxito" });
         }
+
+        #region Domicilios
+
+        /// <summary>
+        /// Obtiene los domicilios y visitas asociadas a una cuenta y cartera.
+        /// </summary>
+        /// <param name="idCartera">Identificador de la cartera.</param>
+        /// <param name="idCuenta">Identificador de la cuenta.</param>
+        /// <returns>Un objeto JSON con las listas de domicilios y visitas.</returns>
+        [HttpGet("domicilios-visitas")]
+        [AllowAnonymous]
+        public async Task<ActionResult<DomiciliosVisitasResult>> GetVisitsAndAddresses([FromQuery] int idCartera, string idCuenta)
+        {
+
+            var result = await _searchService.DomiciliosVisitas(idCartera, idCuenta);
+
+            if (result == null || (result.Domicilios == null && result.Visitas == null && result.Error == null))
+            {
+                return NotFound("No se encontraron domicilios o visitas para la cuenta y cartera especificadas.");
+            }
+
+            if (result.Error != null)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+
+        }
+
+        /// <summary>
+        /// Obtiene las listas de catálogos de "Información" y "Clases" para los dropdowns de domicilios.
+        /// </summary>
+        /// <returns>Un objeto CatalogoDomicilios con las listas de catálogos.</returns>
+        [HttpGet("domicilios-dropdown-info")]
+        [AllowAnonymous]
+        public async Task<ActionResult<CatalogoDomicilios>> InfoDropDownsDomicilios()
+        {
+
+            var visitAddresses = await _searchService.RelacionesDomicilios();
+
+            // Si ambas listas están vacías, devolver NotFound
+            if (visitAddresses.Informacion.Count == 0 || visitAddresses.Clases.Count == 0)
+            {
+                return NotFound(new { error = "No se encontraron datos de catálogos para los dropdowns de Domicilios." });
+            }
+
+            return Ok(visitAddresses);
+
+        }
+
+        #endregion
 
 
     }

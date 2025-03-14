@@ -418,6 +418,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost("SaveEstadoDeCuenta")]
+        [AllowAnonymous]
         public async Task<IActionResult> SaveCargoEstadoDeCuenta([FromBody] EstadoDeCuentaRe newEstadoCuenta)
         {
             if (newEstadoCuenta == null)

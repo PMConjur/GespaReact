@@ -9,6 +9,10 @@ using System.Data;
 using System.Text.RegularExpressions;
 using NoriAPI.Models.Phones;
 using Microsoft.IdentityModel.Tokens;
+using NoriAPI.Models.Domicilios;
+using NoriAPI.Models;
+using System.Collections;
+using System.Reflection;
 
 
 namespace NoriAPI.Services
@@ -21,8 +25,12 @@ namespace NoriAPI.Services
         Task<Dictionary<string, object>> CalculateProductData(string idCuenta);
         Task<bool> ValidatePhone(string telefono, string idCuenta);
         Task<string> SaveNewPhone(NewPhoneRequest newPhoneData);
-        Task<int> GetIdValor(DataTable catalogos, string catalogo, object valor);
 
+        #region Domicilios
+        Task<DomiciliosVisitasResult> DomiciliosVisitas(int idCartera, string idCuenta);
+        Task<CatalogoDomicilios> RelacionesDomicilios();
+
+        #endregion
 
     }
 
@@ -77,7 +85,6 @@ namespace NoriAPI.Services
             return new ResultadoBusqueda(mensaje, listaBusquedaInfo);
 
         }
-
 
         public async Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado)
         {
@@ -194,10 +201,12 @@ namespace NoriAPI.Services
         {
             DataTable catalogosTable = await _ejecutivoRepository.VwCatalogos();
 
+            ClasesGespaNonStatic gespaPhones = new();
+
             //Obtener los idValor para el constructor del nuevo teléfono.
-            int idTelefonia = await GetIdValor(catalogosTable, "Telefonía", newPhoneData.NumeroTelefonico);
-            int idOrigen = await GetIdValor(catalogosTable, "Orígenes", "Gestión");
-            int idClase = await GetIdValor(catalogosTable, "Clases", newPhoneData.IdClase);
+            int idTelefonia = gespaPhones.GetIdValor(catalogosTable, "Telefonía", newPhoneData.Telefonia);
+            int idOrigen = gespaPhones.GetIdValor(catalogosTable, "Orígenes", "Gestión");
+            int idClase = gespaPhones.GetIdValor(catalogosTable, "Clases", newPhoneData.ClaseTelefono);
 
             NewPhone newPhone = new NewPhone(
                 numeroTelefonico: newPhoneData.NumeroTelefonico,
@@ -314,8 +323,6 @@ namespace NoriAPI.Services
 
         #endregion
 
-
-
         #region InfoProductos
         public async Task<Dictionary<string, object>> CalculateProductData(string idCuenta)
         {
@@ -367,11 +374,11 @@ namespace NoriAPI.Services
                 }
             }
 
-            if (expresion.StartsWith("#"))
+            if (expresion.StartsWith('#'))
             {
                 return EvaluateDate(resultado.Replace("#", ""));
             }
-            else if (campos.Length > 1 && (expresion.Contains("+") || expresion.Contains("-") || expresion.Contains("*") || expresion.Contains("/") || expresion.Contains("^")))
+            else if (campos.Length > 1 && (expresion.Contains('+') || expresion.Contains('-') || expresion.Contains('*') || expresion.Contains('/') || expresion.Contains('^')))
             {
                 return Evaluate(resultado);
             }
@@ -495,22 +502,356 @@ namespace NoriAPI.Services
 
         #endregion
 
+        #region Domicilios
 
-        public async Task<int> GetIdValor(DataTable catalogos, string catalogo, object valor)
+        /// <summary>
+        /// Obtiene los domicilios y visitas asociadas a una cuenta y cartera.
+        /// </summary>
+        /// <param name="idCartera">Identificador de la cartera.</param>
+        /// <param name="idCuenta">Identificador de la cuenta.</param>
+        /// <returns>Un objeto anónimo con las listas de domicilios y visitas.</returns>
+        public async Task<DomiciliosVisitasResult> DomiciliosVisitas(int idCartera, string idCuenta)
         {
-            if (valor == null)
-                return 0;
-            // Verifica que la DataTable no sea nula y contenga filas
-            if (catalogos == null || catalogos.Rows.Count == 0)
-                return 0;
+            // Obtiene la lista de domicilios
+            var domicilios = await _searchRepository.GetDomicilios(idCuenta, idCartera);
 
-            // Filtra las filas que coincidan con el catálogo y el valor buscado
-            DataRow[] drFilas = catalogos.Select($"Catálogo = '{catalogo}' AND Valor = '{valor}'");
+            // Obtiene la lista de visitas
+            var visitas = await _searchRepository.GetVisitas(idCuenta, idCartera);
 
-            // Si hay coincidencias, retorna el idValor, de lo contrario, retorna 0
-            return drFilas.Length > 0 ? Convert.ToInt32(drFilas[0]["idValor"]) : 0;
+            // Validación de resultados
+            if (domicilios == null || visitas == null)
+            {
+                return new DomiciliosVisitasResult { Error = "No se encontraron domicilios o visitas para la cuenta y cartera especificadas." };
+            }
+
+            //Ordenar las visitas por fecha y hora, de más reciente a más antigua.
+            visitas = visitas.OrderByDescending(v => v.Fecha).ThenByDescending(v => v.Hora).ToList();
+
+            // Mapear los domicilios a una lista de DomicilioTranslated con nuevos campos (Información y Clase)para traducir los valores de sus IDs.
+            var domiciliosTraducidos = MapearDomicilios(domicilios);
+
+
+            await TraduceListaIdAValores(domiciliosTraducidos, "idDomicilio, Comentario");
+
+            await LlenaDomicilios(domiciliosTraducidos, 1);
+
+
+            // Devuelve un objeto DomiciliosVisitasResult con las listas de domicilios y visitas
+            return new DomiciliosVisitasResult { Domicilios = domiciliosTraducidos, Visitas = visitas };
 
         }
+
+        /// <summary>
+        /// Obtiene las relaciones de catálogos para los dropdowns de domicilios.
+        /// </summary>
+        /// <returns>Un objeto CatalogoDomicilios con las listas de catálogos.</returns>
+        public async Task<CatalogoDomicilios> RelacionesDomicilios()
+        {
+            ClasesGespaNonStatic gespaDomicilios = new();
+
+            // Cargar catálogos y relaciones sobre la instancia de ClasesGespa.
+            gespaDomicilios.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            gespaDomicilios.CargaCatalogos();
+
+            gespaDomicilios.dtRelaciones = await _ejecutivoRepository.VwRelaciones();
+            gespaDomicilios.Relaciones();
+
+            // Obtener Hashtables de relaciones y valores de catálogos.
+            Hashtable htInformacion = gespaDomicilios.Relaciones("Información", "Modificables", "Positivo", "Negativo");
+            Hashtable htClases = gespaDomicilios.Relaciones("Clases", "Modificables", "Positivo");
+            Hashtable htValoresCatalogo = gespaDomicilios._htValoresCatálogo;
+
+            // Obtener listas de catálogos.
+            List<CatalogoItem> listaInformacion = ObtenerCatalogoInformacion(htInformacion, htValoresCatalogo);
+            List<CatalogoItem> listaClases = ObtenerCatalogoClases(htClases, htValoresCatalogo);
+
+            CatalogoDomicilios catalogos = new()
+            {
+                Informacion = listaInformacion,
+                Clases = listaClases
+            };
+
+            return catalogos;
+        }
+
+        /// <summary>
+        /// Obtiene la lista de catálogos de "Información" a partir de un Hashtable de relaciones y valores.
+        /// </summary>
+        /// <param name="htInformacion">Hashtable de relaciones de "Información".</param>
+        /// <param name="htValoresCatalogo">Hashtable de valores de catálogos.</param>
+        /// <returns>Lista de objetos CatalogoItem para el catálogo de "Información".</returns>
+        public static List<CatalogoItem> ObtenerCatalogoInformacion(Hashtable htInformacion, Hashtable htValoresCatalogo)
+        {
+            List<CatalogoItem> listaInformacion = new List<CatalogoItem>();
+
+            // Itera a través de las claves del Hashtable de relaciones
+            foreach (string idValor in htInformacion.Keys)
+            {
+                // Verifica si la clave existe en el Hashtable de valores de catálogos
+                if (htValoresCatalogo.ContainsKey(idValor))
+                {
+                    // Crea un nuevo objeto CatalogoItem con el ID y el valor correspondiente
+                    // y lo agrega a la lista
+                    listaInformacion.Add(new CatalogoItem { Id = idValor, Valor = htValoresCatalogo[idValor].ToString() });
+                }
+            }
+
+            // Remueve los elementos de la lista cuyo valor sea "Verificada"
+            listaInformacion.RemoveAll(item => item.Valor == "Verificada");
+
+            return listaInformacion;
+        }
+
+        /// <summary>
+        /// Obtiene la lista de catálogos de "Clases" a partir de un Hashtable de relaciones y valores.
+        /// </summary>
+        /// <param name="htClases">Hashtable de relaciones de "Clases".</param>
+        /// <param name="htValoresCatalogo">Hashtable de valores de catálogos.</param>
+        /// <returns>Lista de objetos CatalogoItem para el catálogo de "Clases".</returns>
+        public static List<CatalogoItem> ObtenerCatalogoClases(Hashtable htClases, Hashtable htValoresCatalogo)
+        {
+            List<CatalogoItem> listaClases = new List<CatalogoItem>();
+
+            // Itera a través de las claves del Hashtable de relaciones
+            foreach (string idClase in htClases.Keys)
+            {
+                // Verifica si la clave existe en el Hashtable de valores de catálogos
+                if (htValoresCatalogo.ContainsKey(idClase))
+                {
+                    // Crea un nuevo objeto CatalogoItem con el ID y el valor correspondiente
+                    // y lo agrega a la lista
+                    listaClases.Add(new CatalogoItem { Id = idClase, Valor = htValoresCatalogo[idClase].ToString() });
+                }
+            }
+
+            // Remueve los elementos de la lista cuyos valores sean "Fax", "Celular", "Conmutador", "Erroneo" o "Recados"
+            listaClases.RemoveAll(item => item.Valor == "Fax");
+            listaClases.RemoveAll(item => item.Valor == "Celular");
+            listaClases.RemoveAll(item => item.Valor == "Conmutador");
+            listaClases.RemoveAll(item => item.Valor == "Erroneo");
+            listaClases.RemoveAll(item => item.Valor == "Recados");
+
+
+            return listaClases;
+        }
+
+        public List<DomicilioTranslated> MapearDomicilios(List<Domicilio> listaDomicilios)
+        {
+            List<DomicilioTranslated> listaTraducida = [];
+
+            foreach (var domicilio in listaDomicilios)
+            {
+                DomicilioTranslated domicilioTraducido = new()
+                {
+                    IdCartera = domicilio.IdCartera,
+                    IdCuenta = domicilio.IdCuenta,
+                    IdDomicilio = domicilio.IdDomicilio,
+                    Fecha_Insert = domicilio.Fecha_Insert,
+                    IdEjecutivo = domicilio.IdEjecutivo,
+                    IdInformación = domicilio.IdInformación, // 🔹 Se mantiene igual, sin traducir
+                    Calle = domicilio.Calle,
+                    NúmeroExterior = domicilio.NúmeroExterior,
+                    NúmeroInterior = domicilio.NúmeroInterior,
+                    IdCódigoPostal = domicilio.IdCódigoPostal,
+                    CódigoPostal = domicilio.CódigoPostal,
+                    ColoniaLocalidad = domicilio.ColoniaLocalidad,
+                    DelegaciónMunicipio = domicilio.DelegaciónMunicipio,
+                    Estado = domicilio.Estado,
+                    FechaHora_Información = domicilio.FechaHora_Información,
+                    IdLogProceso = domicilio.IdLogProceso,
+                    IdClase = domicilio.IdClase, // 🔹 Se mantiene igual, sin traducir
+                    IdOrígen = domicilio.IdOrígen
+                };
+
+                listaTraducida.Add(domicilioTraducido);
+            }
+
+            return listaTraducida;
+        }
+
+
+
+        public async Task TraduceListaIdAValores<T>(List<T> lista, string columnasAOcultar = "")
+        {
+            // Definir qué columnas deben ocultarse
+            HashSet<string> columnasExcluidas = new(columnasAOcultar.Replace(" ", "").Split(','));
+
+            ClasesGespaNonStatic gespaTraduce = new();
+
+            gespaTraduce.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            gespaTraduce.CargaCatalogos();
+
+            foreach (var item in lista)
+            {
+                foreach (PropertyInfo propiedad in typeof(T).GetProperties())
+                {
+                    string nombreColumna = propiedad.Name;
+
+                    // Omitimos las columnas que deben ocultarse
+                    if (columnasExcluidas.Contains(nombreColumna)) continue;
+
+                    // Si es un ID de catálogo, traducirlo a su valor real
+                    if (gespaTraduce._htNombreId.ContainsValue(nombreColumna))
+                    {
+                        string idValor = propiedad.GetValue(item)?.ToString()?.Trim() ?? "";
+                        if (gespaTraduce._htValoresCatálogo.ContainsKey(idValor))
+                        {
+                            propiedad.SetValue(item, gespaTraduce._htValoresCatálogo[idValor]?.ToString());
+                        }
+                    }
+                    // Formateo específico de columnas
+                    else if (nombreColumna == "IdCuenta" || nombreColumna == "idCuenta")
+                    {
+                        string idValor = propiedad.GetValue(item)?.ToString() ?? "";
+                        propiedad.SetValue(item, idValor.Length >= 4 ? idValor.Substring(idValor.Length - 4) : idValor);
+                    }
+                    else if (nombreColumna == "NúmeroTelefónico")
+                    {
+                        string idValor = propiedad.GetValue(item)?.ToString() ?? "";
+                        propiedad.SetValue(item, gespaTraduce.MáscaraTeléfono(idValor));
+                    }
+                    else if (nombreColumna.StartsWith("FechaHora") || nombreColumna == "Seguimiento")
+                    {
+                        string idValor = propiedad.GetValue(item)?.ToString() ?? "";
+                        if (!string.IsNullOrEmpty(idValor) && DateTime.TryParse(idValor, out DateTime fechaHora))
+                        {
+                            // Verificamos si la propiedad es de tipo DateTime o string
+                            if (propiedad.PropertyType == typeof(DateTime) || propiedad.PropertyType == typeof(DateTime?))
+                            {
+                                propiedad.SetValue(item, fechaHora); // Asignar como DateTime
+                            }
+                            else
+                            {
+                                propiedad.SetValue(item, fechaHora.ToString("dd/MM/yyyy HH:mm")); // Asignar como string si aplica
+                            }
+                        }
+                    }
+                    else if (nombreColumna.StartsWith("Monto") || nombreColumna.Contains("Descuento"))
+                    {
+                        string idValor = propiedad.GetValue(item)?.ToString() ?? "";
+                        if (decimal.TryParse(idValor, out decimal monto))
+                        {
+                            propiedad.SetValue(item, gespaTraduce.FormatoPesos(monto)); // Aplicando formato directamente                        }
+                        }
+                    }
+                }
+            }
+
+
+
+
+        }
+
+        public async Task LlenaDomicilios(List<DomicilioTranslated> listaDomicilios, int iDomicilio)
+        {
+
+            if (listaDomicilios == null || listaDomicilios.Count < iDomicilio || iDomicilio <= 0)
+            {
+                return; // No hay datos para procesar
+            }
+
+
+            ClasesGespaNonStatic gespaDomicilio = new()
+            {
+                dtCatalogos = await _ejecutivoRepository.VwCatalogos()
+            };
+
+            gespaDomicilio.CargaCatalogos();
+
+            // Obtener el domicilio correspondiente
+            foreach (var domicilio in listaDomicilios)
+            {
+                // Convertir y obtener idClase
+                int.TryParse(domicilio.IdClase?.ToString(), out int idClase);
+                int.TryParse(domicilio.IdOrígen?.ToString(), out int idOrigen);
+
+                InformacionDomicilio(domicilio, gespaDomicilio._htValoresCatálogo, idClase == 0 ? 1901 : idClase);
+
+                domicilio.Orígen = gespaDomicilio._htValoresCatálogo.ContainsKey(idOrigen.ToString())
+                    ? gespaDomicilio._htValoresCatálogo[idOrigen.ToString()].ToString()
+                    : "Sin Clase";
+
+                domicilio.Estado = gespaDomicilio.ObtenerNombreEstado(domicilio.Estado?.Trim() ?? "");
+
+                domicilio.Fecha_Insert = DateTime.TryParse(gespaDomicilio.Fecha(domicilio.Fecha_Insert), out DateTime fechaInsert) ? fechaInsert : (DateTime?)null;
+
+                // Aquí va el nuevo método que actualiza la información de los domicilios
+                if (int.TryParse(domicilio.IdCódigoPostal?.ToString(), out int idCodigoPostal) && idCodigoPostal > 0)
+                {
+                    var codigosPostales = await _searchRepository.SearchCodigosPostales(idCodigoPostal);
+
+                    if (codigosPostales != null && codigosPostales.Count > 0)
+                    {
+                        var codigoPostal = codigosPostales[0]; // Tomamos el primer resultado (suponiendo que es único)
+
+                        // Actualizamos el domicilio con la información del código postal
+                        domicilio.CódigoPostal = codigoPostal.CódigoPostal;
+                        domicilio.ColoniaLocalidad = string.IsNullOrEmpty(domicilio.ColoniaLocalidad) ? codigoPostal.Colonia : domicilio.ColoniaLocalidad;
+                        domicilio.DelegaciónMunicipio = codigoPostal.Municipio;
+                        domicilio.Estado = codigoPostal.Estado;
+                    }
+                }
+
+
+
+            }
+
+
+        }
+
+        public static void InformacionDomicilio(DomicilioTranslated domicilio, Hashtable valoresCatalogo, int idClase)
+        {
+            if (domicilio.IdInformación == 1901 && domicilio.IdClase == 1901)
+            {
+                string valorInformacion = BuscarEnValoresHashtable(valoresCatalogo, domicilio.IdInformación.ToString());
+
+                if (string.IsNullOrWhiteSpace(valorInformacion))
+                    domicilio.Información = valorInformacion;
+                else
+                    domicilio.Información = "Desconocido";
+            }
+            else
+            {
+
+                if (domicilio.IdInformación is not null)
+                {
+                    string? valorInformacion = BuscarEnValoresHashtable(valoresCatalogo, domicilio.IdInformación.ToString());
+
+                    if (valorInformacion is not null)
+                        domicilio.Información = valorInformacion;
+                    else
+                        domicilio.Información = "Desconocido";
+                }
+
+                if (idClase.ToString() is not null)
+                {
+                    string? valorClase = BuscarEnValoresHashtable(valoresCatalogo, idClase.ToString());
+
+                    if (valorClase is not null)
+                        domicilio.Clase = valorClase;
+                    else
+                        domicilio.Clase = "Sin Clase";
+                }
+            }
+        }
+
+
+
+        public static string BuscarEnValoresHashtable(Hashtable valoresCatalogo, string valorBuscado)
+        {
+            foreach (DictionaryEntry entry in valoresCatalogo)
+            {
+                if (entry.Key.ToString() == valorBuscado)
+                {
+                    return entry.Value.ToString(); // Devuelve la clave asociada al valor encontrado
+                }
+            }
+            return null; // No se encontró el valor
+        }
+
+
+        #endregion
+
 
     }
 }
