@@ -169,7 +169,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("vistaAccionamientos")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetVistaAccionamientos(int idCartera, string idCuenta)
         {
             DataSet dsTablas = new DataSet();
@@ -184,8 +183,6 @@ namespace NoriAPI.Controllers
 
                 // Serializamos la lista a JSON
                 string jsonViewAccionamientos = JsonSerializer.Serialize(View, new JsonSerializerOptions { WriteIndented = true });
-
-                //dsTablas.Tables.Add(Negociaciones);
 
                 return Ok(jsonViewAccionamientos);
 
