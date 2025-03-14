@@ -5,8 +5,12 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import Payments from './Payments'; // Asegúrate de importar el componente
 import "../../../scss/styles.scss";
 import { getPaymentsData } from '../../../services/gespawebServices';
+//
+//import Dropdown from 'react-bootstrap/Dropdown';
+//import "../../../scss/styles.scss";
 
 function DropdownInfo() {
+
 
 
   const [showPayments, setShowPayments] = useState(false);
@@ -53,6 +57,18 @@ function DropdownInfo() {
 
       {/* Renderiza el modal */} 
       <Payments show={showPayments} handleClose={handleClosePayments} data={paymentsData} loadingPayments={loadingPayments} />
+
+{/* Renderiza el modal 
+
+
+<MultiDeptor show={showModal} handleClose={handleClose} />
+const [showModal, setShowModal] = useState(false);
+
+const handleShow = () => setShowModal(true);
+const handleClose = () => setShowModal(false);
+*/}
+
+ 
     </>
   );
 }

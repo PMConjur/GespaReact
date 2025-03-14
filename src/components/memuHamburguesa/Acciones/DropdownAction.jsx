@@ -6,8 +6,10 @@ import EstadoCuentaModal from './AccountStatements';
 import FollowUps from './FollowUps';
 import Talks from './Talks';
 import Drives from './Drives';
-import { getFollowUpsData, getTalksData } from '../../../services/gespawebServices';
+import { getFollowUpsData, getTalksData, getOnlinechargeData } from '../../../services/gespawebServices';
 import Search from './Search';
+import OnlineCharge from './OnlineCharge';
+
 
 const DropdownActions = () => {
   const [modalShow, setModalShow] = useState(false);
@@ -22,6 +24,11 @@ const DropdownActions = () => {
 
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
+
+
+  const [showOnlinecharge, setShowOnlinecharge] = useState(false);
+  const [onlinechargeData, setOnlinechargeData] = useState([]);
+  const [loadingOnlinecharge, setLoadingonlinecharge] = useState(false);
 
   const { searchResults } = useContext(AppContext);
 
@@ -61,6 +68,24 @@ const DropdownActions = () => {
 
   const handleCloseDrives = () => setShowDrives(false);
 
+
+
+  // cargos en línea
+  const handleShowOnlinecharge = async () => {
+    setLoadingonlinecharge(true);
+    try {
+      const onlinecharge = await getOnlinechargeData(searchResults); // Obtener los datos de cargos en línea
+      setOnlinechargeData(onlinecharge.flat()); // Establece los datos recibidos
+      setShowOnlinecharge(true);
+    } catch (error) {
+      console.error('Error al cargar los datos de cargos en línea:', error);
+    } finally {
+      setLoadingonlinecharge(false);
+    }
+  };
+
+  const handleCloseOnlinecharge = () => setShowOnlinecharge(false);
+
   return (
     <>
       <Dropdown className='' >
@@ -72,7 +97,7 @@ const DropdownActions = () => {
           <Dropdown.Item onClick={handleShowFollowUps} className="custom-dropdown-item">Seguimientos</Dropdown.Item>
           <Dropdown.Item onClick={handleShowDrives} className="custom-dropdown-item">Accionamientos</Dropdown.Item>
           <Dropdown.Item onClick={handleOpenModal} href="/maintenance" className="custom-dropdown-item">Busqueda</Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Cargos en linea</Dropdown.Item>
+          <Dropdown.Item onClick={handleShowOnlinecharge} className="custom-dropdown-item">Cargos en línea</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Comentarios</Dropdown.Item>  
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item" onClick={() => setModalShow(true)}>Estados de cuenta</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Quejas</Dropdown.Item>
@@ -85,6 +110,7 @@ const DropdownActions = () => {
       <EstadoCuentaModal show={modalShow} handleClose={() => setModalShow(false)} />
       <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps} data={followUpsData} loadingFollow={loadingFollow} />
       <Talks show={showTalks} handleClose={handleCloseTalks} dataTalks={talksData} loading={loadingtalks} />
+      <OnlineCharge show={showOnlinecharge} handleClose={handleCloseOnlinecharge} data={onlinechargeData} loading={loadingOnlinecharge} />
       <Drives showModal={showDrives} handleCloseModal={handleCloseDrives} />
       <Search show={showModal} handleClose={handleCloseModal} />
     </>

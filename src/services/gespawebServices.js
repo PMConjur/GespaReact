@@ -632,7 +632,6 @@ export async function getOnlinechargeData(searchResults) {
   }
 }
 
-
 // Endpoint de seguimientos para múltiples cuentas
 export async function getPaymentsData(searchResults) {
   try {
@@ -767,4 +766,81 @@ export async function fetchScripts(idProducto) {
     throw error;
   }
 }
+export async function getGestionTeData(searchResults) {
+  try {
+    // Obtener token de autenticación de localStorage o estado
+    const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));
+    const token = responseData?.ejecutivo?.token;
 
+    if (!token) {
+      throw new Error("Token de autenticación no disponible");
+    }
+
+    // Definir idCartera fijo (siempre 1 según el código original)
+    const idCartera = 1;
+
+    // Realizar múltiples solicitudes en paralelo para cada idCuenta en searchResults
+    const gestionTe = await Promise.all(
+      searchResults.map(async (result) => {
+        const idCuenta = result.idCuenta.trim(); // Limpieza del idCuenta
+        console.log("🔍 Buscando gestion para idCuenta:", idCuenta);
+
+        try {
+          const response = await axios.get(
+            `${apiUrl}/ejecutivo/gestionTe/${idCartera}/${idCuenta}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`, // Autenticación con token
+              },
+            }
+          );
+
+          console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
+          return response.data; // Retornar datos obtenidos
+        } catch (error) {
+          console.error(`❌ Error al obtener datos de gestionTe para idCuenta ${idCuenta}:`, error);
+          return null; // Retornar null en caso de error para evitar fallas en Promise.all
+        }
+      })
+    );
+
+    // Filtrar valores nulos (en caso de errores individuales)
+    return gestionTe.filter((data) => data !== null);
+  } catch (error) {
+    console.error("❌ Error al obtener los datos de gestionTe:", error);
+    throw new Error("Error al cargar los datos de gestiónTe.");
+  }
+}
+
+// Endpoint Recordatorios
+
+export const fetchNotes = async (numEmpleado, token) => {
+  try {
+    if (!token) {
+      throw new Error("Token is missing or invalid");
+    }
+
+    const response = await servicio.get(
+      `http://192.168.7.33/api/ejecutivo/recordatorios/${numEmpleado}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    // formato de los datos
+    const data = response.data;
+    const formattedNotes = data.map((item) => ({
+      id: item.idCuenta,
+      title: item.Nombre,
+      content: `Saldo: ${item.Saldo}\nTeléfono: ${item.NúmeroTelefónico}\nSituación: ${item.idSituación}\nFecha Seguimiento: ${item.FechaSeguimiento}\nHora Seguimiento: ${item.SegundoSeguimiento}`,
+      date: item.FechaHoraSeguimiento,
+    }));
+
+    return formattedNotes;
+  } catch (error) {
+    console.error("Error fetching notes:", error);
+    throw error;
+  }
+};

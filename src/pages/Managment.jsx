@@ -14,7 +14,7 @@ import SearchForm from "../components/SearchForm";
 import SearchCustomer from "../components/SearchCustomer";
 import CustomToast from "../components/CustomToast";
 import Managments from "../components/Managments";
-import Reminder from "../components/Reminder";
+import NotesWidget from "../components/NotesWidget";
 import { searchCustomer } from "../services/gespawebServices";
 // Crear el contexto
 export const AppContext = createContext();
@@ -236,7 +236,6 @@ const Managment = () => {
                     </Col>
                   </Row>
                   <Col xs={12}>
-                    <h1>Gestiones</h1>
                     <Managments /> {/* Componente de gestiones */}
                   </Col>
                 </Col>
@@ -252,7 +251,7 @@ const Managment = () => {
                   </Col>
                   {/* Componente de gestiones */}
                   <Col>
-                    <Reminder /> {/* Componente de recordatorios */}
+                  <NotesWidget/> {/* Componente de recordatorios */}
                   </Col>
                 </Col>
               </Row>

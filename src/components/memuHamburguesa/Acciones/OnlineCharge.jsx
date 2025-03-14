@@ -3,7 +3,8 @@ import { Modal, Button } from "react-bootstrap";
 import TableOnlineCharge from "../../TableOnlineCharge";
 
 
-const Onlinecharge = ({ show, handleClose, data }) => {
+
+const OnlineCharge = ({ show, handleClose, data }) => {
     return (
         <Modal show={show} onHide={handleClose} size="xl">
             <Modal.Header closeButton>
@@ -21,4 +22,4 @@ const Onlinecharge = ({ show, handleClose, data }) => {
     );
 };
 
-export default Onlinecharge;
+export default OnlineCharge;
