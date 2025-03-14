@@ -25,10 +25,13 @@ namespace NoriAPI.Services
         Task<Dictionary<string, object>> CalculateProductData(string idCuenta);
         Task<bool> ValidatePhone(string telefono, string idCuenta);
         Task<string> SaveNewPhone(NewPhoneRequest newPhoneData);
+        Task<string> SaveNewPhoneRe(NewPhoneRe newPhoneData);
+
 
         #region Domicilios
         Task<DomiciliosVisitasResult> DomiciliosVisitas(int idCartera, string idCuenta);
         Task<CatalogoDomicilios> RelacionesDomicilios();
+        Task<List<CodigosPostales>> FindPostalCodeInfo(int codigoPostal);
 
         #endregion
 
@@ -85,7 +88,6 @@ namespace NoriAPI.Services
             return new ResultadoBusqueda(mensaje, listaBusquedaInfo);
 
         }
-
         public async Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado)
         {
             string mensaje = null;
@@ -112,7 +114,6 @@ namespace NoriAPI.Services
                 }
             }
         }
-
         private static BusquedaInfo MapToInfoBusqueda(IDictionary<string, object> busq)
         {
             var busqueda = new BusquedaInfo();
@@ -207,6 +208,34 @@ namespace NoriAPI.Services
             int idTelefonia = gespaPhones.GetIdValor(catalogosTable, "Telefonía", newPhoneData.Telefonia);
             int idOrigen = gespaPhones.GetIdValor(catalogosTable, "Orígenes", "Gestión");
             int idClase = gespaPhones.GetIdValor(catalogosTable, "Clases", newPhoneData.ClaseTelefono);
+
+            NewPhone newPhone = new NewPhone(
+                numeroTelefonico: newPhoneData.PhoneNumber,
+                idTelefonia,
+                idOrigen,
+                idClase,
+                newPhoneData.HorarioContacto,
+                estado: "",
+                newPhoneData.Extension,
+                1,
+                newPhoneData.Cuenta,
+                newPhoneData.IdEjecutivo
+                );
+
+            string savePhoneResult = await ValidateNewPhone(catalogosTable, newPhone, false);
+
+
+            return savePhoneResult;
+        }
+
+        public async Task<string> SaveNewPhoneRe(NewPhoneRe newPhoneData)
+        {
+            DataTable catalogosTable = await _ejecutivoRepository.VwCatalogos();
+
+            //Obtener los idValor para el constructor del nuevo teléfono.
+            int idTelefonia = await GetIdValor(catalogosTable, "Telefonía", newPhoneData.NumeroTelefonico);
+            int idOrigen = await GetIdValor(catalogosTable, "Orígenes", "Gestión");
+            int idClase = await GetIdValor(catalogosTable, "Clases", newPhoneData.IdClase);
 
             NewPhone newPhone = new NewPhone(
                 numeroTelefonico: newPhoneData.NumeroTelefonico,
@@ -634,7 +663,6 @@ namespace NoriAPI.Services
 
             return listaClases;
         }
-
         public List<DomicilioTranslated> MapearDomicilios(List<Domicilio> listaDomicilios)
         {
             List<DomicilioTranslated> listaTraducida = [];
@@ -668,9 +696,6 @@ namespace NoriAPI.Services
 
             return listaTraducida;
         }
-
-
-
         public async Task TraduceListaIdAValores<T>(List<T> lista, string columnasAOcultar = "")
         {
             // Definir qué columnas deben ocultarse
@@ -741,7 +766,6 @@ namespace NoriAPI.Services
 
 
         }
-
         public async Task LlenaDomicilios(List<DomicilioTranslated> listaDomicilios, int iDomicilio)
         {
 
@@ -798,7 +822,6 @@ namespace NoriAPI.Services
 
 
         }
-
         public static void InformacionDomicilio(DomicilioTranslated domicilio, Hashtable valoresCatalogo, int idClase)
         {
             if (domicilio.IdInformación == 1901 && domicilio.IdClase == 1901)
@@ -834,9 +857,6 @@ namespace NoriAPI.Services
                 }
             }
         }
-
-
-
         public static string BuscarEnValoresHashtable(Hashtable valoresCatalogo, string valorBuscado)
         {
             foreach (DictionaryEntry entry in valoresCatalogo)
@@ -849,9 +869,36 @@ namespace NoriAPI.Services
             return null; // No se encontró el valor
         }
 
+        public async Task<List<CodigosPostales>> FindPostalCodeInfo(int codigoPostal)
+        {
+            var codigosPostales = await _searchRepository.SearchCodigosPostales(codigoPostal);
+            if (codigosPostales != null && codigosPostales.Count > 0)
+            {
+                return codigosPostales;
+            }
+            return null;
+        }
+
+
+
 
         #endregion
 
+        public async Task<int> GetIdValor(DataTable catalogos, string catalogo, object valor)
+        {
+            if (valor == null)
+                return 0;
+            // Verifica que la DataTable no sea nula y contenga filas
+            if (catalogos == null || catalogos.Rows.Count == 0)
+                return 0;
+
+            // Filtra las filas que coincidan con el catálogo y el valor buscado
+            DataRow[] drFilas = catalogos.Select($"Catálogo = '{catalogo}' AND Valor = '{valor}'");
+
+            // Si hay coincidencias, retorna el idValor, de lo contrario, retorna 0
+            return drFilas.Length > 0 ? Convert.ToInt32(drFilas[0]["idValor"]) : 0;
+
+        }
 
     }
 }

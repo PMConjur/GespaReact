@@ -36,7 +36,6 @@ namespace NoriAPI.Services
         Task<Dictionary<string, object>> Promedios(int idEjecutivo);
 
         #endregion
-
         #region AccionesDropDown
         Task ObtenerSeguimientos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerAccionamiento(DataRow drDatos, DataSet dsTablas);
@@ -757,6 +756,7 @@ namespace NoriAPI.Services
             }
         }
 
+
         private async Task<bool> Despausar(InfoPausa tiempos)
         {
             var validatePass = await _ejecutivoRepository.ValidatePasswordEjecutivo(tiempos.IdEjecutivo, tiempos.Contrasenia);
@@ -1102,7 +1102,7 @@ namespace NoriAPI.Services
                             int count = (int)await checkCommand.ExecuteScalarAsync();
                             if (count > 0)
                             {
-                                await transaction.RollbackAsync();
+                                transaction.Rollback();
                                 return false; // Ya existe una búsqueda con esos datos hoy
                             }
                         }
@@ -1141,24 +1141,24 @@ namespace NoriAPI.Services
                                 string mensaje = GuardaNuevoTelefono(telefono, true, connection, transaction);
                                 if (!string.IsNullOrEmpty(mensaje))
                                 {
-                                    await transaction.RollbackAsync();
+                                    transaction.Rollback();
                                     return false; // Error al guardar teléfono, rollback
                                 }
                             }
                         }
 
-                        await transaction.CommitAsync();
+                        transaction.Commit();
                         return true;
                     }
                     catch (SqlException sqlEx)
                     {
-                        await transaction.RollbackAsync();
+                        transaction.Rollback();
                         Console.WriteLine($"Error en SQL: {sqlEx.Number} - {sqlEx.Message} - idCartera: {idCartera}, idCuenta: {idCuenta}, idEjecutivo: {idEjecutivo}, idDato: {busqueda.idDato}, idFuente: {busqueda.idFuente}, validador: {busqueda.validador}");
                         return false;
                     }
                     catch (Exception ex)
                     {
-                        await transaction.RollbackAsync();
+                        transaction.Rollback();
                         Console.WriteLine($"Error general: {ex.Message}");
                         return false;
                     }
@@ -1531,7 +1531,7 @@ namespace NoriAPI.Services
                     {
                         DateTime FechaInicial = newEstadoEn.FechaInicial;
                         DateTime FechaFinal = newEstadoEn.FechaFinal;
-                        //string CorreoString = cargoData.sCorreoElectronico?.ToString();
+                        string CorreoString = cargoData.sCorreoElectronico?.ToString();
 
                         EstadoDeCuenta newEstado = new EstadoDeCuenta(
                             IdCartera: Convert.ToInt32(idCartera),
@@ -1540,7 +1540,7 @@ namespace NoriAPI.Services
                             FechaInicial: FechaInicial,
                             FechaFinal: FechaFinal,
                             consulta: newEstadoEn.Consulta,
-                            correoElectronico: newEstadoEn.CorreoElectrónico
+                            correoElectronico: CorreoString
                         );
 
                         string saveEstadoResult = await ValidateBusqueda(newEstado);
@@ -2468,7 +2468,7 @@ namespace NoriAPI.Services
                 );
 
                 // Convertir NewPhone a NewPhoneRequest
-                NewPhoneRequest newPhoneRequest = new NewPhoneRequest
+                NewPhoneRe newPhoneRequest = new NewPhoneRe
                 {
                     NumeroTelefonico = TeléfonoAdicional.NumeroTelefonico,
                     IdTelefonía = TeléfonoAdicional.IdTelefonía,
@@ -2482,7 +2482,7 @@ namespace NoriAPI.Services
                     IdEjecutivo = (int)TeléfonoAdicional.IdEjecutivo
                 };
 
-                string sMensaje = await _searchService.SaveNewPhone(newPhoneRequest);
+                string sMensaje = await _searchService.SaveNewPhoneRe(newPhoneRequest);
                 if (!string.IsNullOrEmpty(sMensaje))
                     return sMensaje;
 
@@ -2580,7 +2580,7 @@ namespace NoriAPI.Services
 
             negociacionesget.TableName = "Negociaciones";
             dsTablas.Tables.Add(negociacionesget);
-          
+
         }
         #endregion
     }
