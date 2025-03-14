@@ -1,5 +1,6 @@
-import React, { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Table, Form } from "react-bootstrap";
+import PropTypes from 'prop-types';
 
 const TableTalks = ({ dataTalks, customColumnNames }) => {
     const [sortedData, setSortedData] = useState(dataTalks || []);
@@ -8,6 +9,20 @@ const TableTalks = ({ dataTalks, customColumnNames }) => {
     useEffect(() => {
         setSortedData(dataTalks);
     }, [dataTalks]);
+
+    // ✅ Función para ordenar por fecha más antigua o más reciente
+    const handleSortChange = useCallback(() => {
+        console.log("Ordenando por fecha más antigua:", sortByOldest);
+        setSortByOldest(prev => !prev);
+        setSortedData(prevData =>
+            !sortByOldest
+                ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
+                : [...dataTalks]
+        );
+    }, [sortByOldest, dataTalks]);
+
+    // ✅ Filtrar columnas visibles
+    console.log("Datos recibidos en TableTalks:", dataTalks);
 
     if (!dataTalks || dataTalks.length === 0) {
         return <p>No hay datos disponibles.</p>;
@@ -45,27 +60,16 @@ const TableTalks = ({ dataTalks, customColumnNames }) => {
     // 🔹 Lista de campos a los que se les agregará el signo "$" con formato de miles
     const currencyFields = ["Saldo", "MontoRequerido", "MontoNegociado", "MontoPagado", "SaldoInterés", "Remanente"];
 
-    // ✅ Función para ordenar por fecha más antigua o más reciente
-    const handleSortChange = useCallback(() => {
-        console.log("Ordenando por fecha más antigua:", sortByOldest);
-        setSortByOldest(prev => !prev);
-        setSortedData(prevData =>
-            !sortByOldest
-                ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
-                : [...dataTalks]
-        );
-    }, [sortByOldest, dataTalks]);
-
-    // ✅ Filtrar columnas visibles
-    console.log("Datos recibidos en TableTalks:", dataTalks);
+    
 
     const headers = Object.keys(dataTalks[0]).filter(header => !hiddenFieldstalks.includes(header));
 
+    
     return (
         <>
-            {/* ✅ Checkbox para ordenar por el registro más antiguo */}
+            {/* ✅ Switch para ordenar por el registro más antiguo */}
             <Form.Check
-                type="checkbox"
+                type="switch"
                 id="sortByOldest"
                 label="Más antiguo"
                 className="mb-2"
@@ -75,12 +79,9 @@ const TableTalks = ({ dataTalks, customColumnNames }) => {
 
             <div style={{
                 maxHeight: "400px",
-                overflowY: "auto",
-                
-                  // 🔹 Permite el scroll sin afectar la tabla
             }}>       
                 <Table striped bordered hover responsive variant="dark" style={{ fontSize: "13px" }}>
-                    <thead>
+                    <thead style={{ position: "sticky", top: "0" }}> {/* 🔹 Encabezados fijos */}
                         <tr style={{ height: "25px" }}> {/* Reducimos la altura de los encabezados */}
                             {headers.map((header) => (
                                 <th key={header} style={{ padding: "4px", minHeight: "20px", textAlign: "center" }}>
@@ -91,7 +92,7 @@ const TableTalks = ({ dataTalks, customColumnNames }) => {
                     </thead>
                     <tbody style={{
                             // 🔹 Altura máxima para el scroll
-                        overflow: "auto",   // 🔹 Scroll SIEMPRE visible
+                        overflowX: "scroll",   // 🔹 Scroll SIEMPRE visible
                         width: "100%"          // 🔹 Evita que la tabla se desconfigure
                     }}>
                     
@@ -178,6 +179,11 @@ const TableTalks = ({ dataTalks, customColumnNames }) => {
         </div>
         </>
     );
+};
+
+TableTalks.propTypes = {
+    dataTalks: PropTypes.arrayOf(PropTypes.object).isRequired,
+    customColumnNames: PropTypes.object
 };
 
 export default TableTalks;

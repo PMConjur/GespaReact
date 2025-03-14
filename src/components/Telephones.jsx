@@ -27,7 +27,7 @@ const Telephones = () => {
   const [horarioContacto, setHorarioContacto] = useState("00:00:00");
   const responseData =
     location.state || JSON.parse(localStorage.getItem("responseData")); 
-   
+  
 
   const loadData = async () => {
     console.log("searchResults:", searchResults);
@@ -64,7 +64,7 @@ const Telephones = () => {
     if (!phoneNumber.trim()) {
       toast.warning("Ingrese un número de teléfono", { position: "top-right",
         style: { transform: "translateY(80vh)" }
-       });
+      });
       return;
     }
     if (phoneNumber.length !== 10 && phoneNumber.length !== 13) {
@@ -115,7 +115,7 @@ const Telephones = () => {
     if (!phoneNumber.trim()) {
       toast.warning("Ingrese un número de teléfono", { position: "top-right", 
         style: { transform: "translateY(80vh)" }
-       }
+      }
         
       );
       return;
@@ -150,7 +150,7 @@ const Telephones = () => {
     console.log("Datos enviados:", newPhoneData); // Agrega este log para verificar los datos
 
     try {
-       await fetchNewTel(newPhoneData);
+        await fetchNewTel(newPhoneData);
       toast.success("Nuevo número de teléfono guardado", {
         position: "top-right",
         style: { transform: "translateY(80vh)" }

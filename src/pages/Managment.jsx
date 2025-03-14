@@ -236,7 +236,6 @@ const Managment = () => {
                     </Col>
                   </Row>
                   <Col xs={12}>
-                    <h1>Gestiones</h1>
                     <Managments /> {/* Componente de gestiones */}
                   </Col>
                 </Col>
