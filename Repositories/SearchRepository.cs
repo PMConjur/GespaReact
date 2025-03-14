@@ -25,6 +25,7 @@ namespace NoriAPI.Repositories
         #region Domicilios
         Task<List<Domicilio>> GetDomicilios(string idCuenta, int idCartera);
         Task<List<GestionDomiciliaria>> GetVisitas(string idCuenta, int idCartera);
+        Task<List<CodigosPostales>> SearchCodigosPostalesId(int idCodigoPostal);
         Task<List<CodigosPostales>> SearchCodigosPostales(int codigoPostal);
         #endregion
     }
@@ -320,11 +321,28 @@ namespace NoriAPI.Repositories
             return visitas;
         }
 
+        public async Task<List<CodigosPostales>> SearchCodigosPostalesId(int idCodigoPostal)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string codigosPostalesQuery = "SELECT * FROM [dbAllocation].[dbo].[CódigosPostales] (NOLOCK) WHERE idCódigoPostal = @IdCodigoPostal";
+
+            var parameters = new { IdCodigoPostal = idCodigoPostal };
+
+            var codigosPostales = await connection.QueryAsync<CodigosPostales>(
+                codigosPostalesQuery,
+                parameters,
+                commandType: CommandType.Text
+            );
+
+            return codigosPostales.ToList();
+        }
+
         public async Task<List<CodigosPostales>> SearchCodigosPostales(int codigoPostal)
         {
             using var connection = GetConnection("Piso2Amex");
 
-            string codigosPostalesQuery = "SELECT * FROM [dbAllocation].[dbo].[CódigosPostales] (NOLOCK) WHERE idCódigoPostal = @CodigoPostal";
+            string codigosPostalesQuery = "SELECT * FROM [dbAllocation].[dbo].[CódigosPostales] (NOLOCK) WHERE CódigoPostal = @CodigoPostal";
 
             var parameters = new { CodigoPostal = codigoPostal };
 

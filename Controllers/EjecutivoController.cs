@@ -14,6 +14,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 
 namespace NoriAPI.Controllers
@@ -378,6 +379,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("validador")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetValidador(int idProducto, int idEjecutivo, string Contraseña)
         {
             DataSet dsTablas = new DataSet();
@@ -397,7 +399,7 @@ namespace NoriAPI.Controllers
 
                     //dsTablas.Tables.Add(Negociaciones);
 
-                    return Ok(jsonPassValidadores);
+                    return Content(jsonPassValidadores, "application/json; charset=utf-8");
                 }
                 else
                 {

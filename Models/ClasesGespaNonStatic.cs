@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using NoriAPI.Repositories;
@@ -25,6 +26,11 @@ namespace NoriAPI.Models
         public DataTable dtCatalogos = new DataTable();
         public DataTable dtRelaciones = new DataTable();
         public DataTable tblDelDía = new DataTable();
+        #endregion
+
+        #region Cuenta
+        public Hashtable _htProducto;
+        public bool _Extranjera = false;
         #endregion
 
 
@@ -384,6 +390,8 @@ namespace NoriAPI.Models
 
         #endregion
 
+
+
         #region FuncionesMetodos
 
         public string MáscaraTeléfono(object NúmeroTelefónico)
@@ -455,6 +463,53 @@ namespace NoriAPI.Models
             else
                 return dtFecha.ToString(Formato);
         }
+
+        /// <summary>
+        /// Convierte la fila en una hash table. Los nombres de columnas son los keys y los valores los values.
+        /// </summary>
+        /// <param name="Tabla">Ocupará la primera fila de la tabla.</param>
+        static public Hashtable ConvertRowToHashTable(DataTable Tabla)
+        {
+            Hashtable htRow = new Hashtable();
+
+            if (Tabla.Rows.Count < 1)
+                return htRow;
+
+            for (int iCol = 0; iCol < Tabla.Columns.Count; iCol++)
+            {
+                htRow.Add(
+                    Tabla.Columns[iCol].ColumnName.ToString().Trim(),
+                    Tabla.Rows[0][iCol].ToString().Trim()
+                );
+            }
+            return htRow;
+        }
+
+        /// <summary>
+        /// Convierte el primer elemento de la lista en una hashtable. Los nombres de columnas son los keys y los valores los values.
+        /// Modificado del método original de Gespa.
+        /// </summary>
+        /// <param name="listaDinamica">Ocupará la primera fila de la tabla.</param>
+        public static Hashtable ConvertDynamicListToHashTable(IEnumerable<dynamic> listaDinamica)
+        {
+            Hashtable htRow = [];
+
+            // Verificar si la lista tiene elementos
+            var firstRow = listaDinamica.FirstOrDefault();
+            if (firstRow == null)
+                return htRow;
+
+            // Convertir el primer objeto en un diccionario
+            var dict = (IDictionary<string, object>)firstRow;
+
+            foreach (var kvp in dict)
+            {
+                htRow.Add(kvp.Key.Trim(), kvp.Value?.ToString().Trim() ?? string.Empty);
+            }
+
+            return htRow;
+        }
+
 
 
         #endregion

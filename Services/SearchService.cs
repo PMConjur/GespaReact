@@ -29,6 +29,7 @@ namespace NoriAPI.Services
         #region Domicilios
         Task<DomiciliosVisitasResult> DomiciliosVisitas(int idCartera, string idCuenta);
         Task<CatalogoDomicilios> RelacionesDomicilios();
+        Task<List<CodigosPostales>> FindPostalCodeInfo(int codigoPostal);
 
         #endregion
 
@@ -85,7 +86,6 @@ namespace NoriAPI.Services
             return new ResultadoBusqueda(mensaje, listaBusquedaInfo);
 
         }
-
         public async Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado)
         {
             string mensaje = null;
@@ -112,7 +112,6 @@ namespace NoriAPI.Services
                 }
             }
         }
-
         private static BusquedaInfo MapToInfoBusqueda(IDictionary<string, object> busq)
         {
             var busqueda = new BusquedaInfo();
@@ -634,7 +633,6 @@ namespace NoriAPI.Services
 
             return listaClases;
         }
-
         public List<DomicilioTranslated> MapearDomicilios(List<Domicilio> listaDomicilios)
         {
             List<DomicilioTranslated> listaTraducida = [];
@@ -668,9 +666,6 @@ namespace NoriAPI.Services
 
             return listaTraducida;
         }
-
-
-
         public async Task TraduceListaIdAValores<T>(List<T> lista, string columnasAOcultar = "")
         {
             // Definir qué columnas deben ocultarse
@@ -741,7 +736,6 @@ namespace NoriAPI.Services
 
 
         }
-
         public async Task LlenaDomicilios(List<DomicilioTranslated> listaDomicilios, int iDomicilio)
         {
 
@@ -778,7 +772,7 @@ namespace NoriAPI.Services
                 // Aquí va el nuevo método que actualiza la información de los domicilios
                 if (int.TryParse(domicilio.IdCódigoPostal?.ToString(), out int idCodigoPostal) && idCodigoPostal > 0)
                 {
-                    var codigosPostales = await _searchRepository.SearchCodigosPostales(idCodigoPostal);
+                    var codigosPostales = await _searchRepository.SearchCodigosPostalesId(idCodigoPostal);
 
                     if (codigosPostales != null && codigosPostales.Count > 0)
                     {
@@ -798,7 +792,6 @@ namespace NoriAPI.Services
 
 
         }
-
         public static void InformacionDomicilio(DomicilioTranslated domicilio, Hashtable valoresCatalogo, int idClase)
         {
             if (domicilio.IdInformación == 1901 && domicilio.IdClase == 1901)
@@ -834,9 +827,6 @@ namespace NoriAPI.Services
                 }
             }
         }
-
-
-
         public static string BuscarEnValoresHashtable(Hashtable valoresCatalogo, string valorBuscado)
         {
             foreach (DictionaryEntry entry in valoresCatalogo)
@@ -847,6 +837,16 @@ namespace NoriAPI.Services
                 }
             }
             return null; // No se encontró el valor
+        }
+
+        public async Task<List<CodigosPostales>> FindPostalCodeInfo(int codigoPostal)
+        {
+            var codigosPostales = await _searchRepository.SearchCodigosPostales(codigoPostal);
+            if (codigosPostales != null && codigosPostales.Count > 0)
+            {
+                return codigosPostales;
+            }
+            return null;
         }
 
 
