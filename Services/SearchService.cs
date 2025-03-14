@@ -560,7 +560,8 @@ namespace NoriAPI.Services
             var domiciliosTraducidos = MapearDomicilios(domicilios);
 
 
-            await TraduceListaIdAValores(domiciliosTraducidos, "idDomicilio, Comentario");
+            //await TraduceListaIdAValores(domiciliosTraducidos, "idDomicilio, Comentario");
+            await TraduceListaIdAValores(visitas, "idCDomicilio, Comentario");
 
             await LlenaDomicilios(domiciliosTraducidos, 1);
 
@@ -768,7 +769,6 @@ namespace NoriAPI.Services
         }
         public async Task LlenaDomicilios(List<DomicilioTranslated> listaDomicilios, int iDomicilio)
         {
-
             if (listaDomicilios == null || listaDomicilios.Count < iDomicilio || iDomicilio <= 0)
             {
                 return; // No hay datos para procesar

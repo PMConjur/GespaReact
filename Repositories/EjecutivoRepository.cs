@@ -836,7 +836,7 @@ namespace NoriAPI.Repositories
                 idEjecutivo = insertCommit.IdEjecutivo,
                 Comentario = insertCommit.Comentario,
                 ModificaSituación = insertCommit.ModificaSituacion,
-                
+
             };
 
             var filasAfectadas = await connection.ExecuteScalarAsync<dynamic>(
@@ -905,7 +905,7 @@ namespace NoriAPI.Repositories
             {
                 monto = newCargoEnLinea.Monto,
                 tarjeta = newCargoEnLinea.Tarjeta,
-              
+
                 status = newCargoEnLinea.Status,
                 IdBanco = newCargoEnLinea.idBanco,
                 vencimiento = newCargoEnLinea.Vencimiento,
@@ -917,7 +917,7 @@ namespace NoriAPI.Repositories
                 idCartera = newCargoEnLinea.IdCartera,
                 idCuenta = newCargoEnLinea.IdCuenta, // Agregar el parámetro idCuenta
                 idEjecutivo = newCargoEnLinea.IdEjecutivo,
-                
+
             };
 
             var result = await connection.QueryFirstOrDefaultAsync<dynamic>(
@@ -999,7 +999,7 @@ namespace NoriAPI.Repositories
         #endregion
 
         #region EnviarCorreo
-        
+
         #endregion
 
         private SqlConnection GetConnection(string connection)
@@ -1117,7 +1117,7 @@ namespace NoriAPI.Repositories
         #region Datos
         public int ObtenerIdCartera()
         {
-            
+
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
@@ -1128,7 +1128,7 @@ namespace NoriAPI.Repositories
 
         public string ObtenerIdCuenta()
         {
-            
+
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
@@ -1139,7 +1139,7 @@ namespace NoriAPI.Repositories
 
         public int ObtenerIdEjecutivo()
         {
-            
+
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
@@ -1150,7 +1150,7 @@ namespace NoriAPI.Repositories
 
         public string ObtenerNombreEjecutivo()
         {
-            
+
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
