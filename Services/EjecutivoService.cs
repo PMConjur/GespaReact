@@ -38,6 +38,8 @@ namespace NoriAPI.Services
         #region AccionesDropDown
         Task ObtenerSeguimientos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerAccionamiento(DataRow drDatos, DataSet dsTablas);
+        Task<DataTable> GetVistaAccionamientos(int idCartera, string idCuenta);//
+
         #endregion
 
         Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo);
@@ -556,6 +558,10 @@ namespace NoriAPI.Services
             return ("Comentario insertado con éxito.");
         }
 
+       
+
+        
+
         #endregion
 
         #region Calculadora
@@ -857,6 +863,36 @@ namespace NoriAPI.Services
 
             accionamientoGet.TableName = "Accionamiento";
             dsTablas.Tables.Add(accionamientoGet);
+        }
+
+        public async Task<DataTable> GetVistaAccionamientos(int idCartera, string idCuenta)
+        {
+            DataTable vwAccionamientos = new DataTable();
+            string query = "SELECT  VC.Valor Accionamientos,COUNT(VC.Valor) Num " +
+                                  " FROM fn_Accionamientos(@idCartera, @idCuenta) FN " +
+                                  "INNER JOIN dbCollection..ValoresCatálogo VC " +
+                                  "ON FN.idAcercamiento = VC.idValor " +
+                                  "GROUP BY VC.Valor" +
+                                  " ORDER BY VC.Valor ASC"; // Evita inyección SQL
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(vwAccionamientos);
+                    }
+                }
+            }
+
+            return vwAccionamientos;
+
         }
         #endregion
 

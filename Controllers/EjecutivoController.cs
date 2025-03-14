@@ -167,6 +167,36 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+
+        [HttpGet("vistaAccionamientos")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetVistaAccionamientos(int idCartera, string idCuenta)
+        {
+            DataSet dsTablas = new DataSet();
+            try
+            {
+                DataTable ViewAccionamientos = new DataTable();
+
+                ViewAccionamientos = await _ejecutivoService.GetVistaAccionamientos(idCartera, idCuenta);
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var View= ConvertDataTableToList(ViewAccionamientos);
+
+                // Serializamos la lista a JSON
+                string jsonViewAccionamientos = JsonSerializer.Serialize(View, new JsonSerializerOptions { WriteIndented = true });
+
+                //dsTablas.Tables.Add(Negociaciones);
+
+                return Ok(jsonViewAccionamientos);
+
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
         #endregion
 
         #region Negociaciones
