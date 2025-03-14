@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import "../../../scss/styles.scss";
-import MultiDeptor from "../Informacion/MultiDeptor"; // Ajusta la ruta según la ubicación de tu archivo
+import MultiDeptor from "../Informacion/MultiDeptor"; // Ajusta la ruta según la ubicación de tu archivo // Ajusta la ruta según la ubicación de tu archivo
 
 function DropdownInfo() {
   const [showModal, setShowModal] = useState(false);
