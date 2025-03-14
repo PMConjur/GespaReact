@@ -70,10 +70,10 @@ const DropdownActions = () => {
         <Dropdown.Menu style={{backgroundColor: '#1d1f20', border: 'none'}} className='custom-dropdown-menu'>
           <Dropdown.Item onClick={handleShowTalks} className="custom-dropdown-item">Negociaciones</Dropdown.Item>
           <Dropdown.Item onClick={handleShowFollowUps} className="custom-dropdown-item">Seguimientos</Dropdown.Item>
+          <Dropdown.Item onClick={handleShowDrives} className="custom-dropdown-item">Accionamientos</Dropdown.Item>
           <Dropdown.Item onClick={handleOpenModal} href="/maintenance" className="custom-dropdown-item">Busqueda</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Cargos en linea</Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Comentarios</Dropdown.Item>
-          <Dropdown.Item onClick={handleShowDrives} className="custom-dropdown-item">Accionamientos</Dropdown.Item>
+          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Comentarios</Dropdown.Item>  
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item" onClick={() => setModalShow(true)}>Estados de cuenta</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Quejas</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Simuladores</Dropdown.Item>

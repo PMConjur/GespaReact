@@ -11,6 +11,7 @@ const DebtorInformation = () => {
   const [showModal, setShowModal] = useState(false);
   const handleShowModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
+  
   const [showModalR, setShowModalR] = useState(false);
   const handleShowModalR = () => setShowModalR(true);
   const handleCloseModalR = () => setShowModalR(false);
@@ -35,11 +36,14 @@ const DebtorInformation = () => {
         <Breadcrumb.Item href="#" onClick={handleShowModalTim}>
           Tiempos
         </Breadcrumb.Item>
-        <Breadcrumb.Item href="#">
-          <DropdownAction />
+        <Breadcrumb.Item href="/maintenance">
+          Calculadora
         </Breadcrumb.Item>
         <Breadcrumb.Item href="#">
           <DropdownsInfo />
+        </Breadcrumb.Item>
+        <Breadcrumb.Item href="#">
+          <DropdownAction />
         </Breadcrumb.Item>
         <Breadcrumb.Item href="#">
           <DropdownExecutive />

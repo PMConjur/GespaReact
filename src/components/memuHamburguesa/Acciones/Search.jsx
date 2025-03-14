@@ -1,63 +1,71 @@
 import { useContext, useState, useEffect } from "react";
 import { Modal, Button, Form, Table, Spinner, Dropdown } from 'react-bootstrap';
-import { fetchActionsSearch } from '../../../services/gespawebServices';
+import { fetchActionsSearch, fetchSaveExecutive } from '../../../services/gespawebServices';
 import { AppContext } from "../../../pages/Managment";
 
 const Search = ({ show, handleClose }) => {
   const { searchResults } = useContext(AppContext);
 
   const [searchData, setSearchData] = useState({
-    dato: 'Nombre', // idCartera
-    fuente: 'ABC Teléfonos', // Jerarquia
-    encontrado: false,
+    dato: '2601', // Valor inicial del dropdown "Dato"
+    fuente: '', // Valor inicial del dropdown "Fuente"
+    encontrado: false, // Estado inicial del checkbox
+    nombre: '',
+    puesto: '',
+    telefonos: '',
+    lugar: '',
+    link: ''
   });
 
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(false); // Estado de carga
+  const [showForm, setShowForm] = useState(false); // Estado para mostrar/ocultar el formulario
+  const [valorOptions, setValorOptions] = useState([]); // Estado para las opciones del dropdown "Valor"
+  const [fuenteOptions, setFuenteOptions] = useState([]); // Estado para las opciones del dropdown "Fuente"
 
-  // Cargar datos automáticamente cuando el modal se abre
+  // Extraer valores únicos de la columna "Dato" para el dropdown
+  const datosUnicos = [...new Set(tableData.map((item) => item.Dato))];
+
   useEffect(() => {
     if (show && searchResults && searchResults.length > 0) {
-      fetchData(searchResults[0].idCuenta.trim()); // Llama a la función para obtener los datos con idCuenta
+      fetchData(searchResults[0].idCuenta.trim());
     }
-  }, [show, searchResults]); // Dependencias: show y searchResults
+  }, [show, searchResults]);
 
   const fetchData = async (idCuenta) => {
-    setLoading(true); // Activar estado de carga
+    setLoading(true);
     try {
-      console.log("Cargando datos automáticamente...");
-
-      // Pasar idCuenta a fetchActionsSearch
       const response = await fetchActionsSearch(idCuenta);
-      console.log("Respuesta del servidor:", response);
-
-      // Mapear los campos de la respuesta a los nombres que espera la tabla
-      const mappedData = response.map((item) => ({
-        Fecha: item.Fecha_Insert, // Mapear Fecha_Insert a Fecha
-        Hora: item.Segundo_Insert, // Mapear Segundo_Insert a Hora
-        Ejecutivo: item.Ejecutivo, // Mapear Ejecutivo a Ejecutivo
-        Dato: item.idDato, // Mapear idDato a Dato
-        DatoBuscado: item.DatoBuscado, // Mapear DatoBuscado a DatoBuscado
-        idFuente: item.idFuente, // Mapear idFuente
-        Encontrado: item._Encontrado, // Mapear _Encontrado
-        Telefonos: item.Tel\u00E9fonos, // Mapear Teléfonos
-        Persona: Object.keys(item.Persona).length ? JSON.stringify(item.Persona) : '--', // Convertir objeto a cadena JSON o mostrar 'N/A'
-        Puesto: Object.keys(item.Puesto).length ? JSON.stringify(item.Puesto) : '--', // Convertir objeto a cadena JSON o mostrar 'N/A'
-        Lugar: Object.keys(item.Lugar).length ? JSON.stringify(item.Lugar) : '--', // Convertir objeto a cadena JSON o mostrar 'N/A'
-        idEjecutivo: item.idEjecutivo, // Mapear idEjecutivo 
-        InfoEncontrada: Object.keys(item.InfoEncontrada).length ? JSON.stringify(item.InfoEncontrada) : '--', // Convertir objeto a cadena JSON o mostrar 'N/A'
-        Confirmado: item._Confirmado, // Mapear _Confirmado
-        Link: item.Link || '--', // Mapear Link o mostrar 'N/A'
-      }));
-
-      // Actualiza la tabla con los datos mapeados
+      console.log("Respuesta de la API:", response); // Verifica la respuesta de la API
+      const mappedData = mapResponseToTableData(response);
       setTableData(mappedData);
+      console.log("Datos cargados:", mappedData); // Verifica que los datos se carguen correctamente
     } catch (error) {
       console.error('Error al obtener los datos:', error);
       alert("Hubo un error al cargar los datos.");
     } finally {
-      setLoading(false); // Desactivar estado de carga
+      setLoading(false);
     }
+  };
+
+  const mapResponseToTableData = (response) => {
+    return response.map((item) => ({
+      Fecha: item.Fecha_Insert,
+      Hora: item.Segundo_Insert,
+      Ejecutivo: item.Ejecutivo,
+      Dato: item.idDato, // Asegúrate de que este campo coincida con la respuesta de la API
+      DatoBuscado: item.DatoBuscado, // Asegúrate de que este campo coincida con la respuesta de la API
+      idFuente: item.idFuente,
+      Encontrado: item._Encontrado,
+      Telefonos: item.Teléfonos,
+      Persona: Object.keys(item.Persona).length ? JSON.stringify(item.Persona) : '--',
+      Puesto: Object.keys(item.Puesto).length ? JSON.stringify(item.Puesto) : '--',
+      Lugar: Object.keys(item.Lugar).length ? JSON.stringify(item.Lugar) : '--',
+      idEjecutivo: item.idEjecutivo,
+      InfoEncontrada: Object.keys(item.InfoEncontrada).length ? JSON.stringify(item.InfoEncontrada) : '--',
+      Confirmado: item._Confirmado,
+      Link: item.Link || '--',
+    }));
   };
 
   const handleChange = (name, value) => {
@@ -65,46 +73,71 @@ const Search = ({ show, handleClose }) => {
       ...prev,
       [name]: value,
     }));
+
+    // Mostrar/ocultar el formulario cuando se marca/desmarca el checkbox
+    if (name === 'encontrado') {
+      setShowForm(value);
+      console.log("Checkbox marcado:", value); // Verifica que el estado se actualice correctamente
+    }
+
+    // Filtrar los valores de "DatoBuscado" y "idFuente" cuando se cambia el dropdown "Dato"
+    if (name === 'dato') {
+      console.log("Valor seleccionado en 'Dato':", value); // Verifica el valor seleccionado
+      console.log("Datos en tableData:", tableData); // Verifica los datos en tableData
+
+      // Convertir el valor seleccionado a número (si es necesario)
+      const selectedValue = Number(value);
+
+      // Filtrar los valores de "DatoBuscado"
+      const filteredValues = tableData
+        .filter((item) => item.Dato === selectedValue) // Filtra por el valor seleccionado en "Dato"
+        .map((item) => item.DatoBuscado); // Extrae los valores de "DatoBuscado"
+
+      console.log("Valores filtrados (DatoBuscado):", filteredValues); // Verifica que los valores se filtren correctamente
+      setValorOptions([...new Set(filteredValues)]); // Eliminar duplicados
+
+      // Filtrar los valores de "idFuente"
+      const filteredFuentes = tableData
+        .filter((item) => item.Dato === selectedValue) // Filtra por el valor seleccionado en "Dato"
+        .map((item) => item.idFuente); // Extrae los valores de "idFuente"
+
+      console.log("Valores filtrados (idFuente):", filteredFuentes); // Verifica que los valores se filtren correctamente
+      setFuenteOptions([...new Set(filteredFuentes)]); // Eliminar duplicados
+    }
   };
 
-  // Enviar datos al endpoint fetchActionsSearch
   const handleGuardarClick = async () => {
-    console.log("handleGuardarClick ejecutado"); // Verifica que esto aparezca en la consola
-
-    console.log("Datos a enviar:", searchData); // Verifica los datos antes de enviarlos
-
     try {
-      console.log("Enviando datos al endpoint...");
-
-      // Pasar idCuenta de searchResults a fetchActionsSearch
       const idCuenta = searchResults[0].idCuenta.trim();
-      const response = await fetchActionsSearch(idCuenta);
+      const idEjecutivo = searchResults[0].idEjecutivo; // Ajusta según sea necesario
+      const requestData = {
+        idCartera: 1, // Ajusta según sea necesario
+        idCuenta: idCuenta,
+        idEjecutivo: idEjecutivo,
+        idDato: Number(searchData.dato),
+        idFuente: Number(searchData.fuente),
+        dato: searchData.dato,
+        encontrado: searchData.encontrado,
+        teléfonos: [
+          {
+            númeroTelefónico: searchData.telefonos
+          }
+        ],
+        persona: searchData.nombre,
+        puesto: searchData.puesto,
+        lugar: searchData.lugar,
+        link: searchData.link,
+        validador: 0, // Ajusta según sea necesario
+        fecha_Insert: "2025-03-12T22:17:59.852Z",
+        segundo_Insert:  "00:00:10"
+      };
+      console.log("Datos a enviar:", requestData);
+      const response = await fetchSaveExecutive(requestData);
       console.log("Respuesta del servidor:", response);
-
-      // Mapear los campos de la respuesta a los nombres que espera la tabla
-      const mappedData = response.map((item) => ({
-        Fecha: item.Fecha_Insert, // Mapear Fecha_Insert a Fecha
-        Hora: item.Segundo_Insert, // Mapear Segundo_Insert a Hora
-        Ejecutivo: item.Ejecutivo, // Mapear Ejecutivo a Ejecutivo
-        Dato: item.idDato, // Mapear idDato a Dato
-        DatoBuscado: item.DatoBuscado, // Mapear DatoBuscado a DatoBuscado
-        idFuente: item.idFuente, // Mapear idFuente
-        Encontrado: item._Encontrado, // Mapear _Encontrado
-        Telefonos: item.Tel\u00E9fonos, // Mapear Teléfonos
-        Persona: Object.keys(item.Persona).length ? JSON.stringify(item.Persona) : '--', // Convertir objeto a cadena JSON o mostrar 'N/A'
-        Puesto: Object.keys(item.Puesto).length ? JSON.stringify(item.Puesto) : '--', // Convertir objeto a cadena JSON o mostrar 'N/A'
-        Lugar: Object.keys(item.Lugar).length ? JSON.stringify(item.Lugar) : '--', // Convertir objeto a cadena JSON o mostrar 'N/A'
-        idEjecutivo: item.idEjecutivo, // Mapear idEjecutivo
-        InfoEncontrada: Object.keys(item.InfoEncontrada).length ? JSON.stringify(item.InfoEncontrada) : '--', // Convertir objeto a cadena JSON o mostrar 'N/A'
-        Confirmado: item._Confirmado, // Mapear _Confirmado
-        Link: item.Link || '--', // Mapear Link o mostrar 'N/A'
-      }));
-
-      // Actualiza la tabla con los datos mapeados
-      setTableData(mappedData);
+      alert("Datos guardados correctamente.");
     } catch (error) {
-      console.error('Error al obtener los datos:', error);
-      alert("Hubo un error al enviar la solicitud.");
+      console.error('Error al guardar los datos:', error);
+      alert("Hubo un error al guardar los datos.");
     }
   };
 
@@ -113,65 +146,122 @@ const Search = ({ show, handleClose }) => {
       <Modal.Header closeButton>
         <Modal.Title>Búsquedas - Gespa</Modal.Title>
       </Modal.Header>
-      <Modal.Body style={{ display: 'flex' }}>
-        <Form style={{width: 'auto'}}>
-          <Form.Group className="mb-3">
-            <Form.Label>Dato</Form.Label>
-            <Dropdown onSelect={(value) => handleChange('dato', value)}>
-              <Dropdown.Toggle variant="primary" id="dropdown-dato" style={{width: '100%'}}>
-                {searchData.dato}
-              </Dropdown.Toggle>
-              <Dropdown.Menu>
-                <Dropdown.Item eventKey="Nombre">Nombre</Dropdown.Item>
-                <Dropdown.Item eventKey="Teléfono">Teléfono</Dropdown.Item>
-                <Dropdown.Item eventKey="Empresa">Empresa</Dropdown.Item>
-                <Dropdown.Item eventKey="Domicilio">Domicilio</Dropdown.Item>
-                <Dropdown.Item eventKey="Adicional">Adicional</Dropdown.Item>
-                <Dropdown.Item eventKey="Correo">Correo</Dropdown.Item>
-                <Dropdown.Item eventKey="RFC">RFC</Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Fuente</Form.Label>
-            <Dropdown onSelect={(value) => handleChange('fuente', value)}>
-              <Dropdown.Toggle variant="primary" id="dropdown-fuente">
-                {searchData.fuente}
-              </Dropdown.Toggle>
-              <Dropdown.Menu style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                <Dropdown.Item eventKey="ABC Teléfonos">ABC Teléfonos</Dropdown.Item>
-                <Dropdown.Item eventKey="Buho Legal">Buho Legal</Dropdown.Item>
-                <Dropdown.Item eventKey="Cliente">Cliente</Dropdown.Item>
-                <Dropdown.Item eventKey="Google">Google</Dropdown.Item>
-                <Dropdown.Item eventKey="Lanas">Lanas</Dropdown.Item>
-                <Dropdown.Item eventKey="Lexis">Lexis</Dropdown.Item>
-                <Dropdown.Item eventKey="Paginas blancas">Paginas blancas</Dropdown.Item>
-                <Dropdown.Item eventKey="RPP">RPP</Dropdown.Item>
-                <Dropdown.Item eventKey="Seccion Amarilla">Seccion Amarilla</Dropdown.Item>
-                <Dropdown.Item eventKey="Telmex">Telmex</Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Check
-              type="checkbox"
-              label="Encontrado"
-              name="encontrado"
-              checked={searchData.encontrado}
-              onChange={(e) => handleChange(e.target.name, e.target.checked)}
-            />
-          </Form.Group>
-          {/* Botón con onClick */}
-          <Button
-            variant="primary"
-            type="button" // Cambia a type="button" para evitar el envío automático del formulario
-            onClick={handleGuardarClick} // Manejador de clic
-          >
-            Guardar
-          </Button>
-        </Form>
-
-        {/* Mostrar spinner mientras se cargan los datos */}
+      <Modal.Body style={{ display: 'flex', width: '100%', justifyContent: 'space-between' }}>
+        <div style={{ width: '100%', maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+          <Form style={{ flexGrow: 1 }}>
+            <div style={{display: 'flex', justifyContent:'space-between', marginRight: '20px'}}>
+              <Form.Group className="mb-3">
+                <Form.Label>Dato</Form.Label>
+                <Dropdown onSelect={(value) => handleChange('dato', value)}>
+                  <Dropdown.Toggle variant="primary" id="dropdown-dato">
+                    {searchData.dato || "Seleccionar"}
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    {/* Opciones dinámicas basadas en la columna "Dato" */}
+                    {datosUnicos.map((dato, index) => (
+                      <Dropdown.Item key={index} eventKey={dato}>
+                        {dato}
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Valor</Form.Label>
+                <Dropdown onSelect={(value) => handleChange('valor', value)}>
+                  <Dropdown.Toggle variant="primary" id="dropdown-valor">
+                    {searchData.valor || "Seleccionar"}
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    {/* Opciones dinámicas basadas en los valores filtrados de "DatoBuscado" */}
+                    {valorOptions.map((valor, index) => (
+                      <Dropdown.Item key={index} eventKey={valor}>
+                        {valor}
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
+              </Form.Group>
+            </div>
+            <div style={{display: 'flex', justifyContent:'space-between', alignItems: 'end', marginRight: '20px'}}>
+              <Form.Group className="mb-3">
+                <Form.Label>Fuente</Form.Label>
+                <Dropdown onSelect={(value) => handleChange('fuente', value)}>
+                  <Dropdown.Toggle variant="primary" id="dropdown-fuente">
+                    {searchData.fuente || "Seleccionar"}
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    {/* Opciones dinámicas basadas en los valores filtrados de "idFuente" */}
+                    {fuenteOptions.map((fuente, index) => (
+                      <Dropdown.Item key={index} eventKey={fuente}>
+                        {fuente}
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Check
+                  type="checkbox"
+                  label="Encontrado"
+                  name="encontrado"
+                  checked={searchData.encontrado}
+                  onChange={(e) => handleChange('encontrado', e.target.checked)}
+                />
+              </Form.Group>
+            </div>
+            {/* Mostrar el formulario si showForm es true */}
+            {showForm && (
+              <Form.Group className="mb-3 me-3">
+                <Form.Label>Nombre</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder=""
+                  value={searchData.nombre}
+                  onChange={(e) => handleChange('nombre', e.target.value)}
+                />
+                <Form.Label>Puesto</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder=""
+                  value={searchData.puesto}
+                  onChange={(e) => handleChange('puesto', e.target.value)}
+                />
+                <Form.Label>Teléfonos</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder=""
+                  value={searchData.telefonos}
+                  onChange={(e) => handleChange('telefonos', e.target.value)}
+                />
+                <Form.Label>Lugar</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder=""
+                  value={searchData.lugar}
+                  onChange={(e) => handleChange('lugar', e.target.value)}
+                />
+                <Form.Label>Link de la página</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder=""
+                  value={searchData.link}
+                  onChange={(e) => handleChange('link', e.target.value)}
+                />
+              </Form.Group>
+            )}
+          </Form>
+          <div style={{ marginTop: 'auto' }}>
+            <Button
+              variant="primary"
+              type="button"
+              onClick={handleGuardarClick}
+              style={{ marginBottom: '10px' }}
+            >
+              Guardar
+            </Button>
+          </div>
+        </div>
         {loading ? (
           <div className="text-center">
             <Spinner animation="border" role="status">
@@ -179,7 +269,7 @@ const Search = ({ show, handleClose }) => {
             </Spinner>
           </div>
         ) : (
-          <div style={{ overflow: 'auto', maxHeight: '400px', maxWidth: '700px' }}>
+          <div style={{ overflow: 'auto', maxHeight: '400px', maxWidth: '800px' }}>
             <Table striped bordered hover variant="dark" className="mt-3">
               <thead>
                 <tr>
