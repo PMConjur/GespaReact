@@ -54,8 +54,22 @@ const Flow = () => {
     idRespuesta,
     idSiguientePregunta,
     valor,
+    idValor,
+    respuesta,
     pregunta
   ) => {
+    // Guarda los parámetros seleccionados en el historial
+    setAnswerHistory((prev) => [
+      ...prev,
+      {
+        idPregunta: idPregunta,
+        idRespuesta: idRespuesta,
+        valor: valor || respuesta, // Usar respuesta si valor está vacío
+        pregunta: pregunta,
+        idSiguientePregunta: idSiguientePregunta
+      }
+    ]);
+    console.log("Historial guardado");
     setSelectedAnswers((prev) => ({
       ...prev,
       [idPregunta]: idRespuesta
@@ -65,43 +79,71 @@ const Flow = () => {
       [idPregunta]: idSiguientePregunta
     }));
 
-    const idClase = userFlowData.find(
-      (item) => item.idPregunta === idPregunta
-    )?.idClase;
+    const idClase = selectedAnswer?.dataPhone?.idClase;
 
-    const validatedNextQuestion = await getValidateResponse(
+    // Usa getValidateResponse para obtener la siguiente pregunta válida
+    let validatedNextQuestion = await getValidateResponse(
       {
-        idPregunta: selectedAnswer.dataPhone.idPregunta,
-        idRespuesta: selectedAnswer.dataPhone.idRespuesta,
-        idSiguientePregunta: selectedAnswer.dataPhone.idSiguientePregunta,
-        valor: selectedAnswer.dataPhone.valor,
-        pregunta: selectedAnswer.dataPhone.pregunta,
-        idClase: selectedAnswer.dataPhone.idClase
+        idPregunta: idPregunta,
+        idRespuesta: idRespuesta,
+        idSiguientePregunta: idSiguientePregunta,
+        valor: valor || respuesta, // Usar respuesta si valor está vacío
+        idValor: idValor,
+        pregunta: pregunta,
+        idClase: idClase
       },
       userFlowData,
       setCurrentQuestionId
     );
 
-    const nextQuestionId = validatedNextQuestion
-      ? validatedNextQuestion.idPregunta
-      : idSiguientePregunta;
+    let nextQuestionId = validatedNextQuestion.idSiguientePregunta;
 
-    const nextQuestion = userFlowData.find(
+    let nextQuestion = userFlowData.find(
       (item) => item.idPregunta === nextQuestionId
     );
+
     if (nextQuestion) {
-      setAnswerHistory((prev) => [
-        ...prev,
-        {
-          idPregunta: idPregunta,
-          idRespuesta: idRespuesta,
-          valor: valor,
-          pregunta: pregunta,
-          idSiguientePregunta: nextQuestionId
-        }
-      ]); // Guarda el historial de las preguntas que se van seleccionando
       setCurrentQuestionId(nextQuestion.idPregunta);
-    } else {
+    }
+
+    // Asegúrate de que el bucle no se ejecute más de una vez
+    while (nextQuestion && nextQuestion.idPregunta !== idSiguientePregunta) {
+      validatedNextQuestion = await getValidateResponse(
+        {
+          idPregunta: nextQuestion.idPregunta,
+          idRespuesta: idRespuesta,
+          idSiguientePregunta: nextQuestion.idSiguientePregunta,
+          valor: valor || nextQuestion.respuesta, // Usar respuesta si valor está vacío
+          idValor: idValor,
+          pregunta: nextQuestion.pregunta,
+          idClase: idClase
+        },
+        userFlowData,
+        setCurrentQuestionId
+      );
+
+      nextQuestionId = validatedNextQuestion.idSiguientePregunta;
+
+      nextQuestion = userFlowData.find(
+        (item) => item.idPregunta === nextQuestionId
+      );
+
+      if (nextQuestion) {
+        setAnswerHistory((prev) => [
+          ...prev,
+          {
+            idPregunta: nextQuestion.idPregunta,
+            idRespuesta: idRespuesta,
+            valor: valor || nextQuestion.respuesta, // Usar respuesta si valor está vacío
+            pregunta: nextQuestion.pregunta,
+            idSiguientePregunta: nextQuestion.idSiguientePregunta
+          }
+        ]); // Guarda el historial de las preguntas que se van seleccionando
+        setCurrentQuestionId(nextQuestion.idPregunta);
+      }
+    }
+
+    if (!nextQuestion || nextQuestion.length === 0) {
       toast.info("Información de flujo terminada");
     }
 
@@ -163,17 +205,18 @@ const Flow = () => {
 
         <Card.Body className="scroll-flow">
           <Form>
-            <h5>{questions[0].pregunta}</h5>
+            <h5>{questions[0]?.pregunta}</h5>
             {questions.map((question) => (
               <Form.Check
                 key={question.idRespuesta}
                 type="radio"
-                id={`question-${question.idPregunta}-${question.idRespuesta}`}
-                name={`question-${question.idPregunta}`}
+                id={question.idPregunta}
+                name={`${question.respuesta}` || `${question.valor}`}
                 label={question.valor || question.respuesta}
                 value={question.idRespuesta}
                 checked={
-                  selectedAnswers[question.idPregunta] === question.idRespuesta
+                  selectedAnswers[question.idPregunta] ===
+                  question.idSiguientePregunta
                 }
                 onChange={() =>
                   handleAnswerChange(
@@ -181,6 +224,8 @@ const Flow = () => {
                     question.idRespuesta,
                     question.idSiguientePregunta,
                     question.valor,
+                    question.idValor,
+                    question.respuesta,
                     question.pregunta
                   )
                 }

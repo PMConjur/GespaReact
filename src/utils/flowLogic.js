@@ -106,12 +106,21 @@ export const getResponse = async (
 };
 
 export const getValidateResponse = async (
-  { idPregunta, idRespuesta, idSiguientePregunta, valor, pregunta, idClase }, // Añadir idClase a los parámetros
+  {
+    idPregunta,
+    idRespuesta,
+    idSiguientePregunta,
+    valor,
+    idValor,
+    pregunta,
+    idClase
+  }, // Añadir idClase a los parámetros
   userFlowData, //Datos seleccionados por el usuario
   setCurrentQuestionId //idPregunta seleccionada
 ) => {
   let Respuesta = pregunta;
-  let idValor = valor;
+  let nextIdPregunta = idSiguientePregunta; // Mantener el valor inicial de idSiguientePregunta
+
   let Contestacion = true;
   // Si la pregunta fue ¿Contestaron? y la respuesta No.
   if (idRespuesta == 2 && Respuesta == "No") {
@@ -140,64 +149,77 @@ export const getValidateResponse = async (
       _Intermediario = true;
     else _Intermediario = false;
   }
-  const relations = await Relations();
-  _Contestaciones = relations.Contestaciones;
-  _Respuestas = relations.Respuestas;
-  _htContestaciones = relations.htContestaciones;
 
-  // Buscar idClase en Relations y traer los datos a un objeto
-  console.log("Buscando relación para idClase:", idClase);
-  const relation = relations.find((rel) => rel.idValor2 === idClase);
-  if (relation) {
-    const {
-      idValor1,
-      idValor2,
-      Relación,
-      Valor1,
-      Valor2,
-      Catálogo1,
-      Catálogo2
-    } = relation;
-    const relationData = {
-      idValor1,
-      idValor2,
-      Relación,
-      Valor1,
-      Valor2,
-      Catálogo1,
-      Catálogo2
-    };
-    console.log("Relación encontrada:", relationData);
-    // Si la siguiente pregunta es  ¿Clase de teléfono?
-    if (
-      idSiguientePregunta == "12" ||
-      idSiguientePregunta == "13" ||
-      (Catálogo1 === "Clases" &&
-        Catálogo2 === "Modificables" &&
-        Valor2 === "Modificable")
-    ) {
-      // Lógica adicional para manejar idClase cuando idSiguientePregunta sea 12 o 13
-      try {
-        const userFlowResponse = await userFlow();
-        const nextQuestion = userFlowResponse.find(
-          (item) => item.idPregunta === idSiguientePregunta
-        );
-        if (nextQuestion) {
-          idValor = 0; // Fijar idValor en 0 por defecto
-          console.log(
-            "Siguiente pregunta encontrada:",
-            nextQuestion.idPregunta
+  console.log("idPregunta:", idPregunta);
+  console.log("idRespuesta:", idRespuesta);
+  console.log("idSiguientePregunta:", idSiguientePregunta);
+  console.log("valor:", valor);
+  console.log("pregunta:", pregunta);
+  console.log("idClase:", idClase);
+  // Buscar idClase en Relations y traer los datos a un objeto solo si idSiguientePregunta es 12 o 13
+  if (idSiguientePregunta == "12" || idSiguientePregunta == "13") {
+    const relations = await Relations();
+    const relation = relations.find(
+      (rel) => rel.idValor2 === idClase || rel.idValor1 === idClase
+    );
+    console.log("Aqui solo si entro a relacion:", idClase);
+    if (relation) {
+      const {
+        idValor1,
+        idValor2,
+        Relación,
+        Valor1,
+        Valor2,
+        Catálogo1,
+        Catálogo2
+      } = relation;
+      const relationData = {
+        idValor1,
+        idValor2,
+        Relación,
+        Valor1,
+        Valor2,
+        Catálogo1,
+        Catálogo2
+      };
+      console.log("Relación encontrada:", relationData);
+      // Si la siguiente pregunta es  ¿Clase de teléfono?
+      if (
+        idSiguientePregunta == "12" ||
+        idSiguientePregunta == "13" ||
+        !(
+          Catálogo1 === "Clases" &&
+          Catálogo2 === "Modificables" &&
+          Valor2 === "Modificable"
+        )
+      ) {
+        // Lógica adicional para manejar idClase cuando idSiguientePregunta sea 12 o 13
+        try {
+          const userFlowResponse = await userFlow();
+          const nextQuestion = userFlowResponse.find(
+            (item) => item.idPregunta === idSiguientePregunta
           );
-          return { idPregunta: nextQuestion.idPregunta }; // Devolver idPregunta del resultado
-        } else {
-          console.log("No se encontró la siguiente pregunta.");
+          if (nextQuestion) {
+            idValor = 0; // Fijar idValor en 0 por defecto
+            console.log(
+              "Siguiente pregunta encontrada:",
+              nextQuestion.idPregunta
+            );
+            return {
+              idPregunta: nextQuestion.idPregunta,
+              idSiguientePregunta: nextQuestion.idSiguientePregunta
+            }; // Devolver idPregunta e idSiguientePregunta del resultado
+          } else {
+            console.log("No se encontró la siguiente pregunta.");
+          }
+        } catch (error) {
+          console.error("Error al obtener la siguiente pregunta:", error);
         }
-      } catch (error) {
-        console.error("Error al obtener la siguiente pregunta:", error);
       }
+    } else {
+      console.log("No se encontró una relación para el idClase proporcionado.");
+      return { idPregunta: idPregunta, idSiguientePregunta: nextIdPregunta }; // Devolver idSiguientePregunta con su valor inicial
     }
-  } else {
-    console.log("No se encontró una relación para el idClase proporcionado.");
   }
-  return { idPregunta: idSiguientePregunta }; // Devolver idSiguientePregunta si no se cumple ninguna condición
+  return { idPregunta: idPregunta, idSiguientePregunta: nextIdPregunta }; // Devolver idSiguientePregunta si no se cumple ninguna condición
 };

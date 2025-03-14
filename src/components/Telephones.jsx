@@ -305,7 +305,7 @@ const Telephones = () => {
                       <td>
                         <a
                           href="#"
-                          className="text-primary"
+                          className="text-info"
                           onClick={() =>
                             setSelectedAnswer({
                               value: 2,
