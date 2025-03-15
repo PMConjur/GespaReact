@@ -1815,7 +1815,7 @@ namespace NoriAPI.Services
             if (domiciliosGet == null || domiciliosGet.Rows.Count == 0)
                 return;
 
-            if (dsTablas.Tables.Contains("Domicilios")) ;
+            if (dsTablas.Tables.Contains("Domicilios"))
             {
                 dsTablas.Tables.Remove("Domicilios");
             }

@@ -99,7 +99,6 @@ namespace NoriAPI.Controllers
         }
         #endregion
 
-
         #region Recordatorios
 
 

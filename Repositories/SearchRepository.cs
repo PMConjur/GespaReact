@@ -3,10 +3,12 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using NoriAPI.Models.Busqueda.InfoProducto;
 using NoriAPI.Models.Domicilios;
+using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Models.Phones;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -26,6 +28,8 @@ namespace NoriAPI.Repositories
         Task<List<Domicilio>> GetDomicilios(string idCuenta, int idCartera);
         Task<List<GestionDomiciliaria>> GetVisitas(string idCuenta, int idCartera);
         Task<List<CodigosPostales>> SearchCodigosPostales(int codigoPostal);
+        Task<dynamic> UpdateAddressInfo(UpdateAddressInfoRequest domicilioInfoUpdate);
+        Task<dynamic> UpdateAddressClass(UpdateAddressClassRequest domicilioClassUpdate);
         #endregion
     }
 
@@ -353,6 +357,88 @@ namespace NoriAPI.Repositories
 
             return codigosPostales.ToList();
         }
+
+        public async Task<dynamic> UpdateAddressInfo(UpdateAddressInfoRequest domicilioInfoUpdate)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string updateInfoQuery =
+                "UPDATE Domicilios SET " +
+                "idInformación = @IdInformacion, " +
+                "FechaHora_Información = GETDATE() " +
+                "WHERE idCartera = @IdCartera AND idCuenta = @IdCuenta AND idDomicilio = @IdDomicilio";
+
+            var parameters = new
+            {
+                domicilioInfoUpdate.IdInformacion,
+                domicilioInfoUpdate.IdCartera,
+                domicilioInfoUpdate.IdCuenta,
+                domicilioInfoUpdate.IdDomicilio
+            };
+
+            var updateAddressResult = await connection.ExecuteAsync(
+                updateInfoQuery,
+                parameters,
+                commandType: CommandType.Text);
+
+            return updateAddressResult;
+        }
+
+        public async Task<dynamic> UpdateAddressClass(UpdateAddressClassRequest domicilioClassUpdate)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string updateInfoQuery =
+                "UPDATE Domicilios SET " +
+                "idClase = @IdClase, " +
+                "FechaHora_Información = GETDATE() " +
+                "WHERE idCartera = @IdCartera AND idCuenta = @IdCuenta AND idDomicilio = @IdDomicilio";
+
+            var parameters = new
+            {
+                domicilioClassUpdate.IdClase,
+                domicilioClassUpdate.IdCartera,
+                domicilioClassUpdate.IdCuenta,
+                domicilioClassUpdate.IdDomicilio
+            };
+
+            var updateClassResult = await connection.ExecuteAsync(
+                updateInfoQuery,
+                parameters,
+                commandType: CommandType.Text);
+
+            return updateClassResult;
+        }
+
+
+        public async Task<dynamic> InsertNewAddress(NewAddress insertNuevaDireccion)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string newAddressStored = "[dbCollection].[dbo].[2.6.NuevoDomicilio]";
+            var parameters = new
+            {
+                idCartera = insertNuevaDireccion.IdCartera,
+                idCuenta = insertNuevaDireccion.IdCuenta,
+                idEjecutivo = insertNuevaDireccion.IdEjecutivo,
+                Calle = insertNuevaDireccion.Calle,
+                NúmeroExterior = insertNuevaDireccion.NumeroExterior,
+                NúmeroInterior = insertNuevaDireccion.NumeroInterior,
+                idCódigoPostal = insertNuevaDireccion.IdCodigoPostal,
+                Colonia = insertNuevaDireccion.Colonia,
+                idClase = insertNuevaDireccion.IdClase,
+                Municipio = insertNuevaDireccion.Municipio,
+                Estado = insertNuevaDireccion.Estado
+            };
+
+            var newAddressResult = await connection.QueryFirstOrDefaultAsync<dynamic>(
+                newAddressStored,
+                parameters,
+                commandType: CommandType.StoredProcedure);
+
+            return newAddressResult;
+        }
+
 
         #endregion
 

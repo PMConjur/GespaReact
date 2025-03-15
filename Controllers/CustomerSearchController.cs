@@ -172,9 +172,9 @@ namespace NoriAPI.Controllers
             var result = await _searchService.UpdateAddressInfo(domicilioInfo);
             if (!result.Item2)
             {
-                return BadRequest(new { mensaje = "No se pudo actualizar la información del domicilio." });
+                return BadRequest(new { message = result.Item1, success = result.Item2 });
             }
-            return Ok(new { mensaje = "Información de domicilio actualizada con éxito." });
+            return Ok(new { message = result.Item1, success = result.Item2 });
         }
 
         [HttpPost("update-address-class")]
@@ -184,9 +184,9 @@ namespace NoriAPI.Controllers
             var result = await _searchService.UpdateAddressClass(domicilioClass);
             if (!result.Item2)
             {
-                return BadRequest(new { mensaje = "No se pudo actualizar la clase del domicilio." });
+                return BadRequest(new { message = result.Item1, success = result.Item2 });
             }
-            return Ok(new { mensaje = "Información de clase actualizada con éxito." });
+            return Ok(new { message = result.Item1, success = result.Item2 });
         }
 
         #endregion

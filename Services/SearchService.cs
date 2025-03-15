@@ -610,31 +610,43 @@ namespace NoriAPI.Services
         {
             var domicilios = await _searchRepository.GetDomicilios(domicilioInfoUpdate.IdCuenta, domicilioInfoUpdate.IdCartera);
 
-            Domicilio found = domicilios.Find(item => item.IdCuenta == domicilioInfoUpdate.IdCuenta);
-            if (found.IdCuenta != domicilioInfoUpdate.IdCuenta)
+            bool domicilioAsignado = domicilios.Any(item => item.IdDomicilio == domicilioInfoUpdate.IdDomicilio);
+            if (!domicilioAsignado)
             {
                 return ("El domicilio no está asignado a la cuenta.", false);
             }
 
+            // Ejecuta la actualización y valida el resultado
+            var updateInfoResult = await _searchRepository.UpdateAddressInfo(domicilioInfoUpdate);
 
-            // Comentario Adicional xd
-            //var updateInfoResult = await _searchRepository.UpdateAddressInfo(domicilioInfoUpdate);
+            if (updateInfoResult is null || updateInfoResult != 1)
+            {
+                return ("No se pudo actualizar el campo 'idInformación' del domicilio. Verifique los datos proporcionados.", false);
+            }
 
-            return ("Campo 'Información' del domicilio actualizado con éxito.", false);
+            return ("Campo 'idInformación' del domicilio actualizado con éxito.", true);
+
 
         }
+
         public async Task<(string, bool)> UpdateAddressClass(UpdateAddressClassRequest domicilioClassUpdate)
         {
             var domicilios = await _searchRepository.GetDomicilios(domicilioClassUpdate.IdCuenta, domicilioClassUpdate.IdCartera);
 
-            Domicilio found = domicilios.Find(item => item.IdCuenta == domicilioClassUpdate.IdCuenta);
-
-            if (found.IdCuenta != domicilioClassUpdate.IdCuenta)
+            bool domicilioAsignado = domicilios.Any(item => item.IdDomicilio == domicilioClassUpdate.IdDomicilio);
+            if (!domicilioAsignado)
             {
                 return ("El domicilio no está asignado a la cuenta.", false);
             }
 
-            return ("Campo 'Información' del domicilio actualizado con éxito.", false);
+            var updateClassResult = await _searchRepository.UpdateAddressClass(domicilioClassUpdate);
+
+            if (updateClassResult is null || updateClassResult != 1)
+            {
+                return ("No se pudo actualizar el campo 'idClase' del domicilio. Verifique los datos proporcionados.", false);
+            }
+
+            return ("Campo 'idClase' del domicilio actualizado con éxito.", false);
 
         }
 
