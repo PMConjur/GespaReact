@@ -13,6 +13,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -701,7 +702,7 @@ namespace NoriAPI.Controllers
                 Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
 
 
-                Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
+                //Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
 
                 // Convertimos el DataTable a una lista de diccionarios
                 var listaNegociaciones = ConvertDataTableToList(Negociaciones);
@@ -709,9 +710,9 @@ namespace NoriAPI.Controllers
                 // Serializamos la lista a JSON
                 string jsonNegociaciones = JsonSerializer.Serialize(listaNegociaciones, new JsonSerializerOptions { WriteIndented = true });
 
-                //dsTablas.Tables.Add(Negociaciones);
+                //return Ok(jsonNegociaciones);
+                return Content(jsonNegociaciones, "application/json; charset=utf-8");
 
-                return Ok(jsonNegociaciones);
 
             }
             catch (Exception ex)
@@ -736,9 +737,8 @@ namespace NoriAPI.Controllers
                 // Serializamos la lista a JSON
                 string jsonPlazos = JsonSerializer.Serialize(listaPlazos, new JsonSerializerOptions { WriteIndented = true });
 
-                //dsTablas.Tables.Add(Negociaciones);
-
-                return Ok(jsonPlazos);
+                //return Ok(jsonPlazos);
+                return Content(jsonPlazos, "application/json; charset=utf-8"); 
 
             }
             catch (Exception ex)
@@ -808,7 +808,8 @@ namespace NoriAPI.Controllers
                 // Serializar la respuesta combinada a JSON
                 string jsonResultado = JsonSerializer.Serialize(resultadoCombinado, new JsonSerializerOptions { WriteIndented = true });
 
-                return Ok(jsonResultado);
+                //return Ok(jsonResultado);
+                return Content(jsonResultado, "application/json; charset=utf-8");
             }
             catch (Exception ex)
             {
@@ -833,10 +834,9 @@ namespace NoriAPI.Controllers
                 // Serializamos la lista a JSON
                 string jsonValidadores = JsonSerializer.Serialize(Validadores, new JsonSerializerOptions { WriteIndented = true });
 
-                //dsTablas.Tables.Add(Negociaciones);
+                //return Ok(jsonValidadores);
+                return Content(jsonValidadores, "application/json; charset=utf-8");
 
-                return Ok(jsonValidadores);
-                
 
             }
             catch (Exception ex)
@@ -861,9 +861,9 @@ namespace NoriAPI.Controllers
                 // Serializamos la lista a JSON
                 string jsonValidadores = JsonSerializer.Serialize(Validadores, new JsonSerializerOptions { WriteIndented = true });
 
-                //dsTablas.Tables.Add(Negociaciones);
+                //return Ok(jsonValidadores);
+                return Content(jsonValidadores, "application/json; charset=utf-8");
 
-                return Ok(jsonValidadores);
 
             }
             catch (Exception ex)
@@ -921,6 +921,89 @@ namespace NoriAPI.Controllers
 
             return Ok(new { mensaje = mensaje.Item1, exito = true });
         }
+
+        [HttpGet("ddQuejas")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetDropQuejas()
+        {
+            try
+            {
+                DataTable DDQuejas = new DataTable();
+
+                DDQuejas = await _ejecutivoService.GetDropDQuejasAsync();
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var QuejasDD = ConvertDataTableToList(DDQuejas);
+
+                // Serializamos la lista a JSON
+                string jsonDDQuejas = JsonSerializer.Serialize(QuejasDD, new JsonSerializerOptions { WriteIndented = true });
+
+                //dsTablas.Tables.Add(Negociaciones);
+
+                //return Ok(jsonDDQuejas);
+                return Content(jsonDDQuejas, "application/json; charset=utf-8");
+
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpGet("ddOrigenQuejas")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetDropOrigenQuejas()
+        {
+            try
+            {
+                DataTable DDOrigenQuejas = new DataTable();
+
+                DDOrigenQuejas = await _ejecutivoService.GetDropDOrigenQuejasAsync();
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var OrigenQuejasDD = ConvertDataTableToList(DDOrigenQuejas);
+
+                // Serializamos la lista a JSON
+                string jsonDDOrigenQuejas = JsonSerializer.Serialize(OrigenQuejasDD, new JsonSerializerOptions { WriteIndented = true });
+
+                //return Ok(jsonDDOrigenQuejas);
+                return Content(jsonDDOrigenQuejas, "application/json; charset=utf-8");
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpGet("viewQuejas")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetViewQuejas(int idCartera, string idCuenta)
+        {
+            try
+            {
+                DataTable viewQuejas = new DataTable();
+
+                viewQuejas = await _ejecutivoService.GetViewQuejasAsync(idCartera, idCuenta);
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var QuejasView = ConvertDataTableToList(viewQuejas);
+
+                // Serializamos la lista a JSON
+                string jsonViewQuejas = JsonSerializer.Serialize(QuejasView, new JsonSerializerOptions { WriteIndented = true });
+
+                //return Ok(jsonViewQuejas);
+                return Content(jsonViewQuejas, "application/json; charset=utf-8");
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+
 
 
         #endregion

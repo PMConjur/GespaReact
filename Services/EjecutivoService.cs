@@ -70,11 +70,14 @@ namespace NoriAPI.Services
         Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
         Task<DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña);
         Task<DataTable> GetValidadoresAsync(int idProducto);
-        
+
         //Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
         Task<string> AccionesComentario(AccionesComentarioRequest insertCommit);
         Task<DataTable> GetWlpAsync(string Proceso, string idCuenta);
         Task<(string, bool)> ValidateNewQueja(Queja quejaInsert);
+        Task<DataTable> GetDropDQuejasAsync();
+        Task<DataTable> GetDropDOrigenQuejasAsync();
+        Task<DataTable> GetViewQuejasAsync(int idCartera, string idCuenta);
         #endregion
 
 
@@ -549,6 +552,76 @@ namespace NoriAPI.Services
             {
                 return ("Error al insertar la queja.", false);
             }
+        }
+
+        public async Task<DataTable> GetDropDQuejasAsync()
+        {
+            DataTable quejasDrop = new DataTable();
+            string query = "SELECT C.Catálogo,VC.* FROM dbCollection..Catálogos C " +
+                                  "INNER JOIN dbCollection..ValoresCatálogo VC " +
+                                  "ON C.idCatálogo = VC.idCatálogo " +
+                                  "WHERE C.Catálogo = 'Quejas'"; // Evita inyección SQL
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(quejasDrop);
+                    }
+                }
+            }
+
+            return quejasDrop;
+        }
+
+        public async Task<DataTable> GetDropDOrigenQuejasAsync()
+        {
+            DataTable origenDropQuejas = new DataTable();
+            string query = "SELECT C.Catálogo,VC.* FROM dbCollection..Catálogos C " +
+                                  "INNER JOIN dbCollection..ValoresCatálogo VC " +
+                                  "ON C.idCatálogo = VC.idCatálogo " +
+                                  "WHERE C.Catálogo = 'Instituciones'"; // Evita inyección SQL
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(origenDropQuejas);
+                    }
+                }
+            }
+
+            return origenDropQuejas;
+        }
+
+        public async Task<DataTable> GetViewQuejasAsync(int idCartera, string idCuenta)
+        {
+            DataTable viewQuejas = new DataTable();
+            string query = "SELECT * FROM fn_Quejas(@idCartera, @idCuenta)"; // Evita inyección SQL
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(viewQuejas);
+                    }
+                }
+            }
+
+            return viewQuejas;
         }
 
         public async Task<string> AccionesComentario(AccionesComentarioRequest insertComment)
