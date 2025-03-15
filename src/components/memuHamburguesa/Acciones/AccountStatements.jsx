@@ -114,11 +114,11 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
         <Modal.Title>Estado de Cuenta - Gespa</Modal.Title>
       </Modal.Header>
 
-      <Modal.Body style={{ padding: "5px 10px" }}>
-        <div className="d-flex">
+      <Modal.Body  style={{ padding: "5px 10px" }}>
+        <div className="d-block d-lg-flex">
           <div>
             <div
-              className="flex-grow-1"
+              className="flex-grow-1 scroll-container"
               style={{
                 overflow: "auto ",
                 maxWidth: "550px",

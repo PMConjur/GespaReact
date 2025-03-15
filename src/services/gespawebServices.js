@@ -844,3 +844,27 @@ export const fetchNotes = async (numEmpleado, token) => {
     throw error;
   }
 };
+
+// endpoint ejecutivo quejas post
+export const fetchComplaints = async (data) => {
+  try {
+    console.log("Enviando datos al endpoint...", data); // Verifica que esto aparezca en la consola
+    const response = await servicio.post(
+      `/ejecutivo/quejas`,
+      data
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Queja guardada:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchComplaints:", error);
+    throw error;
+  }
+};

@@ -2,6 +2,7 @@ import { useContext, useState, useEffect } from "react";
 import { Modal, Button, Form, Table, Spinner, Dropdown } from 'react-bootstrap';
 import { fetchActionsSearch, fetchSaveExecutive } from '../../../services/gespawebServices';
 import { AppContext } from "../../../pages/Managment";
+import "../../../scss/styles.scss"
 
 const Search = ({ show, handleClose }) => {
   const { searchResults } = useContext(AppContext);
@@ -17,11 +18,13 @@ const Search = ({ show, handleClose }) => {
     link: ''
   });
 
+  const [phoneNumbers, setPhoneNumbers] = useState([]); // Estado para la lista de números de teléfono
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(false); // Estado de carga
   const [showForm, setShowForm] = useState(false); // Estado para mostrar/ocultar el formulario
   const [valorOptions, setValorOptions] = useState([]); // Estado para las opciones del dropdown "Valor"
   const [fuenteOptions, setFuenteOptions] = useState([]); // Estado para las opciones del dropdown "Fuente"
+  const [isFormValid, setIsFormValid] = useState(false); // Estado para la validez del formulario
 
   // Extraer valores únicos de la columna "Dato" para el dropdown
   const datosUnicos = [...new Set(tableData.map((item) => item.Dato))];
@@ -31,6 +34,12 @@ const Search = ({ show, handleClose }) => {
       fetchData(searchResults[0].idCuenta.trim());
     }
   }, [show, searchResults]);
+
+  useEffect(() => {
+    // Verificar si todos los campos requeridos están llenos
+    const isValid = searchData.dato && searchData.fuente && searchData.nombre && searchData.puesto && phoneNumbers.length > 0 && searchData.lugar && searchData.link;
+    setIsFormValid(isValid);
+  }, [searchData, phoneNumbers]);
 
   const fetchData = async (idCuenta) => {
     setLoading(true);
@@ -69,41 +78,74 @@ const Search = ({ show, handleClose }) => {
   };
 
   const handleChange = (name, value) => {
-    setSearchData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    // Validar que solo acepte números y un máximo de 10 dígitos
+    if (name === 'telefonos') {
+      const regex = /^[0-9\b]+$/;
+      if (value === '' || (regex.test(value) && value.length <= 10)) {
+        setSearchData((prev) => ({
+          ...prev,
+          [name]: value,
+        }));
 
-    // Mostrar/ocultar el formulario cuando se marca/desmarca el checkbox
-    if (name === 'encontrado') {
-      setShowForm(value);
-      console.log("Checkbox marcado:", value); // Verifica que el estado se actualice correctamente
+        // Agregar número de teléfono a la lista cuando se ingresen 10 dígitos
+        if (value.length === 10) {
+          setPhoneNumbers((prev) => [...prev, value]);
+          setSearchData((prev) => ({
+            ...prev,
+            telefonos: '', // Limpiar el campo de entrada
+          }));
+        }
+      }
+    } else if (name === 'nombre') {
+      // Validar que solo acepte letras y un máximo de 60 caracteres
+      const regex = /^[a-zA-Z\s]*$/;
+      if (value === '' || (regex.test(value) && value.length <= 60)) {
+        setSearchData((prev) => ({
+          ...prev,
+          [name]: value,
+        }));
+      }
+    } else {
+      setSearchData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+
+      // Mostrar/ocultar el formulario cuando se marca/desmarca el checkbox
+      if (name === 'encontrado') {
+        setShowForm(value);
+        console.log("Checkbox marcado:", value); // Verifica que el estado se actualice correctamente
+      }
+
+      // Filtrar los valores de "DatoBuscado" y "idFuente" cuando se cambia el dropdown "Dato"
+      if (name === 'dato') {
+        console.log("Valor seleccionado en 'Dato':", value); // Verifica el valor seleccionado
+        console.log("Datos en tableData:", tableData); // Verifica los datos en tableData
+
+        // Convertir el valor seleccionado a número (si es necesario)
+        const selectedValue = Number(value);
+
+        // Filtrar los valores de "DatoBuscado"
+        const filteredValues = tableData
+          .filter((item) => item.Dato === selectedValue) // Filtra por el valor seleccionado en "Dato"
+          .map((item) => item.DatoBuscado); // Extrae los valores de "DatoBuscado"
+
+        console.log("Valores filtrados (DatoBuscado):", filteredValues); // Verifica que los valores se filtren correctamente
+        setValorOptions([...new Set(filteredValues)]); // Eliminar duplicados
+
+        // Filtrar los valores de "idFuente"
+        const filteredFuentes = tableData
+          .filter((item) => item.Dato === selectedValue) // Filtra por el valor seleccionado en "Dato"
+          .map((item) => item.idFuente); // Extrae los valores de "idFuente"
+
+        console.log("Valores filtrados (idFuente):", filteredFuentes); // Verifica que los valores se filtren correctamente
+        setFuenteOptions([...new Set(filteredFuentes)]); // Eliminar duplicados
+      }
     }
+  };
 
-    // Filtrar los valores de "DatoBuscado" y "idFuente" cuando se cambia el dropdown "Dato"
-    if (name === 'dato') {
-      console.log("Valor seleccionado en 'Dato':", value); // Verifica el valor seleccionado
-      console.log("Datos en tableData:", tableData); // Verifica los datos en tableData
-
-      // Convertir el valor seleccionado a número (si es necesario)
-      const selectedValue = Number(value);
-
-      // Filtrar los valores de "DatoBuscado"
-      const filteredValues = tableData
-        .filter((item) => item.Dato === selectedValue) // Filtra por el valor seleccionado en "Dato"
-        .map((item) => item.DatoBuscado); // Extrae los valores de "DatoBuscado"
-
-      console.log("Valores filtrados (DatoBuscado):", filteredValues); // Verifica que los valores se filtren correctamente
-      setValorOptions([...new Set(filteredValues)]); // Eliminar duplicados
-
-      // Filtrar los valores de "idFuente"
-      const filteredFuentes = tableData
-        .filter((item) => item.Dato === selectedValue) // Filtra por el valor seleccionado en "Dato"
-        .map((item) => item.idFuente); // Extrae los valores de "idFuente"
-
-      console.log("Valores filtrados (idFuente):", filteredFuentes); // Verifica que los valores se filtren correctamente
-      setFuenteOptions([...new Set(filteredFuentes)]); // Eliminar duplicados
-    }
+  const handleRemovePhoneNumber = (index) => {
+    setPhoneNumbers((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleGuardarClick = async () => {
@@ -118,11 +160,7 @@ const Search = ({ show, handleClose }) => {
         idFuente: Number(searchData.fuente),
         dato: searchData.dato,
         encontrado: searchData.encontrado,
-        teléfonos: [
-          {
-            númeroTelefónico: searchData.telefonos
-          }
-        ],
+        teléfonos: phoneNumbers.map((numeroTelefónico) => ({ númeroTelefónico: numeroTelefónico })), // Usar la lista de números de teléfono
         persona: searchData.nombre,
         puesto: searchData.puesto,
         lugar: searchData.lugar,
@@ -142,12 +180,12 @@ const Search = ({ show, handleClose }) => {
   };
 
   return (
-    <Modal show={show} onHide={handleClose} size="xl" centered>
+    <Modal show={show} onHide={handleClose} size="xl" centered >
       <Modal.Header closeButton>
         <Modal.Title>Búsquedas - Gespa</Modal.Title>
       </Modal.Header>
-      <Modal.Body style={{ display: 'flex', width: '100%', justifyContent: 'space-between' }}>
-        <div style={{ width: '100%', maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+      <Modal.Body style={{ display: 'flex', width: '100%', justifyContent: 'space-between'}} className="d-block d-lg-flex">
+        <div className="scroll-container" style={{ width: '100%', maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column'}}>
           <Form style={{ flexGrow: 1 }}>
             <div style={{display: 'flex', justifyContent:'space-between', marginRight: '20px'}}>
               <Form.Group className="mb-3">
@@ -234,6 +272,14 @@ const Search = ({ show, handleClose }) => {
                   value={searchData.telefonos}
                   onChange={(e) => handleChange('telefonos', e.target.value)}
                 />
+                <div>
+                  {phoneNumbers.map((phone, index) => (
+                    <div key={index} style={{ display: 'flex', alignItems: 'center', marginTop: '3px', marginBottom: '3px'}}>
+                      <Button variant="danger" size="sm" style={{padding: '0px 5px'}} onClick={() => handleRemovePhoneNumber(index)}>X</Button>
+                      <span style={{ marginLeft: '10px' }}>{phone}</span>
+                    </div>
+                  ))}
+                </div>
                 <Form.Label>Lugar</Form.Label>
                 <Form.Control
                   type="text"
@@ -257,6 +303,7 @@ const Search = ({ show, handleClose }) => {
               type="button"
               onClick={handleGuardarClick}
               style={{ marginBottom: '10px' }}
+              disabled={!isFormValid} // Deshabilitar el botón si el formulario no es válido
             >
               Guardar
             </Button>
@@ -269,7 +316,7 @@ const Search = ({ show, handleClose }) => {
             </Spinner>
           </div>
         ) : (
-          <div style={{ overflow: 'auto', maxHeight: '400px', maxWidth: '800px' }}>
+          <div className="scroll-container" style={{ overflow: 'auto', maxHeight: '400px', maxWidth: '800px', minWidth: '250px'}}>
             <Table striped bordered hover variant="dark" className="mt-3">
               <thead>
                 <tr>

@@ -9,6 +9,7 @@ import Drives from './Drives';
 import { getFollowUpsData, getTalksData, getOnlinechargeData } from '../../../services/gespawebServices';
 import Search from './Search';
 import OnlineCharge from './OnlineCharge';
+import Complaints from './Complaints'; // Importar el componente Complaints
 
 
 const DropdownActions = () => {
@@ -21,9 +22,12 @@ const DropdownActions = () => {
   const [loadingtalks, setLoadingtalks] = useState(false);
   const [showDrives, setShowDrives] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showComplaints, setShowComplaints] = useState(false);
 
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
+  const handleOpenComplaints = () => setShowComplaints(true); // Función para abrir el modal de quejas
+  const handleCloseComplaints = () => setShowComplaints(false);
 
 
   const [showOnlinecharge, setShowOnlinecharge] = useState(false);
@@ -100,7 +104,7 @@ const DropdownActions = () => {
           <Dropdown.Item onClick={handleShowOnlinecharge} className="custom-dropdown-item">Cargos en línea</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Comentarios</Dropdown.Item>  
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item" onClick={() => setModalShow(true)}>Estados de cuenta</Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Quejas</Dropdown.Item>
+          <Dropdown.Item onClick={handleOpenComplaints} className="custom-dropdown-item">Quejas</Dropdown.Item> {/* Actualizar para abrir el modal de quejas */}
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Simuladores</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Procesos WLP</Dropdown.Item>
           
@@ -113,6 +117,7 @@ const DropdownActions = () => {
       <OnlineCharge show={showOnlinecharge} handleClose={handleCloseOnlinecharge} data={onlinechargeData} loading={loadingOnlinecharge} />
       <Drives showModal={showDrives} handleCloseModal={handleCloseDrives} />
       <Search show={showModal} handleClose={handleCloseModal} />
+      <Complaints show={showComplaints} handleClose={handleCloseComplaints} /> {/* Agregar el modal de quejas */}
     </>
   );
 }
