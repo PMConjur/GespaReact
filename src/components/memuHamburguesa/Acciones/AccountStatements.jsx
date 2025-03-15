@@ -22,7 +22,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   // Obtener datos de estado de cuenta
   const handleAccountStatement = async () => {
     if (!searchResults || searchResults.length === 0) {
-      console.error("No hay resultados de búsqueda disponibles");
+      toast.error("No hay resultados de búsqueda disponibles");
       return;
     }
 
@@ -37,7 +37,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
 
       setAccountData(accounts.flat());
     } catch (error) {
-      console.error("Error al obtener los datos de la API:", error);
+      toast.error("No se obtuvo respuesta:", error);
     } finally {
       setLoading(false);
     }

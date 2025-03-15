@@ -3,6 +3,7 @@ import { Modal, Button, Form, Table, Spinner, Dropdown } from 'react-bootstrap';
 import { fetchActionsSearch, fetchSaveExecutive } from '../../../services/gespawebServices';
 import { AppContext } from "../../../pages/Managment";
 import "../../../scss/styles.scss"
+import { toast } from "sonner";
 
 const Search = ({ show, handleClose }) => {
   const { searchResults } = useContext(AppContext);
@@ -78,15 +79,15 @@ const Search = ({ show, handleClose }) => {
   };
 
   const handleChange = (name, value) => {
-    // Validar que solo acepte números y un máximo de 10 dígitos
     if (name === 'telefonos') {
+      // Validar que solo acepte números y un máximo de 10 dígitos
       const regex = /^[0-9\b]+$/;
       if (value === '' || (regex.test(value) && value.length <= 10)) {
         setSearchData((prev) => ({
           ...prev,
           [name]: value,
         }));
-
+  
         // Agregar número de teléfono a la lista cuando se ingresen 10 dígitos
         if (value.length === 10) {
           setPhoneNumbers((prev) => [...prev, value]);
@@ -96,50 +97,35 @@ const Search = ({ show, handleClose }) => {
           }));
         }
       }
-    } else if (name === 'nombre') {
-      // Validar que solo acepte letras y un máximo de 60 caracteres
-      const regex = /^[a-zA-Z\s]*$/;
-      if (value === '' || (regex.test(value) && value.length <= 60)) {
-        setSearchData((prev) => ({
-          ...prev,
-          [name]: value,
-        }));
-      }
+    } else if (name === 'nombre' || name === 'puesto' || name === 'lugar') {
+      // Permitir letras, números, espacios y otros caracteres comunes
+      setSearchData((prev) => ({
+        ...prev,
+        [name]: value, // Actualizar el estado directamente
+      }));
     } else {
       setSearchData((prev) => ({
         ...prev,
         [name]: value,
       }));
-
+  
       // Mostrar/ocultar el formulario cuando se marca/desmarca el checkbox
       if (name === 'encontrado') {
         setShowForm(value);
-        console.log("Checkbox marcado:", value); // Verifica que el estado se actualice correctamente
       }
-
+  
       // Filtrar los valores de "DatoBuscado" y "idFuente" cuando se cambia el dropdown "Dato"
       if (name === 'dato') {
-        console.log("Valor seleccionado en 'Dato':", value); // Verifica el valor seleccionado
-        console.log("Datos en tableData:", tableData); // Verifica los datos en tableData
-
-        // Convertir el valor seleccionado a número (si es necesario)
         const selectedValue = Number(value);
-
-        // Filtrar los valores de "DatoBuscado"
         const filteredValues = tableData
-          .filter((item) => item.Dato === selectedValue) // Filtra por el valor seleccionado en "Dato"
-          .map((item) => item.DatoBuscado); // Extrae los valores de "DatoBuscado"
-
-        console.log("Valores filtrados (DatoBuscado):", filteredValues); // Verifica que los valores se filtren correctamente
-        setValorOptions([...new Set(filteredValues)]); // Eliminar duplicados
-
-        // Filtrar los valores de "idFuente"
+          .filter((item) => item.Dato === selectedValue)
+          .map((item) => item.DatoBuscado);
+        setValorOptions([...new Set(filteredValues)]);
+  
         const filteredFuentes = tableData
-          .filter((item) => item.Dato === selectedValue) // Filtra por el valor seleccionado en "Dato"
-          .map((item) => item.idFuente); // Extrae los valores de "idFuente"
-
-        console.log("Valores filtrados (idFuente):", filteredFuentes); // Verifica que los valores se filtren correctamente
-        setFuenteOptions([...new Set(filteredFuentes)]); // Eliminar duplicados
+          .filter((item) => item.Dato === selectedValue)
+          .map((item) => item.idFuente);
+        setFuenteOptions([...new Set(filteredFuentes)]);
       }
     }
   };
@@ -149,6 +135,9 @@ const Search = ({ show, handleClose }) => {
   };
 
   const handleGuardarClick = async () => {
+    const currentTime = new Date().toLocaleTimeString('en-GB', { hour12: false });
+    const currentDate = new Date().toISOString();
+
     try {
       const idCuenta = searchResults[0].idCuenta.trim();
       const idEjecutivo = searchResults[0].idEjecutivo; // Ajusta según sea necesario
@@ -166,16 +155,16 @@ const Search = ({ show, handleClose }) => {
         lugar: searchData.lugar,
         link: searchData.link,
         validador: 0, // Ajusta según sea necesario
-        fecha_Insert: "2025-03-12T22:17:59.852Z",
-        segundo_Insert:  "00:00:10"
+        fecha_Insert: currentDate,
+        segundo_Insert: currentTime
       };
       console.log("Datos a enviar:", requestData);
       const response = await fetchSaveExecutive(requestData);
       console.log("Respuesta del servidor:", response);
-      alert("Datos guardados correctamente.");
+      toast.success("Datos guardados correctamente."); // Mostrar notificación de éxito
     } catch (error) {
       console.error('Error al guardar los datos:', error);
-      alert("Hubo un error al guardar los datos.");
+      toast.error("Hubo un error al guardar los datos."); // Mostrar notificación de error
     }
   };
 

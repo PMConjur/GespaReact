@@ -1,7 +1,8 @@
-import React, { useState, useContext } from 'react';
-import { Modal, Button, Form, Table } from 'react-bootstrap';
+import React, { useState, useContext, useEffect } from 'react';
+import { Modal, Button, Form, Table, Dropdown } from 'react-bootstrap';
 import { fetchComplaints } from '../../../services/gespawebServices'; // Importar la función fetchComplaints
 import { AppContext } from "../../../pages/Managment";
+import { toast } from 'sonner'; // Importar toast de sonner
 import "../../../scss/styles.scss"
 
 const Complaints = ({ show, handleClose }) => {
@@ -13,7 +14,7 @@ const Complaints = ({ show, handleClose }) => {
     folio: '',
     llamadaEntrada: false,
     comentarios: '',
-    titular: '',
+    titular: false,
     solicitante: ''
   });
 
@@ -25,29 +26,44 @@ const Complaints = ({ show, handleClose }) => {
     { fecha: '11/03/2025', hora: '03:55 a. m.', folio: '2110', queja: 'Defunción', institucion: 'Conjur', solicitante: 'Bruno', telefono: 'XXX-XXX-7030' }
   ]);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  useEffect(() => {
+    // Verificar si todos los campos requeridos están llenos
+    const isValid = formData.idQueja && formData.idInstitucion && formData.folio && formData.comentarios && formData.solicitante;
+    setIsFormValid(isValid);
+  }, [formData]);
+
+  const handleChange = (name, value) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: value
     }));
+
+    // Si el checkbox "Titular" está marcado, establecer el valor de "solicitante" a "nombreEjecutivo"
+    if (name === 'titular') {
+      setFormData((prev) => ({
+        ...prev,
+        solicitante: value ? nombreEjecutivo : ''
+      }));
+    }
   };
 
   const handleReport = async () => {
     const idCuenta = searchResults.length > 0 ? searchResults[0].idCuenta : 'string'; // Obtener idCuenta de searchResults
-
+    const currentTime = new Date().toLocaleTimeString('en-GB', { hour12: false });
 
     const requestData = {
       idCartera: 1,
       idCuenta: idCuenta, // Usar idCuenta de searchResults
       fechaInsert: new Date().toISOString(),
-      segundoInsert: "00:00:20", // Ajusta según sea necesario
+      segundoInsert: currentTime, // Usar el tiempo actual en formato HH:MM:SS
       folio: formData.folio,
       idEjecutivoInsert: idEjecutivo, // Usar idEjecutivo de searchResults
       idQueja: formData.idQueja, // Usar idQueja del formulario
       idInstitucion: formData.idInstitucion, // Usar idInstitucion del formulario
-      solicitante: nombreEjecutivo,
-      llamadaEntrada: true, // Usar llamadaEntrada del formulario
+      solicitante: formData.solicitante,
+      llamadaEntrada: formData.llamadaEntrada, // Usar llamadaEntrada del formulario
       numeroTelefonico: 5543397030, // Ajusta según sea necesario
       correoElectronico: 'prueba@gmail.com', // Ajusta según sea necesario
       idDomicilio: 0, // Ajusta según sea necesario
@@ -57,13 +73,14 @@ const Complaints = ({ show, handleClose }) => {
     };
 
     try {
-      const result = await fetchComplaints(requestData);
-      console.log('Queja guardada:', result);
-      // Actualizar la lista de quejas si es necesario
-    } catch (error) {
-      console.error('Error al guardar la queja:', error);
-    }
-  };
+        const result = await fetchComplaints(requestData);
+        toast.success('Queja guardada exitosamente'); // Mostrar notificación de éxito
+        // Actualizar la lista de quejas si es necesario
+      } catch (error) {
+        toast.error('Error al guardar la queja'); // Mostrar notificación de error
+        console.error('Error al guardar la queja:', error);
+      }
+    };
 
   return (
     <Modal show={show} onHide={handleClose} size="xl" centered>
@@ -75,26 +92,34 @@ const Complaints = ({ show, handleClose }) => {
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <Form.Group className="mb-3" style={{ width: '48%' }}>
               <Form.Label>Tipo de queja</Form.Label>
-              <Form.Control as="select" name="idQueja" value={formData.idQueja} onChange={handleChange}>
-                <option value="">Seleccionar</option>
-                <option value="1703">Defunción</option>
-                <option value="1701">Aplicación de Pagos</option>
-                {/* Agregar más opciones según sea necesario */}
-              </Form.Control>
+              <Dropdown onSelect={(value) => handleChange('idQueja', value)}>
+                <Dropdown.Toggle variant="primary" id="dropdown-queja">
+                  {formData.idQueja || "Seleccionar"}
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                  <Dropdown.Item eventKey="1703">Defunción</Dropdown.Item>
+                  <Dropdown.Item eventKey="1701">Aplicación de Pagos</Dropdown.Item>
+                  {/* Agregar más opciones según sea necesario */}
+                </Dropdown.Menu>
+              </Dropdown>
             </Form.Group>
             <Form.Group className="mb-3" style={{ width: '48%' }}>
               <Form.Label>Origen</Form.Label>
-              <Form.Control as="select" name="idInstitucion" value={formData.idInstitucion} onChange={handleChange}>
-                <option value="">Seleccionar</option>
-                <option value="3401">Conjur</option>
-                <option value="3402">Ejemplo</option>
-                {/* Agregar más opciones según sea necesario */}
-              </Form.Control>
+              <Dropdown onSelect={(value) => handleChange('idInstitucion', value)}>
+                <Dropdown.Toggle variant="primary" id="dropdown-institucion">
+                  {formData.idInstitucion || "Seleccionar"}
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                  <Dropdown.Item eventKey="3401">Conjur</Dropdown.Item>
+                  <Dropdown.Item eventKey="3402">Ejemplo</Dropdown.Item>
+                  {/* Agregar más opciones según sea necesario */}
+                </Dropdown.Menu>
+              </Dropdown>
             </Form.Group>
           </div>
           <Form.Group className="mb-3">
             <Form.Label>Folio</Form.Label>
-            <Form.Control type="text" name="folio" value={formData.folio} onChange={handleChange} />
+            <Form.Control type="text" name="folio" value={formData.folio} onChange={(e) => handleChange(e.target.name, e.target.value)} />
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Check
@@ -102,12 +127,12 @@ const Complaints = ({ show, handleClose }) => {
               label="Llamada de entrada"
               name="llamadaEntrada"
               checked={formData.llamadaEntrada}
-              onChange={handleChange}
+              onChange={(e) => handleChange(e.target.name, e.target.checked)}
             />
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>Comentarios</Form.Label>
-            <Form.Control as="textarea" rows={3} name="comentarios" value={formData.comentarios} onChange={handleChange} />
+            <Form.Control as="textarea" rows={3} name="comentarios" value={formData.comentarios} onChange={(e) => handleChange(e.target.name, e.target.value)} />
           </Form.Group>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <Form.Group className="mb-3" style={{ width: '48%' }}>
@@ -116,15 +141,15 @@ const Complaints = ({ show, handleClose }) => {
                 label="Titular"
                 name="titular"
                 checked={formData.titular}
-                onChange={handleChange}
+                onChange={(e) => handleChange(e.target.name, e.target.checked)}
               />
             </Form.Group>
             <Form.Group className="mb-3" style={{ width: '48%' }}>
               <Form.Label>Solicitante</Form.Label>
-              <Form.Control type="text" name="solicitante" value={formData.solicitante} onChange={handleChange} />
+              <Form.Control type="text" name="solicitante" value={formData.solicitante} onChange={(e) => handleChange(e.target.name, e.target.value)} />
             </Form.Group>
           </div>
-          <Button variant="danger" onClick={handleReport} style={{ width: '100%' }}>
+          <Button variant="danger" onClick={handleReport} style={{ width: '100%' }} disabled={!isFormValid}>
             Reportar
           </Button>
         </Form>   

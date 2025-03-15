@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Modal, Button, Table } from 'react-bootstrap';
 import { fetchDrives } from '../../../services/gespawebServices';
 import { AppContext } from '../../../pages/Managment';
+import { toast } from 'sonner'; // Importar toast de sonner
 import "../../../scss/styles.scss";
 
 const AccionamientosTable = ({ data }) => {
@@ -56,7 +57,7 @@ const Drives = ({ showModal, handleCloseModal }) => {
   useEffect(() => {
     const fetchData = async () => {
       if (!searchResults || searchResults.length === 0) {
-        console.error("No hay resultados de búsqueda disponibles");
+        toast.error("No hay resultados de búsqueda disponibles"); // Mostrar notificación de error
         return;
       }
 
@@ -69,7 +70,9 @@ const Drives = ({ showModal, handleCloseModal }) => {
         );
 
         setAccionamientosData(drives.flat());
+        toast.success("Datos de accionamientos obtenidos exitosamente"); // Mostrar notificación de éxito
       } catch (error) {
+        toast.error("Error al obtener los datos de accionamientos"); // Mostrar notificación de error
         console.error("Error al obtener los datos de accionamientos:", error);
       }
     };
