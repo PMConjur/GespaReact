@@ -165,6 +165,30 @@ namespace NoriAPI.Controllers
             return Ok(new { codigosPostales = postalCode });
         }
 
+        [HttpPost("update-address-information")]
+        [AllowAnonymous]
+        public async Task<ActionResult<string>> UpdateAddressInformation([FromBody] UpdateAddressInfoRequest domicilioInfo)
+        {
+            var result = await _searchService.UpdateAddressInfo(domicilioInfo);
+            if (!result.Item2)
+            {
+                return BadRequest(new { mensaje = "No se pudo actualizar la información del domicilio." });
+            }
+            return Ok(new { mensaje = "Información de domicilio actualizada con éxito." });
+        }
+
+        [HttpPost("update-address-class")]
+        [AllowAnonymous]
+        public async Task<ActionResult<string>> UpdateAddressClass([FromBody] UpdateAddressClassRequest domicilioClass)
+        {
+            var result = await _searchService.UpdateAddressClass(domicilioClass);
+            if (!result.Item2)
+            {
+                return BadRequest(new { mensaje = "No se pudo actualizar la clase del domicilio." });
+            }
+            return Ok(new { mensaje = "Información de clase actualizada con éxito." });
+        }
+
         #endregion
 
 

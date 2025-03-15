@@ -32,6 +32,8 @@ namespace NoriAPI.Services
         Task<DomiciliosVisitasResult> DomiciliosVisitas(int idCartera, string idCuenta);
         Task<CatalogoDomicilios> RelacionesDomicilios();
         Task<List<CodigosPostales>> FindPostalCodeInfo(int codigoPostal);
+        Task<(string, bool)> UpdateAddressInfo(UpdateAddressInfoRequest domicilioInfoUpdate);
+        Task<(string, bool)> UpdateAddressClass(UpdateAddressClassRequest domicilioClassUpdate);
 
         #endregion
 
@@ -556,12 +558,12 @@ namespace NoriAPI.Services
             //Ordenar las visitas por fecha y hora, de más reciente a más antigua.
             visitas = visitas.OrderByDescending(v => v.Fecha).ThenByDescending(v => v.Hora).ToList();
 
+            await TraduceListaIdAValores(visitas, "idCDomicilio, Comentario");
             // Mapear los domicilios a una lista de DomicilioTranslated con nuevos campos (Información y Clase)para traducir los valores de sus IDs.
             var domiciliosTraducidos = MapearDomicilios(domicilios);
 
 
             //await TraduceListaIdAValores(domiciliosTraducidos, "idDomicilio, Comentario");
-            await TraduceListaIdAValores(visitas, "idCDomicilio, Comentario");
 
             await LlenaDomicilios(domiciliosTraducidos, 1);
 
@@ -603,6 +605,39 @@ namespace NoriAPI.Services
 
             return catalogos;
         }
+
+        public async Task<(string, bool)> UpdateAddressInfo(UpdateAddressInfoRequest domicilioInfoUpdate)
+        {
+            var domicilios = await _searchRepository.GetDomicilios(domicilioInfoUpdate.IdCuenta, domicilioInfoUpdate.IdCartera);
+
+            Domicilio found = domicilios.Find(item => item.IdCuenta == domicilioInfoUpdate.IdCuenta);
+            if (found.IdCuenta != domicilioInfoUpdate.IdCuenta)
+            {
+                return ("El domicilio no está asignado a la cuenta.", false);
+            }
+
+
+
+            //var updateInfoResult = await _searchRepository.UpdateAddressInfo(domicilioInfoUpdate);
+
+            return ("Campo 'Información' del domicilio actualizado con éxito.", false);
+
+        }
+        public async Task<(string, bool)> UpdateAddressClass(UpdateAddressClassRequest domicilioClassUpdate)
+        {
+            var domicilios = await _searchRepository.GetDomicilios(domicilioClassUpdate.IdCuenta, domicilioClassUpdate.IdCartera);
+
+            Domicilio found = domicilios.Find(item => item.IdCuenta == domicilioClassUpdate.IdCuenta);
+
+            if (found.IdCuenta != domicilioClassUpdate.IdCuenta)
+            {
+                return ("El domicilio no está asignado a la cuenta.", false);
+            }
+
+            return ("Campo 'Información' del domicilio actualizado con éxito.", false);
+
+        }
+
 
         /// <summary>
         /// Obtiene la lista de catálogos de "Información" a partir de un Hashtable de relaciones y valores.
@@ -664,20 +699,27 @@ namespace NoriAPI.Services
 
             return listaClases;
         }
+
+        /// <summary>
+        /// Convierte una lista de objetos Domicilio a una lista de objetos DomicilioTranslated dado que esta última contiene
+        /// los campos necesarios para guardar la traducción de los idValores a texto.
+        /// </summary>
+        /// <param name="listaDomicilios">Lista de domicilios originales.</param>
+        /// <returns>Lista de domicilios traducidos.</returns>
         public List<DomicilioTranslated> MapearDomicilios(List<Domicilio> listaDomicilios)
         {
             List<DomicilioTranslated> listaTraducida = [];
 
             foreach (var domicilio in listaDomicilios)
             {
-                DomicilioTranslated domicilioTraducido = new()
+                listaTraducida.Add(new DomicilioTranslated
                 {
                     IdCartera = domicilio.IdCartera,
                     IdCuenta = domicilio.IdCuenta,
                     IdDomicilio = domicilio.IdDomicilio,
                     Fecha_Insert = domicilio.Fecha_Insert,
                     IdEjecutivo = domicilio.IdEjecutivo,
-                    IdInformación = domicilio.IdInformación, // 🔹 Se mantiene igual, sin traducir
+                    IdInformación = domicilio.IdInformación,
                     Calle = domicilio.Calle,
                     NúmeroExterior = domicilio.NúmeroExterior,
                     NúmeroInterior = domicilio.NúmeroInterior,
@@ -688,15 +730,21 @@ namespace NoriAPI.Services
                     Estado = domicilio.Estado,
                     FechaHora_Información = domicilio.FechaHora_Información,
                     IdLogProceso = domicilio.IdLogProceso,
-                    IdClase = domicilio.IdClase, // 🔹 Se mantiene igual, sin traducir
+                    IdClase = domicilio.IdClase,
                     IdOrígen = domicilio.IdOrígen
-                };
-
-                listaTraducida.Add(domicilioTraducido);
+                });
             }
 
             return listaTraducida;
         }
+
+        /// <summary>
+        /// Traduce los identificadores en una lista de objetos a sus valores correspondientes usando un catálogo.
+        /// También aplica formateo especial a ciertos tipos de datos.
+        /// </summary>
+        /// <typeparam name="T">Tipo genérico de los objetos en la lista.</typeparam>
+        /// <param name="lista">Lista de objetos a traducir.</param>
+        /// <param name="columnasAOcultar">Columnas que deben excluirse del proceso de traducción.</param>
         public async Task TraduceListaIdAValores<T>(List<T> lista, string columnasAOcultar = "")
         {
             // Definir qué columnas deben ocultarse
@@ -762,18 +810,19 @@ namespace NoriAPI.Services
                     }
                 }
             }
-
-
-
-
         }
+
+        /// <summary>
+        /// Llena información de una lista de domicilios basada en un identificador específico.
+        /// </summary>
+        /// <param name="listaDomicilios">Lista de domicilios a procesar.</param>
+        /// <param name="iDomicilio">Índice del domicilio a actualizar.</param>
         public async Task LlenaDomicilios(List<DomicilioTranslated> listaDomicilios, int iDomicilio)
         {
             if (listaDomicilios == null || listaDomicilios.Count < iDomicilio || iDomicilio <= 0)
             {
                 return; // No hay datos para procesar
             }
-
 
             ClasesGespaNonStatic gespaDomicilio = new()
             {
@@ -816,67 +865,82 @@ namespace NoriAPI.Services
                     }
                 }
 
-
-
             }
 
-
         }
+
+        /// <summary>
+        /// Asigna la información y la clase de un domicilio basado en los valores de un catálogo.
+        /// </summary>
+        /// <param name="domicilio">Objeto de tipo <see cref="DomicilioTranslated"/> que se actualizará.</param>
+        /// <param name="valoresCatalogo">Hashtable que contiene los valores del catálogo.</param>
+        /// <param name="idClase">Identificador de la clase del domicilio.</param>
         public static void InformacionDomicilio(DomicilioTranslated domicilio, Hashtable valoresCatalogo, int idClase)
         {
+            // Verifica si tanto IdInformación como IdClase tienen el valor predeterminado (1901).
             if (domicilio.IdInformación == 1901 && domicilio.IdClase == 1901)
             {
+                // Busca el valor de IdInformación en el catálogo
                 string valorInformacion = BuscarEnValoresHashtable(valoresCatalogo, domicilio.IdInformación.ToString());
 
-                if (string.IsNullOrWhiteSpace(valorInformacion))
-                    domicilio.Información = valorInformacion;
-                else
-                    domicilio.Información = "Desconocido";
+                // Si se encuentra un valor en el catálogo, se asigna; de lo contrario, se marca como "Desconocido".
+                domicilio.Información = string.IsNullOrWhiteSpace(valorInformacion) ? "Desconocido" : valorInformacion;
             }
             else
             {
-
+                // Si el domicilio tiene un IdInformación válido, se intenta obtener su descripción del catálogo.
                 if (domicilio.IdInformación is not null)
                 {
                     string? valorInformacion = BuscarEnValoresHashtable(valoresCatalogo, domicilio.IdInformación.ToString());
 
-                    if (valorInformacion is not null)
-                        domicilio.Información = valorInformacion;
-                    else
-                        domicilio.Información = "Desconocido";
+                    // Si existe un valor en el catálogo, se asigna; de lo contrario, se marca como "Desconocido".
+                    domicilio.Información = valorInformacion ?? "Desconocido";
                 }
 
+                // Se intenta obtener la descripción de la clase utilizando su ID en el catálogo.
                 if (idClase.ToString() is not null)
                 {
                     string? valorClase = BuscarEnValoresHashtable(valoresCatalogo, idClase.ToString());
 
-                    if (valorClase is not null)
-                        domicilio.Clase = valorClase;
-                    else
-                        domicilio.Clase = "Sin Clase";
+                    // Si se encuentra un valor en el catálogo, se asigna; de lo contrario, se marca como "Sin Clase".
+                    domicilio.Clase = valorClase ?? "Sin Clase";
                 }
             }
-        }
-        public static string BuscarEnValoresHashtable(Hashtable valoresCatalogo, string valorBuscado)
-        {
-            foreach (DictionaryEntry entry in valoresCatalogo)
-            {
-                if (entry.Key.ToString() == valorBuscado)
-                {
-                    return entry.Value.ToString(); // Devuelve la clave asociada al valor encontrado
-                }
-            }
-            return null; // No se encontró el valor
         }
 
+        /// <summary>
+        /// Busca un valor en un Hashtable basado en una clave específica.
+        /// </summary>
+        /// <param name="valoresCatalogo">Hashtable que contiene pares clave-valor.</param>
+        /// <param name="valorBuscado">Clave a buscar dentro del Hashtable.</param>
+        /// <returns>El valor asociado a la clave si se encuentra; de lo contrario, retorna <c>null</c>.</returns>
+        public static string BuscarEnValoresHashtable(Hashtable valoresCatalogo, string valorBuscado)
+        {
+            // Recorre todas las entradas en el Hashtable.
+            foreach (DictionaryEntry entry in valoresCatalogo)
+            {
+                // Compara la clave actual con el valor buscado.
+                if (entry.Key.ToString() == valorBuscado)
+                {
+                    return entry.Value.ToString(); // Devuelve el valor asociado si se encuentra.
+                }
+            }
+
+            return null; // Retorna null si no se encuentra la clave en el Hashtable.
+        }
+
+        /// <summary>
+        /// Busca información de códigos postales basada en un código postal específico.
+        /// </summary>
+        /// <param name="codigoPostal">Código postal a buscar.</param>
+        /// <returns>Una lista de <see cref="CodigosPostales"/> si se encuentran resultados; de lo contrario, retorna <c>null</c>.</returns>
         public async Task<List<CodigosPostales>> FindPostalCodeInfo(int codigoPostal)
         {
+            // Obtiene la lista de códigos postales desde el repositorio.
             var codigosPostales = await _searchRepository.SearchCodigosPostales(codigoPostal);
-            if (codigosPostales != null && codigosPostales.Count > 0)
-            {
-                return codigosPostales;
-            }
-            return null;
+
+            // Si la lista no está vacía, se retorna; de lo contrario, se devuelve null.
+            return (codigosPostales != null && codigosPostales.Count > 0) ? codigosPostales : null;
         }
 
 
