@@ -2,7 +2,6 @@ import React from "react";
 import { Modal, Button } from "react-bootstrap";
 import TableAditionals from "../../TableAditionals";
 
-
 const Aditionals = ({ show, handleClose, data }) => {
     return (
         <Modal show={show} onHide={handleClose} size="xl">

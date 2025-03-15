@@ -850,7 +850,7 @@ export const fetchNotes = async (numEmpleado, token) => {
   }
 };
 
-// Endpoint de datos adicionales para múltiples cuentas
+// Endpoint de seguimientos para múltiples cuentas
 export async function getAditionalsData(searchResults) {
   try {
     // Obtener token de autenticación de localStorage o estado
@@ -861,16 +861,18 @@ export async function getAditionalsData(searchResults) {
       throw new Error("Token de autenticación no disponible");
     }
 
+    // Definir idCartera fijo (siempre 1 según el código original)
+    const idCartera = 1;
+
     // Realizar múltiples solicitudes en paralelo para cada idCuenta en searchResults
-    const adicionales = await Promise.all(
+    const aditionals = await Promise.all(
       searchResults.map(async (result) => {
-        const idCartera = result.idCartera.trim(); // Limpieza del idCartera
         const idCuenta = result.idCuenta.trim(); // Limpieza del idCuenta
-        console.log("🔍 Buscando datos adicionales para idCartera:", idCartera, "idCuenta:", idCuenta);
+        console.log("🔍 Buscando Adicionales para idCuenta:", idCuenta);
 
         try {
           const response = await axios.get(
-            `${apiUrl}/ejecutivo/adicionales/${idCartera}/${idCuenta}`,
+            `${apiUrl}/ejecutivo/Adicionales/${idCartera}/${idCuenta}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`, // Autenticación con token
@@ -878,102 +880,20 @@ export async function getAditionalsData(searchResults) {
             }
           );
 
-          console.log(`✅ Respuesta recibida para idCartera ${idCartera}, idCuenta ${idCuenta}:`, response.data);
+          console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
           return response.data; // Retornar datos obtenidos
         } catch (error) {
-          console.error(`❌ Error al obtener datos adicionales para idCartera ${idCartera}, idCuenta ${idCuenta}:`, error);
+          console.error(`❌ Error al obtener datos de seguimiento para idCuenta ${idCuenta}:`, error);
           return null; // Retornar null en caso de error para evitar fallas en Promise.all
         }
       })
     );
 
     // Filtrar valores nulos (en caso de errores individuales)
-    return adicionales.filter((data) => data !== null);
+    return aditionals.filter((data) => data !== null);
   } catch (error) {
-    console.error("❌ Error al obtener los datos adicionales:", error);
-    throw new Error("Error al cargar los datos adicionales.");
+    console.error("❌ Error al obtener los datos de adicionales:", error);
+    throw new Error("Error al cargar los datos de adicionales.");
   }
 }
-
-
-
-export async function getProcessesWLPData(searchResults, Proceso) {
-  try {
-    console.log(`🔍 Debug: searchResults recibidos:`, searchResults);
-    console.log(`🔍 Debug: Proceso recibido en getProcessesWLPData:`, Proceso);
-
-    if (!Proceso) {
-      console.error("❌ Error: El parámetro 'Proceso' está indefinido o vacío.");
-      return [];
-    }
-
-    const responseData = location.state || JSON.parse(localStorage.getItem('responseData'));
-    const token = responseData?.ejecutivo?.token;
-    const apiUrl = import.meta.env.VITE_API_URL || "http://192.168.7.33/api";
-
-    if (!token) {
-      console.error("❌ Error: Token de autenticación no disponible.");
-      return [];
-    }
-
-    if (!apiUrl) {
-      console.error("❌ Error: apiUrl no está configurado.");
-      return [];
-    }
-
-    if (!searchResults || searchResults.length === 0) {
-      console.error("❌ Error: No hay cuentas disponibles en searchResults.");
-      return [];
-    }
-
-    const processesWLP = await Promise.all(
-      searchResults.map(async (result) => {
-        const idCuenta = result?.idCuenta?.trim();
-
-        if (!idCuenta) {
-          console.warn("⚠️ Advertencia: idCuenta no está definido o está vacío. Se omite esta cuenta.");
-          return null;
-        }
-
-        // 🔍 Debug de la URL generada
-        const url = `${apiUrl}/ejecutivo/ProcesosWLP/${Proceso}/${idCuenta}`;
-        console.log(`📡 Enviando solicitud a: ${url}`);
-
-        try {
-          const response = await axios.get(url, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}, Proceso ${Proceso}:`, response.data);
-
-          if (!response.data || response.data.length === 0) {
-            console.warn(`⚠️ Advertencia: No hay datos para idCuenta ${idCuenta}, Proceso ${Proceso}.`);
-            return [];
-          }
-
-          return response.data;
-        } catch (error) {
-          if (error.response?.status === 404) {
-            console.warn(`⚠️ Advertencia: No se encontraron datos para idCuenta ${idCuenta}, Proceso ${Proceso} (404 Not Found).`);
-            return [];
-          }
-
-          console.error(
-            `❌ Error al obtener datos de procesos WLP para idCuenta ${idCuenta}, Proceso ${Proceso}:`,
-            error.response ? error.response.data : error.message
-          );
-          return null;
-        }
-      })
-    );
-
-    return processesWLP.filter(Boolean).flat(); // Elimina nulls y aplana arrays anidados
-  } catch (error) {
-    console.error('❌ Error crítico al obtener los datos de procesos WLP:', error);
-    throw new Error('Error al cargar los datos de procesos WLP.');
-  }
-}
-
 

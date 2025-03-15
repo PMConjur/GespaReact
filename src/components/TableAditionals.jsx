@@ -21,18 +21,16 @@ const TableAditionals = ({ data, customColumnNames = {} }) => {
 
     // 🔹 Nombres de columnas por defecto (se pueden sobrescribir con `customColumnNames`)
     const defaultColumnNames = {
-        "FechaPago": "Fecha",
-        "MontoPago": "Monto",
-        "Referencia": "Referencia",
-        "Sucursal": "Sucursal",
-        "Reportado": "Reportado",
-        "idEtapa": "Etapa",
-        "AcornPostDate": "Acorn Post Date",
-        "Guardado": "Guardado"
+        "NombreAdicional": "Nombre",
+        "idParentesco": "Parentesco",
+        "N\u00FAmeroTelef\u00F3nico": "Teléfono",
+        "CorreoAdicional": "Correo",
+        "RFCAdicional": "RFC",
+        "Domiclio": "Domicilio"
     };
 
     // 🔹 Lista de campos a los que se les agregará el signo "$" con formato de miles
-    const currencyFields = ["MontoPago"];
+    const currencyFields = [];
 
     // 🔹 Combina los nombres personalizados con los predeterminados
     const columnNames = { ...defaultColumnNames, ...customColumnNames };
@@ -85,11 +83,6 @@ const TableAditionals = ({ data, customColumnNames = {} }) => {
                                     // 🔹 Formatear campos de moneda con "$" y separadores de miles
                                     if (currencyFields.includes(header) && typeof value === "number") {
                                         value = `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                                    }
-
-                                    // 🔹 Formatear Vencimiento -> Solo YYYY-MM-DD
-                                    if (header === "FechaPago", "Guardado" && typeof value === "string" && value.includes("T")) {
-                                        value = value.split("T")[0];
                                     }
 
                                     return (
