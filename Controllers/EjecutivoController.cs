@@ -18,6 +18,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NoriAPI.Models.Acciones;
+using static NoriAPI.Services.EjecutivoService;
 
 
 
@@ -309,27 +310,24 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
-
-        [HttpPost("guardar")]
-        public async Task<IActionResult> GuardaBusqueda([FromBody] BusquedaClass busqueda, [FromQuery] int idCartera, [FromQuery] string idCuenta, [FromQuery] int idEjecutivo)
+        [HttpPost("GuardarBusqueda")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GuardarBusqueda([FromBody] BusquedaNueva busqueda)
         {
-            try
+            if (await _ejecutivoService.GuardarBusquedaAsync(busqueda))
             {
-                TimeSpan tiempoEnCuenta = TimeSpan.Zero; // Debes definir cómo obtener esto en tu lógica
-
-                bool resultado = await _ejecutivoService.GuardaBusquedaAsync(busqueda, idCartera, idCuenta, idEjecutivo, tiempoEnCuenta);
-
-                return Ok(new
-                {
-                    success = resultado,
-                    message = resultado ? "Búsqueda guardada con éxito." : "Error al guardar la búsqueda."
-                });
+                return Ok("Búsqueda guardada exitosamente.");
             }
-            catch (Exception ex)
+            else
             {
-                return StatusCode(500, new { mensaje = $"Error interno: {ex.Message}" });
+                return BadRequest("Error al guardar la búsqueda.");
             }
         }
+    
+       
+        
+
+        
         #endregion
 
         #region CargoEnLinea
@@ -1127,29 +1125,24 @@ namespace NoriAPI.Controllers
         #endregion
 
         #region Adicionales
-        [HttpGet("adicionales/{idCartera}/{idCuenta}")]
-        [AllowAnonymous]
+        [HttpGet("Adicionales{idCartera}/{idCuenta}")]
+        [AllowAnonymous] //Para permitir acceso anonimo
         public async Task<IActionResult> GetAdicionales(int idCartera, string idCuenta)
         {
             try
             {
-                DataSet dsTablas = new DataSet();
-                DataTable AdicionalesTable = dsTablas.Tables.Add("Adicionales");
-                AdicionalesTable.Columns.Add("idCartera", typeof(int));
-                AdicionalesTable.Columns.Add("idCuenta", typeof(string));
-                DataRow drDatos = AdicionalesTable.NewRow();
-                drDatos["idCartera"] = idCartera;
-                drDatos["idCuenta"] = idCuenta;
+                DataTable adicionales = await _ejecutivoService.GetAdiccionalesAsync(idCartera, idCuenta);
 
-                await _ejecutivoService.ObtenerAdicionalesEJE(drDatos, dsTablas);
-
-                if (!dsTablas.Tables.Contains("Adicionales") || dsTablas.Tables["Adicionales"].Rows.Count == 0)
+                if (adicionales == null || adicionales.Rows.Count == 0)
                 {
-                    return NotFound("No se encontraron Adicionales para este ejecutivo.");
+                    return NotFound("No se encontraron adicionales para la cartera y cuenta especificadas.");
                 }
 
-                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Adicionales"]);
-                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+                // Convertir DataTable a lista de diccionarios
+                var listaAdicionales = ConvertDataTableToList(adicionales);
+
+                // Serializar la lista a JSON
+                string jsonString = JsonSerializer.Serialize(listaAdicionales, new JsonSerializerOptions { WriteIndented = true });
 
                 return Ok(jsonString);
             }

@@ -20,6 +20,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mail;
 using NoriAPI.Models.Acciones;
+using static NoriAPI.Services.EjecutivoService;
 
 namespace NoriAPI.Services
 {
@@ -47,7 +48,7 @@ namespace NoriAPI.Services
 
         Task ObtenerBusquedaEJE(DataRow drDatos, DataSet dsTablas);
 
-        Task<bool> GuardaBusquedaAsync(BusquedaClass busqueda, int idCartera, string idCuenta, int idEjecutivo, TimeSpan tiempoEnCuenta);
+        Task<bool> GuardarBusquedaAsync(BusquedaNueva busqueda);
         Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo);
         Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas);
         Task<DataTable> GetCargosEnLineaAsync(int idCartera, string idCuenta);
@@ -71,7 +72,7 @@ namespace NoriAPI.Services
         Task<string> EnviaCorreoAsync(string CorreoElectronico, string Asunto, string Mensaje, int idCartera, string idCuenta, int idEjecutivo);
         Task<dynamic> RegisterNewCorreo(CorreosEn newCorreos);
         Task<DataTable> ObtieneGestionesAsync(DataRow drInfo);
-        Task ObtenerAdicionalesEJE(DataRow drDatos, DataSet dsTablas);
+        
         Task<string> AñadeAdicionalAsync(Adicional AdicionalCuenta, DataRow drInfo, Ejecutivo ejecutivo, DataTable Adicionales, Catalogos catalogos);
 
 
@@ -85,6 +86,9 @@ namespace NoriAPI.Services
 
         Task<DataTable> GetWlpAsync(string Proceso, string idCuenta);
         Task ObtieneNegociacionesEjecutivosAsync(DataRow drDatos, DataSet dsTablas);
+        Task<DataTable> GetAdiccionalesAsync(int idCartera, string idCuenta);
+
+        
         #endregion
 
 
@@ -1075,124 +1079,106 @@ namespace NoriAPI.Services
             _busquedaRepository = busquedaRepository;
         }
 
-        public async Task<bool> GuardaBusquedaAsync(BusquedaClass busqueda, int idCartera, string idCuenta, int idEjecutivo, TimeSpan tiempoEnCuenta)
+
+
+        public async Task<bool> GuardarBusquedaAsync(BusquedaNueva busqueda)
         {
-            if (busqueda == null)
-                throw new ArgumentNullException(nameof(busqueda), "El objeto búsqueda no puede ser null");
+            Debug.WriteLine("Entrando en GuardarBusquedaAsync");
 
-            using (var connection = new SqlConnection(_connectionString))
+            // Validación del parámetro 'validador'
+            if (!string.IsNullOrEmpty(busqueda.Validador) && !int.TryParse(busqueda.Validador, out _))
             {
-                await connection.OpenAsync();
-                using (var transaction = connection.BeginTransaction())
-                {
-                    try
-                    {
-                        // Validar si la búsqueda ya existe hoy
-                        string fechaHoy = DateTime.UtcNow.ToString("yyyy-MM-dd");
-
-                        using (var checkCommand = new SqlCommand(
-                            "SELECT COUNT(*) FROM Busquedas WHERE Fecha_Insert = @FechaHoy AND idDato = @idDato AND idFuente = @idFuente AND idEjecutivo = @idEjecutivo",
-                            connection, transaction))
-                        {
-                            checkCommand.Parameters.AddWithValue("@FechaHoy", fechaHoy);
-                            checkCommand.Parameters.AddWithValue("@idDato", busqueda.idDato);
-                            checkCommand.Parameters.AddWithValue("@idFuente", busqueda.idFuente);
-                            checkCommand.Parameters.AddWithValue("@idEjecutivo", idEjecutivo);
-
-                            int count = (int)await checkCommand.ExecuteScalarAsync();
-                            if (count > 0)
-                            {
-                                transaction.Rollback();
-                                return false; // Ya existe una búsqueda con esos datos hoy
-                            }
-                        }
-
-                        // Insertar nueva búsqueda
-                        using (var command = new SqlCommand("EXEC [2.9.Búsqueda] @idCartera, @idCuenta, @idEjecutivo, @idDato, @DatoBuscado, @idFuente, @Encontrado, @Telefonos, @Persona, @Puesto, @Lugar, NULL, @TiempoEnCuenta, @link, @validador;", connection, transaction))
-                        {
-                            command.Parameters.AddWithValue("@idCartera", idCartera);
-                            command.Parameters.AddWithValue("@idCuenta", idCuenta?.Trim() ?? string.Empty);
-                            command.Parameters.AddWithValue("@idEjecutivo", idEjecutivo);
-                            command.Parameters.AddWithValue("@idDato", busqueda.idDato);
-
-                            string datoBuscado = busqueda.idFuente == 2420 && busqueda.Teléfonos != null && busqueda.Teléfonos.Length > 0
-                                ? $"XXX-XXX-{busqueda.Teléfonos[0].NúmeroTelefónico.Substring(6, 4)}"
-                                : busqueda.Dato ?? string.Empty;
-
-                            command.Parameters.AddWithValue("@DatoBuscado", datoBuscado);
-                            command.Parameters.AddWithValue("@idFuente", busqueda.idFuente);
-                            command.Parameters.AddWithValue("@Encontrado", busqueda.Encontrado);
-                            command.Parameters.AddWithValue("@Telefonos", busqueda.Teléfonos?.Length ?? 0);
-                            command.Parameters.AddWithValue("@Persona", busqueda.Persona ?? string.Empty);
-                            command.Parameters.AddWithValue("@Puesto", busqueda.Puesto ?? string.Empty);
-                            command.Parameters.AddWithValue("@Lugar", busqueda.Lugar ?? string.Empty);
-                            command.Parameters.AddWithValue("@TiempoEnCuenta", tiempoEnCuenta.ToString(@"hh\:mm\:ss"));
-                            command.Parameters.AddWithValue("@link", busqueda.Link ?? string.Empty);
-                            command.Parameters.AddWithValue("@validador", (object?)busqueda.validador ?? DBNull.Value);
-
-                            await command.ExecuteNonQueryAsync(); // Ejecutar sin recuperar idBusqueda
-                        }
-
-                        // Guardar nuevos teléfonos
-                        if (busqueda.Teléfonos != null && busqueda.Teléfonos.Length > 0)
-                        {
-                            foreach (var telefono in busqueda.Teléfonos)
-                            {
-                                string mensaje = GuardaNuevoTelefono(telefono, true, connection, transaction);
-                                if (!string.IsNullOrEmpty(mensaje))
-                                {
-                                    transaction.Rollback();
-                                    return false; // Error al guardar teléfono, rollback
-                                }
-                            }
-                        }
-
-                        transaction.Commit();
-                        return true;
-                    }
-                    catch (SqlException sqlEx)
-                    {
-                        transaction.Rollback();
-                        Console.WriteLine($"Error en SQL: {sqlEx.Number} - {sqlEx.Message} - idCartera: {idCartera}, idCuenta: {idCuenta}, idEjecutivo: {idEjecutivo}, idDato: {busqueda.idDato}, idFuente: {busqueda.idFuente}, validador: {busqueda.validador}");
-                        return false;
-                    }
-                    catch (Exception ex)
-                    {
-                        transaction.Rollback();
-                        Console.WriteLine($"Error general: {ex.Message}");
-                        return false;
-                    }
-                }
-            }
-        }
-
-        public string GuardaNuevoTelefono(Telefono telefono, bool esNuevo, SqlConnection connection, SqlTransaction transaction)
-        {
-            if (telefono == null || string.IsNullOrWhiteSpace(telefono.NúmeroTelefónico) || telefono.NúmeroTelefónico.Length != 10)
-            {
-                return "Número telefónico inválido o incompleto.";
+                Debug.WriteLine("Error: El valor de 'validador' no es un número válido.");
+                return false;
             }
 
             try
             {
-                using (var command = new SqlCommand("INSERT INTO Telefonos (NumeroTelefonico) VALUES (@NumeroTelefonico)", connection, transaction))
+                string connectionString = _configuration.GetConnectionString("Piso2Amex");
+                using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    command.Parameters.AddWithValue("@NumeroTelefonico", telefono.NúmeroTelefónico);
-                    command.ExecuteNonQuery();
+                    await connection.OpenAsync();
+                    using (SqlCommand command = new SqlCommand("[dbo].[2.9.Búsqueda]", connection))
+                    {
+                        command.CommandType = System.Data.CommandType.StoredProcedure;
+
+                        // Registros detallados de los parámetros
+                        Console.WriteLine($"idCartera: {busqueda.IdCartera}");
+                        Console.WriteLine($"idCuenta: {busqueda.IdCuenta}");
+                        Console.WriteLine($"idEjecutivo: {busqueda.IdEjecutivo}");
+                        Console.WriteLine($"idDato: {busqueda.IdDato}");
+                        Console.WriteLine($"DatoBuscado: {busqueda.Dato}");
+                        Console.WriteLine($"idFuente: {busqueda.IdFuente}");
+                        Console.WriteLine($"Encontrado: {busqueda.Encontrado}");
+                        Console.WriteLine($"NúmeroTeléfonosEncontrados: {busqueda.NumeroTelefonosEncontrados}");
+                        Console.WriteLine($"NombrePersona: {busqueda.NombrePersona}");
+                        Console.WriteLine($"Puesto: {busqueda.Puesto}");
+                        Console.WriteLine($"NombreLugar: {busqueda.NombreLugar}");
+                        Console.WriteLine($"DomicilioLugar: {busqueda.DomicilioLugar}");
+                        Console.WriteLine($"TiempoEnCuenta: {busqueda.TiempoEnCuenta}");
+                        Console.WriteLine($"link: {busqueda.Link}");
+                        Console.WriteLine($"validador: {busqueda.Validador}");
+
+                        // Parámetros del procedimiento almacenado
+                        command.Parameters.AddWithValue("@idCartera", busqueda.IdCartera);
+                        command.Parameters.AddWithValue("@idCuenta", busqueda.IdCuenta);
+                        command.Parameters.AddWithValue("@idEjecutivo", busqueda.IdEjecutivo);
+                        command.Parameters.AddWithValue("@idDato", busqueda.IdDato);
+                        command.Parameters.AddWithValue("@DatoBuscado", busqueda.Dato);
+                        command.Parameters.AddWithValue("@idFuente", busqueda.IdFuente);
+                        command.Parameters.AddWithValue("@Encontrado", busqueda.Encontrado);
+                        command.Parameters.AddWithValue("@NúmeroTeléfonosEncontrados", busqueda.NumeroTelefonosEncontrados);
+                        command.Parameters.AddParameterWithValueOrDbNull("@NombrePersona", busqueda.NombrePersona);
+                        command.Parameters.AddParameterWithValueOrDbNull("@Puesto", busqueda.Puesto);
+                        command.Parameters.AddParameterWithValueOrDbNull("@NombreLugar", busqueda.NombreLugar);
+                        command.Parameters.AddParameterWithValueOrDbNull("@DomicilioLugar", busqueda.DomicilioLugar);
+                        command.Parameters.AddParameterWithValueOrDbNull("@TiempoEnCuenta", busqueda.TiempoEnCuenta);
+                        command.Parameters.AddParameterWithValueOrDbNull("@link", busqueda.Link);
+
+                        // Manejo de valores nulos o vacíos para 'validador'
+                        if (string.IsNullOrEmpty(busqueda.Validador))
+                        {
+                            command.Parameters.AddWithValue("@validador", DBNull.Value);
+                        }
+                        else
+                        {
+                            command.Parameters.AddWithValue("@validador", int.Parse(busqueda.Validador));
+                        }
+
+                        int rowsAffected = await command.ExecuteNonQueryAsync();
+                        if (rowsAffected > 0)
+                        {
+                            Console.WriteLine("Inserción exitosa.");
+                            return true;
+                        }
+                        else
+                        {
+                            Console.WriteLine("No se insertó ninguna fila.");
+                            return false;
+                        }
+                    }
                 }
-                return "";
             }
             catch (SqlException ex)
             {
-                Console.WriteLine($"Error de base de datos al guardar teléfono: {ex.Number} - {ex.Message} - NumeroTelefonico: {telefono.NúmeroTelefónico}");
-                return "Error al guardar teléfono en la base de datos.";
+                Debug.WriteLine($"Error de SQL: {ex.Message}");
+                foreach (SqlError error in ex.Errors)
+                {
+                    Debug.WriteLine($"  Error Number: {error.Number}");
+                    Debug.WriteLine($"  Message: {error.Message}");
+                    Debug.WriteLine($"  Line Number: {error.LineNumber}");
+                    Debug.WriteLine($"  Procedure: {error.Procedure}");
+                }
+                return false;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error inesperado al guardar teléfono: {ex.Message}");
-                return "Error inesperado al guardar el teléfono.";
+                Debug.WriteLine($"Error al guardar la búsqueda: {ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
+                return false;
             }
         }
+
 
 
 
@@ -2423,30 +2409,7 @@ namespace NoriAPI.Services
             return adicionales;
         }
 
-        public async Task ObtenerAdicionalesEJE(DataRow drDatos, DataSet dsTablas)
-        {
-            if (drDatos == null)
-                return;
-
-            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
-                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
-
-            var idCartera = Convert.ToInt32(drDatos["idCartera"]);
-            var idCuenta = Convert.ToString(drDatos["idCuenta"]);
-
-            DataTable AdicionalesGet = await GetCorreosAsync(idCartera, idCuenta);
-
-            if (AdicionalesGet == null || AdicionalesGet.Rows.Count == 0)
-                return;
-
-            if (dsTablas.Tables.Contains("Adicionales"))
-            {
-                dsTablas.Tables.Remove("Adicionales");
-            }
-
-            AdicionalesGet.TableName = "Adicionales";
-            dsTablas.Tables.Add(AdicionalesGet);
-        }
+        
         public async Task<string> AñadeAdicionalAsync(Adicional AdicionalCuenta, DataRow drInfo, Ejecutivo ejecutivo, DataTable Adicionales, Catalogos catalogos)
         {
             try
