@@ -12,6 +12,7 @@ using System.Text.Json;
 using System;
 using System.Globalization;
 using NoriAPI.Models.Domicilios;
+using Azure.Messaging;
 
 namespace NoriAPI.Controllers
 {
@@ -112,7 +113,6 @@ namespace NoriAPI.Controllers
         /// <param name="idCuenta">Identificador de la cuenta.</param>
         /// <returns>Un objeto JSON con las listas de domicilios y visitas.</returns>
         [HttpGet("domicilios-visitas")]
-        [AllowAnonymous]
         public async Task<ActionResult<DomiciliosVisitasResult>> GetVisitsAndAddresses([FromQuery] int idCartera, string idCuenta)
         {
 
@@ -137,7 +137,6 @@ namespace NoriAPI.Controllers
         /// </summary>
         /// <returns>Un objeto CatalogoDomicilios con las listas de catálogos.</returns>
         [HttpGet("domicilios-dropdown-info")]
-        [AllowAnonymous]
         public async Task<ActionResult<CatalogoDomicilios>> InfoDropDownsDomicilios()
         {
 
@@ -154,7 +153,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("search-postal-code")]
-        [AllowAnonymous]
         public async Task<ActionResult<List<CodigosPostales>>> FindPostalCode([FromQuery] int codigoPostal)
         {
             var postalCode = await _searchService.FindPostalCodeInfo(codigoPostal);
@@ -166,7 +164,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost("update-address-information")]
-        [AllowAnonymous]
         public async Task<ActionResult<string>> UpdateAddressInformation([FromBody] UpdateAddressInfoRequest domicilioInfo)
         {
             var result = await _searchService.UpdateAddressInfo(domicilioInfo);
@@ -178,7 +175,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost("update-address-class")]
-        [AllowAnonymous]
         public async Task<ActionResult<string>> UpdateAddressClass([FromBody] UpdateAddressClassRequest domicilioClass)
         {
             var result = await _searchService.UpdateAddressClass(domicilioClass);
@@ -188,6 +184,20 @@ namespace NoriAPI.Controllers
             }
             return Ok(new { message = result.Item1, success = result.Item2 });
         }
+
+        [HttpPut("save-new-address")]
+        public async Task<ActionResult> SaveNewAddress([FromBody] NewAddressRequest newAddressData)
+        {
+            var newAddress = await _searchService.SaveNewAddress(newAddressData);
+            if (!newAddress.Item3)
+            {
+                return BadRequest(new { NewAddressInfo = newAddress.Item1, Message = newAddress.Item2, Success = newAddress.Item3 });
+            }
+
+            return Ok(new { NewAddressInfo = newAddress.Item1, Message = newAddress.Item2, Success = newAddress.Item3 });
+        }
+
+
 
         #endregion
 

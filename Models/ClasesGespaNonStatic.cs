@@ -395,7 +395,6 @@ namespace NoriAPI.Models
             return sTeléfono.Length > 4 ? "XXX-XXX-" + sTeléfono.Substring(sTeléfono.Length - 4, 4) : "";
         }
 
-
         public int GetIdValor(DataTable catalogos, string catalogo, object valor)
         {
             if (valor == null)
@@ -454,6 +453,27 @@ namespace NoriAPI.Models
                 return dtFecha.ToLongDateString();
             else
                 return dtFecha.ToString(Formato);
+        }
+
+        /// <summary>
+        /// Convierte la fila en una hash table. Los nombres de columnas son los keys y los valores los values.
+        /// </summary>
+        /// <param name="Tabla">Ocupará la primera fila de la tabla.</param>
+        public static Hashtable ConvertRowToHashTable(DataTable Tabla)
+        {
+            Hashtable htRow = [];
+
+            if (Tabla.Rows.Count < 1)
+                return htRow;
+
+            for (int iCol = 0; iCol < Tabla.Columns.Count; iCol++)
+            {
+                htRow.Add(
+                    Tabla.Columns[iCol].ColumnName.ToString().Trim(),
+                    Tabla.Rows[0][iCol].ToString().Trim()
+                );
+            }
+            return htRow;
         }
 
 

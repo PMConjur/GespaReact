@@ -32,6 +32,7 @@ namespace NoriAPI.Services
         Task<DomiciliosVisitasResult> DomiciliosVisitas(int idCartera, string idCuenta);
         Task<CatalogoDomicilios> RelacionesDomicilios();
         Task<List<CodigosPostales>> FindPostalCodeInfo(int codigoPostal);
+        Task<(NewAddressResult, string, bool)> SaveNewAddress(NewAddressRequest newAddressData);
         Task<(string, bool)> UpdateAddressInfo(UpdateAddressInfoRequest domicilioInfoUpdate);
         Task<(string, bool)> UpdateAddressClass(UpdateAddressClassRequest domicilioClassUpdate);
 
@@ -648,6 +649,77 @@ namespace NoriAPI.Services
 
             return ("Campo 'idClase' del domicilio actualizado con éxito.", false);
 
+        }
+
+        public async Task<(NewAddressResult, string, bool)> SaveNewAddress(NewAddressRequest newAddressData)
+        {
+            NewAddressResult result = null;
+
+            if (newAddressData.Calle.Trim().Length < 5)
+            {
+                return (result, "Los datos de calle son ambiguos.", false);
+            }
+
+            if (newAddressData.NumeroExterior.Trim().Length == 0)
+            {
+                return (result, "Los datos de calle son ambiguos.", false);
+            }
+
+            var codigosPostales = await _searchRepository.SearchCodigosPostalesByCode(newAddressData.CodigoPostal);
+
+            if (codigosPostales == null || codigosPostales.Count == 0)
+            {
+                return (result, "Ingrese un código postal válido.", false);
+            }
+
+            int? idCodigoPostal = codigosPostales.FirstOrDefault()?.IdCódigoPostal;
+
+
+            var producto = await _searchRepository.GetProducto(newAddressData.IdCuenta);
+            if (producto == null)
+            {
+                return (result, "No se encontró información del producto para la cuenta del nuevo domicilio.", false);
+
+            }
+
+            bool bForaneo = newAddressData.IdProducto == 35 ||
+                (newAddressData.IdCartera == 1 &&
+                 (producto.recoveredcode.StartsWith("7") ||
+                  producto.recoveredcode.StartsWith("8") ||
+                  producto.recoveredcode.StartsWith("9")));
+
+            // Validación basada en el código original
+            if (idCodigoPostal == 0 && !bForaneo)
+            {
+                return (result, "El identificador de código postal es inválido.", false);
+            }
+
+            var newAddress = new NewAddress
+            {
+                IdCartera = newAddressData.IdCartera,
+                IdCuenta = newAddressData.IdCuenta,
+                IdEjecutivo = newAddressData.IdEjecutivo,
+                Calle = newAddressData.Calle,
+                NumeroExterior = newAddressData.NumeroExterior,
+                NumeroInterior = string.IsNullOrWhiteSpace(newAddressData.NumeroInterior) ? null : newAddressData.NumeroInterior.Trim(),
+                IdCodigoPostal = bForaneo ? 0 : idCodigoPostal.Value, // Si es foráneo, asignamos 0
+                Colonia = newAddressData.Colonia,
+                IdClase = newAddressData.IdClase,
+                Municipio = bForaneo && !string.IsNullOrWhiteSpace(newAddressData.Municipio) ? newAddressData.Municipio.Trim() : null,
+                Estado = bForaneo && !string.IsNullOrWhiteSpace(newAddressData.Estado) ? newAddressData.Estado.Trim() : null
+            };
+
+
+            // Insertar en base de datos
+            result = await _searchRepository.InsertNewAddress(newAddress);
+
+            if (result == null)
+            {
+                return (result, "Error al guardar el domicilio.", false);
+            }
+
+
+            return (result, "Domicilio guardado exitosamente.", true);
         }
 
 

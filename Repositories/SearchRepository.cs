@@ -27,9 +27,11 @@ namespace NoriAPI.Repositories
         #region Domicilios
         Task<List<Domicilio>> GetDomicilios(string idCuenta, int idCartera);
         Task<List<GestionDomiciliaria>> GetVisitas(string idCuenta, int idCartera);
-        Task<List<CodigosPostales>> SearchCodigosPostales(int codigoPostal);
+        Task<List<CodigosPostales>> SearchCodigosPostales(int idCodigoPostal);
+        Task<List<CodigosPostales>> SearchCodigosPostalesByCode(string codigoPostal);
         Task<dynamic> UpdateAddressInfo(UpdateAddressInfoRequest domicilioInfoUpdate);
         Task<dynamic> UpdateAddressClass(UpdateAddressClassRequest domicilioClassUpdate);
+        Task<dynamic> InsertNewAddress(NewAddress newAddress);
         #endregion
     }
 
@@ -324,7 +326,23 @@ namespace NoriAPI.Repositories
             return visitas;
         }
 
-        public async Task<List<CodigosPostales>> SearchCodigosPostales(int codigoPostal)
+        public async Task<List<CodigosPostales>> SearchCodigosPostales(int idCodigoPostal)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string codigosPostalesQuery = "SELECT * FROM [dbAllocation].[dbo].[CódigosPostales] (NOLOCK) WHERE idCódigoPostal = @IdCodigoPostal";
+
+            var parameters = new { IdCodigoPostal = idCodigoPostal };
+
+            var codigosPostales = await connection.QueryAsync<CodigosPostales>(
+                codigosPostalesQuery,
+                parameters,
+                commandType: CommandType.Text
+            );
+
+            return codigosPostales.ToList();
+        }
+        public async Task<List<CodigosPostales>> SearchCodigosPostalesByCode(string codigoPostal)
         {
             using var connection = GetConnection("Piso2Amex");
 
@@ -411,27 +429,27 @@ namespace NoriAPI.Repositories
         }
 
 
-        public async Task<dynamic> InsertNewAddress(NewAddress insertNuevaDireccion)
+        public async Task<dynamic> InsertNewAddress(NewAddress newAddress)
         {
             using var connection = GetConnection("Piso2Amex");
 
-            string newAddressStored = "[dbCollection].[dbo].[2.6.NuevoDomicilio]";
+            string newAddressStored = "[2.6.NuevoDomicilio]";
             var parameters = new
             {
-                idCartera = insertNuevaDireccion.IdCartera,
-                idCuenta = insertNuevaDireccion.IdCuenta,
-                idEjecutivo = insertNuevaDireccion.IdEjecutivo,
-                Calle = insertNuevaDireccion.Calle,
-                NúmeroExterior = insertNuevaDireccion.NumeroExterior,
-                NúmeroInterior = insertNuevaDireccion.NumeroInterior,
-                idCódigoPostal = insertNuevaDireccion.IdCodigoPostal,
-                Colonia = insertNuevaDireccion.Colonia,
-                idClase = insertNuevaDireccion.IdClase,
-                Municipio = insertNuevaDireccion.Municipio,
-                Estado = insertNuevaDireccion.Estado
+                idCartera = newAddress.IdCartera,
+                idCuenta = newAddress.IdCuenta,
+                idEjecutivo = newAddress.IdEjecutivo,
+                newAddress.Calle,
+                NúmeroExterior = newAddress.NumeroExterior,
+                NúmeroInterior = (object?)newAddress.NumeroInterior ?? DBNull.Value,
+                IdCodigoPostal = newAddress.IdCodigoPostal == 0 ? (object)DBNull.Value : newAddress.IdCodigoPostal,
+                Colonia = newAddress.Colonia,
+                idClase = newAddress.IdClase,
+                Municipio = (object?)newAddress.Municipio ?? DBNull.Value,
+                Estado = (object?)newAddress.Estado ?? DBNull.Value
             };
 
-            var newAddressResult = await connection.QueryFirstOrDefaultAsync<dynamic>(
+            var newAddressResult = await connection.QueryFirstOrDefaultAsync<NewAddressResult>(
                 newAddressStored,
                 parameters,
                 commandType: CommandType.StoredProcedure);
