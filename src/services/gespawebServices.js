@@ -679,65 +679,6 @@ export async function getPaymentsData(searchResults) {
   }
 }
 
-// Endpoint para obtener datos de scripts
-
-export async function getScriptsData(searchResults) {
-  try {
-    const responseData =
-      location.state || JSON.parse(localStorage.getItem('responseData'));
-    const token = responseData?.ejecutivo?.token;
-
-    console.log('Token obtenido:', token); // Registro del token
-
-    if (!token) {
-      throw new Error('Token de autenticación no disponible');
-    }
-
-    const scripts = await Promise.all(
-      searchResults.map(async (result) => {
-        const idProducto = result.idProducto.trim();
-        console.log(' Buscando scripts para idProducto:', idProducto);
-
-        try {
-          const url = `${apiUrl}/ejecutivo/scripts/${idProducto}`; // Registro de la URL
-          console.log('URL de la API:', url);
-
-          const response = await axios.get(url, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          console.log(
-            `✅ Respuesta recibida para idProducto ${idProducto}:`,
-            response.data
-          );
-          return response.data;
-        } catch (error) {
-          if (axios.isAxiosError(error)) {
-            // Manejo específico de errores de axios
-            console.error(
-              `❌ Error de axios al obtener scripts para ${idProducto}:`,
-              error.response ? error.response.data : error.message
-            );
-          } else {
-            console.error(
-              `❌ Error al obtener datos de scripts para ${idProducto}:`,
-              error
-            );
-          }
-          return null;
-        }
-      })
-    );
-
-    return scripts; // Retornar el array de scripts
-  } catch (error) {
-    console.error('❌ Error al obtener los datos de scripts:', error);
-    throw new Error('Error al cargar los datos de scripts.');
-  }
-}
-
 // Nueva función para obtener datos de scripts
 export async function fetchScripts(idProducto) {
   try {
@@ -853,7 +794,6 @@ export const fetchNotes = async (numEmpleado, token) => {
 // Endpoint de seguimientos para múltiples cuentas
 export async function getAditionalsData(searchResults) {
   try {
-    // Obtener token de autenticación de localStorage o estado
     const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));
     const token = responseData?.ejecutivo?.token;
 
@@ -861,35 +801,32 @@ export async function getAditionalsData(searchResults) {
       throw new Error("Token de autenticación no disponible");
     }
 
-    // Definir idCartera fijo (siempre 1 según el código original)
     const idCartera = 1;
 
-    // Realizar múltiples solicitudes en paralelo para cada idCuenta en searchResults
     const aditionals = await Promise.all(
       searchResults.map(async (result) => {
-        const idCuenta = result.idCuenta.trim(); // Limpieza del idCuenta
+        const idCuenta = result.idCuenta.trim();
         console.log("🔍 Buscando Adicionales para idCuenta:", idCuenta);
 
         try {
           const response = await axios.get(
-            `${apiUrl}/ejecutivo/Adicionales/${idCartera}/${idCuenta}`,
+            `${apiUrl}/ejecutivo/Adicionales${idCartera}/${idCuenta}`, // URL corregida
             {
               headers: {
-                Authorization: `Bearer ${token}`, // Autenticación con token
+                Authorization: `Bearer ${token}`,
               },
             }
           );
 
           console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
-          return response.data; // Retornar datos obtenidos
+          return response.data;
         } catch (error) {
-          console.error(`❌ Error al obtener datos de seguimiento para idCuenta ${idCuenta}:`, error);
-          return null; // Retornar null en caso de error para evitar fallas en Promise.all
+          console.error(`❌ Error al obtener datos de aDICIONALES para idCuenta ${idCuenta}:`, error);
+          return null;
         }
       })
     );
 
-    // Filtrar valores nulos (en caso de errores individuales)
     return aditionals.filter((data) => data !== null);
   } catch (error) {
     console.error("❌ Error al obtener los datos de adicionales:", error);
@@ -897,3 +834,62 @@ export async function getAditionalsData(searchResults) {
   }
 }
 
+// Nueva función para obtener datos de ProcessesWLP
+// Nueva función para obtener datos de ProcessesWLP
+export async function fetchProcessesWLP(producto, searchResults) {
+  try {
+    console.log('Iniciando llamada a la API para obtener datos de ProcesosWLP...');
+    console.log('Producto:', producto);
+
+    if (!Array.isArray(searchResults)) {
+      console.error('searchResults no es un array en fetchProcessesWLP.');
+      return []; // o lanzar un error, dependiendo de tu manejo de errores
+    }
+
+    const processesWLP = await Promise.all(
+      searchResults.map(async (result) => {
+        const idCuenta = result.idCuenta.trim();
+        console.log('Buscando Procesos WLP para idCuenta:', idCuenta);
+
+        try {
+          const response = await axios.get(
+            `${apiUrl}/ejecutivo/ProcesosWLP`,
+            {
+              params: {
+                Proceso: producto,
+                idCuenta: idCuenta
+              },
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'accept': '*/*'
+              }
+            }
+          );
+
+          if (response.status === 200) {
+            console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
+            toast.success(`Datos recibidos para idCuenta ${idCuenta}, Proceso ${producto}.`);
+            return response.data;
+          } else {
+            console.warn(`⚠️ Advertencia: Respuesta no exitosa para idCuenta ${idCuenta}, Proceso ${producto}.`);
+            toast.warning(`Respuesta no exitosa para idCuenta ${idCuenta}, Proceso ${producto}.`);
+            return null;
+          }
+        } catch (error) {
+          console.error(`❌ Error al obtener datos de ProcesosWLP para idCuenta ${idCuenta}:`, error);
+          toast.error(`Error al obtener datos de ProcesosWLP para idCuenta ${idCuenta}, Proceso ${producto}.`);
+          return null;
+        }
+      })
+    );
+
+    console.log('Datos obtenidos de la API:', processesWLP);
+    return processesWLP.filter(Boolean).flat(); // Elimina nulls y aplana arrays anidados
+  } catch (error) {
+    console.error('Error en fetchProcessesWLP:', error);
+    toast.error('Ocurrió un error al obtener los datos. Inténtalo de nuevo.', {
+      position: 'top-right',
+    });
+    throw error;
+  }
+}

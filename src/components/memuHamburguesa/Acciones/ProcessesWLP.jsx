@@ -1,19 +1,26 @@
-import React from 'react';
-import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
+import React from "react";
+import { Modal, Button, Spinner } from "react-bootstrap";
+import TDropdownProcessesWLP from "../../TDropdownProcessesWLP";
 
-const ProcessesWLP = ({ show, handleClose }) => {
+const ProcessesWLP = ({ show, handleCloseProcessesWLP, data, loadingProcessesWLP, errorProcessesWLP }) => {
   return (
-    <Modal show={show} onHide={handleClose}>
+    <Modal show={show} onHide={handleCloseProcessesWLP} size="xl" centered>
       <Modal.Header closeButton>
         <Modal.Title>Procesos WLP</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
-        {/* Contenido del modal */}
-        <p>Contenido del modal de Procesos WLP.</p>
+      <Modal.Body style={{ maxHeight: "600px", overflow: "auto", height: "500px" }}>
+        {loadingProcessesWLP ? (
+          <div className="d-flex justify-content-center">
+            <Spinner animation="border" />
+          </div>
+        ) : errorProcessesWLP ? (
+            <p>Error al cargar los datos. Intente nuevamente.</p>
+        ) : (
+          <TDropdownProcessesWLP data={data} />
+        )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
+        <Button variant="secondary" onClick={handleCloseProcessesWLP}>
           Cerrar
         </Button>
       </Modal.Footer>

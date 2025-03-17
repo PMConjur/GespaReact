@@ -6,10 +6,10 @@ import EstadoCuentaModal from './AccountStatements';
 import FollowUps from './FollowUps';
 import Talks from './Talks';
 import Drives from './Drives';
-import { getFollowUpsData, getTalksData, getOnlinechargeData } from '../../../services/gespawebServices';
+import { getFollowUpsData, getTalksData, getOnlinechargeData, fetchProcessesWLP } from '../../../services/gespawebServices';
 import Search from './Search';
 import OnlineCharge from './OnlineCharge';
-import ProcessesWLP from './ProcessesWLP'; // Importar el nuevo modal
+import ProcessesWLP from './ProcessesWLP';
 
 const DropdownActions = () => {
   const [modalShow, setModalShow] = useState(false);
@@ -27,11 +27,14 @@ const DropdownActions = () => {
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
 
-
   const [showOnlinecharge, setShowOnlinecharge] = useState(false);
   const [onlinechargeData, setOnlinechargeData] = useState([]);
   const [loadingOnlinecharge, setLoadingonlinecharge] = useState(false);
-  const [showProcessesWLP, setShowProcessesWLP] = useState(false); // Estado para mostrar el nuevo modal
+
+  const [showProcessesWLP, setShowProcessesWLP] = useState(false);
+  const [processesWLPData, setProcessesWLPData] = useState([]); // Estado para los datos de ProcessesWLP
+  const [loadingProcessesWLP, setLoadingProcessesWLP] = useState(false); // Estado para la carga de ProcessesWLP
+  const [errorProcessesWLP, setErrorProcessesWLP] = useState(null); // Estado para errores al cargar ProcessesWLP
 
   const { searchResults } = useContext(AppContext);
 
@@ -71,14 +74,11 @@ const DropdownActions = () => {
 
   const handleCloseDrives = () => setShowDrives(false);
 
-
-
-  // cargos en línea
   const handleShowOnlinecharge = async () => {
     setLoadingonlinecharge(true);
     try {
-      const onlinecharge = await getOnlinechargeData(searchResults); // Obtener los datos de cargos en línea
-      setOnlinechargeData(onlinecharge.flat()); // Establece los datos recibidos
+      const onlinecharge = await getOnlinechargeData(searchResults);
+      setOnlinechargeData(onlinecharge.flat());
       setShowOnlinecharge(true);
     } catch (error) {
       console.error('Error al cargar los datos de cargos en línea:', error);
@@ -89,10 +89,29 @@ const DropdownActions = () => {
 
   const handleCloseOnlinecharge = () => setShowOnlinecharge(false);
 
-  //Procesos WLP
-  const handleShowProcessesWLP = () => setShowProcessesWLP(true); // Función para mostrar el nuevo modal
-  const handleCloseProcessesWLP = () => setShowProcessesWLP(false); // Función para cerrar el nuevo modal
+  // Procesos WLP
+  const handleShowProcessesWLP = async () => {
+    setShowProcessesWLP(true);
+    setLoadingProcessesWLP(true);
+    setErrorProcessesWLP(null);
+    try {
+      if (searchResults && Array.isArray(searchResults)) {
+        console.log("searchResults en DropdownAction:", searchResults); // Depuración
+        const data = await fetchProcessesWLP('Arrangement', searchResults);
+        setProcessesWLPData(data.flat()); // Asegúrate de aplanar los datos si es necesario
+      } else {
+        console.error("searchResults no es un array válido.");
+        setErrorProcessesWLP("searchResults no es un array válido.");
+      }
+    } catch (error) {
+      console.error("Error al obtener datos de ProcessesWLP:", error);
+      setErrorProcessesWLP(error);
+    } finally {
+      setLoadingProcessesWLP(false);
+    }
+  };
 
+  const handleCloseProcessesWLP = () => setShowProcessesWLP(false);
 
   return (
     <>
@@ -106,12 +125,11 @@ const DropdownActions = () => {
           <Dropdown.Item onClick={handleShowDrives} className="custom-dropdown-item">Accionamientos</Dropdown.Item>
           <Dropdown.Item onClick={handleOpenModal} href="/maintenance" className="custom-dropdown-item">Busqueda</Dropdown.Item>
           <Dropdown.Item onClick={handleShowOnlinecharge} className="custom-dropdown-item">Cargos en línea</Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Comentarios</Dropdown.Item>  
+          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Comentarios</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item" onClick={() => setModalShow(true)}>Estados de cuenta</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Quejas</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Simuladores</Dropdown.Item>
-          <Dropdown.Item onClick={handleShowProcessesWLP} className="custom-dropdown-item">Procesos WLP</Dropdown.Item> {/* Nueva opción en el menú */}
-          
+          <Dropdown.Item onClick={handleShowProcessesWLP} className="custom-dropdown-item">Procesos WLP</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
 
@@ -121,8 +139,7 @@ const DropdownActions = () => {
       <OnlineCharge show={showOnlinecharge} handleClose={handleCloseOnlinecharge} data={onlinechargeData} loading={loadingOnlinecharge} />
       <Drives showModal={showDrives} handleCloseModal={handleCloseDrives} />
       <Search show={showModal} handleClose={handleCloseModal} />
-      <ProcessesWLP show={showProcessesWLP} handleClose={handleCloseProcessesWLP} /> {/* Nuevo modal */}
-
+      <ProcessesWLP show={showProcessesWLP} handleCloseProcessesWLP={handleCloseProcessesWLP} data={processesWLPData} loading={loadingProcessesWLP} error={errorProcessesWLP} />
     </>
   );
 }

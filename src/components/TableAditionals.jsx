@@ -15,8 +15,7 @@ const TableAditionals = ({ data, customColumnNames = {} }) => {
 
     // 🔹 Campos que NO se mostrarán en la tabla
     const hiddenFields = [
-        "idCartera",
-        "idCuenta"
+    
     ];
 
     // 🔹 Nombres de columnas por defecto (se pueden sobrescribir con `customColumnNames`)

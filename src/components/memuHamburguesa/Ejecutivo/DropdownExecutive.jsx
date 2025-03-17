@@ -1,9 +1,9 @@
 import { useState, useContext } from 'react';
-import { AppContext } from '../../../pages/Managment'; // Ajusta la ruta según tu estructura de archivos
-
 import Dropdown from 'react-bootstrap/Dropdown';
-import Scripts from './Scripts'; // Asegúrate de importar el componente
+import { AppContext } from '../../../pages/Managment'; // Ajusta la ruta según tu estructura de archivos
 import "../../../scss/styles.scss";
+import Scripts from './Scripts'; // Asegúrate de importar el componente
+
 import { fetchScripts } from '../../../services/gespawebServices';
 
 function DropdownExecutive() {

@@ -1,11 +1,9 @@
 import { useState, useContext } from 'react';
-import { AppContext } from '../../../pages/Managment'; // Ajusta la ruta según tu estructura de archivos
-
 import Dropdown from 'react-bootstrap/Dropdown';
+import { AppContext } from '../../../pages/Managment'; // Ajusta la ruta según tu estructura de archivos
+import "../../../scss/styles.scss";
 import Payments from './Payments'; // Asegúrate de importar el componente
 import Aditionals from './Aditionals'; // Asegúrate de importar el componente
-import "../../../scss/styles.scss";
-
 import { getPaymentsData, getAditionalsData } from '../../../services/gespawebServices';
 
 function DropdownInfo() {
@@ -43,8 +41,8 @@ function DropdownInfo() {
     setLoadingAditionals(true);
     try {
       // Aquí debes definir los valores de idCuenta y idCartera según tu aplicación
-      const Aditionals = await getAditionalsData(searchResults); // Obtener los datos de pagos
-      setAditionalsData(Aditionals.flat()); // Establece los datos recibidos
+      const aditionals = await getAditionalsData(searchResults); // Obtener los datos de pagos
+      setAditionalsData(aditionals.flat()); // Establece los datos recibidos
       setShowAditionals(true);
     } catch (error) {
       console.error('Error al cargar los datos de Adicionales:', error);
