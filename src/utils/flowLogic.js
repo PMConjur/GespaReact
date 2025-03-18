@@ -115,9 +115,12 @@ export const getValidateResponse = async (
     pregunta,
     idClase
   }, // Añadir idClase a los parámetros
-  userFlowData, //Datos seleccionados por el usuario
-  setCurrentQuestionId //idPregunta seleccionada
+  userFlowData //Datos seleccionados por el usuario
 ) => {
+  console.log(
+    "idSiguientePregunta que ingresa a la logica:",
+    idSiguientePregunta
+  );
   let Respuesta = pregunta;
   let nextIdPregunta = idSiguientePregunta; // Mantener el valor inicial de idSiguientePregunta
 
@@ -152,7 +155,7 @@ export const getValidateResponse = async (
 
   console.log("idPregunta:", idPregunta);
   console.log("idRespuesta:", idRespuesta);
-  console.log("idSiguientePregunta:", idSiguientePregunta);
+  console.log("idSiguientePregunta logica del flujo:", idSiguientePregunta);
   console.log("valor:", valor);
   console.log("pregunta:", pregunta);
   console.log("idClase:", idClase);
