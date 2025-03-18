@@ -111,7 +111,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
     .filter((email) => typeof email === "string");
 
   return (
-    <Modal show={show} onHide={handleClose} size="lg" centered>
+    <Modal show={show} onHide={handleClose} size="xl" centered>
       <Modal.Header closeButton>
         <Modal.Title>Estado de Cuenta - Gespa</Modal.Title>
       </Modal.Header>
@@ -123,7 +123,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
               className="flex-grow-1 scroll-container"
               style={{
                 overflow: "auto ",
-                maxWidth: "550px",
+                maxWidth: "800px",
                 maxHeight: "420px",
                 marginBottom: "auto",
                 height: "100%",

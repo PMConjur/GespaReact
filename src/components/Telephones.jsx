@@ -252,8 +252,6 @@ const Telephones = () => {
                 <th>C</th>
                 <th>D</th>
                 <th>S</th>
-                <th>IntentoViciDial</th>
-                <th>ID</th>
                 <th>Teléfono</th>
                 <th>Telefonía</th>
                 <th>Origen</th>
@@ -288,8 +286,6 @@ const Telephones = () => {
                       <td>{row.conocidos || "--"}</td>
                       <td>{row.desconocidos || "--"}</td>
                       <td>{row.sinContacto || "--"}</td>
-                      <td>{row.intentosViciDial || "--"}</td>
-                      <td>{row.id || "--"}</td>
                       <td>
                         <a
                           href="#"
