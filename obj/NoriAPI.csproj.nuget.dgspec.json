@@ -1,6 +1,7 @@
 {
   "format": 1,
   "restore": {
+<<<<<<< HEAD
     "/Users/urielsaenz/Documents/CodeGit/Back/GespaReact/NoriAPI.csproj": {}
   },
   "projects": {
@@ -12,6 +13,19 @@
         "projectPath": "/Users/urielsaenz/Documents/CodeGit/Back/GespaReact/NoriAPI.csproj",
         "packagesPath": "/Users/urielsaenz/.nuget/packages/",
         "outputPath": "/Users/urielsaenz/Documents/CodeGit/Back/GespaReact/obj/",
+=======
+    "D:\\CésarRdz\\1 Gespa Web React\\NoriAPI.csproj": {}
+  },
+  "projects": {
+    "D:\\CésarRdz\\1 Gespa Web React\\NoriAPI.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\CésarRdz\\1 Gespa Web React\\NoriAPI.csproj",
+        "projectName": "NoriAPI",
+        "projectPath": "D:\\CésarRdz\\1 Gespa Web React\\NoriAPI.csproj",
+        "packagesPath": "C:\\Users\\César Rodríguez\\.nuget\\packages\\",
+        "outputPath": "D:\\CésarRdz\\1 Gespa Web React\\obj\\",
+>>>>>>> origin/Mark33-QuejasFull
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/urielsaenz/.nuget/NuGet/NuGet.Config"

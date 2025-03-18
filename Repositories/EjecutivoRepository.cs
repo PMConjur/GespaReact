@@ -72,6 +72,11 @@ namespace NoriAPI.Repositories
         int ObtenerIdEjecutivo();
         string ObtenerNombreEjecutivo();
 
+        #region Acciones
+        Task<bool> InsertQueja(Queja insertQueja);
+        Task<string> InsertComments(AccionesComentarioRequest insertComment);
+        #endregion
+
     }
     public class EjecutivoRepository : IEjecutivoRepository
     {
@@ -855,6 +860,73 @@ namespace NoriAPI.Repositories
 
 
         #endregion
+
+        #region Acciones
+        public async Task<bool> InsertQueja(Queja insertQueja)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string query = @"INSERT INTO dbo.Quejas (idCartera, idCuenta, Fecha_Insert, Segundo_Insert, Folio, idEjecutivo_Insert, 
+                                                                            idQueja, idInstitución, Solicitante, LlamadaEntrada, NúmeroTelefónico, CorreoElectrónico, 
+                                                                            idDomicilio, Comentario, NúmeroTelefónico_Contacto, CorreoElectrónico_Contacto) 
+                                                                VALUES(@idCartera ,@idCuenta ,@Fecha_Insert ,@Segundo_Insert ,@Folio ,@idEjecutivo_Insert ,
+                                                                             @idQueja ,@idInstitución ,@Solicitante ,@LlamadaEntrada ,@NúmeroTelefónico ,@CorreoElectrónico ,
+                                                                             @idDomicilio ,@Comentario ,@TeléfonoContacto ,@CorreoContacto)";
+
+            var parameters = new
+            {
+                idCartera = insertQueja.IdCartera,
+                idCuenta = insertQueja.IdCuenta,
+                Fecha_Insert = insertQueja.FechaInsert,
+                Segundo_Insert = insertQueja.SegundoInsert,
+                Folio = insertQueja.Folio,
+                idEjecutivo_Insert = insertQueja.IdEjecutivoInsert,
+                idQueja = insertQueja.IdQueja,
+                idInstitución = insertQueja.IdInstitucion,
+                Solicitante = insertQueja.Solicitante,
+                LlamadaEntrada = insertQueja.LlamadaEntrada,
+                NúmeroTelefónico = insertQueja.NumeroTelefonico,
+                CorreoElectrónico = insertQueja.CorreoElectronico,
+                idDomicilio = insertQueja.IdDomicilio,
+                Comentario = insertQueja.Comentario,
+                TeléfonoContacto = insertQueja.NumeroTelefonicoContacto,
+                CorreoContacto = insertQueja.CorreoElectronicoContacto
+            };
+
+
+            int filasAfectadas = await connection.ExecuteAsync(query, parameters, commandType: CommandType.Text);
+
+            return filasAfectadas > 0;
+        }
+
+        public async Task<string> InsertComments(AccionesComentarioRequest insertCommit)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string query = "[dbCollection].[dbo].[2.13.InsertaComentario]";
+
+            var parameters = new
+            {
+                idCartera = insertCommit.IdCartera,
+                idCuenta = insertCommit.IdCuenta,
+                idEjecutivo = insertCommit.IdEjecutivo,
+                Comentario = insertCommit.Comentario,
+                ModificaSituación = insertCommit.ModificaSituacion,
+                
+            };
+
+            var filasAfectadas = await connection.ExecuteScalarAsync<dynamic>(
+                query,
+                parameters,
+                commandType: CommandType.StoredProcedure);
+
+            //int filasAfectadas = await connection.ExecuteAsync(query, parameters, commandType: CommandType.StoredProcedure);
+
+            return Convert.ToString(filasAfectadas);
+        }
+
+        #endregion
+
 
         #region NegociacionesRecuperacion
 

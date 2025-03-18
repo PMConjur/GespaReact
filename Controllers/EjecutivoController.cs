@@ -3,7 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+<<<<<<< HEAD
 using NoriAPI.Models;
+=======
+using NoriAPI.Models.Acciones;
+>>>>>>> origin/Mark33-QuejasFull
 using NoriAPI.Models.Busqueda;
 using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Models.Login;
@@ -13,6 +17,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -66,6 +71,8 @@ namespace NoriAPI.Controllers
         }
 
         #endregion
+
+
 
         #region Seguimientos
         [HttpGet("seguimientos/{idCartera}/{idCuenta}")]
@@ -168,6 +175,33 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+
+        [HttpGet("vistaAccionamientos")]
+        public async Task<IActionResult> GetVistaAccionamientos(int idCartera, string idCuenta)
+        {
+            DataSet dsTablas = new DataSet();
+            try
+            {
+                DataTable ViewAccionamientos = new DataTable();
+
+                ViewAccionamientos = await _ejecutivoService.GetVistaAccionamientos(idCartera, idCuenta);
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var View= ConvertDataTableToList(ViewAccionamientos);
+
+                // Serializamos la lista a JSON
+                string jsonViewAccionamientos = JsonSerializer.Serialize(View, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonViewAccionamientos);
+
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
         #endregion
 
         #region Negociaciones
@@ -251,9 +285,12 @@ namespace NoriAPI.Controllers
 
         #endregion
 
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> origin/Mark33-QuejasFull
         #region Busqueda
         [HttpGet("busqueda/{idCartera}/{idCuenta}/{Jerarquia}")]
         public async Task<IActionResult> GetBusqueda(int idCartera, string idCuenta, int Jerarquia)
@@ -664,8 +701,6 @@ namespace NoriAPI.Controllers
 
         #region AccionesNegociacion
 
-
-
         [HttpGet("accionesNegociacion")]
         public async Task<IActionResult> GetAccionNegociacion(int idCartera, string idCuenta)
         {
@@ -677,7 +712,7 @@ namespace NoriAPI.Controllers
                 Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
 
 
-                Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
+                //Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
 
                 // Convertimos el DataTable a una lista de diccionarios
                 var listaNegociaciones = ConvertDataTableToList(Negociaciones);
@@ -685,9 +720,9 @@ namespace NoriAPI.Controllers
                 // Serializamos la lista a JSON
                 string jsonNegociaciones = JsonSerializer.Serialize(listaNegociaciones, new JsonSerializerOptions { WriteIndented = true });
 
-                //dsTablas.Tables.Add(Negociaciones);
+                //return Ok(jsonNegociaciones);
+                return Content(jsonNegociaciones, "application/json; charset=utf-8");
 
-                return Ok(jsonNegociaciones);
 
             }
             catch (Exception ex)
@@ -712,9 +747,8 @@ namespace NoriAPI.Controllers
                 // Serializamos la lista a JSON
                 string jsonPlazos = JsonSerializer.Serialize(listaPlazos, new JsonSerializerOptions { WriteIndented = true });
 
-                //dsTablas.Tables.Add(Negociaciones);
-
-                return Ok(jsonPlazos);
+                //return Ok(jsonPlazos);
+                return Content(jsonPlazos, "application/json; charset=utf-8"); 
 
             }
             catch (Exception ex)
@@ -784,7 +818,8 @@ namespace NoriAPI.Controllers
                 // Serializar la respuesta combinada a JSON
                 string jsonResultado = JsonSerializer.Serialize(resultadoCombinado, new JsonSerializerOptions { WriteIndented = true });
 
-                return Ok(jsonResultado);
+                //return Ok(jsonResultado);
+                return Content(jsonResultado, "application/json; charset=utf-8");
             }
             catch (Exception ex)
             {
@@ -798,38 +833,20 @@ namespace NoriAPI.Controllers
             DataSet dsTablas = new DataSet();
             try
             {
-                if (idEjecutivo != 0 && Contraseña != "")
-                {
-                    DataTable passValidador = new DataTable();
 
-                    passValidador = await _ejecutivoService.GetValidadorAsync(idProducto, idEjecutivo, Contraseña);
+                DataTable Validador = new DataTable();
 
-                    // Convertimos el DataTable a una lista de diccionarios
-                    var passValidadores = ConvertDataTableToList(passValidador);
+                Validador = await _ejecutivoService.GetValidadorAsync(idProducto, idEjecutivo, Contraseña);
 
-                    // Serializamos la lista a JSON
-                    string jsonPassValidadores = JsonSerializer.Serialize(passValidadores, new JsonSerializerOptions { WriteIndented = true });
+                // Convertimos el DataTable a una lista de diccionarios
+                var Validadores = ConvertDataTableToList(Validador);
 
-                    //dsTablas.Tables.Add(Negociaciones);
+                // Serializamos la lista a JSON
+                string jsonValidadores = JsonSerializer.Serialize(Validadores, new JsonSerializerOptions { WriteIndented = true });
 
-                    return Ok(jsonPassValidadores);
-                }
-                else
-                {
-                    DataTable Validador = new DataTable();
+                //return Ok(jsonValidadores);
+                return Content(jsonValidadores, "application/json; charset=utf-8");
 
-                    Validador = await _ejecutivoService.GetValidadorAsync(idProducto, idEjecutivo, Contraseña);
-
-                    // Convertimos el DataTable a una lista de diccionarios
-                    var Validadores = ConvertDataTableToList(Validador);
-
-                    // Serializamos la lista a JSON
-                    string jsonValidadores = JsonSerializer.Serialize(Validadores, new JsonSerializerOptions { WriteIndented = true });
-
-                    //dsTablas.Tables.Add(Negociaciones);
-
-                    return Ok(jsonValidadores);
-                }
 
             }
             catch (Exception ex)
@@ -838,6 +855,7 @@ namespace NoriAPI.Controllers
             }
         }
 
+<<<<<<< HEAD
 
         [HttpPost("accionesComentarios")]
         public async Task<ActionResult> NewComentario(AccionesComentarioRequest request)
@@ -895,15 +913,34 @@ namespace NoriAPI.Controllers
         #region Relaciones
         [HttpGet("relaciones")]
         public IActionResult CargaRelaciones()
+=======
+        [HttpGet("validadores")]
+        public async Task<IActionResult> GetValidadores(int idProducto)
+>>>>>>> origin/Mark33-QuejasFull
         {
             try
             {
+<<<<<<< HEAD
                 DataTable relaciones = _ejecutivoService.CargaRelaciones();
 
                 if (relaciones == null || relaciones.Rows.Count == 0)
                 {
                     return NotFound("No se encontraron relaciones.");
                 }
+=======
+                DataTable Validador = new DataTable();
+
+                Validador = await _ejecutivoService.GetValidadoresAsync(idProducto);
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var Validadores = ConvertDataTableToList(Validador);
+
+                // Serializamos la lista a JSON
+                string jsonValidadores = JsonSerializer.Serialize(Validadores, new JsonSerializerOptions { WriteIndented = true });
+
+                //return Ok(jsonValidadores);
+                return Content(jsonValidadores, "application/json; charset=utf-8");
+>>>>>>> origin/Mark33-QuejasFull
 
                 // Transformar DataTable a lista de diccionarios
                 var listaRelaciones = relaciones.AsEnumerable()
@@ -918,6 +955,141 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+
+        //[HttpGet("accionesComentario")]
+        //public async Task<IActionResult> GetAccionesComentario(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion)
+        //{
+        //    DataSet dsTablas = new DataSet();
+        //    try
+        //    {
+        //        DataTable Comentarios = new DataTable();
+
+        //        Comentarios = await _ejecutivoService.GetAccionesComentarioAsync(idCartera, idCuenta, idEjecutivo, Comentario, ModificaSituacion);
+
+        //        // Convertimos el DataTable a una lista de diccionarios
+        //        var insertaComentario = ConvertDataTableToList(Comentarios);
+
+        //        // Serializamos la lista a JSON
+        //        string jsonComentarios = JsonSerializer.Serialize(insertaComentario, new JsonSerializerOptions { WriteIndented = true });
+
+        //        //dsTablas.Tables.Add(Negociaciones);
+
+        //        return Ok(jsonComentarios);
+
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+        //    }
+        //}
+
+        [HttpPost("accionesComentarios")]
+        public async Task<ActionResult> NewComentario( AccionesComentarioRequest request)
+        {
+            string mensaje = await _ejecutivoService.AccionesComentario(request);
+
+            return Ok(new { mensaje = mensaje });
+        }
+
+
+        [HttpPost("quejas")]
+        public async Task<ActionResult> NewQueja([FromBody] Queja quejaNueva)
+        {
+            (string, bool) mensaje = await _ejecutivoService.ValidateNewQueja(quejaNueva);
+
+            if (!mensaje.Item2)
+            {
+                return BadRequest(new { mensaje = mensaje.Item1, exito = false });
+            }
+
+            return Ok(new { mensaje = mensaje.Item1, exito = true });
+        }
+
+        [HttpGet("ddQuejas")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetDropQuejas()
+        {
+            try
+            {
+                DataTable DDQuejas = new DataTable();
+
+                DDQuejas = await _ejecutivoService.GetDropDQuejasAsync();
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var QuejasDD = ConvertDataTableToList(DDQuejas);
+
+                // Serializamos la lista a JSON
+                string jsonDDQuejas = JsonSerializer.Serialize(QuejasDD, new JsonSerializerOptions { WriteIndented = true });
+
+                //dsTablas.Tables.Add(Negociaciones);
+
+                //return Ok(jsonDDQuejas);
+                return Content(jsonDDQuejas, "application/json; charset=utf-8");
+
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpGet("ddOrigenQuejas")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetDropOrigenQuejas()
+        {
+            try
+            {
+                DataTable DDOrigenQuejas = new DataTable();
+
+                DDOrigenQuejas = await _ejecutivoService.GetDropDOrigenQuejasAsync();
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var OrigenQuejasDD = ConvertDataTableToList(DDOrigenQuejas);
+
+                // Serializamos la lista a JSON
+                string jsonDDOrigenQuejas = JsonSerializer.Serialize(OrigenQuejasDD, new JsonSerializerOptions { WriteIndented = true });
+
+                //return Ok(jsonDDOrigenQuejas);
+                return Content(jsonDDOrigenQuejas, "application/json; charset=utf-8");
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpGet("viewQuejas")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetViewQuejas(int idCartera, string idCuenta)
+        {
+            try
+            {
+                DataTable viewQuejas = new DataTable();
+
+                viewQuejas = await _ejecutivoService.GetViewQuejasAsync(idCartera, idCuenta);
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var QuejasView = ConvertDataTableToList(viewQuejas);
+
+                // Serializamos la lista a JSON
+                string jsonViewQuejas = JsonSerializer.Serialize(QuejasView, new JsonSerializerOptions { WriteIndented = true });
+
+                //return Ok(jsonViewQuejas);
+                return Content(jsonViewQuejas, "application/json; charset=utf-8");
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+
+
+
         #endregion
 
         #region Correos

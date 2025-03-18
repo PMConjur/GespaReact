@@ -1,8 +1,14 @@
 {
   "version": 2,
+<<<<<<< HEAD
   "dgSpecHash": "d/weD+iXhaZ3K2ALt33jPYtv30X5qyFhsalkcQle3r2VpvyIUHd1JptumEPONsNLz+fjrqHMiPvPDgmWMd7/dw==",
   "success": true,
   "projectFilePath": "/Users/urielsaenz/Documents/CodeGit/Back/GespaReact/NoriAPI.csproj",
+=======
+  "dgSpecHash": "IRgngQnKg4222Yj4xtyGheSUcrmTKwzTxvCmTA1Yb3kMEq9h4nQYaURRWcxbS6nbqE/rAKzmECGKyK8dcFVOcg==",
+  "success": true,
+  "projectFilePath": "D:\\CésarRdz\\1 Gespa Web React\\NoriAPI.csproj",
+>>>>>>> origin/Mark33-QuejasFull
   "expectedPackageFiles": [
     "/Users/urielsaenz/.nuget/packages/azure.core/1.38.0/azure.core.1.38.0.nupkg.sha512",
     "/Users/urielsaenz/.nuget/packages/azure.identity/1.11.4/azure.identity.1.11.4.nupkg.sha512",
