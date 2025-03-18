@@ -201,6 +201,13 @@ namespace NoriAPI.Controllers
 
         #endregion
 
+        [HttpGet("conversacion")]
+        public async Task<IActionResult> GetConversacion([FromQuery] string idCuenta, string correo)
+        {
+            var conversacionData = await _searchService.GetConversacionData(idCuenta, correo);
+            return Ok(conversacionData);
+        }
+
 
     }
 }

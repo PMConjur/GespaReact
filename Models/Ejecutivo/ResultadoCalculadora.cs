@@ -1,11 +1,17 @@
-﻿namespace NoriAPI.Models.Ejecutivo
+﻿using System.Collections.Generic;
+
+namespace NoriAPI.Models.Ejecutivo
 {
     public class ResultadoCalculadora
     {
-        public string mensaje { get; set; }
-
-
-
+        public List<OfrecimientosInfo> Ofrecimientos { get; set; }
+        public List<HerramientasInfo> Herramientas { get; set; }
+        public double MontoRequerido { get; set; }
+        public int Descuento { get; set; }
+        public int MaxDias { get; set; }
+        public double MontoDescuento { get; set; }
+        public double Saldo { get; set; }
+        public string FechaCorte { get; set; }
 
     }
 }

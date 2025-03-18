@@ -37,6 +37,7 @@ namespace NoriAPI.Services
         Task<(string, bool)> UpdateAddressClass(UpdateAddressClassRequest domicilioClassUpdate);
 
         #endregion
+        Task<dynamic> GetConversacionData(string idCuenta, string correo);
 
     }
 
@@ -1031,6 +1032,13 @@ namespace NoriAPI.Services
 
 
         #endregion
+
+        public async Task<dynamic> GetConversacionData(string idCuenta, string correo)
+        {
+            var conversacionResult = await _searchRepository.ConversacionData(idCuenta, correo);
+
+            return conversacionResult;
+        }
 
         public async Task<int> GetIdValor(DataTable catalogos, string catalogo, object valor)
         {

@@ -33,6 +33,7 @@ namespace NoriAPI.Repositories
         Task<dynamic> UpdateAddressClass(UpdateAddressClassRequest domicilioClassUpdate);
         Task<dynamic> InsertNewAddress(NewAddress newAddress);
         #endregion
+        Task<dynamic> ConversacionData(string idCuenta, string correo);
     }
 
     public class SearchRepository : ISearchRepository
@@ -459,6 +460,19 @@ namespace NoriAPI.Repositories
 
 
         #endregion
+
+        public async Task<dynamic> ConversacionData(string idCuenta, string correo)
+        {
+            using var connection = GetConnection("Piso2Amex");
+            string conversacionQuery = "SELECT * FROM [dbCollection].[dbo].[fn_Conversacion](@IdCuenta, @Correo)";
+            var parameters = new { IdCuenta = idCuenta, Correo = correo };
+            var conversacion = await connection.QueryAsync<dynamic>(
+                conversacionQuery,
+                parameters,
+                commandType: CommandType.Text
+            );
+            return conversacion;
+        }
 
 
         private static DataTable ConvertToDataTable(IEnumerable<dynamic> data, string tableName)

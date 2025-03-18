@@ -69,8 +69,6 @@ namespace NoriAPI.Controllers
 
         #endregion
 
-
-
         #region Seguimientos
         [HttpGet("seguimientos/{idCartera}/{idCuenta}")]
         public async Task<IActionResult> GetSeguimiento(int idCartera, string idCuenta)
@@ -184,7 +182,7 @@ namespace NoriAPI.Controllers
                 ViewAccionamientos = await _ejecutivoService.GetVistaAccionamientos(idCartera, idCuenta);
 
                 // Convertimos el DataTable a una lista de diccionarios
-                var View= ConvertDataTableToList(ViewAccionamientos);
+                var View = ConvertDataTableToList(ViewAccionamientos);
 
                 // Serializamos la lista a JSON
                 string jsonViewAccionamientos = JsonSerializer.Serialize(View, new JsonSerializerOptions { WriteIndented = true });
@@ -278,6 +276,25 @@ namespace NoriAPI.Controllers
         {
             var InfoCalculadora = await _ejecutivoService.ValidateInfoCalculadora(Cartera, NoCuenta);
             return Ok(InfoCalculadora);
+        }
+
+        [HttpGet("Calculadora-1erParte")]
+        public async Task<ActionResult<ResultadoCalculadora>> Calculadora_Simulador([FromQuery] int Cartera, string NoCuenta, int idHerr)
+        {
+            var InfoCalculadora = await _ejecutivoService.ValidateInfoCalculadora1(Cartera, NoCuenta, idHerr);
+
+            return Ok(InfoCalculadora);
+
+        }
+
+        [HttpGet("Calculadora-2daParte")]
+
+        public async Task<ActionResult<ResultadoCalculadora2>> Calculadora([FromQuery] int idHerramienta, string NoCuenta, int IdCartera, double MontoRequerido, int Descuento, int iMeses, string dtpFecha, int periodos)
+        {
+            var InfoCalucladora2 = await _ejecutivoService.ValidateInfoCalculadora2(idHerramienta, NoCuenta, IdCartera, MontoRequerido, Descuento, iMeses, dtpFecha, periodos);
+
+            return Ok(InfoCalucladora2);
+
         }
 
         #endregion
@@ -604,6 +621,7 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+
         [HttpGet("gestionesDelDia/{idEjecutivo}")]
         public IActionResult ObtieneGestionesDelDia(int idEjecutivo)
         {
@@ -1428,7 +1446,7 @@ namespace NoriAPI.Controllers
 
         public JObject Catalogos { get; set; }
     }
-        #endregion
+    #endregion
 
 
 }
