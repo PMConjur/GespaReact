@@ -3,11 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-<<<<<<< HEAD
 using NoriAPI.Models;
-=======
 using NoriAPI.Models.Acciones;
->>>>>>> origin/Mark33-QuejasFull
 using NoriAPI.Models.Busqueda;
 using NoriAPI.Models.Ejecutivo;
 using NoriAPI.Models.Login;
@@ -285,12 +282,11 @@ namespace NoriAPI.Controllers
 
         #endregion
 
-<<<<<<< HEAD
 
 
 
-=======
->>>>>>> origin/Mark33-QuejasFull
+
+
         #region Busqueda
         [HttpGet("busqueda/{idCartera}/{idCuenta}/{Jerarquia}")]
         public async Task<IActionResult> GetBusqueda(int idCartera, string idCuenta, int Jerarquia)
@@ -359,11 +355,11 @@ namespace NoriAPI.Controllers
                 return BadRequest("Error al guardar la búsqueda.");
             }
         }
-    
-       
-        
 
-        
+
+
+
+
         #endregion
 
         #region CargoEnLinea
@@ -748,7 +744,7 @@ namespace NoriAPI.Controllers
                 string jsonPlazos = JsonSerializer.Serialize(listaPlazos, new JsonSerializerOptions { WriteIndented = true });
 
                 //return Ok(jsonPlazos);
-                return Content(jsonPlazos, "application/json; charset=utf-8"); 
+                return Content(jsonPlazos, "application/json; charset=utf-8");
 
             }
             catch (Exception ex)
@@ -855,7 +851,7 @@ namespace NoriAPI.Controllers
             }
         }
 
-<<<<<<< HEAD
+
 
         [HttpPost("accionesComentarios")]
         public async Task<ActionResult> NewComentario(AccionesComentarioRequest request)
@@ -912,35 +908,17 @@ namespace NoriAPI.Controllers
 
         #region Relaciones
         [HttpGet("relaciones")]
+
         public IActionResult CargaRelaciones()
-=======
-        [HttpGet("validadores")]
-        public async Task<IActionResult> GetValidadores(int idProducto)
->>>>>>> origin/Mark33-QuejasFull
         {
             try
             {
-<<<<<<< HEAD
                 DataTable relaciones = _ejecutivoService.CargaRelaciones();
 
                 if (relaciones == null || relaciones.Rows.Count == 0)
                 {
                     return NotFound("No se encontraron relaciones.");
                 }
-=======
-                DataTable Validador = new DataTable();
-
-                Validador = await _ejecutivoService.GetValidadoresAsync(idProducto);
-
-                // Convertimos el DataTable a una lista de diccionarios
-                var Validadores = ConvertDataTableToList(Validador);
-
-                // Serializamos la lista a JSON
-                string jsonValidadores = JsonSerializer.Serialize(Validadores, new JsonSerializerOptions { WriteIndented = true });
-
-                //return Ok(jsonValidadores);
-                return Content(jsonValidadores, "application/json; charset=utf-8");
->>>>>>> origin/Mark33-QuejasFull
 
                 // Transformar DataTable a lista de diccionarios
                 var listaRelaciones = relaciones.AsEnumerable()
@@ -955,6 +933,7 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+
 
         //[HttpGet("accionesComentario")]
         //public async Task<IActionResult> GetAccionesComentario(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion)
@@ -984,30 +963,13 @@ namespace NoriAPI.Controllers
         //    }
         //}
 
-        [HttpPost("accionesComentarios")]
-        public async Task<ActionResult> NewComentario( AccionesComentarioRequest request)
-        {
-            string mensaje = await _ejecutivoService.AccionesComentario(request);
-
-            return Ok(new { mensaje = mensaje });
-        }
 
 
-        [HttpPost("quejas")]
-        public async Task<ActionResult> NewQueja([FromBody] Queja quejaNueva)
-        {
-            (string, bool) mensaje = await _ejecutivoService.ValidateNewQueja(quejaNueva);
 
-            if (!mensaje.Item2)
-            {
-                return BadRequest(new { mensaje = mensaje.Item1, exito = false });
-            }
 
-            return Ok(new { mensaje = mensaje.Item1, exito = true });
-        }
 
         [HttpGet("ddQuejas")]
-        [AllowAnonymous]
+
         public async Task<IActionResult> GetDropQuejas()
         {
             try
@@ -1036,7 +998,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("ddOrigenQuejas")]
-        [AllowAnonymous]
+
         public async Task<IActionResult> GetDropOrigenQuejas()
         {
             try
@@ -1062,7 +1024,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("viewQuejas")]
-        [AllowAnonymous]
+
         public async Task<IActionResult> GetViewQuejas(int idCartera, string idCuenta)
         {
             try
@@ -1297,7 +1259,7 @@ namespace NoriAPI.Controllers
 
         #region Adicionales
         [HttpGet("Adicionales{idCartera}/{idCuenta}")]
-        [AllowAnonymous] //Para permitir acceso anonimo
+
         public async Task<IActionResult> GetAdicionales(int idCartera, string idCuenta)
         {
             try
@@ -1422,7 +1384,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("NegociacionesDelMesEje/{idEjecutivo}")]
-        
+
         public async Task<IActionResult> GetNegociacionesEjecutivo(int idEjecutivo)
         {
             try
@@ -1466,10 +1428,6 @@ namespace NoriAPI.Controllers
 
         public JObject Catalogos { get; set; }
     }
-
-
-
-    
         #endregion
 
 

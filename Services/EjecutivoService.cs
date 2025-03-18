@@ -18,13 +18,13 @@ using NoriAPI.Models.Phones;
 using Dapper;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
-<<<<<<< HEAD
+
 using System.Net.Mail;
 using NoriAPI.Models.Acciones;
 using static NoriAPI.Services.EjecutivoService;
-=======
+
 using NoriAPI.Models.Acciones;
->>>>>>> origin/Mark33-QuejasFull
+
 
 namespace NoriAPI.Services
 {
@@ -87,7 +87,7 @@ namespace NoriAPI.Services
         Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
         Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
         Task<DataTable> GetValidadorAsync(int idProducto, int idEjecutivo, string Contraseña);
-<<<<<<< HEAD
+
         // Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
         Task<string> AccionesComentario(AccionesComentarioRequest insertCommit);
         Task<(string, bool)> ValidateNewQueja(Queja quejaInsert);
@@ -97,17 +97,14 @@ namespace NoriAPI.Services
         Task<DataTable> GetAdiccionalesAsync(int idCartera, string idCuenta);
 
         
-=======
+
         Task<DataTable> GetValidadoresAsync(int idProducto);
 
         //Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
-        Task<string> AccionesComentario(AccionesComentarioRequest insertCommit);
-        Task<DataTable> GetWlpAsync(string Proceso, string idCuenta);
-        Task<(string, bool)> ValidateNewQueja(Queja quejaInsert);
         Task<DataTable> GetDropDQuejasAsync();
         Task<DataTable> GetDropDOrigenQuejasAsync();
         Task<DataTable> GetViewQuejasAsync(int idCartera, string idCuenta);
->>>>>>> origin/Mark33-QuejasFull
+        
         #endregion
 
 
@@ -691,31 +688,12 @@ namespace NoriAPI.Services
             return ("Comentario insertado con éxito.");
         }
 
-       
-
-        
 
         #endregion
         #region Acciones
-        public async Task<(string, bool)> ValidateNewQueja(Queja quejaInsert)
-        {
-            bool insertado = await _ejecutivoRepository.InsertQueja(quejaInsert);
-            if (insertado)
-            {
-                return ("Queja insertada con éxito.", true);
-            }
-            else
-            {
-                return ("Error al insertar la queja.", false);
-            }
-        }
+        
 
-        public async Task<string> AccionesComentario(AccionesComentarioRequest insertComment)
-        {
-            string insertado = await _ejecutivoRepository.InsertComments(insertComment);
-
-            return ("Comentario insertado con éxito.");
-        }
+        
         #endregion
 
         #region Calculadora
@@ -1942,11 +1920,11 @@ namespace NoriAPI.Services
             if (domiciliosGet == null || domiciliosGet.Rows.Count == 0)
                 return;
 
-<<<<<<< HEAD
+
             if (dsTablas.Tables.Contains("Domicilios"))
-=======
+
             if (dsTablas.Tables.Contains("Domicilios")) ;
->>>>>>> origin/Mark33-QuejasFull
+
             {
                 dsTablas.Tables.Remove("Domicilios");
             }
@@ -2052,7 +2030,7 @@ namespace NoriAPI.Services
             }
         }
         #endregion
-<<<<<<< HEAD
+
 
         #region Relaciones
         public DataTable CargaRelaciones()
@@ -2693,9 +2671,8 @@ namespace NoriAPI.Services
         }
         #endregion
     }
-=======
->>>>>>> origin/Mark33-QuejasFull
 
 
-    }
+
+    
 }
