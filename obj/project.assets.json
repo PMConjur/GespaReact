@@ -1689,17 +1689,11 @@
     ]
   },
   "packageFolders": {
-<<<<<<< HEAD
     "/Users/urielsaenz/.nuget/packages/": {}
-=======
-    "C:\\Users\\Ramon Montes\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
->>>>>>> origin/Mark32-GuardarCorrecion
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-<<<<<<< HEAD
       "projectUniqueName": "/Users/urielsaenz/Documents/CodeGit/Back/GespaReact/NoriAPI.csproj",
       "projectName": "NoriAPI",
       "projectPath": "/Users/urielsaenz/Documents/CodeGit/Back/GespaReact/NoriAPI.csproj",
@@ -1708,21 +1702,6 @@
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/urielsaenz/.nuget/NuGet/NuGet.Config"
-=======
-      "projectUniqueName": "C:\\Users\\Ramon Montes\\Documents\\Back\\NoriAPI.csproj",
-      "projectName": "NoriAPI",
-      "projectPath": "C:\\Users\\Ramon Montes\\Documents\\Back\\NoriAPI.csproj",
-      "packagesPath": "C:\\Users\\Ramon Montes\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Ramon Montes\\Documents\\Back\\obj\\",
-      "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
-      "configFilePaths": [
-        "C:\\Users\\Ramon Montes\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
->>>>>>> origin/Mark32-GuardarCorrecion
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -1801,5 +1780,13 @@
         "runtimeIdentifierGraphPath": "/usr/local/Cellar/dotnet@8/8.0.12/libexec/sdk/8.0.112/PortableRuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "Undefined",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Problem reading the cache file /Users/urielsaenz/Documents/CodeGit/Back/GespaReact/obj/project.nuget.cache : Invalid property identifier character: <. Path 'version', line 3, position 0."
+    }
+  ]
 }
