@@ -1,25 +1,26 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace NoriAPI.Models.Busqueda
 {
-    public class BusquedaClass
+    public class BusquedaNueva
     {
-        public int idDato { get; set; }
-        public int idFuente { get; set; }
+        public string IdCuenta { get; set; }
+        public int IdEjecutivo { get; set; }
+        public int IdCartera { get; set; }
         public string Dato { get; set; }
-        public bool Encontrado { get; set; }
-        public Telefono[] Teléfonos { get; set; } = Array.Empty<Telefono>();
-        public string Persona { get; set; }
-        public string Puesto { get; set; }
-        public string Lugar { get; set; }
-        public string Link { get; set; }
-        public int? validador { get; set; }
-        public DateTime Fecha_Insert { get; set; } // Propiedad para Fecha_Insert
-        public TimeSpan Segundo_Insert { get; set; } // Propiedad para Segundo_Insert
-    }
 
-    public class Telefono
-    {
-        public string NúmeroTelefónico { get; set; }
+        public short IdDato { get; set; }
+        public short IdFuente { get; set; }
+        public bool Encontrado { get; set; }
+        public byte NumeroTelefonosEncontrados { get; set; }
+        public string NombrePersona { get; set; }
+        public string Puesto { get; set; }
+        public string NombreLugar { get; set; }
+        public string DomicilioLugar { get; set; }
+        public TimeSpan? TiempoEnCuenta { get; set; }
+        public string Link { get; set; }
+        [RegularExpression(@"^\d*$", ErrorMessage = "El validador debe ser un número válido.")]
+        public string Validador { get; set; }
     }
 }
