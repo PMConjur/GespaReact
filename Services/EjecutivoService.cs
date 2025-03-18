@@ -27,7 +27,7 @@ namespace NoriAPI.Services
         Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
         Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
         Task<ResultadoCalculadora> ValidateInfoCalculadora1(int Cartera, string NoCuenta, int idHerr);
-        Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int IdCartera, double MontoRequerido, int Descuento, int iMeses, string dtpFecha);
+        Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int IdCartera, double MontoRequerido, int Descuento, int iMeses, string dtpFecha, int periodos);
     }
 
     public class EjecutivoService : IEjecutivoService
@@ -470,7 +470,7 @@ namespace NoriAPI.Services
 
         #region Calculadora-2daParte
 
-        public async Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int idcartera, double MontoRequerido, int Descuento, int iMeses_, string dtpFecha)
+        public async Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int idcartera, double MontoRequerido, int Descuento, int iMeses_, string dtpFecha, int periodos)
         {         
             DataTable dtDescuentos = new DataTable();
             DataTable HerramientasC = new DataTable();
@@ -484,7 +484,7 @@ namespace NoriAPI.Services
             DataTable tblPlazos = new DataTable();
             DataTable dtHerrFiltradas = new DataTable();
             bool _bLendingPrimes;
-            int iAñadidos, iPeriodos = 1;
+            int iAñadidos, iPeriodos = periodos;
             double dMontoRequerido = 0, dMensualidad;
 
             //---------------------------------------Negociaciones--------------------------------//
@@ -657,7 +657,7 @@ namespace NoriAPI.Services
             if (dMontoAjuste > 0 && !_bLendingPrimes)
                 dMontoNegociado = MontoRequerido;
             else
-                dMontoNegociado = MontoRequerido;
+                dMontoNegociado = MontoRequerido; 
 
             if (idherramienta == 1010)
                 dMontoNegociado = MontoRequerido = saldo;
@@ -790,18 +790,23 @@ namespace NoriAPI.Services
                 }
 
             }
-
             //Muestra cálculos
             double MontoRequerido_ = Convert.ToDouble(dMontoRequerido.ToString());
             double MontoNegociado_ = Convert.ToDouble(dMontoNegociado.ToString());
             double Pago = Convert.ToDouble(tblPlazos.Rows[0]["Pago"].ToString());
             string Plazos = tblPlazos.Rows.Count.ToString();
             double Remanente = Convert.ToDouble(Math.Max(saldo - MontoNegociado_, 0).ToString());
-           
-            /////Regresa valores///////////////////////            
+
+            /////Regresa valores///////////////////////
+            List<CalculosInfo> listaCalculos = _ejecutivoRepository.ConvertirDataTableAListaC(tblPlazos);                        
             var ResultadoCalculadora2 = new ResultadoCalculadora2
             {
-                
+                Calculos = listaCalculos,
+                MontoRequerido = MontoRequerido_,
+                MontoNegociado = MontoNegociado_,
+                Pago = Pago,
+                Plazos = Plazos,
+                Descuento = Descuento                
             };            
             return ResultadoCalculadora2;
 

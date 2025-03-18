@@ -37,6 +37,7 @@ namespace NoriAPI.Repositories
         object CampoCalculado(string Expresión);
         List<OfrecimientosInfo> ConvertirDataTableALista(DataTable dt);
         List<HerramientasInfo> ConvertirDataTableALista_(DataTable dt);
+        List<CalculosInfo> ConvertirDataTableAListaC(DataTable dt);
 
         #endregion
 
@@ -727,15 +728,7 @@ namespace NoriAPI.Repositories
         }
 
         #endregion
-
-        #region Calculadora.2daparte
-
-
-
-
-
-        #endregion
-
+       
 
         #region Tiempos
         public async Task<ResultadoTiempos> ValidateTimes(int numEmpleado)
@@ -956,6 +949,20 @@ namespace NoriAPI.Repositories
                 Nombre = row.Field<string>("Nombre")                
             }).ToList();
         }
+        public List<CalculosInfo> ConvertirDataTableAListaC(DataTable dt)
+        {
+            return dt.AsEnumerable().Select(row => new CalculosInfo
+            {
+                No = row.Field<string>("No."),
+                Fecha = row.Field<DateTime>("Fecha"),
+                saldo = row.Field<decimal>("saldo"),
+                pago = row.Field<decimal>("pago"),
+                SaldoFinal = row.Field<decimal>("Saldo Final")
+            }).ToList();
+
+        }
+
+
 
 
     }
