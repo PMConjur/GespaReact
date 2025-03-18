@@ -1,9 +1,9 @@
 import { useContext, useState, useEffect } from "react";
-import { Modal, Table, Button, Card, Form } from "react-bootstrap";
+import { Modal, Table, Button, Card, Form, Col} from "react-bootstrap";
 import { fetchAccoutStatements, fetchSaveAccount } from "../../../services/gespawebServices";
 import { AppContext } from "../../../pages/Managment";
 import { toast } from "sonner";
-import "../../../scss/styles.scss"
+import "../../../scss/styles.scss";
 
 const EstadoCuentaModal = ({ show, handleClose }) => {
   const [accountData, setAccountData] = useState([]);
@@ -14,10 +14,20 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   });
   const [selectedEmail, setSelectedEmail] = useState("");
   const [selectedOption, setSelectedOption] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false); // Estado para controlar la validez del formulario
   const responseData =
     location.state || JSON.parse(localStorage.getItem("responseData"));
 
   const { searchResults } = useContext(AppContext);
+
+  // Validar si el formulario está completo
+  useEffect(() => {
+    const isValid =
+      selectedDateRange.startDate &&
+      selectedDateRange.endDate &&
+      selectedEmail;
+    setIsFormValid(isValid);
+  }, [selectedDateRange, selectedEmail]);
 
   // Obtener datos de estado de cuenta
   const handleAccountStatement = async () => {
@@ -67,9 +77,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   // Envío de datos al endpoint
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("handleSubmit ejecutado"); 
-
-    console.log("Iniciando handleSubmit...");
+    console.log("handleSubmit ejecutado");
 
     // Validar campos obligatorios
     if (!selectedDateRange.startDate || !selectedDateRange.endDate || !selectedEmail) {
@@ -77,25 +85,19 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
       return;
     }
 
-    console.log("Campos validados correctamente.");
-
     const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
-    // Construir el objeto de datos para enviar al endpoint
     const requestData = {
-      idCartera: 1, // Ajusta según necesidad
-      idCuenta: searchResults?.[0]?.idCuenta.trim() || "string", // Obtener idCuenta del primer resultado
-      idEjecutivo: idEjecutivo, // Ajusta según necesidad o obtén del contexto
+      idCartera: 1,
+      idCuenta: searchResults?.[0]?.idCuenta.trim() || "string",
+      idEjecutivo: idEjecutivo,
       fechaInicial: new Date(selectedDateRange.startDate).toISOString(),
       fechaFinal: new Date(selectedDateRange.endDate).toISOString(),
-      consulta: selectedOption, // true si es consulta, false si es envío
+      consulta: selectedOption,
       correoElectrónico: selectedEmail,
     };
 
-    console.log("Datos a enviar:", requestData);
     try {
-      console.log("Enviando datos al endpoint...");
       const response = await fetchSaveAccount(requestData);
-      console.log("Respuesta del servidor:", response);
       toast.success("Solicitud enviada correctamente.");
     } catch (error) {
       console.error("Error al enviar la solicitud:", error);
@@ -114,7 +116,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
         <Modal.Title>Estado de Cuenta - Gespa</Modal.Title>
       </Modal.Header>
 
-      <Modal.Body  style={{ padding: "5px 10px" }}>
+      <Modal.Body style={{ padding: "5px 10px", maxHeight: '420px', overflowY: 'auto'}}>
         <div className="d-block d-lg-flex">
           <div>
             <div
@@ -122,7 +124,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
               style={{
                 overflow: "auto ",
                 maxWidth: "550px",
-                maxHeight: "375px",
+                maxHeight: "420px",
                 marginBottom: "auto",
                 height: "100%",
               }}
@@ -130,7 +132,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
               {loading ? (
                 <p>Cargando datos...</p>
               ) : (
-                <div style={{}}>
+                <div>
                   <Table striped bordered hover variant="dark" className="custom-table-account">
                     <thead>
                       <tr>
@@ -165,21 +167,9 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                 </div>
               )}
             </div>
-            <div>
-              <Button
-                variant="secondary"
-                onClick={handleClose}
-                style={{ marginBottom: "30px", marginTop: "10px" }}
-              >
-                Cerrar
-              </Button>
-            </div>
           </div>
-          {/* Card para ingresar datos */}
-          <Card
-            className="ml-3"
-            style={{ width: "18rem", marginBottom: "0px" }}
-          >
+          <Col>
+          <Card className="ml-3 w-auto" style={{ width: "18rem", marginBottom: "0px" }}>
             <Card.Body style={{ padding: "5px" }}>
               <Card.Title style={{ paddingTop: "0px" }}>
                 Solicitar Estado de Cuenta
@@ -221,7 +211,6 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                   </Form.Select>
                 </Form.Group>
 
-                {/* Opciones de consulta */}
                 <div className="d-grid gap-2 mb-3">
                   <Form.Switch
                     label="Consulta"
@@ -231,18 +220,19 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                   />
                 </div>
 
-                {/* Botón de Solicitar */}
                 <Button
                   variant="primary"
                   type="button"
                   style={{ borderRadius: "20px" }}
                   onClick={handleSubmit}
+                  disabled={!isFormValid} // Deshabilitar el botón si el formulario no es válido
                 >
                   Solicitar
                 </Button>
               </Form>
             </Card.Body>
           </Card>
+          </Col>
         </div>
       </Modal.Body>
     </Modal>

@@ -41,11 +41,6 @@ const AccionamientosModal = ({ show, handleClose, data }) => {
       <Modal.Body>
         <AccionamientosTable data={data} />
       </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
-          Cerrar
-        </Button>
-      </Modal.Footer>
     </Modal>
   );
 };

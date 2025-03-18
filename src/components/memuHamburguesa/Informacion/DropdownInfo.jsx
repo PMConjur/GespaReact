@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react';
 import { AppContext } from '../../../pages/Managment'; // Ajusta la ruta según tu estructura de archivos
-
+import Addresses from './Addresses'; // Importar el componente Addresses
 import Dropdown from 'react-bootstrap/Dropdown';
 import Payments from './Payments'; // Asegúrate de importar el componente
 import "../../../scss/styles.scss";
@@ -10,14 +10,10 @@ import { getPaymentsData } from '../../../services/gespawebServices';
 //import "../../../scss/styles.scss";
 
 function DropdownInfo() {
-
-
-
   const [showPayments, setShowPayments] = useState(false);
   const [paymentsData, setPaymentsData] = useState([]);
   const [loadingPayments, setLoadingPayments] = useState(false);
-
-
+  const [showAddresses, setShowAddresses] = useState(false); // Estado para controlar la visibilidad del modal de Addresses
 
     // Consumir el contexto
     const { searchResults } = useContext(AppContext);
@@ -30,14 +26,16 @@ function DropdownInfo() {
           const talks = await getPaymentsData(searchResults); // Obtener los datos de pagos
           setPaymentsData(talks.flat()); // Establece los datos recibidos
           setShowPayments(true);
-        } catch (error) {
+        } catch (error) {11
           console.error('Error al cargar los datos de pagos:', error);
         } finally {
           setLoadingPayments(false);
         }
       };
     
-      const handleClosePayments = () => setShowPayments(false);
+  const handleClosePayments = () => setShowPayments(false);
+  const handleShowAddresses = () => setShowAddresses(true);
+  const handleCloseAddresses = () => setShowAddresses(false);
   
 
   return ( 
@@ -49,7 +47,7 @@ function DropdownInfo() {
         <Dropdown.Menu placement="end" style={{backgroundColor: '#1d1f20', border: 'none'}} className='custom-dropdown-menu'>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Multideudores</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Adicionales</Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Domicilios</Dropdown.Item>
+          <Dropdown.Item onClick={handleShowAddresses} className="custom-dropdown-item">Domicilios</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Correos</Dropdown.Item>
           <Dropdown.Item onClick={handleShowPayments} className="custom-dropdown-item">Pagos</Dropdown.Item>
         </Dropdown.Menu>
@@ -57,18 +55,8 @@ function DropdownInfo() {
 
       {/* Renderiza el modal */} 
       <Payments show={showPayments} handleClose={handleClosePayments} data={paymentsData} loadingPayments={loadingPayments} />
-
-{/* Renderiza el modal 
-
-
-<MultiDeptor show={showModal} handleClose={handleClose} />
-const [showModal, setShowModal] = useState(false);
-
-const handleShow = () => setShowModal(true);
-const handleClose = () => setShowModal(false);
-*/}
-
- 
+      {/* Renderiza el modal de Addresses */}
+      <Addresses show={showAddresses} handleClose={handleCloseAddresses} />
     </>
   );
 }

@@ -173,7 +173,7 @@ const Search = ({ show, handleClose }) => {
       <Modal.Header closeButton>
         <Modal.Title>Búsquedas - Gespa</Modal.Title>
       </Modal.Header>
-      <Modal.Body style={{ display: 'flex', width: '100%', justifyContent: 'space-between'}} className="d-block d-lg-flex">
+      <Modal.Body style={{maxHeight: '400px', overflowY: 'auto', display: 'flex', width: '100%', justifyContent: 'space-between'}} className="d-block d-lg-flex">
         <div className="scroll-container" style={{ width: '100%', maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column'}}>
           <Form style={{ flexGrow: 1 }}>
             <div style={{display: 'flex', justifyContent:'space-between', marginRight: '20px'}}>
@@ -299,7 +299,7 @@ const Search = ({ show, handleClose }) => {
           </div>
         </div>
         {loading ? (
-          <div className="text-center">
+          <div className="text-center ">
             <Spinner animation="border" role="status">
               <span className="visually-hidden">Cargando...</span>
             </Spinner>

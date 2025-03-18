@@ -87,7 +87,7 @@ const Complaints = ({ show, handleClose }) => {
       <Modal.Header closeButton>
         <Modal.Title>Quejas - Gespa</Modal.Title>
       </Modal.Header>
-      <Modal.Body className='d-block d-lg-flex gap-4'>
+      <Modal.Body className='d-block d-lg-flex gap-4' style={{maxHeight: '500px', overflowY: 'auto'}}>
         <Form>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <Form.Group className="mb-3" style={{ width: '48%' }}>
