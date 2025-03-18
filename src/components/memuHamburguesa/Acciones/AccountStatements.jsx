@@ -118,7 +118,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
         <div className="d-flex">
           <div>
             <div
-              className="flex-grow-1"
+              className="flex-grow-1 scroll-container"
               style={{
                 overflow: "auto ",
                 maxWidth: "550px",

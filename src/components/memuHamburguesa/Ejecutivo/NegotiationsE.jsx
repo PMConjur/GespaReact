@@ -1,42 +1,52 @@
+// Importación de dependencias y servicios
 import { useState, useEffect } from "react";
-import { Modal, Container, Row, Table } from "react-bootstrap";
+import { Modal, Button, Form, Container, Row, Table } from "react-bootstrap";
 import { toast } from "sonner";
 import servicio from "../../../services/axiosServices";
 
-const ActivityDay = ({ show, handleClose }) => {
+// Componente principal de Negociaciones
+const Negotiations = ({ show, handleClose }) => {
+  // Obtiene los datos almacenados localmente del ejecutivo
   const responseData = JSON.parse(localStorage.getItem("responseData"));
+  console.log("responseData:", responseData); // Línea para debugging
+
+  // Extrae el id del ejecutivo del objeto responseData
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
 
-  const [cuentasData, setCuentasData] = useState([]);
-  const [gestionesData, setGestionesData] = useState([]);
+  // Estados locales para datos de la tabla y carga
+  const [tableData, setTableData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedGestion, setSelectedGestion] = useState(null);
 
+  // Función para validar si el idEjecutivo es válido
   const validateidEjecutivo = (id) => {
-    // console.log("Validating idEjecutivo:", id);
     return (
       (typeof id === "string" && id.trim() !== "") ||
       (typeof id === "number" && !isNaN(id))
     );
   };
 
-  const fetchActivityDayData = async () => {
-    // console.log("idEjecutivo:", idEjecutivo);
+  // Función que obtiene los datos de negociaciones desde el backend
+  const fetchNegotiationsData = async () => {
+    // Validación del ID del ejecutivo
     if (!validateidEjecutivo(idEjecutivo)) {
-      toast.error("Error 400: Por favor ingrese un ID de Ejecutivo válido.");
+      toast.error("Error 400: Por favor ingrese un ID de cuenta válido.");
       return;
     }
 
-    setIsLoading(true);
+    setIsLoading(true); // Activa el estado de carga
+
     try {
+      // Solicitud al backend
       const response = await servicio.get(
-        `/ejecutivo/gestionesDelDia/${idEjecutivo}`
+        `/ejecutivo/NegociacionesDelMesEje/${idEjecutivo}`
       );
-      setCuentasData(response.data.Cuentas);
-      setGestionesData(response.data.GestionesEjecutivo);
+      setTableData(response.data); // Guarda los datos obtenidos
     } catch (error) {
+      // Manejo de errores
       console.error("Error fetching multideudores data:", error);
+
       if (error.response) {
+        // Error con respuesta del servidor
         if (error.response.status === 404) {
           toast.error(
             "Error 404: No se encontró la cuenta especificada. Por favor, verifique el ID de cuenta e intente nuevamente."
@@ -47,40 +57,33 @@ const ActivityDay = ({ show, handleClose }) => {
           );
         }
       } else if (error.request) {
+        // Error sin respuesta del servidor
         toast.error("Error: No se recibió respuesta del servidor.");
       } else {
+        // Otros errores
         toast.error(
           `Error: Ocurrió un problema al realizar la solicitud. Detalles: ${error.message}`
         );
       }
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Desactiva el estado de carga
     }
   };
 
+  // useEffect para obtener datos cuando el modal se muestra
   useEffect(() => {
     if (show) {
-      fetchActivityDayData();
+      fetchNegotiationsData();
     }
-  }, [show, idEjecutivo]);
+  }, [show]);
 
-  const renderCell = (value) => {
-    if (typeof value === "object" && value !== null) {
-      return JSON.stringify(value);
-    }
-    return value ?? "N/A";
-  };
-
-  const handleRowClick = (item) => {
-    // console.log("Selected gestion:", item);
-    setSelectedGestion(item); // Asigna el item seleccionado a selectedGestion
-  };
-
+  // Render del componente Modal con los datos de negociaciones
   return (
     <Modal show={show} onHide={handleClose} size="xl">
       <Modal.Header closeButton>
-        <Modal.Title>Gestiones Diarias</Modal.Title>
+        <Modal.Title>Negociaciones del mes</Modal.Title>
       </Modal.Header>
+
       <Modal.Body>
         <Container>
           <hr />
@@ -88,88 +91,40 @@ const ActivityDay = ({ show, handleClose }) => {
             <Table striped bordered hover>
               <thead>
                 <tr>
-                  <th>Fecha</th>
-                  <th>Hora</th>
                   <th>Cuenta</th>
-                  <th>Producto</th>
-                  <th>Situacion</th>
-                  <th>Nombre</th>
-                  <th>RFC</th>
-                  <th>NumeroCliente</th>
-                  <th>Saldo</th>
+                  <th>Herramienta</th>
+                  <th>Estado</th>
+                  <th>Fecha Creación</th>
+                  <th>Fecha Término</th>
+                  <th>Negociado</th>
+                  <th>Pagado</th>
+                  <th>Pagos</th>
+                  <th>Carta Convenio</th>
                 </tr>
               </thead>
               <tbody>
-                {cuentasData.map((item, index) => (
+                {tableData.map((item, index) => (
                   <tr key={index}>
-                    <td>{renderCell(item.Fecha_Insert)}</td>
-                    <td>{renderCell(item.Segundo_Insert)}</td>
-                    <td>{renderCell(item.idCuenta)}</td>
-                    <td>{renderCell(item.idProducto)}</td>
-                    <td>{renderCell(item.idSituación)}</td>
-                    <td>{renderCell(item.NombreDeudor)}</td>
-                    <td>{renderCell(item.RFC)}</td>
-                    <td>{renderCell(item.NúmeroCliente)}</td>
-                    <td>{renderCell(item.Saldo)}</td>
+                    <td>{item.idCuenta ?? "N/A"}</td>
+                    <td>{item.Herramienta ?? "N/A"}</td>
+                    <td>{item.idEstado ?? "N/A"}</td>
+                    <td>{item.FechaCreación ?? "N/A"}</td>
+                    <td>{item.FechaTérmino ?? "N/A"}</td>
+                    <td>{item.MontoNegociado ?? "N/A"}</td>
+                    <td>{item.MontoPagado ?? "N/A"}</td>
+                    <td>{item.Pagos ?? "N/A"}</td>
+                    <td>{item._CartaConvenio ? "Sí" : "No"}</td>
                   </tr>
                 ))}
               </tbody>
             </Table>
-          </Row>
-        </Container>
-
-        <Container>
-          <Modal.Title>Gestiones</Modal.Title>
-          <hr />
-          <Row>
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Hora</th>
-                  <th>Telefono</th>
-                  <th>Contacto</th>
-                  <th>Situacion</th>
-                  <th>CausaNoPago</th>
-                  <th>Parentesco</th>
-                  <th>Nombre</th>
-                  <th>Modo</th>
-                  <th>Acercamiento</th>
-                  <th>Duracion</th>
-                </tr>
-              </thead>
-              <tbody>
-                {gestionesData.map((item, index) => (
-                  <tr key={index} onClick={() => handleRowClick(item)}>
-                    <td>{renderCell(item.Fecha_Insert)}</td>
-                    <td>{renderCell(item.Segundo_Insert)}</td>
-                    <td>{renderCell(item.NúmeroTelefónico)}</td>
-                    <td>{renderCell(item.idContacto)}</td>
-                    <td>{renderCell(item.idSituaciónGestión)}</td>
-                    <td>{renderCell(item.idCausaNoPago)}</td>
-                    <td>{renderCell(item.idParentesco)}</td>
-                    <td>{renderCell(item.NombreContacto)}</td>
-                    <td>{renderCell(item.idModo)}</td>
-                    <td>{renderCell(item.idAcercamiento)}</td>
-                    <td>{renderCell(item.Duración)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Row>
-          <Row>
-            <div>
-              <strong>Comentario: </strong>
-              {selectedGestion && selectedGestion.Comentario
-                ? renderCell(selectedGestion.Comentario)
-                : "Seleccione una gestión para ver el comentario"}
-            </div>
           </Row>
         </Container>
       </Modal.Body>
-      <Modal.Footer></Modal.Footer>
+
+      <Modal.Footer>{/* Puedes agregar botones aquí si deseas */}</Modal.Footer>
     </Modal>
   );
 };
 
-export default ActivityDay;
+export default Negotiations;

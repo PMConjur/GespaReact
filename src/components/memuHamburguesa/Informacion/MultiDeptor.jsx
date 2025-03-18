@@ -1,43 +1,119 @@
-import { useState } from "react";
-import Dropdown from "react-bootstrap/Dropdown";
-import "../../../scss/styles.scss";
-import MultiDeptor from "../Informacion/MultiDeptor"; // Ajusta la ruta según la ubicación de tu archivo // Ajusta la ruta según la ubicación de tu archivo
+import { useState, useEffect } from "react";
+import { Modal, Button, Form, Container, Row, Table } from "react-bootstrap";
+import { toast } from "sonner";
+import servicio from "../../../services/axiosServices";
 
-function DropdownInfo() {
-  const [showModal, setShowModal] = useState(false);
+const Multideudores = ({ show, handleClose }) => {
+  const responseData = JSON.parse(localStorage.getItem("responseData"));
+  //const numEmpleado = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+  const [idCuenta, setIdCuenta] = useState("");
+  const [tableData, setTableData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleShow = () => setShowModal(true);
-  const handleClose = () => setShowModal(false);
+  const validateIdCuenta = (id) => {
+    return id && id.trim() !== "";
+  };
+
+  const fetchMultideudoresData = async () => {
+    if (!validateIdCuenta(idCuenta)) {
+      toast.error("Error 400: Por favor ingrese un ID de cuenta válido.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await servicio.get(
+        `/ejecutivo/multideudores/1/${idCuenta}`
+      );
+      setTableData(response.data);
+    } catch (error) {
+      console.error("Error fetching multideudores data:", error);
+      if (error.response) {
+        if (error.response.status === 404) {
+          toast.error(
+            "Error 404: No se encontró la cuenta especificada. Por favor, verifique el ID de cuenta e intente nuevamente."
+          );
+        } else {
+          toast.error(
+            `Error ${error.response.status}: ${error.response.data.message}`
+          );
+        }
+      } else if (error.request) {
+        toast.error("Error: No se recibió respuesta del servidor.");
+      } else {
+        toast.error(
+          `Error: Ocurrió un problema al realizar la solicitud. Detalles: ${error.message}`
+        );
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <>
-      <Dropdown className="">
-        <Dropdown.Toggle
-          className="custom-dropdown-toggle d-flex align-items-center"
-          id="dropdown-right"
-        >
-          Información
-        </Dropdown.Toggle>
-        <Dropdown.Menu
-          placement="end"
-          style={{ backgroundColor: "#1d1f20", border: "none" }}
-          className="custom-dropdown-menu"
-        >
-          <Dropdown.Item onClick={handleShow} className="custom-dropdown-item">
-            Multideudores
-          </Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">
-            Adicionales
-          </Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">
-            Pagos
-          </Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown>
-
-      <MultiDeptor show={showModal} handleClose={handleClose} />
-    </>
+    <Modal show={show} onHide={handleClose} size="xl">
+      <Modal.Header closeButton>
+        <Modal.Title>Multideudores</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Container>
+          <Row>
+            <div className="col">
+              <Form.Group className="input-group mb-3">
+                <Form.Control
+                  type="text"
+                  placeholder="ID Cuenta"
+                  value={idCuenta}
+                  onChange={(e) => setIdCuenta(e.target.value)}
+                />
+                <Button
+                  variant="primary"
+                  onClick={fetchMultideudoresData}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Cargando..." : "Buscar"}
+                </Button>
+              </Form.Group>
+            </div>
+          </Row>
+          <hr />
+          <Row>
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th>Cuenta</th>
+                  <th>Cartera</th>
+                  <th>Producto</th>
+                  <th>Situacion</th>
+                  <th>RFC</th>
+                  <th>NumeroCliente</th>
+                  <th>Saldo</th>
+                  <th>Activacion</th>
+                  <th>Bloqueo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tableData.map((item, index) => (
+                  <tr key={index}>
+                    <td>{item.idCuenta ?? "N/A"}</td>
+                    <td>{item.idCartera ?? "N/A"}</td>
+                    <td>{item.idProducto ?? "N/A"}</td>
+                    <td>{item.idSituacion ?? "N/A"}</td>
+                    <td>{item.RFC ?? "N/A"}</td>
+                    <td>{item.NumeroCliente ?? "N/A"}</td>
+                    <td>{item.Saldo ?? "N/A"}</td>
+                    <td>{item.Activacion ?? "N/A"}</td>
+                    <td>{item.Bloqueo ? "Sí" : "No"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Row>
+        </Container>
+      </Modal.Body>
+      <Modal.Footer></Modal.Footer>
+    </Modal>
   );
-}
+};
 
-export default DropdownInfo;
+export default Multideudores;

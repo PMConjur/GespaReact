@@ -2,6 +2,7 @@ import { useContext, useState, useEffect } from "react";
 import { Modal, Button, Form, Table, Spinner, Dropdown } from 'react-bootstrap';
 import { fetchActionsSearch, fetchSaveExecutive } from '../../../services/gespawebServices';
 import { AppContext } from "../../../pages/Managment";
+import "../../../scss/styles.scss"
 
 const Search = ({ show, handleClose }) => {
   const { searchResults } = useContext(AppContext);
@@ -142,12 +143,12 @@ const Search = ({ show, handleClose }) => {
   };
 
   return (
-    <Modal show={show} onHide={handleClose} size="xl" centered>
+    <Modal show={show} onHide={handleClose} size="xl" centered >
       <Modal.Header closeButton>
         <Modal.Title>Búsquedas - Gespa</Modal.Title>
       </Modal.Header>
-      <Modal.Body style={{ display: 'flex', width: '100%', justifyContent: 'space-between' }}>
-        <div style={{ width: '100%', maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+      <Modal.Body style={{ display: 'flex', width: '100%', justifyContent: 'space-between',  }}>
+        <div className="scroll-container" style={{ width: '100%', maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column'}}>
           <Form style={{ flexGrow: 1 }}>
             <div style={{display: 'flex', justifyContent:'space-between', marginRight: '20px'}}>
               <Form.Group className="mb-3">
@@ -269,7 +270,7 @@ const Search = ({ show, handleClose }) => {
             </Spinner>
           </div>
         ) : (
-          <div style={{ overflow: 'auto', maxHeight: '400px', maxWidth: '800px' }}>
+          <div className="scroll-container" style={{ overflow: 'auto', maxHeight: '400px', maxWidth: '800px'}}>
             <Table striped bordered hover variant="dark" className="mt-3">
               <thead>
                 <tr>
@@ -290,7 +291,7 @@ const Search = ({ show, handleClose }) => {
                   <th>Link</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody variant= 'dark'>
                 {tableData.map((item, index) => (
                   <tr key={index}>
                     <td>{item.Fecha}</td>
