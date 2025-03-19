@@ -321,10 +321,18 @@ namespace NoriAPI.Services
                 dtDescuentos.PrimaryKey = new DataColumn[] { dtDescuentos.Columns["idHerramienta"] };
             }
             sHerramientas = sHerramientas.TrimEnd(',') + ")";
-
-
             // IDs que quieres filtrar para mostrar en el combox
-            int[] idsFiltrar = { 0, 136, 137, 138, 139, 1010, 142, 684 };// sHerramientas
+            string idsString = sHerramientas.Substring(sHerramientas.IndexOf("(") + 1, sHerramientas.IndexOf(")") - sHerramientas.IndexOf("(") - 1);
+            string[] idsArray = idsString.Split(',');
+            List<int> idsFiltrar = new List<int>();
+
+            foreach (string id in idsArray)
+            {
+                if (int.TryParse(id.Trim(), out int idInt))
+                {
+                    idsFiltrar.Add(idInt);
+                }
+            }
 
             dtHerrFiltradas.Columns.Add("idHerramienta", typeof(int));
             dtHerrFiltradas.Columns.Add("Nombre", typeof(string));
@@ -702,7 +710,7 @@ namespace NoriAPI.Services
                     DateTime Hoy = DateTime.Today;
                     dtFechaCorte = new DateTime(Hoy.Year, Hoy.Month, dtFechaCorte.Day);
 
-                    if (dtFechaCorte >= Hoy)
+                    if (dtFechaCorte >= Hoy) 
                         dtFechaCorte = dtFechaCorte.AddMonths(-1);
 
                     //Suma los pagos al monto requerido.
