@@ -6,6 +6,7 @@ import Times from "./Times";
 import DropdownsInfo from "../../src/components/memuHamburguesa/Informacion/DropdownInfo"
 import DropdownAction from "../../src/components/memuHamburguesa/Acciones/DropdownAction"
 import DropdownExecutive from "../../src/components/memuHamburguesa/Ejecutivo/DropdownExecutive"
+import CalculatorSimulator from "./CalculatorSimulator";
 
 const DebtorInformation = () => {
   const [showModal, setShowModal] = useState(false);
@@ -19,6 +20,11 @@ const DebtorInformation = () => {
   const [showModalTim, setShowModalTim] = useState(false);
   const handleShowModalTim = () => setShowModalTim(true);
   const handleCloseModalTim = () => setShowModalTim(false);
+
+    // Estado para el modal de la Calculadora
+    const [showCalculatorModal, setShowCalculatorModal] = useState(false);
+    const handleShowCalculatorModal = () => setShowCalculatorModal(true);
+    const handleCloseCalculatorModal = () => setShowCalculatorModal(false);
 
   return (
     <Row>
@@ -36,7 +42,7 @@ const DebtorInformation = () => {
         <Breadcrumb.Item href="#" onClick={handleShowModalTim}>
           Tiempos
         </Breadcrumb.Item>
-        <Breadcrumb.Item href="/maintenance">
+        <Breadcrumb.Item href="" onClick={handleShowCalculatorModal}>
           Calculadora
         </Breadcrumb.Item>
         <Breadcrumb.Item href="#">
@@ -58,6 +64,13 @@ const DebtorInformation = () => {
       {/**Mandar a llamar comp times */}
       {showModalTim && (
         <Times show={showModalTim} handleClose={handleCloseModalTim} />
+      )}
+       {/* Modal de la Calculadora */}
+       {showCalculatorModal && (
+        <CalculatorSimulator
+          show={showCalculatorModal}
+          handleClose={handleCloseCalculatorModal}
+        />
       )}
     </Row>
   );
