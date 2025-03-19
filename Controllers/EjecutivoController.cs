@@ -1273,6 +1273,23 @@ namespace NoriAPI.Controllers
         {
             public DataRow DataRow { get; set; }
         }
+        [HttpPost("GuardarGestionTe")]
+        public async Task<IActionResult> GuardarGestionTelefonica([FromBody] GestionTelefonica gestion)
+        {
+            if (gestion == null)
+            {
+                return BadRequest("Datos de gestión no válidos.");
+            }
+
+            if (await _ejecutivoService.GuardarGestionTelefonicaAsync(gestion))
+            {
+                return Ok("Gestión guardada exitosamente.");
+            }
+            else
+            {
+                return BadRequest("Error al guardar la gestión.");
+            }
+        }
         #endregion
 
         #region Adicionales
