@@ -374,12 +374,13 @@ namespace NoriAPI.Services
             foreach (var campo in camposPantalla)
             {
                 string nombreCampo = campo.NombreCampo;
+                string aliasCampo = campo.AliasCampo;
 
-                // ✅ Asegurar que el resultado de CampoCalculado se espere correctamente
+                // Asegurar que el resultado de CampoCalculado se espere correctamente
                 object valorCampo = await CampoCalculado(producto, nombreCampo, idCuenta);
                 object valorFormateado = Formato(valorCampo, campo.IdFormatoCampo);
 
-                resultado[nombreCampo] = valorFormateado;
+                resultado[aliasCampo] = valorFormateado;
             }
 
             return resultado;
