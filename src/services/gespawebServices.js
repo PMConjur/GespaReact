@@ -900,3 +900,49 @@ export const fetchViewComplaints = async ({ idCartera, idCuenta }) => {
     throw error;
   }
 };
+
+// endpoint origen quejas
+export const fetchOriginComplaints = async () => {
+  try {
+    console.log("Llamando al endpoint /ejecutivo/ddOrigenQuejas"); // Confirmar que se llama al endpoint
+    const response = await servicio.get(`/ejecutivo/ddOrigenQuejas`);
+
+    console.log("Respuesta recibida:", response);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Validación recibida:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchOriginComplaints:", error);
+    throw error;
+  }
+};
+
+// endpoint tipo de quejas
+export const fetchDdComplaints = async () => {
+  try {
+    console.log("Llamando al endpoint /ejecutivo/ddQuejas"); // Confirmar que se llama al endpoint
+    const response = await servicio.get(`/ejecutivo/ddQuejas`);
+
+    console.log("Respuesta recibida:", response);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Validación recibida:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchOriginComplaints:", error);
+    throw error;
+  }
+};

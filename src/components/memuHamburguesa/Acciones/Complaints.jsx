@@ -1,16 +1,16 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { Modal, Button, Form, Table, Dropdown } from 'react-bootstrap';
-import { fetchComplaints, fetchViewComplaints } from '../../../services/gespawebServices'; // Importar la función fetchComplaints y fetchViewComplaints
+import { Modal, Button, Form, Table, Dropdown, Col, FloatingLabel} from 'react-bootstrap';
+import { fetchComplaints, fetchViewComplaints, fetchOriginComplaints, fetchDdComplaints} from '../../../services/gespawebServices';
 import { AppContext } from "../../../pages/Managment";
-import { toast } from 'sonner'; // Importar toast de sonner
-import "../../../scss/styles.scss"
+import { toast } from 'sonner';
+import "../../../scss/styles.scss";
 
 const Complaints = ({ show, handleClose }) => {
   const { searchResults, idEjecutivo, nombreEjecutivo } = useContext(AppContext);
 
   const [formData, setFormData] = useState({
-    idQueja: '', // Actualizar para reflejar el idQueja
-    idInstitucion: '', // Actualizar para reflejar el idInstitucion
+    idQueja: '',
+    idInstitucion: '',
     folio: '',
     llamadaEntrada: false,
     comentarios: '',
@@ -19,20 +19,22 @@ const Complaints = ({ show, handleClose }) => {
   });
 
   const [complaints, setComplaints] = useState([]);
-
+  const [originComplaints, setOriginComplaints] = useState([]); // Estado para almacenar los datos del endpoint
   const [isFormValid, setIsFormValid] = useState(false);
+  const [ddComplaints, setDdComplaints] = useState([]);
 
+  // Validar el formulario
   useEffect(() => {
-    // Verificar si todos los campos requeridos están llenos
     const isValid = formData.idQueja && formData.idInstitucion && formData.folio && formData.comentarios && formData.solicitante;
     setIsFormValid(isValid);
   }, [formData]);
 
+  // Cargar las quejas
   useEffect(() => {
     const fetchComplaintsData = async () => {
       if (searchResults.length > 0) {
         const idCuenta = searchResults[0].idCuenta;
-        const idCartera = 1; // Ajusta según sea necesario
+        const idCartera = 1;
         try {
           const result = await fetchViewComplaints({ idCartera, idCuenta });
           console.log("Datos recibidos de fetchViewComplaints:", result);
@@ -43,158 +45,275 @@ const Complaints = ({ show, handleClose }) => {
         }
       }
     };
-  
+
     if (show) {
       fetchComplaintsData();
     }
   }, [show, searchResults]);
+
+  // Cargar los orígenes de quejas
+  useEffect(() => {
+    const fetchOriginData = async () => {
+      try {
+        console.log("Llamando a fetchOriginComplaints");
+        const result = await fetchOriginComplaints();
+        console.log("Datos recibidos de fetchOriginComplaints:", result);
+
+        // Mapear los datos para extraer idValor y Valor
+        const mappedData = result.map((item) => ({
+          id: item.idValor,
+          descripcion: item.Valor,
+        }));
+        setOriginComplaints(mappedData); // Guardar los datos mapeados en el estado
+      } catch (error) {
+        toast.error("Error al cargar los orígenes de quejas");
+        console.error("Error al cargar los orígenes de quejas:", error);
+      }
+    };
+
+    fetchOriginData();
+  }, []);
+
+  // Cargar los tipos de quejas
+  useEffect(() => {
+    const fetchDdComplaintsData = async () => {
+      try {
+        console.log("Llamando a fetchDdComplaints");
+        const result = await fetchDdComplaints();
+        console.log("Datos recibidos de fetchDdComplaints:", result);
+
+        // Mapear los datos para extraer idValor y Valor
+        const mappedData = result.map((item) => ({
+          id: item.idValor,
+          descripcion: item.Valor,
+        }));
+        setDdComplaints(mappedData); // Guardar los datos mapeados en el estado
+      } catch (error) {
+        toast.error("Error al cargar los tipos de quejas");
+        console.error("Error al cargar los tipos de quejas:", error);
+      }
+    };
+
+    fetchDdComplaintsData();
+  }, []);
+
+  // Manejar cambios en el formulario
   const handleChange = (name, value) => {
+    console.log("Cambio detectado:", name, value); // Verifica si los espacios se capturan
     setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
+      ...(name === "titular" && { solicitante: value ? nombreEjecutivo : "" }),
     }));
-
-    // Si el checkbox "Titular" está marcado, establecer el valor de "solicitante" a "nombreEjecutivo"
-    if (name === 'titular') {
-      setFormData((prev) => ({
-        ...prev,
-        solicitante: value ? nombreEjecutivo : ''
-      }));
-    }
   };
 
+  // Manejar el envío del formulario
   const handleReport = async () => {
-    const idCuenta = searchResults.length > 0 ? searchResults[0].idCuenta : 'string'; // Obtener idCuenta de searchResults
-    const currentTime = new Date().toLocaleTimeString('en-GB', { hour12: false });
+    const idCuenta =
+      searchResults.length > 0 ? searchResults[0].idCuenta : "string";
+    const currentTime = new Date().toLocaleTimeString("en-GB", {
+      hour12: false,
+    });
 
     const requestData = {
       idCartera: 1,
-      idCuenta: idCuenta, // Usar idCuenta de searchResults
+      idCuenta: idCuenta,
       fechaInsert: new Date().toISOString(),
-      segundoInsert: currentTime, // Usar el tiempo actual en formato HH:MM:SS
+      segundoInsert: currentTime,
       folio: formData.folio,
-      idEjecutivoInsert: idEjecutivo, // Usar idEjecutivo de searchResults
-      idQueja: formData.idQueja, // Usar idQueja del formulario
-      idInstitucion: formData.idInstitucion, // Usar idInstitucion del formulario
+      idEjecutivoInsert: idEjecutivo,
+      idQueja: formData.idQueja,
+      idInstitucion: formData.idInstitucion,
       solicitante: formData.solicitante,
-      llamadaEntrada: formData.llamadaEntrada, // Usar llamadaEntrada del formulario
-      numeroTelefonico: 5543397030, // Ajusta según sea necesario
-      correoElectronico: 'prueba@gmail.com', // Ajusta según sea necesario
-      idDomicilio: 0, // Ajusta según sea necesario
+      llamadaEntrada: formData.llamadaEntrada,
+      numeroTelefonico: 0,
+      correoElectronico: "",
+      idDomicilio: 0,
       comentario: formData.comentarios,
-      numeroTelefonicoContacto: 5512327708, // Ajusta según sea necesario
-      correoElectronicoContacto: 'prueba2@gmail.com' // Ajusta según sea necesario
+      numeroTelefonicoContacto: 0,
+      correoElectronicoContacto: "",
     };
 
     try {
-        const result = await fetchComplaints(requestData);
-        toast.success('Queja guardada exitosamente'); // Mostrar notificación de éxito
-        // Actualizar la lista de quejas si es necesario
-      } catch (error) {
-        toast.error('Error al guardar la queja'); // Mostrar notificación de error
-        console.error('Error al guardar la queja:', error);
-      }
-    };
+      const result = await fetchComplaints(requestData);
+      toast.success("Queja guardada exitosamente");
+    } catch (error) {
+      toast.error("Error al guardar la queja");
+      console.error("Error al guardar la queja:", error);
+    }
+  };
 
   return (
     <Modal show={show} onHide={handleClose} size="xl" centered>
       <Modal.Header closeButton>
         <Modal.Title>Quejas - Gespa</Modal.Title>
       </Modal.Header>
-      <Modal.Body
-        className="d-block d-lg-flex gap-4"
-        style={{ maxHeight: "500px", overflowY: "auto" }}
-      >
-        <Form>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <Form.Group className="mb-3" style={{ width: "48%" }}>
-              <Form.Label>Tipo de queja</Form.Label>
-              <Dropdown onSelect={(value) => handleChange("idQueja", value)}>
-                <Dropdown.Toggle variant="primary" id="dropdown-queja">
-                  {formData.idQueja || "Seleccionar"}
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item eventKey="1703">Defunción</Dropdown.Item>
-                  <Dropdown.Item eventKey="1701">
-                    Aplicación de Pagos
-                  </Dropdown.Item>
-                  {/* Agregar más opciones según sea necesario */}
-                </Dropdown.Menu>
-              </Dropdown>
-            </Form.Group>
-            <Form.Group className="mb-3" style={{ width: "48%" }}>
-              <Form.Label>Origen</Form.Label>
-              <Dropdown
-                onSelect={(value) => handleChange("idInstitucion", value)}
-              >
-                <Dropdown.Toggle variant="primary" id="dropdown-institucion">
-                  {formData.idInstitucion || "Seleccionar"}
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item eventKey="3401">Conjur</Dropdown.Item>
-                  <Dropdown.Item eventKey="3402">Ejemplo</Dropdown.Item>
-                  {/* Agregar más opciones según sea necesario */}
-                </Dropdown.Menu>
-              </Dropdown>
-            </Form.Group>
-          </div>
-          <Form.Group className="mb-3">
-            <Form.Label>Folio</Form.Label>
-            <Form.Control
-              type="text"
-              name="folio"
-              value={formData.folio}
-              onChange={(e) => handleChange(e.target.name, e.target.value)}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Check
-              type="checkbox"
-              label="Llamada de entrada"
-              name="llamadaEntrada"
-              checked={formData.llamadaEntrada}
-              onChange={(e) => handleChange(e.target.name, e.target.checked)}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Comentarios</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              name="comentarios"
-              value={formData.comentarios}
-              onChange={(e) => handleChange(e.target.name, e.target.value)}
-            />
-          </Form.Group>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <Form.Group className="mb-3" style={{ width: "48%" }}>
-              <Form.Check
-                type="checkbox"
-                label="Titular"
-                name="titular"
-                checked={formData.titular}
-                onChange={(e) => handleChange(e.target.name, e.target.checked)}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" style={{ width: "48%" }}>
-              <Form.Label>Solicitante</Form.Label>
-              <Form.Control
-                type="text"
-                name="solicitante"
-                value={formData.solicitante}
-                onChange={(e) => handleChange(e.target.name, e.target.value)}
-              />
-            </Form.Group>
-          </div>
-          <Button
-            variant="danger"
-            onClick={handleReport}
-            style={{ width: "100%" }}
-            disabled={!isFormValid}
+      <Modal.Body className="d-block d-lg-flex gap-1">
+        <Col>
+          <div
+            className="scroll-container"
+            style={{ maxHeight: "500px", overflowY: "auto" }}
           >
-            Reportar
-          </Button>
-        </Form>
+            <Form>
+              <div style={{ justifyContent: "space-between" }}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Tipo de queja</Form.Label>
+                  <Dropdown
+                    onSelect={(value) => {
+                      const selectedComplaint = ddComplaints.find(
+                        (complaint) => complaint.id === parseInt(value)
+                      );
+                      handleChange("idQueja", value); // Actualizar el idQueja
+                      handleChange(
+                        "tipoQuejaDescripcion",
+                        selectedComplaint?.descripcion || ""
+                      ); // Actualizar el texto seleccionado
+                    }}
+                  >
+                    <Dropdown.Toggle
+                      className="w-100"
+                      variant="primary"
+                      id="dropdown-queja"
+                    >
+                      {formData.tipoQuejaDescripcion || "Seleccionar"}
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu
+                      style={{
+                        maxHeight: "300px",
+                        maxWidth: "300px",
+                        overflowY: "auto", // Habilitar scroll vertical
+                      }}
+                    >
+                      {ddComplaints.length > 0 ? (
+                        ddComplaints.map((complaint) => (
+                          <Dropdown.Item
+                            key={complaint.id}
+                            eventKey={complaint.id}
+                          >
+                            {complaint.descripcion}
+                          </Dropdown.Item>
+                        ))
+                      ) : (
+                        <Dropdown.Item disabled>
+                          No hay datos disponibles
+                        </Dropdown.Item>
+                      )}
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </Form.Group>
+                <Form.Group className="mb-1" style={{ width: "100%" }}>
+                  <Form.Label>Origen</Form.Label>
+                  <Dropdown
+                    onSelect={(value) => {
+                      const selectedOrigin = originComplaints.find(
+                        (origin) => origin.id === parseInt(value)
+                      );
+                      handleChange("idInstitucion", value); // Actualizar el idInstitucion
+                      handleChange(
+                        "institucionDescripcion",
+                        selectedOrigin?.descripcion || ""
+                      ); // Actualizar el texto seleccionado
+                    }}
+                  >
+                    <Dropdown.Toggle
+                      className="w-100"
+                      variant="primary"
+                      id="dropdown-institucion"
+                    >
+                      {formData.institucionDescripcion || "Seleccionar"}
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu
+                      style={{
+                        maxHeight: "300px", // Altura máxima del menú desplegable
+                        overflowY: "auto", // Habilitar scroll vertical
+                      }}
+                    >
+                      {originComplaints.length > 0 ? (
+                        originComplaints.map((origin) => (
+                          <Dropdown.Item key={origin.id} eventKey={origin.id}>
+                            {origin.descripcion}
+                          </Dropdown.Item>
+                        ))
+                      ) : (
+                        <Dropdown.Item disabled>
+                          No hay datos disponibles
+                        </Dropdown.Item>
+                      )}
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </Form.Group>
+              </div>
+              <Form.Group className="mb-1">
+                <Form.Label>Folio</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="folio"
+                  value={formData.folio}
+                  onChange={(e) => handleChange(e.target.name, e.target.value)}
+                />
+              </Form.Group>
+              <Form.Group className="mb-2">
+                <Form.Check
+                  type="checkbox"
+                  label="Llamada de entrada"
+                  name="llamadaEntrada"
+                  checked={formData.llamadaEntrada}
+                  onChange={(e) =>
+                    handleChange(e.target.name, e.target.checked)
+                  }
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Comentarios</Form.Label>
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  name="comentarios"
+                  placeholder="Escribe un comentario aquí"
+                  value={formData.comentarios}
+                  onChange={(e) => {
+                    console.log("Valor del textarea:", e.target.value); // Verifica el valor en tiempo real
+                    handleChange(e.target.name, e.target.value); // Pasa el valor sin modificaciones
+                  }}
+                />
+              </Form.Group>
+              <div style={{ display: "", justifyContent: "space-between" }}>
+                <Form.Group className="mb-1 mt-2" style={{ width: "48%" }}>
+                  <Form.Check
+                    type="checkbox"
+                    label="Titular"
+                    name="titular"
+                    checked={formData.titular}
+                    onChange={(e) =>
+                      handleChange(e.target.name, e.target.checked)
+                    }
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3 w-100" style={{ width: "48%" }}>
+                  <Form.Label>Solicitante</Form.Label>
+                  <Form.Control
+                    className="w-100"
+                    type="text"
+                    name="solicitante"
+                    value={formData.solicitante}
+                    onChange={(e) =>
+                      handleChange(e.target.name, e.target.value)
+                    }
+                  />
+                </Form.Group>
+              </div>
+              <Button
+                className="mt-3"
+                variant="danger"
+                onClick={handleReport}
+                style={{ width: "100%" }}
+                disabled={!isFormValid}
+              >
+                Reportar
+              </Button>
+            </Form>
+          </div>
+        </Col>
         <div
           className="scroll-container"
           style={{
@@ -204,7 +323,7 @@ const Complaints = ({ show, handleClose }) => {
             minWidth: "250px",
           }}
         >
-          <h5 className="mt-4">Quejas</h5>
+          <h5 className="">Quejas</h5>
           <Table striped bordered hover variant="dark">
             <thead>
               <tr>
