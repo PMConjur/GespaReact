@@ -868,3 +868,35 @@ export const fetchComplaints = async (data) => {
     throw error;
   }
 };
+
+// tabla vista quejas
+export const fetchViewComplaints = async ({ idCartera, idCuenta }) => {
+  try {
+    console.log("Enviando solicitud a /ejecutivo/viewQuejas con:", {
+      idCartera,
+      idCuenta,
+    });
+
+    const response = await servicio.get(`/ejecutivo/viewQuejas`, {
+      params: {
+        idCartera,
+        idCuenta,
+      },
+    });
+
+    console.log("Respuesta recibida:", response);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Validación recibida:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchViewComplaints:", error);
+    throw error;
+  }
+};

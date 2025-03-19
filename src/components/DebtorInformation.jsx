@@ -24,7 +24,7 @@ const DebtorInformation = () => {
     <Row>
       <h4 className="text-secondary">
         Cartera: <strong className="text-white">American Express</strong>
-      </h4>{" "}
+      </h4>
       <Breadcrumb style={{zIndex: '100'}}>
         <Breadcrumb.Item href="#" onClick={handleShowModal}>
           Productividad

@@ -107,7 +107,6 @@ const DropdownActions = () => {
           <Dropdown.Item onClick={handleOpenComplaints} className="custom-dropdown-item">Quejas</Dropdown.Item> {/* Actualizar para abrir el modal de quejas */}
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Simuladores</Dropdown.Item>
           <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Procesos WLP</Dropdown.Item>
-          
         </Dropdown.Menu>
       </Dropdown>
 

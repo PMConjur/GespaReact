@@ -46,70 +46,25 @@ const InformationClient = () => {
     loadData();
   }, [searchResults, toastShown]);
 
-  const renderRow = (item) => (
-    <React.Fragment>
-      <tr>
-        <th>Empresa:</th>
-        <td className="text-success">
-          {item["[employersname];[employersaddress]"] || "--"}
-        </td>
-        <th>WO \ CBO / ING:</th>
-        <td className="text-success">
-          {item["[WO?] \\ [CBO] \\[BloqueoHerramienta] \\ [montlyincome]"] ||
-            "--"}
-        </td>
-        <th>Fecha de Corte:</th>
-        <td className="text-success">{item["[Fechacorte]"] || "--"}</td>
-        <th>Fecha de Asignación:</th>
-        <td className="text-success">{item["[batchdate]"] || "--"}</td>
-      </tr>
-      <tr>
-        <th>Fecha de Cancelación:</th>
-        <td className="text-success">{item["[CancellationDate]"] || "--"}</td>
-        <th>Llave 2:</th>
-        <td className="text-success">
-          {item["[CollectibilityCode] [SegmentoAMX] [DescuentoAMX]"] || "--"}
-        </td>
-        <th>Aniversario:</th>
-        <td className="text-success">
-          {item["[anniversarydate] No Ofertar [BloqueoCorporate]"] || "--"}
-        </td>
-        <th>Tipo de Crédito:</th>
-        <td className="text-success">
-          {item["[Product] [loan_productcode]"] || "--"}
-        </td>
-      </tr>
-      <tr>
-        <th>Manual:</th>
-        <td className="text-success">
-          {item["[Valajuste] [AC MANUAL] & [Waiver]"] || "--"}
-        </td>
-        <th>Saldo Inicial:</th>
-        <td className="text-success">{item["[Balance G*]"] || "--"}</td>
-        <th>INV / Atraso:</th>
-        <td className="text-success">
-          {item["[INV] \\ [Diasatraso] Días"] || "--"}
-        </td>
-        <th>Ejecutivo:</th>
-        <td className="text-success">{item["[EJECUTIVO] "] || "--"}</td>
-      </tr>
-      <tr>
-        <th>Interés:</th>
-        <td className="text-success">{item["$"] || "--"}</td>
-        <th>Fecha de Ultimo Pago:</th>
-        <td className="text-success">{item["[Last Date Payment]"] || "--"}</td>
-        <th>Monto de Ultimo Pago:</th>
-        <td className="text-success">{item["[Amount]"] || "--"}</td>
-        <th>Testeo/Contador Co:</th>
-        <td className="text-success">
-          {item[
-            "[StayDaysOA]\\[SettlementAccountDays]\\[Conjurnet]\\[TESTAPR]"
-          ] || "--"}
-        </td>
-      </tr>
-    </React.Fragment>
-  );
-
+  const renderRow = (item) => {
+    // Filtrar las entradas para omitir "Dif_diasTotales"
+    const entries = Object.entries(item).filter(([key]) => key !== "Dif_diasTotales");
+    const rows = [];
+  
+    for (let i = 0; i < entries.length; i += 3) { // Dividir en filas de 3 columnas
+      rows.push(
+        <tr key={i} className="gap-3">
+          {entries.slice(i, i + 3).map(([key, value], index) => (
+            <td key={index} className="text-success">
+              {key}: {value || "--"}
+            </td>
+          ))}
+        </tr>
+      );
+    }
+  
+    return rows;
+  };
   return (
     <Card className="overflow-auto">
       <Card.Header className="text-white">
@@ -128,7 +83,7 @@ const InformationClient = () => {
               {isLoading
                 ? [...Array(4)].map((_, i) => (
                     <tr key={i}>
-                      {[...Array(8)].map((_, j) => (
+                      {[...Array(2)].map((_, j) => (
                         <td key={j}>
                           <Placeholder as="span" animation="glow">
                             <Placeholder xs={12} />
