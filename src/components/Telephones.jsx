@@ -41,7 +41,7 @@ const Telephones = () => {
       const flatPhones = phones.flat();
       setData(flatPhones);
       if (flatPhones.length === 0 && !toastShown) {
-        toast.error("No hay carga de teléfonos", { position: "top-right" });
+        toast.error("Error 404: No hay carga de teléfonos", { position: "top-right" });
         setToastShown(true);
       }
     } catch (error) {
@@ -62,19 +62,19 @@ const Telephones = () => {
 
   const handleValidatePhone = async () => {
     if (!phoneNumber.trim()) {
-      toast.warning("Ingrese un número de teléfono", { position: "top-right",
+      toast.warning("Error 400: Ingrese un número de teléfono", { position: "top-right",
         style: { transform: "translateY(80vh)" }
        });
       return;
     }
     if (phoneNumber.length !== 10 && phoneNumber.length !== 13) {
-      toast.warning("El número de teléfono debe tener 10 o 11 dígitos", {
+      toast.warning("Error 400: El número de teléfono debe tener 10 o 11 dígitos", {
         position: "top-right"
       });
       return;
     }
     if (searchResults.length === 0 || !searchResults[0].idCuenta) {
-      toast.warning("No hay una cuenta válida seleccionada", {
+      toast.warning("Error 404: No hay una cuenta válida seleccionada", {
         position: "top-right"
       });
       return;
@@ -89,13 +89,13 @@ const Telephones = () => {
       });
 
       if (response.exists) {
-        toast.success("El número de teléfono existe en la cuenta", {
+        toast.warring("Error 409: El número de teléfono existe en la cuenta", {
           position: "top-right",
           style: { transform: "translateY(80vh)" }
         });
         setIsPhoneNew(false); // El teléfono existe, no es nuevo
       } else {
-        toast.error("El número de telefono no existe en la cuenta", {
+        toast.error("Error 404: El número de telefono no existe en la cuenta", {
           position: "center-right",
           style: { transform: "translateY(80vh)" }
         });
@@ -103,7 +103,7 @@ const Telephones = () => {
       }
     } catch (error) {
       console.error("Error al validar el teléfono:", error);
-      toast.error("El número de teléfono no existe en la cuenta", {
+      toast.error("Error 404: El número de teléfono no existe en la cuenta", {
         position: "top-right",
         style: { transform: "translateY(80vh)" }
       });
@@ -113,7 +113,7 @@ const Telephones = () => {
 
   const handleSaveNewPhone = async () => {
     if (!phoneNumber.trim()) {
-      toast.warning("Ingrese un número de teléfono", { position: "top-right", 
+      toast.warning("Error 400: Ingrese un número de teléfono", { position: "top-right", 
         style: { transform: "translateY(80vh)" }
        }
         
@@ -121,13 +121,13 @@ const Telephones = () => {
       return;
     }
     if (phoneNumber.length !== 10 && phoneNumber.length !== 13) {
-      toast.warning("El número de teléfono debe tener 10 o 11 dígitos", {
+      toast.warning("Error 400: El número de teléfono debe tener 10 o 11 dígitos", {
         position: "top-right"
       });
       return;
     }
     if (searchResults.length === 0 || !searchResults[0].idCuenta) {
-      toast.warning("No hay una cuenta válida seleccionada", {
+      toast.warning("Error 400: No hay una cuenta válida seleccionada", {
         position: "top-right"
       });
       return;
@@ -160,7 +160,7 @@ const Telephones = () => {
       loadData(); // Recargar los datos de los teléfonos
     } catch (error) {
       console.error("Error al guardar el nuevo teléfono:", error);
-      toast.error("Error al guardar el nuevo teléfono", {
+      toast.error("Error 408: Error al guardar el nuevo teléfono", {
         position: "top-right",
         style: { transform: "translateY(80vh)" }
       });

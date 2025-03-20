@@ -1,11 +1,15 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { Table, Form } from "react-bootstrap";
+import { toast } from "sonner";
 
 const TableTalks = ({ dataTalks, customColumnNames }) => {
     const [sortedData, setSortedData] = useState(dataTalks || []);
     const [sortByOldest, setSortByOldest] = useState(false);
 
     useEffect(() => {
+        if (!dataTalks || dataTalks.length === 0) {
+            toast.error("Error 428: No hay datos disponibles para mostrar.");
+        }
         setSortedData(dataTalks);
     }, [dataTalks]);
 
@@ -47,13 +51,17 @@ const TableTalks = ({ dataTalks, customColumnNames }) => {
 
     // ✅ Función para ordenar por fecha más antigua o más reciente
     const handleSortChange = useCallback(() => {
-        console.log("Ordenando por fecha más antigua:", sortByOldest);
-        setSortByOldest(prev => !prev);
-        setSortedData(prevData =>
-            !sortByOldest
-                ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
-                : [...dataTalks]
-        );
+        try {
+            setSortByOldest(prev => !prev);
+            setSortedData(prevData =>
+                !sortByOldest
+                    ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
+                    : [...dataTalks]
+            );
+            toast.success(`Ordenado por fecha ${!sortByOldest ? "más antigua" : "más reciente"}.`);
+        } catch (error) {
+            toast.error("Error al ordenar los datos.");
+        }
     }, [sortByOldest, dataTalks]);
 
     // ✅ Filtrar columnas visibles
