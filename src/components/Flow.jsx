@@ -103,6 +103,7 @@ const Flow = () => {
         : ""; // Elimina la última respuesta seleccionada del flujo y del historial de selección
 
     const shouldShowComment = answerHistory.some(
+      
       (item) => item.idValor === 1101 || item.idValor === 1102
     );
 
