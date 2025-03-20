@@ -1,39 +1,60 @@
-import { useState, useCallback, useEffect } from "react";
-import { Row, Col, Card } from "react-bootstrap";
-import { auto } from "@popperjs/core";
-import PropTypes from 'prop-types';
+import { useEffect, useState } from "react";
+import { Row, Col, Card, Toast } from "react-bootstrap";
 import { getGestionTeData } from "../services/gespawebServices";
 
-const Managments = ({ searchResults }) => {
+const Managments = () => {
   const [sortedData, setSortedData] = useState([]);
-  const [sortByOldest, setSortByOldest] = useState(false);
+  const [showToast, setShowToast] = useState(false); // Estado para manejar la visibilidad del toast
+  const searchResults = []; // Asegúrate de que searchResults contenga los datos necesarios.
 
   useEffect(() => {
     const fetchData = async () => {
-      if (searchResults && searchResults.length > 0) {
-        const data = await getGestionTeData(searchResults);
+      try {
+        // Validar que searchResults tenga al menos un elemento con idCuenta
+        if (searchResults.length === 0 || !searchResults[0]?.idCuenta) {
+          console.warn("⚠️ No se encontró un idCuenta válido en searchResults.");
+          setShowToast(true); // Mostrar el toast
+          return;
+        }
+
+        const idCuenta = searchResults[0].idCuenta; // Obtener idCuenta del primer elemento válido
+        const idCartera = 1; // idCartera siempre es 1.
+
+        console.log("🔍 Enviando idCuenta e idCartera a getGestionTeData:", { idCuenta, idCartera });
+
+        const data = await getGestionTeData({ idCuenta, idCartera });
         setSortedData(data);
-      } else {
-        setSortedData([]);
+      } catch (error) {
+        console.error("Error fetching gestion data:", error);
       }
     };
-    fetchData();
-  }, [searchResults]);
 
-  const handleSortChange = useCallback(() => {
-    console.log("Ordenando por fecha más antigua:", sortByOldest);
-    setSortByOldest(prev => !prev);
-    setSortedData(prevData =>
-       !sortByOldest
-         ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
-        : [...sortedData]
-    );
-  }, [sortByOldest, sortedData]);
+    fetchData();
+  }, []);
+
+  const validateField = (field) => (field === null || field === undefined || field === "" ? "--" : field);
 
   return (
-    <Row xs={12} md={auto} className="g-2">
-      {Array.from({ length: 1 }).map((_, idx) => (
-        <Col key={idx} md={12}>
+    <>
+      <Toast
+        onClose={() => setShowToast(false)}
+        show={showToast}
+        delay={3000}
+        autohide
+        style={{
+          position: "absolute",
+          top: 20,
+          right: 20,
+          zIndex: 1050,
+        }}
+      >
+        <Toast.Header>
+          <strong className="me-auto">Notificación</strong>
+        </Toast.Header>
+        <Toast.Body>⚠️ No se encontró un idCuenta válido en los resultados de búsqueda.</Toast.Body>
+      </Toast>
+      <Row xs={12} md="auto" className="g-2">
+        <Col md={12}>
           <Card>
             <div style={{ display: "flex", justifyContent: "center" }}>
               <div className="col-12">
@@ -64,28 +85,34 @@ const Managments = ({ searchResults }) => {
                         </tr>
                       </thead>
                       <tbody>
-                        {sortedData.map((gestion, index) => (
-                          <tr key={index}>
-                            <td>{gestion.Fecha_Insert}</td>
-                            <td>{gestion.Segundo_Insert}</td>
-                            <td>{gestion.N\u00FAmeroTelef\u00F3nico}</td>
-                            <td>{gestion.idContacto}</td>
-                            <td>{gestion.idSituaci\u00F3n}</td>
-                            <td>{gestion.NombreContacto}</td>
-                            <td>{gestion.idParentesco}</td>
-                            <td>{gestion.idCausaNoPago}</td>
-                            <td>{gestion.idModo}</td>
-                            <td>{gestion.idAcercamiento}</td>
-                            <td>{gestion.idEtapa}</td>
-                            <td>{gestion.Seguimiento}</td>
-                            <td>{gestion._Realizado}</td>
-                            <td>{gestion.Duraci\u00F3n}</td>
-                            <td>{gestion.Ejecutivo}</td>
-                            <td>{gestion.Usuario}</td>
-                            <td>{gestion.idSucursal}</td>
-                            <td>{gestion.Extensi\u00F3n}</td>
+                        {sortedData.length === 0 ? (
+                          <tr>
+                            <td colSpan="18" style={{ height: "200px" }}></td>
                           </tr>
-                        ))}
+                        ) : (
+                          sortedData.map((gestion, index) => (
+                            <tr key={index}>
+                              <td>{validateField(gestion.Fecha_Insert)}</td>
+                              <td>{validateField(gestion.Segundo_Insert)}</td>
+                              <td>{validateField(gestion.NúmeroTelefónico)}</td>
+                              <td>{validateField(gestion.idContacto)}</td>
+                              <td>{validateField(gestion.idSituación)}</td>
+                              <td>{validateField(gestion.NombreContacto)}</td>
+                              <td>{validateField(gestion.idParentesco)}</td>
+                              <td>{validateField(gestion.idCausaNoPago)}</td>
+                              <td>{validateField(gestion.idModo)}</td>
+                              <td>{validateField(gestion.idAcercamiento)}</td>
+                              <td>{validateField(gestion.idEtapa)}</td>
+                              <td>{validateField(gestion.Seguimiento)}</td>
+                              <td>{validateField(gestion._Realizado)}</td>
+                              <td>{validateField(gestion.Duración)}</td>
+                              <td>{validateField(gestion.Ejecutivo)}</td>
+                              <td>{validateField(gestion.Usuario)}</td>
+                              <td>{validateField(gestion.idSucursal)}</td>
+                              <td>{validateField(gestion.Extensión)}</td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -93,18 +120,30 @@ const Managments = ({ searchResults }) => {
               </div>
             </div>
             <Card.Body>
-              <Card.Title></Card.Title>
-              <Card.Text></Card.Text>
+              <Card.Title>Comentarios</Card.Title>
+              <table className="table table-dark">
+                <thead></thead>
+                <tbody>
+                  {sortedData.length === 0 ? (
+                    <tr>
+                      <td style={{ height: "100px" }}></td>
+                    </tr>
+                  ) : (
+                    sortedData.map((gestion, index) => (
+                      <tr key={index}>
+                        <td>{validateField(gestion.Comentario)}</td>
+                        <td>{validateField(gestion.BaseDatos)}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </Card.Body>
           </Card>
         </Col>
-      ))}
-    </Row>
+      </Row>
+    </>
   );
-};
-
-Managments.propTypes = {
-  searchResults: PropTypes.array.isRequired,
 };
 
 export default Managments;

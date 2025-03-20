@@ -1,5 +1,6 @@
-import React, { useState, useCallback,useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Table, Form } from "react-bootstrap";
+import { toast } from "sonner"; // Importar toast
 
 const TableFollowUps = ({ data, customColumnNames = {} }) => {
     const [sortedData, setSortedData] = useState(data || []);
@@ -27,9 +28,12 @@ const hiddenFields = [
 const defaultColumnNames = {
     "Fecha_Insert": "Fecha",
     "Segundo_Insert": "Hora",
+    "NúmeroTelefónico": "Telefono",
+    "idContacto" : "Contacto",
+    "idSituación" : "Situacion",
+    "NombreContacto" : "Nombre",
     "Herramienta": "Acercamiento",
     "idAcercamiento": "Acercamiento", // Renombrar sin el "id"
-    "NúmeroTelefónico": "Telefono",
     "Ofreció": "Ejecutivo",
     "_Realizado": "Realizado"
 };
@@ -48,11 +52,20 @@ const defaultColumnNames = {
     // 🔹 Ordenar por fecha (más antiguo/más reciente)
     const handleSortChange = useCallback(() => {
         setSortByOldest(prev => !prev);
-        setSortedData(prevData =>
-            !sortByOldest
+        setSortedData(prevData => {
+            const sorted = !sortByOldest
                 ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
-                : [...data] // Restaurar datos originales si se desmarca el checkbox
-        );
+                : [...data]; // Restaurar datos originales si se desmarca el checkbox
+
+            // Mostrar notificación
+            toast.success(
+                !sortByOldest
+                    ? "Datos ordenados por fecha más antigua."
+                    : "Orden original restaurado."
+            );
+
+            return sorted;
+        });
     }, [sortByOldest, data]);
 
     // 🔹 Filtrar claves de los datos, excluyendo los campos ocultos
