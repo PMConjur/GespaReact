@@ -14,6 +14,7 @@ using System.Diagnostics;
 using static NoriAPI.Models.ClasesGespa;
 using Microsoft.Identity.Client;
 using System.Drawing;
+using System.Security.Cryptography;
 
 namespace NoriAPI.Services
 {
@@ -27,7 +28,7 @@ namespace NoriAPI.Services
         Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
         Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
         Task<ResultadoCalculadora> ValidateInfoCalculadora1(int Cartera, string NoCuenta, int idHerr);
-        Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int IdCartera, double MontoRequerido, int Descuento, int iMeses, string dtpFecha, int periodos);
+        Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int IdCartera, double MontoRequerido, int Descuento, int iMeses, string dtpFecha, int periodos, int modificar, double montoMod, string fechaPagoMod);
     }
 
     public class EjecutivoService : IEjecutivoService
@@ -478,7 +479,7 @@ namespace NoriAPI.Services
 
         #region Calculadora-2daParte
 
-        public async Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int idcartera, double MontoRequerido, int Descuento, int iMeses_, string dtpFecha, int periodos)
+        public async Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int idcartera, double MontoRequerido, int Descuento, int iMeses_, string dtpFecha, int periodos, int modificar, double montoMod, string fechaPagoMod)
         {         
             DataTable dtDescuentos = new DataTable();
             DataTable HerramientasC = new DataTable();
@@ -493,7 +494,7 @@ namespace NoriAPI.Services
             DataTable dtHerrFiltradas = new DataTable();
             bool _bLendingPrimes;
             int iAñadidos, iPeriodos = periodos;
-            double dMontoRequerido = 0, dMensualidad;
+            double dMontoRequerido = 0, dMensualidad, tasamensual = 0, dTasa = 0;
 
             //---------------------------------------Negociaciones--------------------------------//
             //con el Idestado se valida si la promesa esta vigente
@@ -648,7 +649,7 @@ namespace NoriAPI.Services
             }
             dtPagos.DefaultView.Sort = "FechaPago DESC";
             
-            /////////////////////////////////////////////////aqui se va a repetir el metodo Calcula pagos////////////////////////////////////////////////////////////////////            
+            /////////////////////////////////////////////////Metodo Calcula pagos////////////////////////////////////////////////////////////////////            
 
             DateTime dtFechaPago = DateTime.Now;//este siempre va a ser un dia despues de la fecha actual y la manda el omi
             dtFechaPago = dtFechaPago.AddDays(1);
@@ -745,6 +746,11 @@ namespace NoriAPI.Services
                     else
                         dPago = (dMontoNegociado / TasaAnual(iPeriodos, iMeses, idherramienta, dtHerramientas));
 
+                    dTasa = TasaAnual(iPeriodos, iMeses, idherramienta, dtHerramientas);
+
+                    tasamensual = TasaMensual(iPeriodos, iMeses, idherramienta, dtHerramientas);
+
+
                     dPago = Math.Round(dPago, 2);
 
                     //Cálculo de Monto Requerido
@@ -798,12 +804,57 @@ namespace NoriAPI.Services
                 }
 
             }
+            if(modificar == 1)
+            {
+                //validar que los meses no vengan en 0
+
+                DateTime dtFechaPago_, dtFechaPagoAnt;
+                double dPago_ = 0, dMontoNegociado_, dPagoAnt;
+
+                dPagoAnt = Math.Round(Convert.ToDouble(tblPlazos.Rows[0]["Pago"].ToString()), 2);
+                dtFechaPagoAnt = Convert.ToDateTime(tblPlazos.Rows[0]["Fecha"].ToString());
+
+                foreach (DataRow row in tblPlazos.Rows)
+                {
+                    if (Convert.ToDateTime(row["Fecha"]) == Convert.ToDateTime(tblPlazos.Rows[tblPlazos.Rows.Count - 1]["Fecha"]) && tblPlazos.Rows.IndexOf(row) != tblPlazos.Rows.Count - 1)
+                    {
+                        //Ya existe un pago con dicha fecha                   
+                    }
+                }
+                if (dPago <= 0)
+                {
+
+                    //No puede haber pagos de $0.00"                    
+                }
+                /*Añadir Pagos*/
+                //aqui va el de agregar pagos
+                if ()
+                {
+
+                }
+                else
+                {
+
+                }
+
+
+
+
+
+
+
+
+
+            }
+
             //Muestra cálculos
             double MontoRequerido_ = Convert.ToDouble(dMontoRequerido.ToString());
             double MontoNegociado_ = Convert.ToDouble(dMontoNegociado.ToString());
             double Pago = Convert.ToDouble(tblPlazos.Rows[0]["Pago"].ToString());
             string Plazos = tblPlazos.Rows.Count.ToString();
             double Remanente = Convert.ToDouble(Math.Max(saldo - MontoNegociado_, 0).ToString());
+            double Monto = Convert.ToDouble(dPago);
+
 
             /////Regresa valores///////////////////////
             List<CalculosInfo> listaCalculos = _ejecutivoRepository.ConvertirDataTableAListaC(tblPlazos);                        
@@ -814,9 +865,11 @@ namespace NoriAPI.Services
                 MontoNegociado = MontoNegociado_,
                 Pago = Pago,
                 Plazos = Plazos,
-                Descuento = Descuento                
+                Descuento = Descuento,    
+                Monto = Monto,
+                TasaMensual = tasamensual
             };            
-            return ResultadoCalculadora2;
+            return ResultadoCalculadora2; 
 
         }
 
@@ -1016,10 +1069,34 @@ namespace NoriAPI.Services
 
             //tasa anterior dTasa = 0.061866667;
             // 6.29000004666667 nueva tasa 0.0629000004666667
-
-            //lblTasaMensual.Text = "Tasa Mensual: " + (Math.Truncate((100 * dTasa) * 1000) / 1000).ToString() + "%";
+            // lblTasaMensual.Text = "Tasa Mensual: " + (Math.Truncate((100 * dTasa) * 1000) / 1000).ToString() + "%";
             return ((1 / dTasa) * (1 - Math.Pow(1 / (1 + dTasa), iMeses)) * iPeriodos);
         }
+
+        private double TasaMensual(int iPeriodos, int iMeses, int idherramienta, DataTable Herramienta)
+        {
+
+            double dTasa = 0;
+
+            if (idherramienta != 1010)
+            {
+                if (!Herramienta.Columns.Contains("Tasa") ||
+                !double.TryParse(Herramienta.Rows[0]["Tasa"].ToString(), out dTasa) || dTasa == 0)
+                    dTasa = 0.0584;//dTasa = 0.06289956713257; se cambia por indicaciones rios entra en vigor 20241028
+            }
+
+            //if (!_Cuenta.HerramientasAmex.Columns.Contains("Tasa") ||
+            //    !double.TryParse(_Cuenta.HerramientasAmex.Rows[0]["Tasa"].ToString(), out dTasa) || dTasa == 0 )
+            //    dTasa = 0.06289956713257;
+
+            //tasa anterior dTasa = 0.061866667;
+            // 6.29000004666667 nueva tasa 0.0629000004666667
+            // lblTasaMensual.Text = "Tasa Mensual: " + (Math.Truncate((100 * dTasa) * 1000) / 1000).ToString() + "%";
+            return (Math.Truncate((100 * dTasa) * 1000) / 1000);
+        }
+
+
+
         private DataTable EstablecePagos(double dMontoNegociado, double dPago, double dCentavos, int iMeses, DateTime dtFechaCorte, DateTime dtFechaPago, double dPago635, int iPeriodos, int idherramienta, string dtpFecha)
         {
             DataTable tblPlazos = new DataTable();
