@@ -6,12 +6,18 @@ const TableTalks = ({ dataTalks, customColumnNames }) => {
     const [sortedData, setSortedData] = useState(dataTalks || []);
     const [sortByOldest, setSortByOldest] = useState(false);
 
-    useEffect(() => {
+    // ✅ Nueva función para manejar el estado de la cuenta
+    const handleAccountStatement = useCallback(() => {
         if (!dataTalks || dataTalks.length === 0) {
-            toast.error("Error 428: No hay datos disponibles para mostrar.");
+            toast.error("Error 428: Primero debes buscar una Cuenta.");
+            return;
         }
         setSortedData(dataTalks);
     }, [dataTalks]);
+
+    useEffect(() => {
+        handleAccountStatement();
+    }, [handleAccountStatement]);
 
     if (!dataTalks || dataTalks.length === 0) {
         return <p>No hay datos disponibles.</p>;

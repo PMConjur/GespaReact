@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { Table, Form } from "react-bootstrap";
-
+import { toast } from "sonner";
 
 
 const TableOnlineCharge = ({ data, customColumnNames = {} }) => {
@@ -10,6 +10,21 @@ const TableOnlineCharge = ({ data, customColumnNames = {} }) => {
     useEffect(() => {
         setSortedData(data);
     }, [data]);
+    
+
+       // ✅ Nueva función para manejar el estado de la cuenta
+    const handleAccountStatement = useCallback(() => {
+        if (!data || data.length === 0) {
+            toast.error("Error 428: Primero debes buscar una Cuenta.");
+            return;
+        }
+        setSortedData(data);
+    }, [data]);
+
+    useEffect(() => {
+        handleAccountStatement();
+    }, [handleAccountStatement]);
+
 
     if (!data || data.length === 0) {
         return <p>No hay datos disponibles.</p>;

@@ -53,6 +53,9 @@ const TDropdownProcessesWLP = ({ data }) => {
         if (producto !== eventKey) {
             setProducto(eventKey);
             setProductData([]); // Limpiar datos al cambiar el producto
+            if (!data || data.length === 0) {
+                toast.error("Error 408: No se encontraron datos para esta selección.", { position: "top-right" });
+            }
         }
     };
 

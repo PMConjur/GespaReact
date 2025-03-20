@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { Table, Form } from "react-bootstrap";
+import { toast } from "sonner";
 
 const TablePayments = ({ data, customColumnNames = {} }) => {
     const [sortedData, setSortedData] = useState(data || []);
@@ -10,6 +11,7 @@ const TablePayments = ({ data, customColumnNames = {} }) => {
     }, [data]);
 
     if (!data || data.length === 0) {
+        toast.error("Error 428: Primero debes buscar una Cuenta");
         return <p>No hay datos disponibles.</p>;
     }
 

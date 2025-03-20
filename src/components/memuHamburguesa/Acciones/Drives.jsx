@@ -52,7 +52,7 @@ const Drives = ({ showModal, handleCloseModal }) => {
   useEffect(() => {
     const fetchData = async () => {
       if (!searchResults || searchResults.length === 0) {
-        toast.error("No hay resultados de búsqueda disponibles"); // Mostrar notificación de error
+        toast.error("Error 428: Primero debes buscar una Cuenta"); // Mostrar notificación de error
         return;
       }
 

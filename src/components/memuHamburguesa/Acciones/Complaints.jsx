@@ -40,7 +40,7 @@ const Complaints = ({ show, handleClose }) => {
           console.log("Datos recibidos de fetchViewComplaints:", result);
           setComplaints(result);
         } catch (error) {
-          toast.error('Error al cargar las quejas');
+          toast.error('Error 408: Error al cargar las quejas');
           console.error('Error al cargar las quejas:', error);
         }
       }
@@ -58,6 +58,7 @@ const Complaints = ({ show, handleClose }) => {
         console.log("Llamando a fetchOriginComplaints");
         const result = await fetchOriginComplaints();
         console.log("Datos recibidos de fetchOriginComplaints:", result);
+        
 
         // Mapear los datos para extraer idValor y Valor
         const mappedData = result.map((item) => ({

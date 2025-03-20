@@ -32,7 +32,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   // Obtener datos de estado de cuenta
   const handleAccountStatement = async () => {
     if (!searchResults || searchResults.length === 0) {
-      toast.error("No hay resultados de búsqueda disponibles");
+      toast.error("Error 428: Primero debes buscar una Cuenta");
       return;
     }
 
@@ -47,7 +47,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
 
       setAccountData(accounts.flat());
     } catch (error) {
-      toast.error("No se obtuvo respuesta:", error);
+      toast.error("Error 408: No se obtuvo respuesta:", error);
     } finally {
       setLoading(false);
     }
