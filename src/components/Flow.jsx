@@ -8,23 +8,39 @@ import {
 } from "react-bootstrap-icons";
 import { toast } from "sonner"; // Import toast and Toaster
 import { AppContext } from "../pages/Managment"; // Import AppContext
-import { handleFlowLogic } from "../utils/flowLogic"; // Importar la lógica del flujo
-
+import { getResponse, getValidateResponse } from "../utils/flowLogic"; // Import Response function, para la logica del funcionamiento del flujo
+import Comment from "./flowComponents/Comment";
 const Flow = () => {
   const [userFlowData, setUserFlowData] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [selectedValues, setSelectedValues] = useState({});
-  const [answerHistory, setAnswerHistory] = useState([]); // Guarda el historial de las respuestas que se van seleccioando
-  const [comment, setComment] = useState(""); // Estado para manejar comentarios
-  const [phoneNumber, setPhoneNumber] = useState(""); // Estado para manejar números telefónicos
-  const { selectedAnswer } = useContext(AppContext); // Contexto de llamada de entrada
+  const [answerHistory, setAnswerHistory] = useState([]); // Guarda el historial de las respuestas que se van seleccionando
+  const { selectedAnswer } = useContext(AppContext); // Contexto de llamada de entrada o manual
+  const [isFlowFinished, setIsFlowFinished] = useState(false); // Estado para verificar si el flujo ha terminado
 
+  //No modificar
   useEffect(() => {
     userFlow()
       .then((response) => {
         if (response && response.length > 0) {
           setUserFlowData(response);
+          if (selectedAnswer && selectedAnswer.value !== null) {
+            if (selectedAnswer.value === 2 || selectedAnswer.value === 10) {
+              const firstQuestions = response.filter(
+                (item) => item.idPregunta === selectedAnswer.value
+              );
+              if (firstQuestions.length > 0) {
+                setCurrentQuestionId(firstQuestions[0].idPregunta);
+                console.log(
+                  "First Questions:",
+                  firstQuestions.map((q) => q.idPregunta)
+                );
+              }
+            } else {
+              getResponse(selectedAnswer, response, setCurrentQuestionId);
+            }
+          }
         } else {
           console.error("No data received from userFlow");
         }
@@ -32,75 +48,42 @@ const Flow = () => {
       .catch((error) => {
         console.error("Error fetching user flow data:", error);
       });
-  }, []);
+  }, [selectedAnswer]); //Aqui se recibe el flujo por defecto y se maneja el selectedAnswer.value
 
-  useEffect(() => {
-    if (selectedAnswer !== null) {
-      if (selectedAnswer === 2 || selectedAnswer === 10) {
-        setCurrentQuestionId(selectedAnswer);
-      } else {
-        const firstQuestion = userFlowData.find(
-          (item) => item.idSiguientePregunta === selectedAnswer
-        );
-        if (firstQuestion) {
-          setCurrentQuestionId(firstQuestion.idPregunta);
-        }
-      }
-    }
-  }, [selectedAnswer, userFlowData]);
-
-  const handleAnswerChange = (
-    idPregunta,
-    idRespuesta,
-    idSiguientePregunta,
-    valor,
-    pregunta,
-    idValor
-  ) => {
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [idPregunta]: idRespuesta
-    }));
-    setSelectedValues((prev) => ({
-      ...prev,
-      [idPregunta]: idSiguientePregunta
-    }));
-
-    handleFlowLogic(idValor, setComment, setPhoneNumber); // Ejecutar la lógica del flujo
-
-    const nextQuestion = userFlowData.find(
-      (item) => item.idPregunta === idSiguientePregunta
-    );
-    if (nextQuestion) {
-      setAnswerHistory((prev) => [
-        ...prev,
-        {
-          idPregunta: idPregunta,
-          idRespuesta: idRespuesta,
-          valor: valor,
-          pregunta: pregunta
-        }
-      ]); // Guarda el historial de las preguntas que se van seleccionando
-      setCurrentQuestionId(nextQuestion.idPregunta);
-    } else {
-      toast.info("Información de flujo terminada");
-    }
-
-    console.log("Answer History:", answerHistory); // imprime el historial de respuestas para poder verlo en consola
-  };
   //Accion de boton de regreso
   const handleBack = () => {
+    setIsFlowFinished(false); // Marca el flujo como no terminado
     if (answerHistory.length > 0) {
+      // Obtiene el último elemento del historial sin eliminarlo
       const lastAnswer = answerHistory[answerHistory.length - 1];
-      setCurrentQuestionId(lastAnswer.idPregunta);
+
+      // Busca el idPregunta en userFlowData
+      const previousQuestion = userFlowData.find(
+        (item) => item.idPregunta === lastAnswer.idPregunta
+      );
+
+      if (previousQuestion) {
+        setCurrentQuestionId(previousQuestion.idPregunta);
+      } else {
+        setCurrentQuestionId(null); // Si no hay historial, no hay pregunta actual
+      }
+
+      // Ahora elimina el último elemento del historial
+      const updatedHistory = [...answerHistory];
+      updatedHistory.pop();
+      setAnswerHistory(updatedHistory);
+
+      // Desmarca la opción seleccionada para la pregunta actual
       setSelectedAnswers((prev) => {
         const updatedAnswers = { ...prev };
         delete updatedAnswers[lastAnswer.idPregunta];
         return updatedAnswers;
       });
-      setAnswerHistory((prev) => prev.slice(0, -1)); // Remove last answer from history
+
+      console.log("Historial del flujo actualizado:", updatedHistory); // Imprime el historial actualizado
     }
   };
+
   //Renderiza las preguntas e historial que guarda en un objeto los datos que va seleccionando
   const renderQuestions = (idPregunta) => {
     if (!userFlowData || userFlowData.length === 0 || idPregunta === null)
@@ -117,7 +100,133 @@ const Flow = () => {
         ? `${answerHistory[answerHistory.length - 1].pregunta} - ${
             answerHistory[answerHistory.length - 1].valor
           } `
-        : ""; // Elimina la utlima respuesta seleccionada del flujo y del historial de selección
+        : ""; // Elimina la última respuesta seleccionada del flujo y del historial de selección
+
+    const shouldShowComment = answerHistory.some(
+      
+      (item) => item.idValor === 1101 || item.idValor === 1102
+    );
+
+    const handleAnswerChange = async (
+      idPregunta,
+      idRespuesta,
+      idSiguientePregunta,
+      valor,
+      idValor,
+      respuesta,
+      pregunta,
+      seguimiento,
+      negociacion,
+      identificador
+    ) => {
+      // Verifica si el flujo ha terminado
+      if (idSiguientePregunta === 0) {
+        // Guarda la última pregunta seleccionada en updatedHistory
+        const updatedHistory = [
+          ...answerHistory,
+          {
+            idPregunta: idPregunta,
+            idRespuesta: idRespuesta,
+            valor: valor || respuesta,
+            pregunta: pregunta,
+            idSiguientePregunta: idSiguientePregunta,
+            idValor: idValor,
+            seguimiento: seguimiento,
+            negociacion: negociacion,
+            identificador: identificador
+          }
+        ];
+        setAnswerHistory(updatedHistory);
+        console.log(
+          "Última pregunta seleccionada guardada en historial:",
+          updatedHistory
+        );
+
+        toast.info("El flujo ha terminado.");
+        setIsFlowFinished(true); // Marca el flujo como terminado
+        return;
+      }
+
+      // Actualiza los estados antes de realizar operaciones adicionales
+      const updatedHistory = [
+        ...answerHistory,
+        {
+          idPregunta: idPregunta,
+          idRespuesta: idRespuesta,
+          valor: valor || respuesta, // Usar respuesta si valor está vacío
+          pregunta: pregunta,
+          idSiguientePregunta: idSiguientePregunta,
+          idValor: idValor,
+          seguimiento: seguimiento,
+          negociacion: negociacion,
+          identificador: identificador
+        }
+      ];
+      setAnswerHistory(updatedHistory);
+      setSelectedAnswers((prev) => ({
+        ...prev,
+        [idPregunta]: idRespuesta
+      }));
+      setSelectedValues((prev) => ({
+        ...prev,
+        [idPregunta]: idSiguientePregunta
+      }));
+
+      console.log("Historial actualizado:", updatedHistory);
+
+      const idClase = selectedAnswer?.dataPhone?.idClase;
+
+      // Usa getValidateResponse para obtener la siguiente pregunta válida
+      const validatedNextQuestion = await getValidateResponse(
+        {
+          idPregunta: idPregunta,
+          idRespuesta: idRespuesta,
+          idSiguientePregunta: idSiguientePregunta,
+          valor: valor || respuesta, // Usar respuesta si valor está vacío
+          idValor: idValor,
+          pregunta: pregunta,
+          idClase: idClase,
+          seguimiento: seguimiento,
+          negociacion: negociacion,
+          identificador: identificador
+        },
+        userFlowData
+      );
+
+      const nextQuestionId = validatedNextQuestion.idSiguientePregunta;
+
+      // Verifica si el flujo ha terminado
+      if (nextQuestionId === 0) {
+        // Guarda la última pregunta seleccionada en updatedHistory
+        const updatedHistory = [
+          ...answerHistory,
+          {
+            idPregunta: idPregunta,
+            idRespuesta: idRespuesta,
+            valor: valor || respuesta,
+            pregunta: pregunta,
+            idSiguientePregunta: idSiguientePregunta
+          }
+        ];
+        setAnswerHistory(updatedHistory);
+        console.log(
+          "Última pregunta seleccionada guardada en historial:",
+          updatedHistory
+        );
+
+        toast.info("El flujo ha terminado.");
+        setIsFlowFinished(true); // Marca el flujo como terminado
+        return;
+      }
+
+      const nextQuestion = userFlowData.find(
+        (item) => item.idPregunta === nextQuestionId
+      );
+
+      if (nextQuestion) {
+        setCurrentQuestionId(nextQuestion.idPregunta);
+      }
+    };
 
     return (
       <Card className="flow-size" border="primary">
@@ -142,33 +251,46 @@ const Flow = () => {
 
         <Card.Body className="scroll-flow">
           <Form>
-            <h5>{questions[0].pregunta}</h5>
-            {questions.map((question) => (
-              <Form.Check
-                key={question.idRespuesta}
-                type="radio"
-                id={`question-${question.idPregunta}-${question.idRespuesta}`}
-                name={`question-${question.idPregunta}`}
-                label={question.valor || question.respuesta}
-                value={question.idRespuesta}
-                checked={
-                  selectedAnswers[question.idPregunta] === question.idRespuesta
-                }
-                onChange={() =>
-                  handleAnswerChange(
-                    question.idPregunta,
-                    question.idRespuesta,
-                    question.idSiguientePregunta,
-                    question.valor,
-                    question.pregunta,
-                    question.idValor
-                  )
-                }
-              />
-            ))}
+            {isFlowFinished ? (
+              shouldShowComment ? (
+                <Comment />
+              ) : (
+                <h5>Flujo para guardar gestión cuando no se muestra comentario</h5>
+              )
+            ) : (
+              <>
+                <h5>{questions[0]?.pregunta}</h5>
+                {questions.map((question) => (
+                  <Form.Check
+                    key={question.idRespuesta}
+                    type="radio"
+                    id={`question-${question.idPregunta}-${question.idRespuesta}`}
+                    name={`question-${question.idPregunta}`}
+                    label={question.valor || question.respuesta}
+                    value={question.idRespuesta}
+                    checked={
+                      selectedAnswers[question.idPregunta] ===
+                      question.idRespuesta
+                    }
+                    onChange={() =>
+                      handleAnswerChange(
+                        question.idPregunta,
+                        question.idRespuesta,
+                        question.idSiguientePregunta,
+                        question.valor,
+                        question.idValor,
+                        question.respuesta,
+                        question.pregunta,
+                        question.seguimiento,
+                        question.negociacion,
+                        question.identificador
+                      )
+                    }
+                  />
+                ))}
+              </>
+            )}
           </Form>
-          {comment && <p>Comentario: {comment}</p>}
-          {phoneNumber && <p>Número Telefónico: {phoneNumber}</p>}
         </Card.Body>
         <Card.Footer className="text-white">
           <Row>
@@ -195,12 +317,8 @@ const Flow = () => {
                 <NodePlusFill></NodePlusFill> Flujo
               </i>
             </Card.Header>
-            <Card.Body className="scroll-flow text-align-center">
-              <h3>
-                {" "}
-                <Check2Circle></Check2Circle> Selecciona{" "}
-              </h3>
-              <h6>una cuenta para trabajar en el flujo</h6>
+            <Card.Body className="scroll-flow">
+              <h5>Selecciona una cuenta para trabajar en el flujo</h5>
             </Card.Body>
           </Card>
         )}

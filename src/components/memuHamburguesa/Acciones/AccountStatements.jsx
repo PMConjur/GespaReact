@@ -1,6 +1,14 @@
 import { useContext, useState, useEffect } from "react";
+<<<<<<< HEAD
 import { Modal, Table, Button, Card, Form, Col} from "react-bootstrap";
 import { fetchAccoutStatements, fetchSaveAccount } from "../../../services/gespawebServices";
+=======
+import { Modal, Table, Button, Card, Form } from "react-bootstrap";
+import {
+  fetchAccoutStatements,
+  fetchSaveAccount
+} from "../../../services/gespawebServices";
+>>>>>>> origin/HU22--Flujo
 import { AppContext } from "../../../pages/Managment";
 import { toast } from "sonner";
 import "../../../scss/styles.scss";
@@ -10,7 +18,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   const [loading, setLoading] = useState(false);
   const [selectedDateRange, setSelectedDateRange] = useState({
     startDate: "",
-    endDate: "",
+    endDate: ""
   });
   const [selectedEmail, setSelectedEmail] = useState("");
   const [selectedOption, setSelectedOption] = useState(false);
@@ -54,7 +62,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   };
 
   useEffect(() => {
-    console.log("Modal abierto:", show); // Verifica que el modal se abra correctamente
+    //console.log("Modal abierto:", show); // Verifica que el modal se abra correctamente
     if (show) {
       handleAccountStatement();
     }
@@ -78,10 +86,25 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("handleSubmit ejecutado");
+<<<<<<< HEAD
 
     // Validar campos obligatorios
     if (!selectedDateRange.startDate || !selectedDateRange.endDate || !selectedEmail) {
       toast.error("Por favor, complete todos los campos antes de enviar la solicitud.");
+=======
+
+    console.log("Iniciando handleSubmit...");
+
+    // Validar campos obligatorios
+    if (
+      !selectedDateRange.startDate ||
+      !selectedDateRange.endDate ||
+      !selectedEmail
+    ) {
+      alert(
+        "Por favor, complete todos los campos antes de enviar la solicitud."
+      );
+>>>>>>> origin/HU22--Flujo
       return;
     }
 
@@ -92,8 +115,13 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
       idEjecutivo: idEjecutivo,
       fechaInicial: new Date(selectedDateRange.startDate).toISOString(),
       fechaFinal: new Date(selectedDateRange.endDate).toISOString(),
+<<<<<<< HEAD
       consulta: selectedOption,
       correoElectrónico: selectedEmail,
+=======
+      consulta: selectedOption === "consulta", // true si es consulta, false si es envío
+      correoElectrónico: selectedEmail
+>>>>>>> origin/HU22--Flujo
     };
 
     try {

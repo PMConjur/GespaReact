@@ -7,7 +7,6 @@ const responseData =
 const token = responseData?.ejecutivo?.token;
 const apiUrl = import.meta.env.VITE_API_URL;
 
-
 //endpoint login
 export async function userReset(dataUserReset) {
   try {
@@ -116,19 +115,13 @@ export async function searchCustomer(filter, value) {
 //Endpoint Telefonos
 export const fetchPhones = async (idCuenta) => {
   try {
-    console.log("Iniciando llamada a la API...");
-    console.log(
-      "URL de la API:",
-      `${apiUrl}/search-customer/phones?idCuenta=${idCuenta}`
-    );
-
     const response = await servicio.get(
       `/search-customer/phones?idCuenta=${idCuenta}`
     );
 
     const message = getErrorStatus(response.status);
 
-    console.log("Respuesta de la API recibida. Estado:", response.status);
+    //console.log("Respuesta de la API recibida. Estado:", response.status);
 
     if (response.status !== 200) {
       toast.error(message, { position: "top-right" });
@@ -147,11 +140,7 @@ export const fetchPhones = async (idCuenta) => {
 //Endpoint Información del Cliente
 export const fetchInformation = async (idCuenta) => {
   try {
-    console.log("Iniciando llamada a la API...");
-    console.log(
-      "URL de la API:",
-      `${apiUrl}/search-customer/products-info?idCuenta=${idCuenta}`
-    );
+    //console.log("Iniciando llamada a la API...");
 
     const response = await servicio.get(
       `/search-customer/products-info?idCuenta=${idCuenta}`
@@ -159,7 +148,7 @@ export const fetchInformation = async (idCuenta) => {
 
     const message = getErrorStatus(response.status);
 
-    console.log("Respuesta de la API recibida. Estado:", response.status);
+    //console.log("Respuesta de la API recibida. Estado:", response.status);
 
     if (response.status !== 200) {
       toast.error(message, { position: "top-right" });
@@ -167,7 +156,7 @@ export const fetchInformation = async (idCuenta) => {
     }
 
     const data = response.data;
-    console.log("Datos obtenidos de la API:", data);
+    //console.log("Datos obtenidos de la API:", data);
 
     return data;
   } catch (error) {
@@ -211,7 +200,6 @@ export async function userTimes(numEmpleado) {
     // Filtramos la contraseña si estuviera en la respuesta
     const { ...dataSinContraseña } = response.data;
     return dataSinContraseña;
-
   } catch (error) {
     console.error("❌ Error al recibir la productividad:", error);
     const errorMessage =
@@ -222,7 +210,10 @@ export async function userTimes(numEmpleado) {
 
 export async function userTimesUpdate(data) {
   try {
-    console.log("📤 Enviando datos de pausa a la API:", JSON.stringify(data, null, 2));
+    console.log(
+      "📤 Enviando datos de pausa a la API:",
+      JSON.stringify(data, null, 2)
+    );
 
     const responseData = JSON.parse(localStorage.getItem("responseData"));
     const token = responseData?.ejecutivo?.token;
@@ -231,8 +222,15 @@ export async function userTimesUpdate(data) {
       throw new Error("⚠️ No se encontró un token de autenticación.");
     }
 
-    if (!data.idEjecutivo || !data.contrasenia || !data.peCausa || !data.duracion) {
-      throw new Error("⚠️ Datos incompletos. Verifica que todos los campos estén llenos.");
+    if (
+      !data.idEjecutivo ||
+      !data.contrasenia ||
+      !data.peCausa ||
+      !data.duracion
+    ) {
+      throw new Error(
+        "⚠️ Datos incompletos. Verifica que todos los campos estén llenos."
+      );
     }
 
     const response = await axios.post(
@@ -241,13 +239,13 @@ export async function userTimesUpdate(data) {
         idEjecutivo: data.idEjecutivo,
         contrasenia: data.contrasenia.trim(),
         peCausa: data.peCausa,
-        duracion: data.duracion, 
+        duracion: data.duracion
       },
       {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+          "Content-Type": "application/json"
+        }
       }
     );
 
@@ -262,12 +260,13 @@ export async function userTimesUpdate(data) {
   } catch (error) {
     console.error("❌ Error al enviar los datos:", error);
     const errorMessage =
-      error.response?.data?.mensaje || error.message || "Error al enviar los datos.";
+      error.response?.data?.mensaje ||
+      error.message ||
+      "Error al enviar los datos.";
     toast.error(errorMessage);
     throw new Error(errorMessage);
   }
 }
-
 
 //Endpoint Flow
 
@@ -292,7 +291,6 @@ export async function userFlow() {
 
 //Endpoint de accionamientos
 export const fetchDrives = async (idCartera, idCuenta) => {
-
   try {
     console.log("Iniciando llamada a la API...");
     console.log(
@@ -306,7 +304,7 @@ export const fetchDrives = async (idCartera, idCuenta) => {
 
     const message = getErrorStatus(response.status);
 
-    console.log("Respuesta de la API recibida. Estado:", response.status);
+    //console.log("Respuesta de la API recibida. Estado:", response.status);
 
     if (response.status !== 200) {
       toast.error(message, { position: "top-right" });
@@ -350,7 +348,9 @@ export const fetchNewTel = async (newPhoneData) => {
 
 
 export async function getFollowUpsData(searchResults) {
+// Endpoint de seguimientos para múltiples cuentas
   try {
+    // Obtener token de autenticación de localStorage o estado
     const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));
     const token = responseData?.ejecutivo?.token;
 
@@ -371,18 +371,22 @@ export async function getFollowUpsData(searchResults) {
             `${apiUrl}/ejecutivo/seguimientos/${idCartera}/${idCuenta}`,
             {
               headers: {
-                Authorization: `Bearer ${token}`,
-              },
+                Authorization: `Bearer ${token}` // Autenticación con token
+              }
             }
           );
 
-          
-          console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
-          return response.data;
+          console.log(
+            `✅ Respuesta recibida para idCuenta ${idCuenta}:`,
+            response.data
+          );
+          return response.data; // Retornar datos obtenidos
         } catch (error) {
-          toast.error(`Error 408: Error al obtener datos para idCuenta ${idCuenta}`);
-          console.error(`❌ Error al obtener datos de seguimiento para idCuenta ${idCuenta}:`, error);
-          return null;
+          console.error(
+            `❌ Error al obtener datos de seguimiento para idCuenta ${idCuenta}:`,
+            error
+          );
+          return null; // Retornar null en caso de error para evitar fallas en Promise.all
         }
       })
     );
@@ -396,9 +400,8 @@ export async function getFollowUpsData(searchResults) {
   }
 }
 
-// Endpoint estado de cuenta 
+// Endpoint estado de cuenta
 export const fetchAccoutStatements = async (idCartera, idCuenta) => {
-
   try {
     console.log("Iniciando llamada a la API...");
     console.log(
@@ -412,7 +415,7 @@ export const fetchAccoutStatements = async (idCartera, idCuenta) => {
 
     const message = getErrorStatus(response.status);
 
-    console.log("Respuesta de la API recibida. Estado:", response.status);
+    //console.log("Respuesta de la API recibida. Estado:", response.status);
 
     if (response.status !== 200) {
       toast.error(message, { position: "top-right" });
@@ -472,7 +475,11 @@ export async function getTalksData(searchResults) {
     const talks = await Promise.all(
       searchResults.map(async (result) => {
         const idCuenta = result.idCuenta?.trim();
-        console.log("🔍 Buscando negociaciones para idCuenta:", idCuenta, idCartera);
+        console.log(
+          "🔍 Buscando negociaciones para idCuenta:",
+          idCuenta,
+          idCartera
+        );
 
         try {
           const response = await axios.get(
@@ -484,7 +491,10 @@ export async function getTalksData(searchResults) {
             }
           );
 
-          console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
+          console.log(
+            `✅ Respuesta recibida para idCuenta ${idCuenta}:`,
+            response.data
+          );
           return response.data; // Retorna los datos obtenidos
         } catch (error) {
           toast.error(`Error 408: Error al obtener negociaciones para idCuenta ${idCuenta}.`);
@@ -955,7 +965,7 @@ export async function getAditionalsData(searchResults) {
     console.error("❌ Error al obtener los datos de adicionales:", error);
     throw new Error("Error al cargar los datos de adicionales.");
   }
-}
+};
 
 // Nueva función para obtener datos de ProcessesWLP
 export async function fetchProcessesWLP(producto, searchResults) {
@@ -1014,9 +1024,7 @@ export async function fetchProcessesWLP(producto, searchResults) {
     });
     throw error;
   }
-}
-
-
+};
 // endpoint calculadora primera parte
 export const fetchCalFirtsPart = async (Cartera, NoCuenta, idHerr) => {
   try {
@@ -1039,5 +1047,22 @@ export const fetchCalFirtsPart = async (Cartera, NoCuenta, idHerr) => {
   } catch (error) {
     console.error("Error en fetchCalFirtsPart:", error);
     throw error;
+  }
+};
+//EndPoint - Relaciones
+export async function Relations() {
+  try {
+    const response = await servicio.get(`/ejecutivo/relaciones`);
+    const data = response.data;
+
+    return data;
+  } catch (error) {
+    if (error.response) {
+      const errorMessage =
+        error.response.data?.mensaje || "Error al recibir las relaciones";
+      throw new Error(errorMessage);
+    } else {
+      throw new Error("Error en la respuesta del endpoint de relaciones.");
+    }
   }
 };
