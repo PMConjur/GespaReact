@@ -15,29 +15,7 @@ const CalculatorSimulator = ({ show, handleClose }) => {
           <Col sm={12}>
             <h5>Ofrecimientos</h5>
             <div className="table-responsive d-flex">
-                <Col>
-              <Table striped bordered hover variant="dark">
-                <thead>
-                  <tr>
-                    <th>FechaHora</th>
-                    <th>Herramienta</th>
-                    <th>Estado</th>
-                    <th>Vencimiento</th>
-                    <th>Saldo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>22/01/2025 8:31 a.m.</td>
-                    <td>Convenio</td>
-                    <td>Incumplida</td>
-                    <td>29/11/2024</td>
-                    <td>$31,479.83</td>
-                  </tr>
-                </tbody>
-              </Table>
-              </Col>
-              <Col>
+            <Col>
               <Card className="rounded-lg">
                   <Card.Body className="d-flex pt-0">
                     <Form className="w-100">
@@ -75,6 +53,28 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                   </Card.Body>
                 </Card>
                 </Col>
+                <Col>
+              <Table striped bordered hover variant="dark">
+                <thead>
+                  <tr>
+                    <th>FechaHora</th>
+                    <th>Herramienta</th>
+                    <th>Estado</th>
+                    <th>Vencimiento</th>
+                    <th>Saldo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>22/01/2025 8:31 a.m.</td>
+                    <td>Convenio</td>
+                    <td>Incumplida</td>
+                    <td>29/11/2024</td>
+                    <td>$31,479.83</td>
+                  </tr>
+                </tbody>
+              </Table>
+              </Col>
             </div>
             <Row sm={12} className="d-flex">
               <Col sm={6}>
