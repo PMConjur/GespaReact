@@ -44,11 +44,11 @@ namespace NoriAPI.Services
         #region AccionesDropDown
         Task ObtenerSeguimientos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerAccionamiento(DataRow drDatos, DataSet dsTablas);
-        Task<DataTable> GetVistaAccionamientos(int idCartera, string idCuenta);//
+        Task<DataTable> GetVistaAccionamientos(int idCartera, string idCuenta);
 
         #endregion
 
-        Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo);
+        Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo, bool? mesActual);
         Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
         Task<List<PreguntasRespuestasInfo>> ValidatePreguntas_Respuestas();
 
@@ -1875,7 +1875,7 @@ namespace NoriAPI.Services
         #endregion
 
         #region Negociaciones
-        public async Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo)
+        public async Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo, bool? mesActual)
         {
             var negociaciones = (await _ejecutivoRepository.Negociaciones(idEjecutivo)).ToList();
 
@@ -1887,6 +1887,12 @@ namespace NoriAPI.Services
                     ConteoHoy = 0,
                     TiempoPromedio = null
                 };
+            }
+
+            // Aplica el filtro si se especificó
+            if (mesActual.HasValue)
+            {
+                negociaciones = negociaciones.Where(n => n.MesActual == (mesActual.Value ? "1" : "0")).ToList();
             }
 
             int conteo = negociaciones.Count(n => n.FechaCreacion == DateTime.Today);

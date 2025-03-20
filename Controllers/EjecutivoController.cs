@@ -201,9 +201,9 @@ namespace NoriAPI.Controllers
 
         #region Negociaciones
         [HttpGet("get-negociaciones")]
-        public async Task<IActionResult> GetNegociaciones([FromQuery] int idEjecutivo)
+        public async Task<IActionResult> GetNegociaciones([FromQuery] int idEjecutivo, [FromQuery] bool? mesActual)
         {
-            var negociaciones = await _ejecutivoService.GetNegociaciones(idEjecutivo);
+            var negociaciones = await _ejecutivoService.GetNegociaciones(idEjecutivo, mesActual);
             if (negociaciones.ConteoHoy == null)
             {
                 return BadRequest(new { Mensaje = "No se encontraron negociaciones." });
