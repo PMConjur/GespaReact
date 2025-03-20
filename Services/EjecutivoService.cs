@@ -111,7 +111,7 @@ namespace NoriAPI.Services
         Task<DataTable> GetViewQuejasAsync(int idCartera, string idCuenta);
 
         #endregion
-
+        Task<bool> GuardarGestionTelefonicaAsync(GestionTelefonica gestion);
 
     }
 
@@ -946,7 +946,7 @@ namespace NoriAPI.Services
             {
                 //Herramientas que no aplica (0 en idHerramienta)
                 if (dtHerramientas.Rows[0][i].ToString().Equals("0") || dtHerramientas.Columns[i].ColumnName.Contains("Tasa"))
-                {  // Convenios 
+                {  // Convenios
                     if (dtHerramientas.Columns[i].ColumnName.Contains("136") || dtHerramientas.Columns[i].ColumnName.Contains("144"))
                         i += 2;
                     continue;
@@ -1054,7 +1054,7 @@ namespace NoriAPI.Services
             double Saldo, MontoRequerido, Montodescuento;
             int días1erPago = 0;
 
-            //Falta validar el saldo 
+            //Falta validar el saldo
             if (!double.TryParse(tblCuenta.Rows[0]["Saldo"].ToString(), out Saldo))
             {
                 //mandar error
@@ -1110,7 +1110,7 @@ namespace NoriAPI.Services
 
             /////////////////////////////Aqui termina el metodo///////////////////////////////////////////
 
-            //Convierte datatable a list 
+            //Convierte datatable a list
 
             List<OfrecimientosInfo> listaOfrecimientos = _ejecutivoRepository.ConvertirDataTableALista(dtFiltrado);
             List<HerramientasInfo> listaHerramientas = _ejecutivoRepository.ConvertirDataTableALista_(dtHerrFiltradas);
@@ -1170,7 +1170,7 @@ namespace NoriAPI.Services
 
             tblCuenta = await _ejecutivoRepository.ObtieneProducto(nocuenta);
 
-            //------------------------------------Herramientas------------------------------------------//            
+            //------------------------------------Herramientas------------------------------------------//
 
             dtHerramientas = await _ejecutivoRepository.ObtieneHerramientas(nocuenta);
             HerramientasC = await _ejecutivoRepository.ObtieneHerramientasCompletas();
@@ -1207,7 +1207,7 @@ namespace NoriAPI.Services
             {
                 //Herramientas que no aplica (0 en idHerramienta)
                 if (dtHerramientas.Rows[0][i].ToString().Equals("0") || dtHerramientas.Columns[i].ColumnName.Contains("Tasa"))
-                {  // Convenios 
+                {  // Convenios
                     if (dtHerramientas.Columns[i].ColumnName.Contains("136") || dtHerramientas.Columns[i].ColumnName.Contains("144"))
                         i += 2;
                     continue;
@@ -1257,7 +1257,7 @@ namespace NoriAPI.Services
                 _bLendingPrimes = false;
 
             //_bLendingPrimes = produc.AsEnumerable()
-            //        .Any(row => row.ItemArray.Any(field => field.ToString().Contains("Placement") 
+            //        .Any(row => row.ItemArray.Any(field => field.ToString().Contains("Placement")
             //        && field.ToString().Contains("Product")
             //        && field.ToString().Contains("Lending")
             //        && field.ToString().Contains("MidPrimes")));
@@ -1303,7 +1303,7 @@ namespace NoriAPI.Services
             }
             dtPagos.DefaultView.Sort = "FechaPago DESC";
 
-            /////////////////////////////////////////////////aqui se va a repetir el metodo Calcula pagos////////////////////////////////////////////////////////////////////            
+            /////////////////////////////////////////////////aqui se va a repetir el metodo Calcula pagos////////////////////////////////////////////////////////////////////
 
             DateTime dtFechaPago = DateTime.Now;//este siempre va a ser un dia despues de la fecha actual y la manda el omi
             dtFechaPago = dtFechaPago.AddDays(1);
@@ -1372,7 +1372,7 @@ namespace NoriAPI.Services
                     if (dtPagos != null && idherramienta == 136)
                         double.TryParse(dtPagos.Compute("SUM (MontoPago)", "Reportado = '' AND FechaPago > '" + dtFechaCorte.ToShortDateString() + "'").ToString(), out dSumaPagos);
 
-                    //Actualiza fecha corte 3 días después o antes si hubo actualización de saldo en sistema.   
+                    //Actualiza fecha corte 3 días después o antes si hubo actualización de saldo en sistema.
                     if (Hoy > dtFechaCorte.AddDays(3) || DateTime.Today >= dtFechaCorte && dtActualización <= dtFechaCorte.AddDays(3) && dtFechaCorte <= dtActualización)
                         dtFechaCorte = dtFechaCorte.AddMonths(1);
 
@@ -3355,6 +3355,62 @@ namespace NoriAPI.Services
                 }
             }
             return gestiones;
+        }
+        public async Task<bool> GuardarGestionTelefonicaAsync(GestionTelefonica gestion)
+        {
+            try
+            {
+                string connectionString = _configuration.GetConnectionString("Piso2Amex");
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (SqlCommand command = new SqlCommand("[dbo].[2.1.GuardaGestiónTelefónica]", connection))
+                    {
+                        command.CommandType = System.Data.CommandType.StoredProcedure;
+
+                        // Parámetros del procedimiento almacenado
+                        command.Parameters.AddWithValue("@idCartera", gestion.IdCartera);
+                        command.Parameters.AddWithValue("@idCuenta", gestion.IdCuenta);
+                        command.Parameters.AddWithValue("@idEjecutivo", gestion.IdEjecutivo);
+                        command.Parameters.AddWithValue("@idContacto", gestion.IdContacto);
+                        command.Parameters.AddWithValue("@idSituación", gestion.IdSituacion ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@idCausaNoPago", gestion.IdCausaNoPago ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@idParentesco", gestion.IdParentesco ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@idSucursal", gestion.IdSucursal);
+                        command.Parameters.AddWithValue("@Extensión", gestion.Extension ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@NombreContacto", gestion.NombreContacto ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@NúmeroTelefónico", gestion.NumeroTelefonico);
+                        command.Parameters.AddWithValue("@Duración", gestion.Duracion);
+                        command.Parameters.AddWithValue("@idModo", gestion.IdModo);
+                        command.Parameters.AddWithValue("@idAcercamiento", gestion.IdAcercamiento ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@Comentario", gestion.Comentario ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@TiempoEnCuenta", gestion.TiempoEnCuenta);
+                        // Parámetros adicionales
+                        command.Parameters.AddWithValue("@Fechavici", gestion.Fechavici ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@Nivel", gestion.Nivel ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@Situacion", gestion.Situacion ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@Productos", gestion.Productos ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@Producto", gestion.Producto ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@NumeroCliente", gestion.NumeroCliente ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@Billing", gestion.Billing ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@Contacto", gestion.Contacto ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@Situaciones", gestion.Situaciones ?? (object)DBNull.Value);
+
+                        int rowsAffected = await command.ExecuteNonQueryAsync();
+                        return rowsAffected > 0;
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                Debug.WriteLine($"Error de SQL: {ex.Message}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error al guardar la gestión: {ex.Message}");
+                return false;
+            }
         }
         #endregion
 
