@@ -3,7 +3,7 @@ import { Modal, Button, Form, Table, FloatingLabel, Card, Row, Col } from "react
 
 const CalculatorSimulator = ({ show, handleClose }) => {
   return (
-    <Modal show={show} onHide={handleClose} fullscreen>
+    <Modal show={show} onHide={handleClose} size="xl">
       <Modal.Header closeButton>
         <Modal.Title className="text-white">
           <i className="bi bi-hand-index-thumb"> Simulador</i>
@@ -39,12 +39,11 @@ const CalculatorSimulator = ({ show, handleClose }) => {
               </Col>
               <Col>
               <Card className="rounded-lg">
-                  <Card.Body className="d-flex">
-                    <Card.Title>Herramienta</Card.Title>
-                    <Form className="d-flex">
-                      <Form.Group>
+                  <Card.Body className="d-flex pt-0">
+                    <Form className="w-100">
+                      <Form.Group className="w-auto">
                         <Form.Select>
-                          <option>Selecciona filtro</option>
+                          <option>Seleccionar Herramienta</option>
                           <option>Convenio</option>
                           <option>Parcial</option>
                           <option>PIF</option>
@@ -54,6 +53,7 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                           <option>PPA+AC</option>
                         </Form.Select>
                       </Form.Group>
+                      <div className="d-flex">
                       <div className="ps-3 mt-3">
                         <span className="text-light small pt-1 fw-bold">Monto Requerido</span>
                         <h4 className="warning-modal-money">$17,313.91</h4>
@@ -70,32 +70,34 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                         <span className="text-light small pt-1 fw-bold">Corte</span>
                         <h6 className="light-modal-money">16/05/2025</h6>
                       </div>
+                      </div>
                     </Form>
                   </Card.Body>
                 </Card>
                 </Col>
             </div>
-            <br />
             <Row sm={12} className="d-flex">
               <Col sm={6}>
                 <Card className="rounded-lg">
                   <Card.Body>
-                    <Card.Title>Acuerdo con el cliente</Card.Title>
+                    <Card.Title className="pt-0">Acuerdo con el cliente</Card.Title>
                     <Form>
-                      <Form.Group>
+                      <Form.Group className="d-flex gap-3">
                         <Form.Control type="text" placeholder="Monto negociado" />
-                      </Form.Group>
-                      <div className="text-center mt-3">
+                        <div className="text-center mt-3">
                         <Button variant="secondary">Calcular</Button>
                       </div>
-                      <Form.Group className="mt-3">
+                      </Form.Group>
+                      <div className="d-flex gap-3 w-100">
+                      <Form.Group className="mt-3 w-100">
                         <Form.Label>Monto Pago</Form.Label>
                         <Form.Control type="text" />
                       </Form.Group>
-                      <Form.Group className="mt-3">
+                      <Form.Group className="mt-3 w-100">
                         <Form.Label>Máximo 15 días</Form.Label>
                         <Form.Control type="date" />
                       </Form.Group>
+                      </div>
                       <div className="text-center mt-3">
                         <Button variant="primary">Agregar</Button>
                       </div>
