@@ -102,6 +102,10 @@ const Flow = () => {
           } `
         : ""; // Elimina la última respuesta seleccionada del flujo y del historial de selección
 
+    const shouldShowComment = answerHistory.some(
+      (item) => item.idValor === 1101 || item.idValor === 1102
+    );
+
     const handleAnswerChange = async (
       idPregunta,
       idRespuesta,
@@ -109,7 +113,10 @@ const Flow = () => {
       valor,
       idValor,
       respuesta,
-      pregunta
+      pregunta,
+      seguimiento,
+      negociacion,
+      identificador
     ) => {
       // Verifica si el flujo ha terminado
       if (idSiguientePregunta === 0) {
@@ -121,7 +128,11 @@ const Flow = () => {
             idRespuesta: idRespuesta,
             valor: valor || respuesta,
             pregunta: pregunta,
-            idSiguientePregunta: idSiguientePregunta
+            idSiguientePregunta: idSiguientePregunta,
+            idValor: idValor,
+            seguimiento: seguimiento,
+            negociacion: negociacion,
+            identificador: identificador
           }
         ];
         setAnswerHistory(updatedHistory);
@@ -143,7 +154,11 @@ const Flow = () => {
           idRespuesta: idRespuesta,
           valor: valor || respuesta, // Usar respuesta si valor está vacío
           pregunta: pregunta,
-          idSiguientePregunta: idSiguientePregunta
+          idSiguientePregunta: idSiguientePregunta,
+          idValor: idValor,
+          seguimiento: seguimiento,
+          negociacion: negociacion,
+          identificador: identificador
         }
       ];
       setAnswerHistory(updatedHistory);
@@ -169,7 +184,10 @@ const Flow = () => {
           valor: valor || respuesta, // Usar respuesta si valor está vacío
           idValor: idValor,
           pregunta: pregunta,
-          idClase: idClase
+          idClase: idClase,
+          seguimiento: seguimiento,
+          negociacion: negociacion,
+          identificador: identificador
         },
         userFlowData
       );
@@ -233,7 +251,11 @@ const Flow = () => {
         <Card.Body className="scroll-flow">
           <Form>
             {isFlowFinished ? (
-              <Comment />
+              shouldShowComment ? (
+                <Comment />
+              ) : (
+                <h5>Flujo para guardar gestión cuando no se muestra comentario</h5>
+              )
             ) : (
               <>
                 <h5>{questions[0]?.pregunta}</h5>
@@ -257,7 +279,10 @@ const Flow = () => {
                         question.valor,
                         question.idValor,
                         question.respuesta,
-                        question.pregunta
+                        question.pregunta,
+                        question.seguimiento,
+                        question.negociacion,
+                        question.identificador
                       )
                     }
                   />
