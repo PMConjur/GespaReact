@@ -9,7 +9,7 @@ import {
 import { toast } from "sonner"; // Import toast and Toaster
 import { AppContext } from "../pages/Managment"; // Import AppContext
 import { getResponse, getValidateResponse } from "../utils/flowLogic"; // Import Response function, para la logica del funcionamiento del flujo
-
+import Comment from "./flowComponents/Comment";
 const Flow = () => {
   const [userFlowData, setUserFlowData] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
@@ -17,6 +17,7 @@ const Flow = () => {
   const [selectedValues, setSelectedValues] = useState({});
   const [answerHistory, setAnswerHistory] = useState([]); // Guarda el historial de las respuestas que se van seleccionando
   const { selectedAnswer } = useContext(AppContext); // Contexto de llamada de entrada o manual
+  const [isFlowFinished, setIsFlowFinished] = useState(false); // Estado para verificar si el flujo ha terminado
 
   //No modificar
   useEffect(() => {
@@ -51,33 +52,35 @@ const Flow = () => {
 
   //Accion de boton de regreso
   const handleBack = () => {
+    setIsFlowFinished(false); // Marca el flujo como no terminado
     if (answerHistory.length > 0) {
-      // Elimina el último elemento del historial
-      const updatedHistory = [...answerHistory];
-      const lastAnswer = updatedHistory.pop(); // Obtiene y elimina el último elemento
+      // Obtiene el último elemento del historial sin eliminarlo
+      const lastAnswer = answerHistory[answerHistory.length - 1];
 
-      // Actualiza el historial sin el último elemento
-      setAnswerHistory(updatedHistory);
+      // Busca el idPregunta en userFlowData
+      const previousQuestion = userFlowData.find(
+        (item) => item.idPregunta === lastAnswer.idPregunta
+      );
 
-      // Regresa al idPregunta anterior
-      const previousAnswer =
-        updatedHistory.length > 0
-          ? updatedHistory[updatedHistory.length - 1]
-          : null;
-
-      if (previousAnswer) {
-        setCurrentQuestionId(previousAnswer.idPregunta);
+      if (previousQuestion) {
+        setCurrentQuestionId(previousQuestion.idPregunta);
       } else {
         setCurrentQuestionId(null); // Si no hay historial, no hay pregunta actual
       }
 
-      // Elimina la respuesta seleccionada para la pregunta actual
+      // Ahora elimina el último elemento del historial
+      const updatedHistory = [...answerHistory];
+      updatedHistory.pop();
+      setAnswerHistory(updatedHistory);
+
+      // Desmarca la opción seleccionada para la pregunta actual
       setSelectedAnswers((prev) => {
         const updatedAnswers = { ...prev };
         delete updatedAnswers[lastAnswer.idPregunta];
         return updatedAnswers;
       });
-      console.log("Historial del flujo:", answerHistory); // imprime el historial de respuestas para poder verlo en consola
+
+      console.log("Historial del flujo actualizado:", updatedHistory); // Imprime el historial actualizado
     }
   };
 
@@ -110,7 +113,25 @@ const Flow = () => {
     ) => {
       // Verifica si el flujo ha terminado
       if (idSiguientePregunta === 0) {
+        // Guarda la última pregunta seleccionada en updatedHistory
+        const updatedHistory = [
+          ...answerHistory,
+          {
+            idPregunta: idPregunta,
+            idRespuesta: idRespuesta,
+            valor: valor || respuesta,
+            pregunta: pregunta,
+            idSiguientePregunta: idSiguientePregunta
+          }
+        ];
+        setAnswerHistory(updatedHistory);
+        console.log(
+          "Última pregunta seleccionada guardada en historial:",
+          updatedHistory
+        );
+
         toast.info("El flujo ha terminado.");
+        setIsFlowFinished(true); // Marca el flujo como terminado
         return;
       }
 
@@ -140,7 +161,7 @@ const Flow = () => {
       const idClase = selectedAnswer?.dataPhone?.idClase;
 
       // Usa getValidateResponse para obtener la siguiente pregunta válida
-      let validatedNextQuestion = await getValidateResponse(
+      const validatedNextQuestion = await getValidateResponse(
         {
           idPregunta: idPregunta,
           idRespuesta: idRespuesta,
@@ -153,62 +174,38 @@ const Flow = () => {
         userFlowData
       );
 
-      let nextQuestionId = validatedNextQuestion.idSiguientePregunta;
+      const nextQuestionId = validatedNextQuestion.idSiguientePregunta;
 
       // Verifica si el flujo ha terminado
       if (nextQuestionId === 0) {
+        // Guarda la última pregunta seleccionada en updatedHistory
+        const updatedHistory = [
+          ...answerHistory,
+          {
+            idPregunta: idPregunta,
+            idRespuesta: idRespuesta,
+            valor: valor || respuesta,
+            pregunta: pregunta,
+            idSiguientePregunta: idSiguientePregunta
+          }
+        ];
+        setAnswerHistory(updatedHistory);
+        console.log(
+          "Última pregunta seleccionada guardada en historial:",
+          updatedHistory
+        );
+
         toast.info("El flujo ha terminado.");
+        setIsFlowFinished(true); // Marca el flujo como terminado
         return;
       }
 
-      let nextQuestion = userFlowData.find(
+      const nextQuestion = userFlowData.find(
         (item) => item.idPregunta === nextQuestionId
       );
 
       if (nextQuestion) {
         setCurrentQuestionId(nextQuestion.idPregunta);
-      }
-
-      while (nextQuestion && nextQuestion.idPregunta !== idSiguientePregunta) {
-        validatedNextQuestion = await getValidateResponse(
-          {
-            idPregunta: nextQuestion.idPregunta,
-            idRespuesta: idRespuesta,
-            idSiguientePregunta: nextQuestion.idSiguientePregunta,
-            valor: valor || nextQuestion.respuesta, // Usar respuesta si valor está vacío
-            idValor: idValor,
-            pregunta: nextQuestion.pregunta,
-            idClase: idClase
-          },
-          userFlowData
-        );
-
-        nextQuestionId = validatedNextQuestion.idSiguientePregunta;
-
-        // Verifica si el flujo ha terminado
-        if (nextQuestionId === 0) {
-          toast.info("El flujo ha terminado.");
-          return;
-        }
-
-        nextQuestion = userFlowData.find(
-          (item) => item.idPregunta === nextQuestionId
-        );
-
-        if (nextQuestion) {
-          const updatedHistoryLoop = [
-            ...updatedHistory,
-            {
-              idPregunta: nextQuestion.idPregunta,
-              idRespuesta: idRespuesta,
-              valor: valor || nextQuestion.respuesta, // Usar respuesta si valor está vacío
-              pregunta: nextQuestion.pregunta,
-              idSiguientePregunta: nextQuestion.idSiguientePregunta
-            }
-          ];
-          setAnswerHistory(updatedHistoryLoop); // Actualiza el historial dentro del bucle
-          setCurrentQuestionId(nextQuestion.idPregunta);
-        }
       }
     };
 
@@ -235,31 +232,38 @@ const Flow = () => {
 
         <Card.Body className="scroll-flow">
           <Form>
-            <h5>{questions[0]?.pregunta}</h5>
-            {questions.map((question) => (
-              <Form.Check
-                key={question.idRespuesta}
-                type="radio"
-                id={`question-${question.idPregunta}-${question.idRespuesta}`}
-                name={`question-${question.idPregunta}`}
-                label={question.valor || question.respuesta}
-                value={question.idRespuesta}
-                checked={
-                  selectedAnswers[question.idPregunta] === question.idRespuesta
-                }
-                onChange={() =>
-                  handleAnswerChange(
-                    question.idPregunta,
-                    question.idRespuesta,
-                    question.idSiguientePregunta,
-                    question.valor,
-                    question.idValor,
-                    question.respuesta,
-                    question.pregunta
-                  )
-                }
-              />
-            ))}
+            {isFlowFinished ? (
+              <Comment />
+            ) : (
+              <>
+                <h5>{questions[0]?.pregunta}</h5>
+                {questions.map((question) => (
+                  <Form.Check
+                    key={question.idRespuesta}
+                    type="radio"
+                    id={`question-${question.idPregunta}-${question.idRespuesta}`}
+                    name={`question-${question.idPregunta}`}
+                    label={question.valor || question.respuesta}
+                    value={question.idRespuesta}
+                    checked={
+                      selectedAnswers[question.idPregunta] ===
+                      question.idRespuesta
+                    }
+                    onChange={() =>
+                      handleAnswerChange(
+                        question.idPregunta,
+                        question.idRespuesta,
+                        question.idSiguientePregunta,
+                        question.valor,
+                        question.idValor,
+                        question.respuesta,
+                        question.pregunta
+                      )
+                    }
+                  />
+                ))}
+              </>
+            )}
           </Form>
         </Card.Body>
         <Card.Footer className="text-white">
