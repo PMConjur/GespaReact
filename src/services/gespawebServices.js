@@ -376,11 +376,11 @@ export async function getFollowUpsData(searchResults) {
             }
           );
 
-          toast.success(`Datos obtenidos para idCuenta ${idCuenta}`);
+          
           console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
           return response.data;
         } catch (error) {
-          toast.error(`Error al obtener datos para idCuenta ${idCuenta}`);
+          toast.error(`Error 408: Error al obtener datos para idCuenta ${idCuenta}`);
           console.error(`❌ Error al obtener datos de seguimiento para idCuenta ${idCuenta}:`, error);
           return null;
         }
@@ -990,7 +990,7 @@ export async function fetchProcessesWLP(producto, searchResults) {
 
           if (response.status === 200) {
             console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
-            toast.success(`Datos recibidos para idCuenta ${idCuenta}, Proceso ${producto}.`);
+            
             return response.data;
           } else {
             console.warn(`⚠️ Advertencia: Respuesta no exitosa para idCuenta ${idCuenta}, Proceso ${producto}.`);
@@ -998,7 +998,7 @@ export async function fetchProcessesWLP(producto, searchResults) {
             return null;
           }
         } catch (error) {
-          console.error(`❌ Error al obtener datos de ProcesosWLP para idCuenta ${idCuenta}:`, error);
+          console.error(` Error al obtener datos de ProcesosWLP para idCuenta ${idCuenta}:`, error);
           toast.error(`Error al obtener datos de ProcesosWLP para idCuenta ${idCuenta}, Proceso ${producto}.`);
           return null;
         }
