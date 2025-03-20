@@ -913,6 +913,7 @@ export const fetchDdComplaints = async () => {
     throw error;
   }
 };
+
 // Endpoint de seguimientos para múltiples cuentas
 export async function getAditionalsData(searchResults) {
   try {
@@ -956,7 +957,6 @@ export async function getAditionalsData(searchResults) {
   }
 }
 
-// Nueva función para obtener datos de ProcessesWLP
 // Nueva función para obtener datos de ProcessesWLP
 export async function fetchProcessesWLP(producto, searchResults) {
   try {
@@ -1015,3 +1015,29 @@ export async function fetchProcessesWLP(producto, searchResults) {
     throw error;
   }
 }
+
+
+// endpoint calculadora primera parte
+export const fetchCalFirtsPart = async (Cartera, NoCuenta, idHerr) => {
+  try {
+    console.log("Llamando al endpoint /ejecutivo/Calculadora-1erParte");
+    const response = await servicio.get(`/ejecutivo/Calculadora-1erParte`, {
+      params: { Cartera, NoCuenta, idHerr },
+    });
+
+    console.log("Respuesta recibida:", response);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Validación recibida:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchCalFirtsPart:", error);
+    throw error;
+  }
+};
