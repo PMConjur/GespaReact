@@ -1,14 +1,9 @@
 import { useContext, useState, useEffect } from "react";
-<<<<<<< HEAD
-import { Modal, Table, Button, Card, Form, Col} from "react-bootstrap";
-import { fetchAccoutStatements, fetchSaveAccount } from "../../../services/gespawebServices";
-=======
-import { Modal, Table, Button, Card, Form } from "react-bootstrap";
+import { Modal, Table, Button, Card, Form, Col } from "react-bootstrap";
 import {
   fetchAccoutStatements,
   fetchSaveAccount
 } from "../../../services/gespawebServices";
->>>>>>> origin/HU22--Flujo
 import { AppContext } from "../../../pages/Managment";
 import { toast } from "sonner";
 import "../../../scss/styles.scss";
@@ -31,9 +26,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   // Validar si el formulario está completo
   useEffect(() => {
     const isValid =
-      selectedDateRange.startDate &&
-      selectedDateRange.endDate &&
-      selectedEmail;
+      selectedDateRange.startDate && selectedDateRange.endDate && selectedEmail;
     setIsFormValid(isValid);
   }, [selectedDateRange, selectedEmail]);
 
@@ -62,7 +55,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   };
 
   useEffect(() => {
-    //console.log("Modal abierto:", show); // Verifica que el modal se abra correctamente
+    console.log("Modal abierto:", show); // Verifica que el modal se abra correctamente
     if (show) {
       handleAccountStatement();
     }
@@ -86,14 +79,6 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("handleSubmit ejecutado");
-<<<<<<< HEAD
-
-    // Validar campos obligatorios
-    if (!selectedDateRange.startDate || !selectedDateRange.endDate || !selectedEmail) {
-      toast.error("Por favor, complete todos los campos antes de enviar la solicitud.");
-=======
-
-    console.log("Iniciando handleSubmit...");
 
     // Validar campos obligatorios
     if (
@@ -101,10 +86,9 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
       !selectedDateRange.endDate ||
       !selectedEmail
     ) {
-      alert(
+      toast.error(
         "Por favor, complete todos los campos antes de enviar la solicitud."
       );
->>>>>>> origin/HU22--Flujo
       return;
     }
 
@@ -115,13 +99,8 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
       idEjecutivo: idEjecutivo,
       fechaInicial: new Date(selectedDateRange.startDate).toISOString(),
       fechaFinal: new Date(selectedDateRange.endDate).toISOString(),
-<<<<<<< HEAD
       consulta: selectedOption,
-      correoElectrónico: selectedEmail,
-=======
-      consulta: selectedOption === "consulta", // true si es consulta, false si es envío
       correoElectrónico: selectedEmail
->>>>>>> origin/HU22--Flujo
     };
 
     try {
@@ -144,7 +123,9 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
         <Modal.Title>Estado de Cuenta - Gespa</Modal.Title>
       </Modal.Header>
 
-      <Modal.Body style={{ padding: "5px 10px", maxHeight: '420px', overflowY: 'auto'}}>
+      <Modal.Body
+        style={{ padding: "5px 10px", maxHeight: "420px", overflowY: "auto" }}
+      >
         <div className="d-block d-lg-flex">
           <div>
             <div
@@ -154,14 +135,20 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                 maxWidth: "800px",
                 maxHeight: "420px",
                 marginBottom: "auto",
-                height: "100%",
+                height: "100%"
               }}
             >
               {loading ? (
                 <p>Cargando datos...</p>
               ) : (
                 <div>
-                  <Table striped bordered hover variant="dark" className="custom-table-account">
+                  <Table
+                    striped
+                    bordered
+                    hover
+                    variant="dark"
+                    className="custom-table-account"
+                  >
                     <thead>
                       <tr>
                         <th>Fecha</th>
@@ -197,69 +184,72 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
             </div>
           </div>
           <Col>
-          <Card className="ml-3 w-auto" style={{ width: "18rem", marginBottom: "0px" }}>
-            <Card.Body style={{ padding: "5px" }}>
-              <Card.Title style={{ paddingTop: "0px" }}>
-                Solicitar Estado de Cuenta
-              </Card.Title>
-              <Form>
-                <Form.Group className="mb-3">
-                  <Form.Label>Fecha Inicial</Form.Label>
-                  <Form.Control
-                    type="date"
-                    name="startDate"
-                    value={selectedDateRange.startDate}
-                    onChange={handleDateChange}
-                    required
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Fecha Final</Form.Label>
-                  <Form.Control
-                    type="date"
-                    name="endDate"
-                    value={selectedDateRange.endDate}
-                    onChange={handleDateChange}
-                    required
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Correo</Form.Label>
-                  <Form.Select
-                    value={selectedEmail}
-                    onChange={handleEmailChange}
-                    required
+            <Card
+              className="ml-3 w-auto"
+              style={{ width: "18rem", marginBottom: "0px" }}
+            >
+              <Card.Body style={{ padding: "5px" }}>
+                <Card.Title style={{ paddingTop: "0px" }}>
+                  Solicitar Estado de Cuenta
+                </Card.Title>
+                <Form>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Fecha Inicial</Form.Label>
+                    <Form.Control
+                      type="date"
+                      name="startDate"
+                      value={selectedDateRange.startDate}
+                      onChange={handleDateChange}
+                      required
+                    />
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Fecha Final</Form.Label>
+                    <Form.Control
+                      type="date"
+                      name="endDate"
+                      value={selectedDateRange.endDate}
+                      onChange={handleDateChange}
+                      required
+                    />
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Correo</Form.Label>
+                    <Form.Select
+                      value={selectedEmail}
+                      onChange={handleEmailChange}
+                      required
+                    >
+                      <option value="">Seleccione un correo</option>
+                      {validEmails.map((email, index) => (
+                        <option key={index} value={email}>
+                          {email}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+
+                  <div className="d-grid gap-2 mb-3">
+                    <Form.Switch
+                      label="Consulta"
+                      name="option"
+                      checked={selectedOption}
+                      onChange={handleOptionChange}
+                    />
+                  </div>
+
+                  <Button
+                    variant="primary"
+                    type="button"
+                    style={{ borderRadius: "20px" }}
+                    onClick={handleSubmit}
+                    disabled={!isFormValid} // Deshabilitar el botón si el formulario no es válido
                   >
-                    <option value="">Seleccione un correo</option>
-                    {validEmails.map((email, index) => (
-                      <option key={index} value={email}>
-                        {email}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-
-                <div className="d-grid gap-2 mb-3">
-                  <Form.Switch
-                    label="Consulta"
-                    name="option"
-                    checked={selectedOption}
-                    onChange={handleOptionChange}
-                  />
-                </div>
-
-                <Button
-                  variant="primary"
-                  type="button"
-                  style={{ borderRadius: "20px" }}
-                  onClick={handleSubmit}
-                  disabled={!isFormValid} // Deshabilitar el botón si el formulario no es válido
-                >
-                  Solicitar
-                </Button>
-              </Form>
-            </Card.Body>
-          </Card>
+                    Solicitar
+                  </Button>
+                </Form>
+              </Card.Body>
+            </Card>
           </Col>
         </div>
       </Modal.Body>

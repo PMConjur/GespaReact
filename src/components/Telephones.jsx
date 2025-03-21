@@ -44,7 +44,9 @@ const Telephones = () => {
       const flatPhones = phones.flat();
       setData(flatPhones);
       if (flatPhones.length === 0 && !toastShown) {
-        toast.error("Error 404: No hay carga de teléfonos", { position: "top-right" });
+        toast.error("Error 404: No hay carga de teléfonos", {
+          position: "top-right"
+        });
         setToastShown(true);
       }
     } catch (error) {
@@ -65,20 +67,19 @@ const Telephones = () => {
 
   const handleValidatePhone = async () => {
     if (!phoneNumber.trim()) {
-<<<<<<< HEAD
-      toast.warning("Error 400: Ingrese un número de teléfono", { position: "top-right",
-=======
       toast.warning("Ingrese un número de teléfono", {
         position: "top-right",
->>>>>>> origin/HU22--Flujo
         style: { transform: "translateY(80vh)" }
       });
       return;
     }
     if (phoneNumber.length !== 10 && phoneNumber.length !== 13) {
-      toast.warning("Error 400: El número de teléfono debe tener 10 o 11 dígitos", {
-        position: "top-right"
-      });
+      toast.warning(
+        "Error 400: El número de teléfono debe tener 10 o 11 dígitos",
+        {
+          position: "top-right"
+        }
+      );
       return;
     }
     if (searchResults.length === 0 || !searchResults[0].idCuenta) {
@@ -121,20 +122,19 @@ const Telephones = () => {
 
   const handleSaveNewPhone = async () => {
     if (!phoneNumber.trim()) {
-<<<<<<< HEAD
-      toast.warning("Error 400: Ingrese un número de teléfono", { position: "top-right", 
-=======
-      toast.warning("Ingrese un número de teléfono", {
+      toast.warning("Error 400: Ingrese un número de teléfono", {
         position: "top-right",
->>>>>>> origin/HU22--Flujo
         style: { transform: "translateY(80vh)" }
       });
       return;
     }
     if (phoneNumber.length !== 10 && phoneNumber.length !== 13) {
-      toast.warning("Error 400: El número de teléfono debe tener 10 o 11 dígitos", {
-        position: "top-right"
-      });
+      toast.warning(
+        "Error 400: El número de teléfono debe tener 10 o 11 dígitos",
+        {
+          position: "top-right"
+        }
+      );
       return;
     }
     if (searchResults.length === 0 || !searchResults[0].idCuenta) {
