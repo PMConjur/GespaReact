@@ -18,6 +18,11 @@ const Flow = () => {
   const [answerHistory, setAnswerHistory] = useState([]); // Guarda el historial de las respuestas que se van seleccionando
   const { selectedAnswer } = useContext(AppContext); // Contexto de llamada de entrada o manual
   const [isFlowFinished, setIsFlowFinished] = useState(false); // Estado para verificar si el flujo ha terminado
+  const [savedComment, setSavedComment] = useState(""); // Estado para el comentario guardado
+
+  const handleSaveComment = (comment) => {
+    setSavedComment(comment); // Actualiza el comentario guardado
+  };
 
   //No modificar
   useEffect(() => {
@@ -48,7 +53,7 @@ const Flow = () => {
       .catch((error) => {
         console.error("Error fetching user flow data:", error);
       });
-  }, [selectedAnswer]); //Aqui se recibe el flujo por defecto y se maneja el selectedAnswer.value
+  }, [selectedAnswer]); //Aqui se recibe el flujo por defecto y se maneja el selectedAnswer.value el cual equivale a la llamada manual o de entrada
 
   //Accion de boton de regreso
   const handleBack = () => {
@@ -103,7 +108,6 @@ const Flow = () => {
         : ""; // Elimina la última respuesta seleccionada del flujo y del historial de selección
 
     const shouldShowComment = answerHistory.some(
-      
       (item) => item.idValor === 1101 || item.idValor === 1102
     );
 
@@ -253,9 +257,22 @@ const Flow = () => {
           <Form>
             {isFlowFinished ? (
               shouldShowComment ? (
-                <Comment />
+                <>
+                  <Comment
+                    comentario=""
+                    isValid={true}
+                    onSave={handleSaveComment}
+                  />
+                  {savedComment && (
+                    <p className="mt-3 text-success">
+                      Comentario guardado: {savedComment}
+                    </p>
+                  )}
+                </>
               ) : (
-                <h5>Flujo para guardar gestión cuando no se muestra comentario</h5>
+                <h5>
+                  Flujo para guardar gestión cuando no se muestra comentario
+                </h5>
               )
             ) : (
               <>
