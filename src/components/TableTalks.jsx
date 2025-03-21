@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Table, Form } from "react-bootstrap";
 import { toast } from "sonner";
 
@@ -8,7 +8,7 @@ const TableTalks = ({ dataTalks, customColumnNames }) => {
 
     // ✅ Nueva función para manejar el estado de la cuenta
     const handleAccountStatement = useCallback(() => {
-        if (!dataTalks || dataTalks.length === 0) {
+        if (!dataTalks || dataTalks.length===0) {
             toast.error("Error 428: Primero debes buscar una Cuenta.");
             return;
         }
@@ -17,7 +17,7 @@ const TableTalks = ({ dataTalks, customColumnNames }) => {
 
     useEffect(() => {
         handleAccountStatement();
-    }, [handleAccountStatement]);
+    } );
 
     if (!dataTalks || dataTalks.length === 0) {
         return <p>No hay datos disponibles.</p>;
@@ -37,7 +37,7 @@ const TableTalks = ({ dataTalks, customColumnNames }) => {
         "idEstado": "Estado",
         "Vencimiento": "Vencimiento",
         "Saldo": "Saldo",
-        "Descuento": "Descuento (%)",
+        "Descuento": " (%)Descuento",
         "MontoRequerido": "Requerido",
         "MontoNegociado": "Negociado",
         "MontoPagado": "Pagado",
@@ -58,28 +58,31 @@ const TableTalks = ({ dataTalks, customColumnNames }) => {
     // ✅ Función para ordenar por fecha más antigua o más reciente
     const handleSortChange = useCallback(() => {
         try {
-            setSortByOldest(prev => !prev);
-            setSortedData(prevData =>
-                !sortByOldest
-                    ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
-                    : [...dataTalks]
-            );
-            toast.success(`Ordenado por fecha ${!sortByOldest ? "más antigua" : "más reciente"}.`);
+            setSortByOldest((prevSortByOldest) => {
+                const newSortByOldest = !prevSortByOldest;
+                setSortedData(() =>
+                    newSortByOldest
+                        ? [...dataTalks].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
+                        : [...dataTalks]
+                );
+                toast.success(`Ordenado por fecha ${newSortByOldest ? "más antigua" : "más reciente"}.`);
+                return newSortByOldest;
+            });
         } catch (error) {
             toast.error("Error al ordenar los datos.");
         }
-    }, [sortByOldest, dataTalks]);
+    }, [dataTalks]);
 
-    // ✅ Filtrar columnas visibles
+    //  Filtrar columnas visibles
     console.log("Datos recibidos en TableTalks:", dataTalks);
 
     const headers = Object.keys(dataTalks[0]).filter(header => !hiddenFieldstalks.includes(header));
 
     return (
         <>
-            {/* ✅ Checkbox para ordenar por el registro más antiguo */}
+            {/*  Checkbox para ordenar por el registro más antiguo */}
             <Form.Check
-                type="checkbox"
+                type="switch"
                 id="sortByOldest"
                 label="Más antiguo"
                 className="mb-2"
@@ -87,15 +90,22 @@ const TableTalks = ({ dataTalks, customColumnNames }) => {
                 onChange={handleSortChange}
             />
 
-            <div style={{
-                maxHeight: "400px",
-                overflowY: "auto",
-                
-                  // 🔹 Permite el scroll sin afectar la tabla
-            }}>       
+            <div 
+                className="scroll-container" 
+                style={{ 
+                    width: '100%', 
+                    maxHeight: '500px', 
+                    overflowY: 'auto', 
+                    display: 'flex', 
+                    backgroundColor: '#343a40', // Fondo oscuro
+                    color: '#ffffff',          // Texto claro
+                    scrollbarColor: '#6c757d #343a40', // Colores del scroll
+                    scrollbarWidth: 'thin'    // Scroll más delgado
+                }}
+            >
                 <Table striped bordered hover responsive variant="dark" style={{ fontSize: "13px" }}>
-                    <thead>
-                        <tr style={{ height: "25px" }}> {/* Reducimos la altura de los encabezados */}
+                    <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#343a40" }}> {/* Encabezado fijo */}
+                        <tr style={{ height: "55px" }}> {/* Reducimos la altura de los encabezados */}
                             {headers.map((header) => (
                                 <th key={header} style={{ padding: "4px", minHeight: "20px", textAlign: "center" }}>
                                     {columnNames[header] || header.replace(/_/g, " ")}
@@ -104,8 +114,6 @@ const TableTalks = ({ dataTalks, customColumnNames }) => {
                         </tr>
                     </thead>
                     <tbody style={{
-                            // 🔹 Altura máxima para el scroll
-                        overflow: "auto",   // 🔹 Scroll SIEMPRE visible
                         width: "100%"          // 🔹 Evita que la tabla se desconfigure
                     }}>
                     
@@ -141,9 +149,9 @@ const TableTalks = ({ dataTalks, customColumnNames }) => {
                                         value = (
                                             <div style={{
                                                 maxHeight: "35px",
-                                                overflow: "hidden",
+                                            
                                                 textAlign: "center",
-                                                whiteSpace: "normal",
+                                                whiteSpace: "nowrap",
                                                 display: "-webkit-box",
                                                 WebkitLineClamp: 2,
                                                 WebkitBoxOrient: "vertical"
@@ -176,10 +184,10 @@ const TableTalks = ({ dataTalks, customColumnNames }) => {
                                     return (
                                         <td key={header} 
                                             style={{ 
-                                                padding: "3px", 
+                                                padding: "20px", 
                                                 minHeight: "20px", 
                                                 textAlign: "center", 
-                                                lineHeight: "1.1" 
+                                                lineHeight: "1.5", 
                                             }}>
                                         {value}
                                     </td>

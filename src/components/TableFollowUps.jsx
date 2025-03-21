@@ -83,7 +83,7 @@ const TableFollowUps = ({ data, customColumnNames = {} }) => {
     return (
         <>
             <Form.Check
-                type="checkbox"
+                type="switch"
                 id="sortByOldest"
                 label="Más antiguo"
                 className="mb-3"
@@ -92,13 +92,13 @@ const TableFollowUps = ({ data, customColumnNames = {} }) => {
             />
             <div style={{
                 maxHeight: "400px",  // Altura máxima del contenedor
-                overflowY: "auto",   // Scroll vertical si es necesario
-                overflowX: "auto",   // Scroll horizontal si es necesario
+                   // Scroll horizontal si es necesario
                 width: "100%",       // Que la tabla use el ancho disponible
             }}>
 
+
                 <Table striped bordered hover responsive variant="dark">
-                    <thead>
+                    <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#343a40" }}> {/* Encabezado fijo */}
                         <tr>
                             {headers.map((header) => (
                                 <th key={header}>
