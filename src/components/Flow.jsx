@@ -10,6 +10,7 @@ import { toast } from "sonner"; // Import toast and Toaster
 import { AppContext } from "../pages/Managment"; // Import AppContext
 import { getResponse, getValidateResponse } from "../utils/flowLogic"; // Import Response function, para la logica del funcionamiento del flujo
 import Comment from "./flowComponents/Comment";
+import FollowUps from "./memuHamburguesa/Acciones/FollowUps"; // Importa el componente FollowUps
 const Flow = () => {
   const [userFlowData, setUserFlowData] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
@@ -19,9 +20,43 @@ const Flow = () => {
   const { selectedAnswer } = useContext(AppContext); // Contexto de llamada de entrada o manual
   const [isFlowFinished, setIsFlowFinished] = useState(false); // Estado para verificar si el flujo ha terminado
   const [savedComment, setSavedComment] = useState(""); // Estado para el comentario guardado
+  const [showFollowUps, setShowFollowUps] = useState(false); // Estado para controlar el modal de FollowUps
+  const [triggerLastAnswerActions, setTriggerLastAnswerActions] =
+    useState(false); // Estado para controlar cuándo ejecutar las acciones
 
   const handleSaveComment = (comment) => {
     setSavedComment(comment); // Actualiza el comentario guardado
+    setTriggerLastAnswerActions(true); // Activa el disparador para ejecutar las acciones
+  };
+
+  useEffect(() => {
+    if (triggerLastAnswerActions) {
+      handleLastAnswerActions(); // Ejecuta las acciones basadas en seguimiento y negociación
+      setTriggerLastAnswerActions(false); // Resetea el disparador
+    }
+  }, [triggerLastAnswerActions]); // Solo se ejecuta cuando triggerLastAnswerActions cambia
+
+  const handleLastAnswerActions = () => {
+    if (answerHistory.length > 0) {
+      const lastAnswer = answerHistory[answerHistory.length - 1]; // Obtiene el último elemento del historial
+
+      if (lastAnswer.negociacion === 1) {
+        console.log("Entró a negociación.");
+        // Acción específica para negociación
+        toast.info("Acción de negociación ejecutada.");
+      }
+
+      if (lastAnswer.seguimiento === 1) {
+        console.log("Entró a seguimiento.");
+        // Abre el modal de FollowUps
+        setShowFollowUps(true);
+        toast.info("Acción de seguimiento ejecutada.");
+      }
+    }
+  };
+
+  const handleClose = () => {
+    setShowFollowUps(false); // Cierra el modal de FollowUps
   };
 
   //No modificar
@@ -323,24 +358,29 @@ const Flow = () => {
   };
 
   return (
-    <Row xs="auto" md="auto" className="g-2">
-      <Col md={12}>
-        {currentQuestionId ? (
-          renderQuestions(currentQuestionId)
-        ) : (
-          <Card className="flow-size" border="primary">
-            <Card.Header className="text-white">
-              <i className="h5">
-                <NodePlusFill></NodePlusFill> Flujo
-              </i>
-            </Card.Header>
-            <Card.Body className="scroll-flow">
-              <h5>Selecciona una cuenta para trabajar en el flujo</h5>
-            </Card.Body>
-          </Card>
-        )}
-      </Col>
-    </Row>
+    <>
+      <Row xs="auto" md="auto" className="g-2">
+        <Col md={12}>
+          {currentQuestionId ? (
+            renderQuestions(currentQuestionId)
+          ) : (
+            <Card className="flow-size" border="primary">
+              <Card.Header className="text-white">
+                <i className="h5">
+                  <NodePlusFill></NodePlusFill> Flujo
+                </i>
+              </Card.Header>
+              <Card.Body className="scroll-flow">
+                <h5>Selecciona una cuenta para trabajar en el flujo</h5>
+              </Card.Body>
+            </Card>
+          )}
+        </Col>
+      </Row>
+
+      {/* Modal de FollowUps */}
+      <FollowUps show={showFollowUps} handleClose={handleClose} />
+    </>
   );
 };
 
