@@ -34,7 +34,7 @@ const AccionamientosTable = ({ data }) => {
 
 const AccionamientosModal = ({ show, handleClose, data }) => {
   return (
-    <Modal show={show} onHide={handleClose} size="lg" dialogClassName="dark-modal">
+    <Modal show={show} onHide={handleClose} size="xl" dialogClassName="dark-modal">
       <Modal.Header closeButton>
         <Modal.Title>Accionamientos - Gespa</Modal.Title>
       </Modal.Header>
