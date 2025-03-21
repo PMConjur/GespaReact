@@ -63,13 +63,21 @@ const TableOnlineCharge = ({ data, customColumnNames = {} }) => {
 
     // Ordenar por fecha (más antiguo/más reciente)
     const handleSortChange = useCallback(() => {
-        setSortByOldest(prev => !prev);
-        setSortedData(prevData =>
-            !sortByOldest
-                ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
-                : [...data] // Restaurar datos originales si se desmarca el checkbox
-        );
-    }, [sortByOldest, data]);
+        try {
+            setSortByOldest((prevSortByOldest) => {
+                const newSortByOldest = !prevSortByOldest;
+                setSortedData(() =>
+                    newSortByOldest
+                        ? [...data].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
+                        : [...data]
+                );
+                toast.success(`Ordenado por fecha ${newSortByOldest ? "más antigua" : "más reciente"}.`);
+                return newSortByOldest;
+            });
+        } catch (error) {
+            toast.error("Error al ordenar los datos.");
+        }
+    }, [data]);
 
     // Filtrar claves de los datos, excluyendo los campos ocultos
     const headers = Object.keys(data[0]).filter(header => !hiddenFields.includes(header));
@@ -77,7 +85,7 @@ const TableOnlineCharge = ({ data, customColumnNames = {} }) => {
     return (
         <>
             <Form.Check
-                type="checkbox"
+                type="switch"
                 id="sortByOldest"
                 label="Más antiguo"
                 className="mb-3"
