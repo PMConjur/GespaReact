@@ -34,6 +34,10 @@ const Flow = () => {
     setTriggerLastAnswerActions(true); // Activa el disparador para ejecutar las acciones
   };
 
+  const handleCloseFollowUps = () => {
+    setShowFollowUps(false); // Cierra el modal de seguimiento
+  };
+
   useEffect(() => {
     if (triggerLastAnswerActions) {
       handleLastAnswerActions(); // Ejecuta las acciones basadas en seguimiento y negociación
@@ -57,13 +61,14 @@ const Flow = () => {
         console.log("Entró a negociación.");
         setIsNegotiationActive(true); // Activa la variable de negociación
 
-        toast.info("Acción de negociación ejecutada.");
+        toast.info("Flujo preparado para negociación.");
       }
 
       if (lastAnswer.seguimiento === 1) {
         console.log("Entró a seguimiento.");
         setIsFollowUpActive(true); // Activa la variable de seguimiento
-        toast.info("Acción de seguimiento ejecutada.");
+        setShowFollowUps(true); // Muestra el modal de FollowUps
+        toast.info("Flujo preparado para seguimiento.");
       }
     }
   };
@@ -388,7 +393,7 @@ const Flow = () => {
       </Row>
 
       {/* Modal de FollowUps */}
-      <FollowUps show={showFollowUps} />
+      <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps} />
     </>
   );
 };
