@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext } from "react";
 import {
   Card,
   Table,
@@ -40,7 +40,7 @@ const Telephones = () => {
         searchResults.map(async (result) => {
           return await fetchPhones(result.idCuenta);
         })
-      );
+      ); 
       const flatPhones = phones.flat();
       setData(flatPhones);
       if (flatPhones.length === 0 && !toastShown) {
@@ -98,7 +98,7 @@ const Telephones = () => {
       });
 
       if (response.exists) {
-        toast.warring("Error 409: El número de teléfono existe en la cuenta", {
+        toast.warning("Error 409: El número de teléfono existe en la cuenta", {
           position: "top-right",
           style: { transform: "translateY(80vh)" }
         });
