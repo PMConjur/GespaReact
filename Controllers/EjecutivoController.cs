@@ -56,8 +56,17 @@ namespace NoriAPI.Controllers
         [HttpGet("tiempos-ejecutivo")]
         public async Task<ActionResult<TiemposEjecutivo>> Tiempos([FromQuery] int numEmpleado)
         {
-            var Tiempos = await _ejecutivoService.ValidateTimes(numEmpleado);
-            return Ok(new { Tiempos.ResultadosTiempos });
+            var tiempos = await _ejecutivoService.ValidateTimes(numEmpleado);
+            return Ok(new { tiempos.ResultadosTiempos });
+        }
+
+        [HttpGet("promedio-ejecutivo")]
+        public async Task<IActionResult> Promedios([FromQuery] int numEmpleado)
+        {
+            var promedios = await _ejecutivoService.Promedios(numEmpleado);
+
+            return Ok(promedios);
+
         }
 
         [HttpPost("pause-ejecutivo")]

@@ -2880,7 +2880,6 @@ namespace NoriAPI.Services
         }
         #endregion
 
-
         #region Relaciones
         public DataTable CargaRelaciones()
         {

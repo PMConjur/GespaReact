@@ -13,6 +13,7 @@ using NoriAPI.Models.Domicilios;
 using NoriAPI.Models;
 using System.Collections;
 using System.Reflection;
+using System.Numerics;
 
 
 namespace NoriAPI.Services
@@ -21,7 +22,7 @@ namespace NoriAPI.Services
     {
         Task<ResultadoBusqueda> ValidateBusqueda(string filtro, string ValorBusqueda);
         Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado);
-        Task<List<Phone>> FetchPhones(string idCuenta);
+        Task<List<PhoneTranslated>> FetchPhones(string idCuenta);
         Task<Dictionary<string, object>> CalculateProductData(string idCuenta);
         Task<bool> ValidatePhone(string telefono, string idCuenta);
         Task<string> SaveNewPhone(NewPhoneRequest newPhoneData);
@@ -178,11 +179,43 @@ namespace NoriAPI.Services
 
         #region Phones
 
-        public async Task<List<Phone>> FetchPhones(string idCuenta)
+        public async Task<List<PhoneTranslated>> FetchPhones(string idCuenta)
         {
             var phonesList = await _searchRepository.GetPhones(idCuenta, 1);
 
-            return phonesList;
+
+            ClasesGespaNonStatic gespaPhonesList = new();
+            gespaPhonesList.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            gespaPhonesList.CargaCatalogos();
+
+            var phonesTranslatedList = phonesList.Select(p => new PhoneTranslated
+            {
+                ID = p.ID,
+                NúmeroTelefónico = p.NúmeroTelefónico,
+                idTelefonía = p.idTelefonía,
+                idOrigen = p.idOrigen,
+                idClase = p.idClase,
+                Estado = p.Estado,
+                Municipio = p.Municipio,
+                HusoHorario = p.HusoHorario,
+                SegHorarioContacto = p.SegHorarioContacto,
+                Extensión = p.Extensión,
+                _Confirmado = p._Confirmado,
+                Fecha_Insert = p.Fecha_Insert,
+                Calificacion = p.Calificacion,
+                Activo = p.Activo,
+                Titulares = p.Titulares,
+                Conocidos = p.Conocidos,
+                Desconocidos = p.Desconocidos,
+                SinContacto = p.SinContacto,
+                IntentosViciDial = p.IntentosViciDial,
+                Telefonia = BuscarEnValoresHashtable(gespaPhonesList._htValoresCatálogo, p.idTelefonía.ToString()),
+                Origen = BuscarEnValoresHashtable(gespaPhonesList._htValoresCatálogo, p.idOrigen.ToString()),
+                Clase = BuscarEnValoresHashtable(gespaPhonesList._htValoresCatálogo, p.idClase.ToString())
+            }).ToList();
+
+
+            return phonesTranslatedList;
         }
 
         public async Task<bool> ValidatePhone(string telefono, string idCuenta)
