@@ -11,18 +11,23 @@ import { AppContext } from "../pages/Managment"; // Import AppContext
 import { getResponse, getValidateResponse } from "../utils/flowLogic"; // Import Response function, para la logica del funcionamiento del flujo
 import Comment from "./flowComponents/Comment";
 import FollowUps from "./memuHamburguesa/Acciones/FollowUps"; // Importa el componente FollowUps
+import CalculatorSimulator from "./CalculatorSimulator"; // Importa el componente CalculatorSimulator
+
 const Flow = () => {
+  const { selectedAnswer, setNegotiationActive, setFollowUpActive } =
+    useContext(AppContext); // Agrega setFollowUpActive del contexto
   const [userFlowData, setUserFlowData] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [selectedValues, setSelectedValues] = useState({});
   const [answerHistory, setAnswerHistory] = useState([]); // Guarda el historial de las respuestas que se van seleccionando
-  const { selectedAnswer } = useContext(AppContext); // Contexto de llamada de entrada o manual
   const [isFlowFinished, setIsFlowFinished] = useState(false); // Estado para verificar si el flujo ha terminado
   const [savedComment, setSavedComment] = useState(""); // Estado para el comentario guardado
   const [showFollowUps, setShowFollowUps] = useState(false); // Estado para controlar el modal de FollowUps
   const [triggerLastAnswerActions, setTriggerLastAnswerActions] =
     useState(false); // Estado para controlar cuándo ejecutar las acciones
+  const [isNegotiationActive, setIsNegotiationActive] = useState(false); // Variable para controlar la acción de negociación
+  const [isFollowUpActive, setIsFollowUpActive] = useState(false); // Variable para controlar la acción de seguimiento
 
   const handleSaveComment = (comment) => {
     setSavedComment(comment); // Actualiza el comentario guardado
@@ -34,7 +39,15 @@ const Flow = () => {
       handleLastAnswerActions(); // Ejecuta las acciones basadas en seguimiento y negociación
       setTriggerLastAnswerActions(false); // Resetea el disparador
     }
-  }, [triggerLastAnswerActions]); // Solo se ejecuta cuando triggerLastAnswerActions cambia
+  }, [triggerLastAnswerActions]);
+
+  useEffect(() => {
+    setNegotiationActive(isNegotiationActive); // Envía isNegotiationActive al contexto
+  }, [isNegotiationActive, setNegotiationActive]);
+
+  useEffect(() => {
+    setFollowUpActive(isFollowUpActive); // Envía isFollowUpActive al contexto
+  }, [isFollowUpActive, setFollowUpActive]);
 
   const handleLastAnswerActions = () => {
     if (answerHistory.length > 0) {
@@ -42,21 +55,17 @@ const Flow = () => {
 
       if (lastAnswer.negociacion === 1) {
         console.log("Entró a negociación.");
-        // Acción específica para negociación
+        setIsNegotiationActive(true); // Activa la variable de negociación
+
         toast.info("Acción de negociación ejecutada.");
       }
 
       if (lastAnswer.seguimiento === 1) {
         console.log("Entró a seguimiento.");
-        // Abre el modal de FollowUps
-        setShowFollowUps(true);
+        setIsFollowUpActive(true); // Activa la variable de seguimiento
         toast.info("Acción de seguimiento ejecutada.");
       }
     }
-  };
-
-  const handleClose = () => {
-    setShowFollowUps(false); // Cierra el modal de FollowUps
   };
 
   //No modificar
@@ -379,7 +388,7 @@ const Flow = () => {
       </Row>
 
       {/* Modal de FollowUps */}
-      <FollowUps show={showFollowUps} handleClose={handleClose} />
+      <FollowUps show={showFollowUps} />
     </>
   );
 };

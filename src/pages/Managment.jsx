@@ -28,12 +28,14 @@ const Managment = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
-   const responseData =
-    location.state || JSON.parse(localStorage.getItem("responseData"));// Retrieve responseData from localStorage if not in location state
+  const responseData =
+    location.state || JSON.parse(localStorage.getItem("responseData")); // Retrieve responseData from localStorage if not in location state
   const [showToast, setShowToast] = useState(false);
   const [numeroTelefonico, setNumeroTelefonico] = useState("");
   const [flowMessage, setFlowMessage] = useState(""); // Estado para el mensaje del flujo
   const [selectedAnswer, setSelectedAnswer] = useState(null); // Estado para la respuesta seleccionada
+  const [isNegotiationActive, setNegotiationActive] = useState(false); // Agrega el estado para negociación
+  const [isFollowUpActive, setFollowUpActive] = useState(false); // Agrega el estado para seguimiento
   const token = responseData?.ejecutivo?.token;
   console.log("Token recibido:", token);
   const nombreEjecutivo =
@@ -176,7 +178,11 @@ const Managment = () => {
     flowMessage, // Añadir flowMessage al contexto
     setFlowMessage, // Añadir setFlowMessage al contexto
     selectedAnswer, // Añadir selectedAnswer al contexto
-    setSelectedAnswer // Añadir setSelectedAnswer al contexto
+    setSelectedAnswer, // Añadir setSelectedAnswer al contexto
+    isNegotiationActive, // Añadir isNegotiationActive al contexto
+    setNegotiationActive, // Añadir setNegotiationActive al contexto
+    isFollowUpActive, // Añadir isFollowUpActive al contexto
+    setFollowUpActive // Añadir setFollowUpActive al contexto
   };
 
   return (
@@ -203,7 +209,8 @@ const Managment = () => {
               {/* Columna para mostrar información del deudor */}
               <Col xs={12} md={12} lg={6}>
                 <br />
-                <DebtorInformation /> {/* Componente con información del deudor */}
+                <DebtorInformation />{" "}
+                {/* Componente con información del deudor */}
               </Col>
 
               {/* Columna para mostrar el formulario de búsqueda */}
@@ -227,12 +234,14 @@ const Managment = () => {
                   {/* Sección para mostrar información adicional */}
                   <Row className="recent-sales">
                     <Col xs={12}>
-                      <InformationClient /> {/* Componente con la información del cliente */}
+                      <InformationClient />{" "}
+                      {/* Componente con la información del cliente */}
                     </Col>
                   </Row>
                   <Row>
                     <Col xs={12}>
-                      <Telephones /> {/* Componente con los números telefónicos */}
+                      <Telephones />{" "}
+                      {/* Componente con los números telefónicos */}
                     </Col>
                   </Row>
                   <Col xs={12}>
@@ -241,7 +250,7 @@ const Managment = () => {
                 </Col>
                 <Col xs={12} md={6} lg={4}>
                   <Col xs={12} md={12}>
-                    <Flow/> {/* Componente con el flujo de información */}
+                    <Flow /> {/* Componente con el flujo de información */}
                   </Col>
                   <Col xs={12} md={12}>
                     <Calculator /> {/* Componente con la calculadora */}
@@ -251,7 +260,7 @@ const Managment = () => {
                   </Col>
                   {/* Componente de gestiones */}
                   <Col>
-                  <NotesWidget/> {/* Componente de recordatorios */}
+                    <NotesWidget /> {/* Componente de recordatorios */}
                   </Col>
                 </Col>
               </Row>
@@ -262,7 +271,5 @@ const Managment = () => {
     </>
   );
 };
-
-
 
 export default Managment;
