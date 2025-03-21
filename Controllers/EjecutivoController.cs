@@ -60,7 +60,7 @@ namespace NoriAPI.Controllers
             return Ok(new { tiempos.ResultadosTiempos });
         }
 
-        [HttpGet("promedio-ejecutivo")]
+        [HttpGet("promedios-ejecutivo")]
         public async Task<IActionResult> Promedios([FromQuery] int numEmpleado)
         {
             var promedios = await _ejecutivoService.Promedios(numEmpleado);

@@ -2040,14 +2040,6 @@ namespace NoriAPI.Services
             busquedaGet.TableName = "Busqueda";
             dsTablas.Tables.Add(busquedaGet);
         }
-        // Usar la interfaz
-
-        public EjecutivoService(string connectionString, IBusquedaRepository busquedaRepository) // Inyectar la interfaz
-        {
-            _connectionString = connectionString;
-            _busquedaRepository = busquedaRepository;
-        }
-
 
 
         public async Task<bool> GuardarBusquedaAsync(BusquedaNueva busqueda)
