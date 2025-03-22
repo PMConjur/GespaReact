@@ -39,15 +39,45 @@ const DropExecutive = () => {
       {/* Botón de toggle para el dropdown */}
       <Dropdown.Toggle split variant="dark" id="dropdown-split-basic" />
       <Dropdown.Menu
-        className="text-center"
-        align="start"
-        style={{ left: "0", right: "auto" }}
+        className="text-center p-3"
+        align="end" // Cambiado a "end" para que se alinee hacia la izquierda
+        style={{
+          top: "40px",
+          left: "-200px", // Cambiado para que se ajuste automáticamente
+          right: "0", // Posición hacia la izquierda
+          borderRadius: "10px",
+          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+          minWidth: "240px", // Cambiado a 240px
+        }}
       >
-        {/* Mostrar el nombre y el ID del ejecutivo en el menú del dropdown */}
-        <p>{nombreEjecutivo}</p>
-        <p>{idEjecutivo}</p>
-        {/* Opción del menú del dropdown con degradado */}
-        <Dropdown.Item href="/maintenance">
+        {/* Encabezado con nombre e ID del ejecutivo */}
+        <div className="text-center">
+          <p className="mb-0 fw-bold" style={{ fontSize: "18px" }}> {/* Letra más grande */}
+            {nombreEjecutivo}
+          </p>
+          <p className="mb-0 text-muted" style={{ fontSize: "16px" }}> {/* Letra más grande */}
+            {idEjecutivo}
+          </p>
+        </div>
+        <hr
+          className="my-2"
+          style={{
+            height: "2px",
+            border: "none",
+            background: "linear-gradient(90deg, #6dd6ff, #07fb70)", // Degradado aplicado
+          }}
+        />
+        {/* Opción del menú del dropdown */}
+        <Dropdown.Item
+          href="/maintenance"
+          className="text-center" // Cambiado a text-center para centrar
+          style={{
+            fontSize: "14px",
+            color: "#fff", // Cambiado a blanco
+            padding: "10px 15px",
+            borderRadius: "5px",
+          }}
+        >
           Ejecutivo Telefonico
         </Dropdown.Item>
       </Dropdown.Menu>

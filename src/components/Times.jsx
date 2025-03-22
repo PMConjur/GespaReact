@@ -157,7 +157,7 @@ const Times = ({ show, handleClose }) => {
                                     onClick={handleStartTimer}
                                     disabled={isPaused || !selectedReason || selectedReason === "Selecciona"}
                                 >
-                                    Pausar
+                                    Inicio
                                 </Button>
                                 <span className="input-group-text"></span>
                                 <Form.Select
@@ -186,7 +186,7 @@ const Times = ({ show, handleClose }) => {
                                     onClick={handleStopTimer}
                                     disabled={!isPaused}
                                 >
-                                    Despausar
+                                    Fin
                                 </Button>
                                 <span className="input-group-text"></span>
                                 <Form.Control
