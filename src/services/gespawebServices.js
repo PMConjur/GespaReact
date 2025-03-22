@@ -1049,6 +1049,7 @@ export const fetchCalFirtsPart = async (Cartera, NoCuenta, idHerr) => {
     throw error;
   }
 };
+
 //EndPoint - Relaciones
 export async function Relations() {
   try {
@@ -1064,5 +1065,30 @@ export async function Relations() {
     } else {
       throw new Error("Error en la respuesta del endpoint de relaciones.");
     }
+  }
+};
+
+// endpoint calculadora primera parte
+export const fetchCalSecondPart = async (Cartera, NoCuenta, idHerr) => {
+  try {
+    console.log("Llamando al endpoint /ejecutivo/Calculadora-2daParte");
+    const response = await servicio.get(`/ejecutivo/Calculadora-2daParte`, {
+      params: { Cartera, NoCuenta, idHerr },
+    });
+
+    console.log("Respuesta recibida:", response);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Validación recibida:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchCalFirtsPart:", error);
+    throw error;
   }
 };
