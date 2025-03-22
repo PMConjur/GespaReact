@@ -346,59 +346,31 @@ export const fetchNewTel = async (newPhoneData) => {
 };
 
 
-
-export async function getFollowUpsData(searchResults) {
-// Endpoint de seguimientos para múltiples cuentas
+export const getFollowUpsData = async (idCartera, idCuenta) => {
   try {
-    // Obtener token de autenticación de localStorage o estado
-    const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));
-    const token = responseData?.ejecutivo?.token;
-
-    if (!token) {
-      toast.error("Token de autenticación no disponible");
-      throw new Error("Token de autenticación no disponible");
+    if (!idCartera || !idCuenta) {
+      throw new Error("idCartera o idCuenta no son válidos.");
     }
 
-    const idCartera = 1;
+    const url = `/ejecutivo/seguimientos/${idCartera}/${idCuenta}`;
+    console.log("Solicitando datos de seguimiento a:", url); // Depurar URL
 
-    const followUps = await Promise.all(
-      searchResults.map(async (result) => {
-        const idCuenta = result.idCuenta.trim();
-        console.log("🔍 Buscando seguimientos para idCuenta:", idCuenta);
+    const response = await servicio.get(url);
+    const message = getErrorStatus(response.status);
 
-        try {
-          const response = await axios.get(
-            `${apiUrl}/ejecutivo/seguimientos/${idCartera}/${idCuenta}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}` // Autenticación con token
-              }
-            }
-          );
+    if (response.status !== 200) {
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
+    }
 
-          console.log(
-            `✅ Respuesta recibida para idCuenta ${idCuenta}:`,
-            response.data
-          );
-          return response.data; // Retornar datos obtenidos
-        } catch (error) {
-          console.error(
-            `❌ Error al obtener datos de seguimiento para idCuenta ${idCuenta}:`,
-            error
-          );
-          return null; // Retornar null en caso de error para evitar fallas en Promise.all
-        }
-      })
-    );
-
-  
-    return followUps.filter((data) => data !== null);
+    return response.data;
   } catch (error) {
-    toast.error("Error al cargar los datos de seguimiento.");
-    console.error("❌ Error al obtener los datos de seguimiento:", error);
-    throw new Error("Error al cargar los datos de seguimiento.");
+    console.error("Error en getFollowUpsData:", error);
+    toast.error("No se pudo obtener los datos de seguimiento. Verifica la conexión o los parámetros.");
+    throw error;
   }
-}
+};
+
 
 // Endpoint estado de cuenta
 export const fetchAccoutStatements = async (idCartera, idCuenta) => {
@@ -457,60 +429,35 @@ export const fetchSaveAccount = async (requestData) => {
   }
 };
 
-export async function getTalksData(searchResults) {
+export const getTalksData = async (idCartera, idCuenta) => {
   try {
-    // Obtener token desde localStorage
-    const responseData = JSON.parse(localStorage.getItem("responseData"));
-    const token = responseData?.ejecutivo?.token;
-
-    if (!token) {
-      toast.error("Error 401: Token de autenticación no disponible.");
-      throw new Error("Token de autenticación no disponible");
+    if (!idCartera || !idCuenta) {
+      throw new Error("idCartera o idCuenta no son válidos.");
     }
 
-    // Definir idCartera fijo (siempre 1)
-    const idCartera = 1;
+    const url = `/ejecutivo/accionesNegociacion?idCartera=${idCartera}&idCuenta=${idCuenta}`;
+    console.log("Solicitando datos de Negociaciones a:", url); // Depurar URL"
 
-    // Realizar solicitudes en paralelo para cada idCuenta
-    const talks = await Promise.all(
-      searchResults.map(async (result) => {
-        const idCuenta = result.idCuenta?.trim();
-        console.log(
-          "🔍 Buscando negociaciones para idCuenta:",
-          idCuenta,
-          idCartera
-        );
+    const response = await servicio.get(url);
+    const message = getErrorStatus(response.status);
 
-        try {
-          const response = await axios.get(
-            `${apiUrl}/ejecutivo/accionesNegociacion?idCartera=${idCartera}&idCuenta=${idCuenta}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+    if (response.status !== 200) {
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
+    }
 
-          console.log(
-            `✅ Respuesta recibida para idCuenta ${idCuenta}:`,
-            response.data
-          );
-          return response.data; // Retorna los datos obtenidos
-        } catch (error) {
-          toast.error(`Error 408: Error al obtener negociaciones para idCuenta ${idCuenta}.`);
-          console.error(`❌ Error al obtener negociaciones para idCuenta ${idCuenta}:`, error);
-          return null; // Evita que falle `Promise.all`
-        }
-      })
-    );
-
-    return talks.filter(Boolean); // 🔹 Filtrar valores nulos
+    return response.data;
   } catch (error) {
-    toast.error("Error 408: Error al cargar los datos de negociaciones.");
-    console.error(" Error al obtener los datos de negociaciones:", error);
-    throw new Error("Error al cargar los datos de negociaciones.");
+    console.error("Error en getTalksData:", error);
+    toast.error("No se pudo obtener los datos de Negociaciones. Verifica la conexión o los parámetros.");
+    throw error;
   }
-}
+};
+
+      
+
+
+
 //endpoint acciones-busquedas
 export const fetchActionsSearch = async (idCuenta) => {
   try {
@@ -595,52 +542,31 @@ const getErrorStatus = (status) => {
       return `Error inesperado (${status}): Contacta con soporte.`;
   }}
 
-// Endpoint de cargos en línea para múltiples cuentas
-export async function getOnlinechargeData(searchResults) {
-  try {
-    // Obtener token de autenticación de localStorage o estado
-    const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));
-    const token = responseData?.ejecutivo?.token;
-
-    if (!token) {
-      throw new Error("Token de autenticación no disponible");
+  export const getOnlinechargeData = async (idCartera, idCuenta) => {
+    try {
+      if (!idCartera || !idCuenta) {
+        throw new Error("idCartera o idCuenta no son válidos.");
+      }
+  
+      const url = `/ejecutivo/cargosEnLinea/${idCartera}/${idCuenta}`;
+      console.log("Solicitando datos de cargos en linea a:", url); // Depurar URL
+  
+      const response = await servicio.get(url);
+      const message = getErrorStatus(response.status);
+  
+      if (response.status !== 200) {
+        toast.error(message, { position: "top-right" });
+        throw new Error(message);
+      }
+  
+      return response.data;
+    } catch (error) {
+      console.error("Error en getOnlineChargeData:", error);
+      toast.error("No se pudo obtener los datos de Cargos en Linea. Verifica la conexión o los parámetros.");
+      throw error;
     }
+  };
 
-    // Definir idCartera fijo (siempre 1 según el código original)
-    const idCartera = 1;
-
-    // Realizar múltiples solicitudes en paralelo para cada idCuenta en searchResults
-    const onlinecharge = await Promise.all(
-      searchResults.map(async (result) => {
-        const idCuenta = result.idCuenta.trim(); // Limpieza del idCuenta
-        console.log("🔍 Buscando cargos en línea para idCuenta:", idCuenta);
-
-        try {
-          const response = await axios.get(
-            `${apiUrl}/ejecutivo/cargosEnLinea/${idCartera}/${idCuenta}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`, // Autenticación con token
-              },
-            }
-          );
-
-          console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
-          return response.data; // Retornar datos obtenidos
-        } catch (error) {
-          console.error(`❌ Error al obtener datos de cargos en línea para idCuenta ${idCuenta}:`, error);
-          return null; // Retornar null en caso de error para evitar fallas en Promise.all
-        }
-      })
-    );
-
-    // Filtrar valores nulos (en caso de errores individuales)
-    return onlinecharge.filter((data) => data !== null);
-  } catch (error) {
-    console.error("❌ Error al obtener los datos de cargos en línea:", error);
-    throw new Error("Error al cargar los datos de cargos en línea.");
-  }
-}
 
 // Endpoint de seguimientos para múltiples cuentas
 export async function getPaymentsData(searchResults) {

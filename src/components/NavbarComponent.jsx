@@ -3,7 +3,7 @@ import DropExecutive from "./DropExecutive";
 import NavContainer from "./NavContainer";
 import { Offcanvas } from "react-bootstrap";
 import CerrarSesion from "./CierraSesion";
-import { NavLink, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 import { HouseDoorFill, KanbanFill } from "react-bootstrap-icons";
 
@@ -29,7 +29,7 @@ const NavbarComponent = () => {
         position: "fixed",
         top: "0",
         left: "0",
-        zIndex: "1000"
+        zIndex: "1000",
       }}
     >
       <NavContainer />
@@ -41,23 +41,63 @@ const NavbarComponent = () => {
         style={{ width: "250px" }}
       >
         <Offcanvas.Header closeButton />
-        <Offcanvas.Body style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          justifyContent: 'space-between', // Distribuye el espacio entre los elementos
-          height: '100%', 
-        }}>
-          <Nav className="flex-grow-1 pe-3" >
+        <Offcanvas.Body
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between", // Distribuye el espacio entre los elementos
+            height: "100%",
+          }}
+        >
+          <Nav className="flex-grow-1 pe-3">
             <Nav.Link href="/home" className="text-align-center">
-              <h5><span><HouseDoorFill/></span> Inicio</h5>
+              <h5
+                style={{
+                  background: "linear-gradient(90deg, #6dd6ff, #07fb70)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                <span>
+                  <HouseDoorFill />
+                </span>{" "}
+                Inicio
+              </h5>
             </Nav.Link>
             <Nav.Link href="/managment" className="text-align-center">
-              <h5><span><KanbanFill/></span> Gestion</h5>
-            </Nav.Link>           
+              <h5
+                style={{
+                  background: "linear-gradient(90deg, #6dd6ff, #07fb70)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                <span>
+                  <KanbanFill />
+                </span>{" "}
+                Gestion
+              </h5>
+            </Nav.Link>
           </Nav>
-          <div style={{marginTop: 'auto', marginBottom: '10px', display: 'block'}}>
-            <div>Grupo Consorcio</div>
-            <CerrarSesion setUser={setUser} setIdEjecutivo={setIdEjecutivo} />   
+          <div
+            style={{
+              marginTop: "auto",
+              marginBottom: "10px",
+              display: "block",
+            }}
+          >
+            <div
+              style={{
+                background: "linear-gradient(90deg, #6dd6ff, #07fb70)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                fontWeight: "bold", // Opcional: resalta el texto
+                textAlign: "initial", // Opcional: centra el texto
+              }}
+            >
+              Grupo Consorcio ®
+            </div>
+            <CerrarSesion setUser={setUser} setIdEjecutivo={setIdEjecutivo} />
           </div>
         </Offcanvas.Body>
       </Navbar.Offcanvas>

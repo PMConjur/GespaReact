@@ -6,12 +6,13 @@ import EstadoCuentaModal from './AccountStatements';
 import FollowUps from './FollowUps';
 import Talks from './Talks';
 import Drives from './Drives';
-import { getFollowUpsData, getTalksData, getOnlinechargeData, fetchProcessesWLP } from '../../../services/gespawebServices';
+import { fetchProcessesWLP } from '../../../services/gespawebServices';
 import Search from './Search';
 import OnlineCharge from './OnlineCharge';
 import Complaints from './Complaints'; // Importar el componente Complaints
 
 import ProcessesWLP from './ProcessesWLP';
+import { data } from 'react-router-dom';
 
 const DropdownActions = () => {
   const [modalShow, setModalShow] = useState(false);
@@ -43,35 +44,20 @@ const DropdownActions = () => {
 
   const { searchResults } = useContext(AppContext);
 
-  const handleShowFollowUps = async () => {
-    setLoadingFollow(true);
-    try {
-      const followUps = await getFollowUpsData(searchResults);
-      setFollowUpsData(followUps.flat());
-      setShowFollowUps(true);
-    } catch (error) {
-      console.error("Error al obtener los datos de seguimiento:", error);
-    } finally {
-      setLoadingFollow(false);
-    }
-  };
-
+  const handleShowFollowUps = () => setShowFollowUps(true); // Solo abre el modal
   const handleCloseFollowUps = () => setShowFollowUps(false);
 
-  const handleShowTalks = async () => {
-    setLoadingtalks(true);
-    try {
-      const talks = await getTalksData(searchResults);
-      setTalksData(talks.flat());
-      setShowTalks(true);
-    } catch (error) {
-      console.error('Error al cargar los datos de negociaciones:', error);
-    } finally {
-      setLoadingtalks(false);
-    }
-  };
 
+  const handleShowOnlinecharge = () => setShowOnlinecharge(true); // Solo abre el modal
+  const handleCloseOnlinecharge = () => setShowOnlinecharge(false);
+  
+
+  const handleShowTalks = () => setShowTalks(true);
   const handleCloseTalks = () => setShowTalks(false);
+
+
+
+
 
   const handleShowDrives = () => {
     setShowDrives(true);
@@ -79,20 +65,7 @@ const DropdownActions = () => {
 
   const handleCloseDrives = () => setShowDrives(false);
 
-  const handleShowOnlinecharge = async () => {
-    setLoadingonlinecharge(true);
-    try {
-      const onlinecharge = await getOnlinechargeData(searchResults);
-      setOnlinechargeData(onlinecharge.flat());
-      setShowOnlinecharge(true);
-    } catch (error) {
-      console.error('Error al cargar los datos de cargos en línea:', error);
-    } finally {
-      setLoadingonlinecharge(false);
-    }
-  };
-
-  const handleCloseOnlinecharge = () => setShowOnlinecharge(false);
+ 
 
   // Procesos WLP
   const handleShowProcessesWLP = async () => {
@@ -139,8 +112,8 @@ const DropdownActions = () => {
       </Dropdown>
 
       <EstadoCuentaModal show={modalShow} handleClose={() => setModalShow(false)} />
-      <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps} data={followUpsData} loadingFollow={loadingFollow} />
-      <Talks show={showTalks} handleClose={handleCloseTalks} dataTalks={talksData} loading={loadingtalks} />
+      <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps} />
+      <Talks show={showTalks} handleClose={handleCloseTalks} />
       <OnlineCharge show={showOnlinecharge} handleClose={handleCloseOnlinecharge} data={onlinechargeData} loading={loadingOnlinecharge} />
       <Drives showModal={showDrives} handleCloseModal={handleCloseDrives} />
       <Search show={showModal} handleClose={handleCloseModal} />

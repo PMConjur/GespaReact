@@ -1,10 +1,10 @@
-import React from "react";
+
 import { Modal, Button } from "react-bootstrap";
 import TableTalks from "../../TableTalks";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 
-const Talks = ({ show, handleClose, dataTalks }) => {
+const Talks = ({ show, handleClose }) => {
     return (
         <Modal show={show} onHide={handleClose} size="xl">
             <Modal.Header closeButton>
@@ -14,7 +14,7 @@ const Talks = ({ show, handleClose, dataTalks }) => {
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <TableTalks dataTalks={dataTalks} />
+                <TableTalks/>
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={handleClose}>
@@ -24,7 +24,6 @@ const Talks = ({ show, handleClose, dataTalks }) => {
         </Modal>
     );
 };
-
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet"></link>
 
 export default Talks;
