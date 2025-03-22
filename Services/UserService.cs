@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using NoriAPI.Repositories;
 using System;
 using NoriAPI.Models;
+using System.Data;
 
 namespace NoriAPI.Services
 {
@@ -15,6 +16,8 @@ namespace NoriAPI.Services
         Task<ResultadoReseteo> ValidateContra(ReseteaContra request);
         Task<ResultadoLogin> ValidateUser(AuthRequest request);
         Task<(string, bool)> ValidateUserForRefresh(RenewTokenRequest renewTokenInfo);
+        Task<DataTable> GetCierreSesion(int idEjecutivo, int idLogIngreso);
+        Task<DataTable> GetCierreLog(int idLogIngreso);
 
     }
 
@@ -22,11 +25,13 @@ namespace NoriAPI.Services
     {
         private readonly IConfiguration _configuration;
         private readonly IUserRepository _userRepository;
+        private readonly string _connectionString;
 
         public UserService(IConfiguration configuration, IUserRepository userRepository)
         {
             _configuration = configuration;
             _userRepository = userRepository;
+            _connectionString = _configuration.GetConnectionString("Piso2Amex");
         }
 
         public async Task<ResultadoReseteo> ValidateContra(ReseteaContra request)
@@ -156,6 +161,11 @@ namespace NoriAPI.Services
             if (dict.TryGetValue("Días", out var dias) && dias != null)
                 info.Dias = Convert.ToInt32(dias);
 
+            if (dict.TryGetValue("Segmento", out var segmento) && segmento != null)
+                info.Segmento = Convert.ToString(segmento);
+
+            if (dict.TryGetValue("idLogIngreso", out var idLogIngreso) && idLogIngreso != null)
+                info.idLogIngreso = Convert.ToInt32(idLogIngreso);
 
             return info;
         }
@@ -209,9 +219,55 @@ namespace NoriAPI.Services
             return ("", true);
         }
 
+        /*Cierre de sesion C#*/
+        public async Task<DataTable> GetCierreSesion(int idEjecutivo, int idLogIngreso)
+        {
+            DataTable sesionCierre = new DataTable();
+            string query = "EXEC dbMemory.PS.CierraSesión @idEjecutivo, @idLogIngreso"; // Evita inyección SQL
 
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                    command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
+                    command.Parameters.Add("@idLogIngreso", SqlDbType.Int).Value = idLogIngreso;
 
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(sesionCierre);
+                    }
+                }
+            }
 
+            return sesionCierre;
+        }
+
+        public async Task<DataTable> GetCierreLog(int idLogIngreso)
+        {
+            DataTable sesionCierreLog = new DataTable();
+            string query = "UPDATE dbCollection..LogIngreso SET Segundo_Salida = GETDATE() WHERE idLogIngreso = @idLogIngreso"; // Evita inyección SQL
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    // Usar Add con tipo explícito para evitar problemas con tipos de datos
+                    command.Parameters.Add("@idLogIngreso", SqlDbType.Int).Value = idLogIngreso;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(sesionCierreLog);
+                    }
+                }
+            }
+
+            return sesionCierreLog;
+        }
+
+        /*Cierre de sesion C#*/
 
 
         private SqlConnection GetConnection(string connection)

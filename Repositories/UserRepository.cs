@@ -170,6 +170,8 @@ namespace NoriAPI.Repositories
         }
         
 
+        /*Cierre de sesion C#*/
+
 
         private SqlConnection GetConnection(string connection)
         {

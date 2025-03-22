@@ -22,6 +22,8 @@ namespace NoriAPI.Models.Login
         public byte? Jerarquía { get; set; }
         public int? Extensión { get; set; }
         public int? Dias {  get; set; }
+        public string? Segmento { get; set; }
+        public int? idLogIngreso { get; set; }
 
     }
 }

@@ -741,9 +741,6 @@ namespace NoriAPI.Controllers
 
                 Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
 
-
-                //Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
-
                 // Convertimos el DataTable a una lista de diccionarios
                 var listaNegociaciones = ConvertDataTableToList(Negociaciones);
 
