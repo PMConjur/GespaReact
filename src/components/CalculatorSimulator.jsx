@@ -13,9 +13,34 @@ const CalculatorSimulator = ({ show, handleClose }) => {
     montoDescuento: 0,
     saldo: 0,
     fechaCorte: "",
+    descuento: 0,
   });
   const [herramientas, setHerramientas] = useState([]); // Estado para almacenar las herramientas
   const [selectedHerramienta, setSelectedHerramienta] = useState(null); // Estado para almacenar el idHerramienta seleccionado
+  const [calculosData, setCalculosData] = useState({
+    plazos: 0,
+    primerPago: 0,
+    saldo: 0,
+    montoNegociado: 0,
+    descuento: 0,
+    calculos: [],
+  });
+  const [formValues, setFormValues] = useState({
+    montoRequerido: "",
+    descuento: "",
+  });
+  const [formInputs, setFormInputs] = useState({
+    meses: "",
+    fechaPago: "",
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormInputs((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,6 +66,7 @@ const CalculatorSimulator = ({ show, handleClose }) => {
             montoDescuento: data.montoDescuento,
             saldo: data.saldo,
             fechaCorte: data.fechaCorte,
+            descuento: data.descuento
           });
         } else {
           console.error("La respuesta del endpoint no contiene los datos esperados:", data);
@@ -67,15 +93,16 @@ const CalculatorSimulator = ({ show, handleClose }) => {
   };
 
   const handleCalculateSecondPart = async () => {
+    const idCuenta = searchResults?.[0]?.idCuenta?.trim();
     try {
       const requestData = {
-        idHerramienta: selectedHerramienta || 136,
-        NoCuenta: searchResults?.[0]?.idCuenta?.trim() || "370700000000004",
+        idHerramienta: selectedHerramienta, // Enviar el idHerramienta seleccionado
+        NoCuenta: idCuenta,
         IdCartera: 1,
         MontoRequerido: summaryData.montoRequerido || 17313.91,
         Descuento: 45,
-        iMeses: 5,
-        dtpFecha: "22/03/2025",
+        iMeses: parseInt(formInputs.meses, 10) || 5, // Toma el valor de "Meses"
+        dtpFecha: formInputs.fechaPago || "2025-03-22", // Toma el valor de "Fecha Pago"
         periodos: 1,
       };
   
@@ -94,9 +121,24 @@ const CalculatorSimulator = ({ show, handleClose }) => {
   
       console.log("Respuesta del endpoint fetchCalSecondPart:", response);
       // Aquí puedes manejar la respuesta como desees
+      setCalculosData({
+        plazos: response.plazos,
+        primerPago: response.pago,
+        saldo: response.montoRequerido,
+        montoNegociado: response.montoNegociado,
+        descuento: response.descuento,
+        calculos: response.calculos,
+      });
     } catch (error) {
       console.error("Error al enviar los datos al endpoint fetchCalSecondPart:", error);
     }
+  };
+
+  const handleSetFormValues = () => {
+    setFormValues({
+      montoRequerido: summaryData.montoRequerido.toFixed(2),
+      descuento: summaryData.descuento.toFixed(2),
+    });
   };
 
   return (
@@ -241,7 +283,7 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                             placeholder="Monto negociado"
                           />
                           <div className="text-center ">
-                            <Button variant="secondary">Calcular</Button>
+                        
                           </div>
                         </Form.Group>
                         <div className="d-flex gap-3 w-100 mb-3">
@@ -254,8 +296,13 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                             <Form.Control type="date" />
                           </Form.Group>
                         </div>
-                        <div className=" mt-3">
-                          <Button variant="primary">Guardar</Button>
+
+                        <div className="mt-3 gap-3 d-flex">
+                          <div>
+                            <Button variant="primary" onClick={handleSetFormValues}>
+                              Calcular
+                            </Button>
+                          </div>
                         </div>
                       </Form>
                     </Card.Body>
@@ -310,11 +357,11 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                       <Row className="d-flex w-100">
                         <Form.Group>
                           <Form.Label>Monto Requerido</Form.Label>
-                          <Form.Control type="text" />
+                          <Form.Control type="text" value={formValues.montoRequerido} readOnly />
                         </Form.Group>
                         <Form.Group className="mt-3">
                           <Form.Label>Descuento</Form.Label>
-                          <Form.Control type="text" />
+                          <Form.Control type="text" value={formValues.descuento} readOnly />
                         </Form.Group>
                         <Form.Group className="mt-3">
                           <Form.Label>Tasa Mensual</Form.Label>
@@ -323,19 +370,26 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                       </Row>
                       <Row className="d-flex w-100">
                         <Form.Group className="mt-3">
-                          <Form.Label>Meses</Form.Label>
-                          <Form.Control type="text" />
+                          <Form.Control
+                            type="text"
+                            placeholder="Meses"
+                            name="meses"
+                            value={formInputs.meses}
+                            onChange={handleInputChange}
+                          />
                         </Form.Group>
                         <Form.Group className="mt-3">
-                          <Form.Label>Fecha Pago</Form.Label>
-                          <Form.Control type="date" />
+                          <Form.Control
+                            type="date"
+                            placeholder="Fecha Pago"
+                            name="fechaPago"
+                            value={formInputs.fechaPago}
+                            onChange={handleInputChange}
+                          />
                         </Form.Group>
-                        <div className="mt-3">
-                          <Button variant="secondary">Calcular</Button>
-                        </div>
-                        <div className="mt-3">
-                          <Button variant="secondary" onClick={handleCalculateSecondPart}>
-                            Calcular Segunda Parte
+                        <div className="mt-4">
+                        <Button variant="secondary" onClick={handleCalculateSecondPart}>
+                            Terminar
                           </Button>
                         </div>
                       </Row>
@@ -351,23 +405,23 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                     <Row>
                       <Col>
                         <h6>Plazos</h6>
-                        <h5>{/* Recibir parámetro de plazos */}</h5>
+                        <h5>{calculosData.plazos}</h5>
                       </Col>
                       <Col>
                         <h6>Primer Pago</h6>
-                        <h5>${/* Recibir parámetro de primer pago */}</h5>
+                        <h5>${calculosData.primerPago.toFixed(2)}</h5>
                       </Col>
                       <Col>
                         <h6>Saldo</h6>
-                        <h5>${/* Recibir parámetro de saldo */}</h5>
+                        <h5>${calculosData.saldo.toFixed(2)}</h5>
                       </Col>
                       <Col>
                         <h6>Monto Negociado</h6>
-                        <h5>${/* Recibir parámetro de monto negociado */}</h5>
+                        <h5>${calculosData.montoNegociado.toFixed(2)}</h5>
                       </Col>
                       <Col>
                         <h6>Descuento</h6>
-                        <h5>${/* Recibir parámetro de descuento */}</h5>
+                        <h5>${calculosData.descuento.toFixed(2)}</h5>
                       </Col>
                     </Row>
                   </Card.Body>
@@ -388,20 +442,23 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                         </tr>
                       </thead>
                       <tbody>
-                        {/* Recibir parámetros de plazos y mapearlos */}
-                        <tr>
-                          <td>{/* Número de plazo */}</td>
-                          <td>{/* Fecha del plazo */}</td>
-                          <td>${/* Saldo del plazo */}</td>
-                          <td>${/* Pago del plazo */}</td>
-                          <td>${/* Saldo final del plazo */}</td>
-                        </tr>
-                        {/* Mostrar mensaje si no hay datos */}
-                        <tr>
-                          <td colSpan="5" className="text-center">
-                            No hay datos disponibles
-                          </td>
-                        </tr>
+                        {calculosData.calculos.length > 0 ? (
+                          calculosData.calculos.map((calculo, index) => (
+                            <tr key={index}>
+                              <td>{calculo.no}</td>
+                              <td>{new Date(calculo.fecha).toLocaleDateString()}</td>
+                              <td>${calculo.saldo.toFixed(2)}</td>
+                              <td>${calculo.pago.toFixed(2)}</td>
+                              <td>${calculo.saldoFinal.toFixed(2)}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="5" className="text-center">
+                              No hay datos disponibles
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </Table>
                   </Card.Body>
