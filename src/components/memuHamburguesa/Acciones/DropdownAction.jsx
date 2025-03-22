@@ -6,7 +6,6 @@ import EstadoCuentaModal from './AccountStatements';
 import FollowUps from './FollowUps';
 import Talks from './Talks';
 import Drives from './Drives';
-import { fetchProcessesWLP } from '../../../services/gespawebServices';
 import Search from './Search';
 import OnlineCharge from './OnlineCharge';
 import Complaints from './Complaints'; // Importar el componente Complaints
@@ -57,6 +56,11 @@ const DropdownActions = () => {
 
 
 
+  const handleShowProcessesWLP = () => setShowProcessesWLP(true);
+  const handleCloseProcessesWLP = () => setShowProcessesWLP(false);
+
+
+
 
 
   const handleShowDrives = () => {
@@ -65,31 +69,7 @@ const DropdownActions = () => {
 
   const handleCloseDrives = () => setShowDrives(false);
 
- 
 
-  // Procesos WLP
-  const handleShowProcessesWLP = async () => {
-    setShowProcessesWLP(true);
-    setLoadingProcessesWLP(true);
-    setErrorProcessesWLP(null);
-    try {
-      if (searchResults && Array.isArray(searchResults)) {
-        console.log("searchResults en DropdownAction:", searchResults); // Depuración
-        const data = await fetchProcessesWLP('Arrangement', searchResults);
-        setProcessesWLPData(data.flat()); // Asegúrate de aplanar los datos si es necesario
-      } else {
-        console.error("searchResults no es un array válido.");
-        setErrorProcessesWLP("searchResults no es un array válido.");
-      }
-    } catch (error) {
-      console.error("Error al obtener datos de ProcessesWLP:", error);
-      setErrorProcessesWLP(error);
-    } finally {
-      setLoadingProcessesWLP(false);
-    }
-  };
-
-  const handleCloseProcessesWLP = () => setShowProcessesWLP(false);
 
   return (
     <>
@@ -118,7 +98,7 @@ const DropdownActions = () => {
       <Drives showModal={showDrives} handleCloseModal={handleCloseDrives} />
       <Search show={showModal} handleClose={handleCloseModal} />
       <Complaints show={showComplaints} handleClose={handleCloseComplaints} /> {/* Agregar el modal de quejas */}
-      <ProcessesWLP show={showProcessesWLP} handleCloseProcessesWLP={handleCloseProcessesWLP} data={processesWLPData} loading={loadingProcessesWLP} error={errorProcessesWLP} />
+      <ProcessesWLP show={showProcessesWLP} handleCloseProcessesWLP={handleCloseProcessesWLP} />
     </>
   );
 }

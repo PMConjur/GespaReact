@@ -569,51 +569,30 @@ const getErrorStatus = (status) => {
 
 
 // Endpoint de seguimientos para múltiples cuentas
-export async function getPaymentsData(searchResults) {
+export const getPaymentsData = async (idCartera, idCuenta) => {
   try {
-    // Obtener token de autenticación de localStorage o estado
-    const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));
-    const token = responseData?.ejecutivo?.token;
-
-    if (!token) {
-      throw new Error("Token de autenticación no disponible");
+    if (!idCartera || !idCuenta) {
+      throw new Error("idCartera o idCuenta no son válidos.");
     }
 
-    // Definir idCartera fijo (siempre 1 según el código original)
-    const idCartera = 1;
+    const url = `/ejecutivo/pagos/${idCartera}/${idCuenta}`;
+    console.log("Solicitando datos de pagos a:", url); // Depurar URL
 
-    // Realizar múltiples solicitudes en paralelo para cada idCuenta en searchResults
-    const Payments = await Promise.all(
-      searchResults.map(async (result) => {
-        const idCuenta = result.idCuenta.trim(); // Limpieza del idCuenta
-        console.log("🔍 Buscando Pagos para idCuenta:", idCuenta);
+    const response = await servicio.get(url);
+    const message = getErrorStatus(response.status);
 
-        try {
-          const response = await axios.get(
-            `${apiUrl}/ejecutivo/pagos/${idCartera}/${idCuenta}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`, // Autenticación con token
-              },
-            }
-          );
+    if (response.status !== 200) {
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
+    }
 
-          console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
-          return response.data; // Retornar datos obtenidos
-        } catch (error) {
-          console.error(`❌ Error al obtener datos de Pagos para idCuenta ${idCuenta}:`, error);
-          return null; // Retornar null en caso de error para evitar fallas en Promise.all
-        }
-      })
-    );
-
-    // Filtrar valores nulos (en caso de errores individuales)
-    return Payments.filter((data) => data !== null);
+    return response.data;
   } catch (error) {
-    console.error("❌ Error al obtener los datos de payments:", error);
-    throw new Error("Error al cargar los datos de payments.");
+    console.error("Error en getPaymentsData:", error);
+    toast.error("No se pudo obtener los datos de Pagos. Verifica la conexión o los parámetros.");
+    throw error;
   }
-}
+};
 
 // Nueva función para obtener datos de scripts
 export async function fetchScripts(idProducto) {
@@ -894,63 +873,32 @@ export async function getAditionalsData(searchResults) {
 };
 
 // Nueva función para obtener datos de ProcessesWLP
-export async function fetchProcessesWLP(producto, searchResults) {
+export const fetchProcessesWLP = async (proceso, idCuenta) => {
   try {
-    console.log('Iniciando llamada a la API para obtener datos de ProcesosWLP...');
-    console.log('Producto:', producto);
-
-    if (!Array.isArray(searchResults)) {
-      console.error('searchResults no es un array en fetchProcessesWLP.');
-      return []; // o lanzar un error, dependiendo de tu manejo de errores
+    if (!proceso || !idCuenta) {
+      throw new Error("proceso o idCuenta no son válidos.");
     }
 
-    const processesWLP = await Promise.all(
-      searchResults.map(async (result) => {
-        const idCuenta = result.idCuenta.trim();
-        console.log('Buscando Procesos WLP para idCuenta:', idCuenta);
+    const url = `/ejecutivo/ProcesosWLP`;
+    console.log("Solicitando datos de Procesos WLP a:", url); // Depurar URL
 
-        try {
-          const response = await axios.get(
-            `${apiUrl}/ejecutivo/ProcesosWLP`,
-            {
-              params: {
-                Proceso: producto,
-                idCuenta: idCuenta
-              },
-              headers: {
-                Authorization: `Bearer ${token}`,
-                'accept': '*/*'
-              }
-            }
-          );
+    const response = await servicio.get(url);
+    const message = getErrorStatus(response.status);
 
-          if (response.status === 200) {
-            console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
-            
-            return response.data;
-          } else {
-            console.warn(`⚠️ Advertencia: Respuesta no exitosa para idCuenta ${idCuenta}, Proceso ${producto}.`);
-            toast.warning(`Respuesta no exitosa para idCuenta ${idCuenta}, Proceso ${producto}.`);
-            return null;
-          }
-        } catch (error) {
-          console.error(` Error al obtener datos de ProcesosWLP para idCuenta ${idCuenta}:`, error);
-          toast.error(`Error al obtener datos de ProcesosWLP para idCuenta ${idCuenta}, Proceso ${producto}.`);
-          return null;
-        }
-      })
-    );
+    if (response.status !== 200) {
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
+    }
 
-    console.log('Datos obtenidos de la API:', processesWLP);
-    return processesWLP.filter(Boolean).flat(); // Elimina nulls y aplana arrays anidados
+    return response.data;
   } catch (error) {
-    console.error('Error en fetchProcessesWLP:', error);
-    toast.error('Ocurrió un error al obtener los datos. Inténtalo de nuevo.', {
-      position: 'top-right',
-    });
+    console.error("Error en fetchProcessesWLP:", error);
+    toast.error("No se pudo obtener los datos de Procesos WLP. Verifica la conexión o los parámetros.");
     throw error;
   }
 };
+
+
 // endpoint calculadora primera parte
 export const fetchCalFirtsPart = async (Cartera, NoCuenta, idHerr) => {
   try {
@@ -975,6 +923,7 @@ export const fetchCalFirtsPart = async (Cartera, NoCuenta, idHerr) => {
     throw error;
   }
 };
+
 //EndPoint - Relaciones
 export async function Relations() {
   try {
@@ -990,5 +939,30 @@ export async function Relations() {
     } else {
       throw new Error("Error en la respuesta del endpoint de relaciones.");
     }
+  }
+};
+
+// endpoint calculadora primera parte
+export const fetchCalSecondPart = async (Cartera, NoCuenta, idHerr) => {
+  try {
+    console.log("Llamando al endpoint /ejecutivo/Calculadora-2daParte");
+    const response = await servicio.get(`/ejecutivo/Calculadora-2daParte`, {
+      params: { Cartera, NoCuenta, idHerr },
+    });
+
+    console.log("Respuesta recibida:", response);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Validación recibida:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchCalFirtsPart:", error);
+    throw error;
   }
 };
