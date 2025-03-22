@@ -1,14 +1,13 @@
-import { useState, useEffect, useContext } from "react";
-import { Dropdown, Form, Table } from "react-bootstrap";
+import { useState, useEffect } from "react";
+import { Dropdown, Form, Table, Spinner } from "react-bootstrap";
 import { fetchProcessesWLP } from '../services/gespawebServices';
-import { AppContext } from '../pages/Managment';
 import { toast } from 'sonner';
 
-const TDropdownProcessesWLP = ({ data }) => {
+const TDropdownProcessesWLP = ({ idCuenta }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [producto, setProducto] = useState("Arrangement");
-    const productos = [
+    const [proceso, setProceso] = useState("Arrangement");
+    const procesos = [
         "Arrangement",
         "ArrangementDetails",
         "Dispute",
@@ -20,27 +19,20 @@ const TDropdownProcessesWLP = ({ data }) => {
         "SmsSent",
         "SpecialCircumstances",
     ];
-    const [productData, setProductData] = useState(data || []);
-
-    const { searchResults } = useContext(AppContext);
+    const [processData, setProcessData] = useState([]);
 
     useEffect(() => {
-        if (producto && searchResults && Array.isArray(searchResults) && searchResults.length > 0) {
-            const idCuenta = searchResults[0].idCuenta.trim();
+        if (proceso && idCuenta) {
             fetchData(idCuenta);
         }
-    }, [producto, searchResults]);
-
-    useEffect(() => {
-        setProductData(data);
-    }, [data]);
+    }, [proceso, idCuenta]);
 
     const fetchData = async (idCuenta) => {
         setLoading(true);
         setError(null);
         try {
-            const data = await fetchProcessesWLP(producto, [{idCuenta:idCuenta}]);
-            setProductData(data);
+            const fetchedData = await fetchProcessesWLP(proceso, idCuenta);
+            setProcessData(fetchedData);
         } catch (err) {
             setError(err);
             toast.error("Error al obtener datos.", { position: "top-right" });
@@ -49,20 +41,31 @@ const TDropdownProcessesWLP = ({ data }) => {
         }
     };
 
-    const handleProductoChange = (eventKey) => {
-        if (producto !== eventKey) {
-            setProducto(eventKey);
-            setProductData([]); // Limpiar datos al cambiar el producto
-            if (!data || data.length === 0) {
-                toast.error("Error 408: No se encontraron datos para esta selección.", { position: "top-right" });
-            }
+    const handleProcesoChange = (eventKey) => {
+        if (proceso !== eventKey) {
+            setProceso(eventKey);
+            setProcessData([]); // Limpiar datos al cambiar el proceso
         }
     };
 
     const renderTable = () => {
-        if (!productData || productData.length === 0) return null;
+        if (loading) {
+            return (
+                <div className="d-flex justify-content-center">
+                    <Spinner animation="border" />
+                </div>
+            );
+        }
 
-        switch (producto) {
+        if (error) {
+            return <p className="text-danger">Error: {error.message}</p>;
+        }
+
+        if (!processData || processData.length === 0) {
+            return <p>No hay datos para mostrar.</p>;
+        }
+
+        switch (proceso) {
             case "Arrangement":
                 return (
                     <Table striped bordered hover responsive variant="dark">
@@ -83,7 +86,7 @@ const TDropdownProcessesWLP = ({ data }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {productData.map((item, index) => (
+                            {processData.map((item, index) => (
                                 <tr key={index}>
                                     <td>{item.RecordType}</td>
                                     <td>{item.CM15}</td>
@@ -122,7 +125,7 @@ const TDropdownProcessesWLP = ({ data }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {productData.map((item, index) => (
+                            {processData.map((item, index) => (
                                 <tr key={index}>
                                     <td>{item.RecordType}</td>
                                     <td>{item.CM15}</td>
@@ -159,7 +162,7 @@ const TDropdownProcessesWLP = ({ data }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {productData.map((item, index) => (
+                            {processData.map((item, index) => (
                                 <tr key={index}>
                                     <td>{item.RecordType}</td>
                                     <td>{item.CM15}</td>
@@ -192,7 +195,7 @@ const TDropdownProcessesWLP = ({ data }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {productData.map((item, index) => (
+                            {processData.map((item, index) => (
                                 <tr key={index}>
                                     <td>{item.RecordType}</td>
                                     <td>{item.CM15}</td>
@@ -225,7 +228,7 @@ const TDropdownProcessesWLP = ({ data }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {productData.map((item, index) => (
+                            {processData.map((item, index) => (
                                 <tr key={index}>
                                     <td>{item.RecordType}</td>
                                     <td>{item.CM15}</td>
@@ -260,7 +263,7 @@ const TDropdownProcessesWLP = ({ data }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {productData.map((item, index) => (
+                            {processData.map((item, index) => (
                                 <tr key={index}>
                                     <td>{item.RecordType}</td>
                                     <td>{item.CM15}</td>
@@ -293,7 +296,7 @@ const TDropdownProcessesWLP = ({ data }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {productData.map((item, index) => (
+                            {processData.map((item, index) => (
                                 <tr key={index}>
                                     <td>{item.RecordType}</td>
                                     <td>{item.CM15}</td>
@@ -324,7 +327,7 @@ const TDropdownProcessesWLP = ({ data }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {productData.map((item, index) => (
+                            {processData.map((item, index) => (
                                 <tr key={index}>
                                     <td>{item.RecordType}</td>
                                     <td>{item.CM15}</td>
@@ -356,7 +359,7 @@ const TDropdownProcessesWLP = ({ data }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {productData.map((item, index) => (
+                            {processData.map((item, index) => (
                                 <tr key={index}>
                                     <td>{item.RecordType}</td>
                                     <td>{item.CM15}</td>
@@ -389,7 +392,7 @@ const TDropdownProcessesWLP = ({ data }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {productData.map((item, index) => (
+                            {processData.map((item, index) => (
                                 <tr key={index}>
                                     <td>{item.RecordType}</td>
                                     <td>{item.CM15}</td>
@@ -405,7 +408,7 @@ const TDropdownProcessesWLP = ({ data }) => {
                         </tbody>
                     </Table>
                 );
-            // ... otros casos para cada producto
+            // ... otros casos para cada proceso
             default:
                 return <p>No hay datos para mostrar.</p>;
         }
@@ -414,24 +417,20 @@ const TDropdownProcessesWLP = ({ data }) => {
     return (
         <div className="text-center">
             <Form.Group className="mb-3">
-                <Form.Label></Form.Label>
-                <Dropdown onSelect={handleProductoChange}>
-                    <Dropdown.Toggle variant="primary" id="dropdown-producto">
-                        {producto}
+                <Form.Label>Selecciona un proceso:</Form.Label>
+                <Dropdown onSelect={handleProcesoChange}>
+                    <Dropdown.Toggle variant="primary" id="dropdown-proceso">
+                        {proceso}
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
-                        {productos.map((prod) => (
-                            <Dropdown.Item key={prod} eventKey={prod}>
-                                {prod}
+                        {procesos.map((proc) => (
+                            <Dropdown.Item key={proc} eventKey={proc}>
+                                {proc}
                             </Dropdown.Item>
                         ))}
                     </Dropdown.Menu>
                 </Dropdown>
             </Form.Group>
-
-            {loading && <p>Cargando...</p>}
-            {error && <p>Error: {error.message}</p>}
-
             {renderTable()}
         </div>
     );

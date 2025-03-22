@@ -1,16 +1,28 @@
 import { useState, useContext } from 'react';
-import { AppContext } from '../../../pages/Managment'; // Importar el contexto de la aplicación
-import Addresses from './Addresses'; // Importar el componente Addresses
 import Dropdown from 'react-bootstrap/Dropdown'; // Importar el componente Dropdown de Bootstrap
-import "../../../scss/styles.scss"; // Importar estilos SCSS
+import { AppContext } from '../../../pages/Managment'; // Importar el contexto de la aplicación
+import "../../../scss/styles.scss";
+import Addresses from './Addresses'; // Importar el componente Addresses
 import Payments from './Payments'; // Importar el componente Payments
 import Aditionals from './Aditionals'; // Importar el componente Aditionals
-import { getPaymentsData, getAditionalsData } from '../../../services/gespawebServices'; // Importar funciones de servicio para obtener datos
+import {getAditionalsData } from '../../../services/gespawebServices'; // Importar funciones de servicio para obtener datos
 
 function DropdownInfo() {
   // Estados para controlar la visibilidad de los modales y la carga de datos
   const [showAddresses, setShowAddresses] = useState(false); // Estado para el modal de Addresses
+
+
+
+//payments
   const [showPayments, setShowPayments] = useState(false); // Estado para el modal de Payments
+
+  const handleShowPayments = () => setShowPayments(true);
+  const handleClosePayments = () => setShowPayments(false);
+//payments
+
+
+
+
   const [paymentsData, setPaymentsData] = useState([]); // Estado para almacenar los datos de pagos
   const [loadingPayments, setLoadingPayments] = useState(false); // Estado para indicar si se están cargando los pagos
   const [showAditionals, setShowAditionals] = useState(false); // Estado para el modal de Aditionals
@@ -21,21 +33,6 @@ function DropdownInfo() {
   const { searchResults } = useContext(AppContext);
 
   // Función para manejar la apertura del modal de Payments
-  const handleShowPayments = async () => {
-    setLoadingPayments(true); // Activar el estado de carga
-    try {
-      const talks = await getPaymentsData(searchResults); // Obtener los datos de pagos
-      setPaymentsData(talks.flat()); // Almacenar los datos de pagos
-      setShowPayments(true); // Mostrar el modal de Payments
-    } catch (error) {
-      console.error('Error al cargar los datos de pagos:', error); // Manejar errores
-    } finally {
-      setLoadingPayments(false); // Desactivar el estado de carga
-    }
-  };
-
-  // Función para manejar el cierre del modal de Payments
-  const handleClosePayments = () => setShowPayments(false);
 
   // Función para manejar la apertura del modal de Addresses
   const handleShowAddresses = () => setShowAddresses(true);
