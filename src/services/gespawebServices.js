@@ -626,73 +626,31 @@ export async function fetchScripts(idProducto) {
 
 
 // Endpoint de gestión TE para múltiples cuentas
-export async function getGestionTeData(searchResults) {
+export const getGestionTeData = async (idCartera, idCuenta) => {
   try {
-    console.log("🔍 searchResults recibidos:", searchResults);
-
-    // Validar que searchResults sea un arreglo
-    if (!Array.isArray(searchResults)) {
-      throw new Error("❌ searchResults no es un arreglo válido.");
+    if (!idCartera || !idCuenta) {
+      throw new Error("idCartera o idCuenta no son válidos.");
     }
 
-    // Obtener token de autenticación de localStorage o estado
-    const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));
-    const token = responseData?.ejecutivo?.token;
+    const url = `/ejecutivo/gestionTe/${idCartera}/${idCuenta}`;
+    console.log("Solicitando datos de gestion Telefonica a:", url); // Depurar URL
 
-    if (!token) {
-      throw new Error("❌ Token de autenticación no disponible");
+    const response = await servicio.get(url);
+    const message = getErrorStatus(response.status);
+
+    if (response.status !== 200) {
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
     }
 
-    // Definir idCartera fijo (siempre 1 según el código original)
-    const idCartera = 1;
-
-    // Realizar múltiples solicitudes en paralelo para cada idCuenta en searchResults
-    const gestionTeData = await Promise.all(
-      searchResults.map(async (result) => {
-        const idCuenta = result?.idCuenta?.trim(); // Limpieza del idCuenta
-        if (!idCuenta) {
-          console.warn("⚠️ idCuenta no válido en el resultado:", result);
-          return null; // Ignorar resultados sin idCuenta válido
-        }
-
-        console.log(`📡 Realizando solicitud para idCuenta: ${idCuenta}`);
-
-        try {
-          const response = await axios.get(
-            `${apiUrl}/ejecutivo/gestionTe/${idCartera}/${idCuenta}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`, // Autenticación con token
-              },
-            }
-          );
-
-          console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
-
-          // Validar que la respuesta tenga datos esperados
-          if (!response.data || typeof response.data !== "object") {
-            console.warn(`⚠️ Respuesta inesperada para idCuenta ${idCuenta}:`, response.data);
-            return null;
-          }
-
-          return response.data; // Retornar datos obtenidos
-        } catch (error) {
-          console.error(`❌ Error al obtener datos de gestión TE para idCuenta ${idCuenta}:`, error);
-          return null; // Retornar null en caso de error para evitar fallas en Promise.all
-        }
-      })
-    );
-
-    // Filtrar valores nulos (en caso de errores individuales)
-    const filteredData = gestionTeData.filter((data) => data !== null);
-    console.log("📋 Datos finales gestionTeData filtrados:", filteredData);
-
-    return filteredData;
+    return response.data;
   } catch (error) {
-    console.error("❌ Error al obtener los datos de gestión TE:", error);
-    throw new Error("Error al cargar los datos de gestión TE.");
+    console.error("Error en getGestionTeData:", error);
+    toast.error("No se pudo obtener los datos de gestion telefonica. Verifica la conexión o los parámetros.");
+    throw error;
   }
-}
+};
+
 
 // Endpoint Recordatorios
 
