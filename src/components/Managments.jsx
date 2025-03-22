@@ -1,38 +1,59 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Row, Col, Card, Toast } from "react-bootstrap";
-import { getGestionTeData } from "../services/gespawebServices";
+import { AppContext } from "../pages/Managment"; // Importar el contexto
+import { getGestionTeData } from "../services/gespawebServices"; // Importar el endpoint
 
 const Managments = () => {
-  const [sortedData, setSortedData] = useState([]);
-  const [showToast, setShowToast] = useState(false); // Estado para manejar la visibilidad del toast
-  const searchResults = []; // Asegúrate de que searchResults contenga los datos necesarios.
+  const { searchResults } = useContext(AppContext); // Consumir el contexto
+  const [sortedData, setSortedData] = useState([]); // Estado para los datos ordenados
+  const [selectedGestion, setSelectedGestion] = useState(null); // Estado para el registro seleccionado
+  const [showToast, setShowToast] = useState(false); // Estado para mostrar el toast
+  const [toastMessage, setToastMessage] = useState(""); // Mensaje dinámico para el toast
 
+  // Hook para obtener los datos
   useEffect(() => {
     const fetchData = async () => {
+      if (!searchResults || searchResults.length === 0) {
+        setToastMessage("Error 428: Primero debes buscar una Cuenta.");
+        setShowToast(true);
+        return;
+      }
+
       try {
-        // Validar que searchResults tenga al menos un elemento con idCuenta
-        if (searchResults.length === 0 || !searchResults[0]?.idCuenta) {
-          console.warn("⚠️ No se encontró un idCuenta válido en searchResults.");
-          setShowToast(true); // Mostrar el toast
+        const idCuenta = searchResults[0]?.idCuenta; // Obtener el primer idCuenta como ejemplo
+        if (!idCuenta) {
+          setToastMessage("No se encontró un idCuenta válido.");
+          setShowToast(true);
           return;
         }
 
-        const idCuenta = searchResults[0].idCuenta; // Obtener idCuenta del primer elemento válido
-        const idCartera = 1; // idCartera siempre es 1.
-
-        console.log("🔍 Enviando idCuenta e idCartera a getGestionTeData:", { idCuenta, idCartera });
-
-        const data = await getGestionTeData({ idCuenta, idCartera });
-        setSortedData(data);
+        const gestionData = await getGestionTeData(1, idCuenta); // idCartera fijo como 1
+        setSortedData(gestionData); // Guardar los datos obtenidos
       } catch (error) {
-        console.error("Error fetching gestion data:", error);
+        console.error("Error al obtener los datos de gestión:", error);
+        setToastMessage("❌ Error al obtener los datos de gestión. Intente nuevamente.");
+        setShowToast(true);
       }
     };
 
     fetchData();
-  }, []);
+  }, [searchResults]);
 
-  const validateField = (field) => (field === null || field === undefined || field === "" ? "--" : field);
+  // Validar campos para evitar errores al renderizar
+  const validateField = (field) => {
+    if (field === null || field === undefined || field === "") {
+      return "--";
+    }
+    if (typeof field === "object") {
+      return JSON.stringify(field); // Convertir objetos a string
+    }
+    return field;
+  };
+
+  // Manejar la selección de un registro
+  const handleRowClick = (gestion) => {
+    setSelectedGestion(gestion); // Establecer el registro seleccionado
+  };
 
   return (
     <>
@@ -51,90 +72,288 @@ const Managments = () => {
         <Toast.Header>
           <strong className="me-auto">Notificación</strong>
         </Toast.Header>
-        <Toast.Body>⚠️ No se encontró un idCuenta válido en los resultados de búsqueda.</Toast.Body>
+        <Toast.Body>{toastMessage}</Toast.Body>
       </Toast>
       <Row xs={12} md="auto" className="g-2">
         <Col md={12}>
           <Card>
-            <div style={{ display: "flex", justifyContent: "center" }}>
-              <div className="col-12">
-                <div className="card recent-sales overflow-auto scroller">
-                  <div className="card-body">
-                    <h5 className="card-title">Gestiones</h5>
-                    <table className="table table-dark">
-                      <thead>
-                        <tr>
-                          <th scope="col">Fecha</th>
-                          <th scope="col">Hora</th>
-                          <th scope="col">Telefono</th>
-                          <th scope="col">Contacto</th>
-                          <th scope="col">Situación</th>
-                          <th scope="col">Nombre</th>
-                          <th scope="col">Parentesco</th>
-                          <th scope="col">CausaNoPago</th>
-                          <th scope="col">Modo</th>
-                          <th scope="col">Acercamiento</th>
-                          <th scope="col">Etapa</th>
-                          <th scope="col">Seguimiento</th>
-                          <th scope="col">Realizado</th>
-                          <th scope="col">Duración</th>
-                          <th scope="col">Ejecutivo</th>
-                          <th scope="col">Usuario</th>
-                          <th scope="col">Sucursal</th>
-                          <th scope="col">Extensión</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sortedData.length === 0 ? (
-                          <tr>
-                            <td colSpan="18" style={{ height: "200px" }}></td>
-                          </tr>
-                        ) : (
-                          sortedData.map((gestion, index) => (
-                            <tr key={index}>
-                              <td>{validateField(gestion.Fecha_Insert)}</td>
-                              <td>{validateField(gestion.Segundo_Insert)}</td>
-                              <td>{validateField(gestion.NúmeroTelefónico)}</td>
-                              <td>{validateField(gestion.idContacto)}</td>
-                              <td>{validateField(gestion.idSituación)}</td>
-                              <td>{validateField(gestion.NombreContacto)}</td>
-                              <td>{validateField(gestion.idParentesco)}</td>
-                              <td>{validateField(gestion.idCausaNoPago)}</td>
-                              <td>{validateField(gestion.idModo)}</td>
-                              <td>{validateField(gestion.idAcercamiento)}</td>
-                              <td>{validateField(gestion.idEtapa)}</td>
-                              <td>{validateField(gestion.Seguimiento)}</td>
-                              <td>{validateField(gestion._Realizado)}</td>
-                              <td>{validateField(gestion.Duración)}</td>
-                              <td>{validateField(gestion.Ejecutivo)}</td>
-                              <td>{validateField(gestion.Usuario)}</td>
-                              <td>{validateField(gestion.idSucursal)}</td>
-                              <td>{validateField(gestion.Extensión)}</td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
             <Card.Body>
-              <Card.Title>Comentarios</Card.Title>
-              <table className="table table-dark">
-                <thead></thead>
+              <Card.Title>Gestiones</Card.Title>
+              <table
+                className="table table-dark"
+                style={{
+                  maxHeight: "300px", // Ajuste de altura a 300px
+                  overflowY: "auto", // Habilitar scroll vertical dentro de la tabla
+                  display: "block", // Necesario para que funcione el scroll en tablas
+                }}
+              >
+                <thead>
+                  <tr>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky", // Fijar posición
+                        top: -10, // Mantener en la parte superior
+                        zIndex: 2, // Asegurar que esté por encima del contenido
+                        backgroundColor: "#343a40", // Fondo para que no se mezcle con el contenido
+                      }}
+                    >
+                      Fecha
+                    </th>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40",
+                      }}
+                    >
+                      Hora
+                    </th>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40",
+                      }}
+                    >
+                      Telefono
+                    </th>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40",
+                      }}
+                    >
+                      Contacto
+                    </th>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40",
+                      }}
+                    >
+                      Situación
+                    </th>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40",
+                      }}
+                    >
+                      Nombre
+                    </th>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40",
+                      }}
+                    >
+                      Parentesco
+                    </th>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40",
+                      }}
+                    >
+                      CausaNoPago
+                    </th>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40",
+                      }}
+                    >
+                      Modo
+                    </th>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40",
+                      }}
+                    >
+                      Acercamiento
+                    </th>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40",
+                      }}
+                    >
+                      Etapa
+                    </th>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40",
+                      }}
+                    >
+                      Seguimiento
+                    </th>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40",
+                      }}
+                    >
+                      Realizado
+                    </th>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40",
+                      }}
+                    >
+                      Duración
+                    </th>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40",
+                      }}
+                    >
+                      Ejecutivo
+                    </th>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40",
+                      }}
+                    >
+                      Usuario
+                    </th>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40",
+                      }}
+                    >
+                      Sucursal
+                    </th>
+                    <th
+                      scope="col"
+                      style={{
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40",
+                      }}
+                    >
+                      Extensión
+                    </th>
+                  </tr>
+                </thead>
                 <tbody>
                   {sortedData.length === 0 ? (
                     <tr>
-                      <td style={{ height: "100px" }}></td>
+                      <td colSpan="18" style={{ height: "200px" }}></td>
                     </tr>
                   ) : (
                     sortedData.map((gestion, index) => (
-                      <tr key={index}>
-                        <td>{validateField(gestion.Comentario)}</td>
-                        <td>{validateField(gestion.BaseDatos)}</td>
+                      <tr
+                        key={index}
+                        onClick={() => handleRowClick(gestion)} // Manejar clic en la fila
+                        style={{
+                          cursor: "pointer",
+                          backgroundColor: selectedGestion === gestion ? "#343a40" : "inherit", // Resaltar la fila seleccionada
+                        }}
+                      >
+                        <td>{validateField(gestion.Fecha_Insert)}</td>
+                        <td>{validateField(gestion.Segundo_Insert)}</td>
+                        <td>{validateField(gestion.NúmeroTelefónico)}</td>
+                        <td>{validateField(gestion.idContacto)}</td>
+                        <td>{validateField(gestion.idSituación)}</td>
+                        <td>{validateField(gestion.NombreContacto)}</td>
+                        <td>{validateField(gestion.idParentesco)}</td>
+                        <td>{validateField(gestion.idCausaNoPago)}</td>
+                        <td>{validateField(gestion.idModo)}</td>
+                        <td>{validateField(gestion.idAcercamiento)}</td>
+                        <td>{validateField(gestion.idEtapa)}</td>
+                        <td>{validateField(gestion.Seguimiento)}</td>
+                        <td>{validateField(gestion._Realizado)}</td>
+                        <td>{validateField(gestion.Duración)}</td>
+                        <td>{validateField(gestion.Ejecutivo)}</td>
+                        <td>{validateField(gestion.Usuario)}</td>
+                        <td>{validateField(gestion.idSucursal)}</td>
+                        <td>{validateField(gestion.idExtensión)}</td>
                       </tr>
                     ))
+                  )}
+                </tbody>
+              </table>
+            </Card.Body>
+            <Card.Body>
+              
+              <table
+                className="table table-dark"
+                style={{
+                  maxHeight: "120px", // Ajuste de altura a 1520px
+                  overflowY: "auto", // Habilitar scroll vertical dentro de la tabla
+                  display: "block", // Necesario para que funcione el scroll en tablas
+                }}
+              >
+                <thead>
+                  <tr>
+                    <th>Comentario</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedGestion ? (
+                    <tr>
+                      <td>{validateField(selectedGestion.Comentario)}</td>
+                    </tr>
+                  ) : (
+                    <tr>
+                      <td colSpan="2" style={{ height: "100px" }}>
+                        Selecciona un registro para ver los comentarios.
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>

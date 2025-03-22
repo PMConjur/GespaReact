@@ -5,7 +5,7 @@ import "../../../scss/styles.scss";
 import Addresses from './Addresses'; // Importar el componente Addresses
 import Payments from './Payments'; // Importar el componente Payments
 import Aditionals from './Aditionals'; // Importar el componente Aditionals
-import {getAditionalsData } from '../../../services/gespawebServices'; // Importar funciones de servicio para obtener datos
+
 
 function DropdownInfo() {
   // Estados para controlar la visibilidad de los modales y la carga de datos
@@ -20,12 +20,20 @@ function DropdownInfo() {
   const handleClosePayments = () => setShowPayments(false);
 //payments
 
+//adicionales
+  const [showAditionals, setShowAditionals] = useState(false); // Estado para el modal de Aditionals
+
+  const handleShowAditionals = () => setShowAditionals(true);
+  const handleCloseAditionals = () => setShowAditionals(false);
+//adiconaslers
+
+
 
 
 
   const [paymentsData, setPaymentsData] = useState([]); // Estado para almacenar los datos de pagos
   const [loadingPayments, setLoadingPayments] = useState(false); // Estado para indicar si se están cargando los pagos
-  const [showAditionals, setShowAditionals] = useState(false); // Estado para el modal de Aditionals
+  
   const [aditionalsData, setAditionalsData] = useState([]); // Estado para almacenar los datos adicionales
   const [loadingAditionals, setLoadingAditionals] = useState(false); // Estado para indicar si se están cargando los datos adicionales
 
@@ -41,21 +49,8 @@ function DropdownInfo() {
   const handleCloseAddresses = () => setShowAddresses(false);
 
   // Función para manejar la apertura del modal de Aditionals
-  const handleShowAditionals = async () => {
-    setLoadingAditionals(true); // Activar el estado de carga
-    try {
-      const aditionals = await getAditionalsData(searchResults); // Obtener los datos adicionales
-      setAditionalsData(aditionals.flat()); // Almacenar los datos adicionales
-      setShowAditionals(true); // Mostrar el modal de Aditionals
-    } catch (error) {
-      console.error('Error al cargar los datos de Adicionales:', error); // Manejar errores
-    } finally {
-      setLoadingAditionals(false); // Desactivar el estado de carga
-    }
-  };
-
-  // Función para manejar el cierre del modal de Aditionals
-  const handleCloseAditionals = () => setShowAditionals(false);
+  
+ 
 
   return (
     <>
