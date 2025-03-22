@@ -1,0 +1,34 @@
+﻿using System;
+
+namespace NoriAPI.Models.Flujo
+{
+    public class EndGestionRequest
+    {
+        public int IdCartera { get; set; }
+        public string IdCuenta { get; set; }
+        public int IdEjecutivo { get; set; }
+        public short IdContacto { get; set; }
+        public short IdSituacion { get; set; }
+        public short IdCausaNoPago { get; set; }
+        public short IdParentesco { get; set; }
+        public short IdSucursal { get; set; }
+        public short Extension { get; set; }
+        public string? NombreContacto { get; set; }
+        public string? CodificacionCartera { get; set; }
+        public string NumeroTelefonico { get; set; }
+        public TimeSpan Duracion { get; set; }
+        public short IdModo { get; set; }
+        public short? IdAcercamiento { get; set; } // Permitir nulos
+        public string? Comentario { get; set; }
+        public TimeSpan? TiempoEnCuenta { get; set; }
+        public string? Fechavici { get; set; }
+        public string? Nivel { get; set; }
+        public string? Situacion { get; set; }
+        public string? Productos { get; set; }
+        public string? Producto { get; set; }
+        public string? NumeroCliente { get; set; }
+        public string? Billing { get; set; }
+        public string? Contacto { get; set; }
+        public string? Situaciones { get; set; }
+    }
+}

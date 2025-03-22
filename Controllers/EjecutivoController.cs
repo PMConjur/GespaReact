@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NoriAPI.Models.Acciones;
 using static NoriAPI.Services.EjecutivoService;
+using NoriAPI.Models.Flujo;
 
 
 
@@ -315,6 +316,7 @@ namespace NoriAPI.Controllers
 
         #region Busqueda
         [HttpGet("busqueda/{idCartera}/{idCuenta}/{Jerarquia}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetBusqueda(int idCartera, string idCuenta, int Jerarquia)
         {
 
@@ -337,9 +339,13 @@ namespace NoriAPI.Controllers
             }
 
             var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Busqueda"]);
-            string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
 
-            return Ok(jsonString);
+
+
+
+            string jsonBusqueda = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+            return Content(jsonBusqueda, "application/json; charset=utf-8");
 
         }
 
@@ -694,6 +700,7 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+
         #endregion
 
         #region Scripts
@@ -1242,7 +1249,6 @@ namespace NoriAPI.Controllers
 
 
         [HttpGet("ObtenerGestiones")]
-
         public async Task<IActionResult> ObtenerGestiones([FromQuery] int idCartera, [FromQuery] string idCuenta, [FromQuery] string numeroCliente)
         {
             try
@@ -1277,13 +1283,7 @@ namespace NoriAPI.Controllers
         }
 
 
-        // Clase para representar el DataRow en el cuerpo de la solicitud
-        public class DataRowRequest
-        {
-            public DataRow DataRow { get; set; }
-        }
         [HttpPost("GuardarGestionTe")]
-        [AllowAnonymous]
         public async Task<IActionResult> GuardarGestionTelefonica([FromBody] GestionTelefonica gestion)
         {
             if (gestion == null)
@@ -1291,13 +1291,29 @@ namespace NoriAPI.Controllers
                 return BadRequest("Datos de gestión no válidos.");
             }
 
-            if (await _ejecutivoService.GuardarGestionTelefonicaAsync(gestion))
+            if (await _ejecutivoService.GuardaGestionTelefonicaAsync(gestion))
             {
                 return Ok("Gestión guardada exitosamente.");
             }
             else
             {
                 return BadRequest("Error al guardar la gestión.");
+            }
+        }
+
+        [HttpPost("save-gestion-telefonica")]
+        [AllowAnonymous]
+        public async Task<IActionResult> TerminaFlujo([FromBody] EndGestionRequest infoTermina)
+        {
+            var resultado = await _ejecutivoService.GuardarGestionTelefonica(infoTermina);
+
+            if (resultado != null)
+            {
+                return Ok(resultado);
+            }
+            else
+            {
+                return NotFound();
             }
         }
         #endregion

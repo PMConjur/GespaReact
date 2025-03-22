@@ -24,6 +24,7 @@ using NoriAPI.Models.Acciones;
 using static NoriAPI.Services.EjecutivoService;
 
 using NoriAPI.Models.Acciones;
+using NoriAPI.Models.Flujo;
 
 
 namespace NoriAPI.Services
@@ -84,9 +85,9 @@ namespace NoriAPI.Services
         Task<string> EnviaCorreoAsync(string CorreoElectronico, string Asunto, string Mensaje, int idCartera, string idCuenta, int idEjecutivo);
         Task<dynamic> RegisterNewCorreo(CorreosEn newCorreos);
         Task<DataTable> ObtieneGestionesAsync(DataRow drInfo);
-
         Task<string> AñadeAdicionalAsync(Adicional AdicionalCuenta, DataRow drInfo, Ejecutivo ejecutivo, DataTable Adicionales, Catalogos catalogos);
-
+        Task<bool> GuardaGestionTelefonicaAsync(GestionTelefonica gestion);
+        Task<GuardaGestionTelefonicaResult> GuardarGestionTelefonica(EndGestionRequest infoEndGestion);
 
         #region Acciones
         Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
@@ -111,26 +112,20 @@ namespace NoriAPI.Services
         Task<DataTable> GetViewQuejasAsync(int idCartera, string idCuenta);
 
         #endregion
-        Task<bool> GuardarGestionTelefonicaAsync(GestionTelefonica gestion);
-
     }
 
     public class EjecutivoService : IEjecutivoService
     {
-        private readonly ISearchRepository _searchRepository;
         private readonly IConfiguration _configuration;
+        private readonly string _connectionString;
+        private readonly ISearchRepository _searchRepository;
+        private readonly IBusquedaRepository _busquedaRepository;
         private readonly IEjecutivoRepository _ejecutivoRepository;
         private readonly ISearchService _searchService;
-        private readonly string _connectionString;
-        private readonly IBusquedaRepository _busquedaRepository;
         private List<Correos> _correosList = new List<Correos>();
         private readonly Catalogos _catalogos;
         private readonly DataTable _correos;
         private readonly DataTable _enviados;
-
-
-
-
 
 
         #region PropiedadesProductividad
@@ -2023,6 +2018,10 @@ namespace NoriAPI.Services
             if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
                 throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
 
+            ClasesGespaNonStatic gespaBusqueda = new();
+            gespaBusqueda.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            gespaBusqueda.CargaCatalogos();
+
             var idCartera = Convert.ToInt32(drDatos["idCartera"]);
             var idCuenta = Convert.ToString(drDatos["idCuenta"]);
             var Jerarquia = Convert.ToInt32(drDatos["Jerarquía"]);
@@ -2038,6 +2037,26 @@ namespace NoriAPI.Services
             }
 
             busquedaGet.TableName = "Busqueda";
+
+            // Agregar las nuevas columnas
+            busquedaGet.Columns.Add("Dato", typeof(string));
+            busquedaGet.Columns.Add("Fuente", typeof(string));
+
+            // Llenar los valores de las nuevas columnas usando la lógica de "traducción"
+            foreach (DataRow row in busquedaGet.Rows)
+            {
+                // Supongamos que tienes una columna llamada "idTelefonia" en busquedaGet
+                if (busquedaGet.Columns.Contains("idDato") && row["idDato"] != DBNull.Value)
+                {
+                    row["Dato"] = BuscarEnValoresHashtable(gespaBusqueda._htValoresCatálogo, Convert.ToString(row["idDato"]));
+                }
+
+                if (busquedaGet.Columns.Contains("idFuente") && row["idFuente"] != DBNull.Value)
+                {
+                    row["Fuente"] = BuscarEnValoresHashtable(gespaBusqueda._htValoresCatálogo, Convert.ToString(row["idFuente"]));
+                }
+            }
+
             dsTablas.Tables.Add(busquedaGet);
         }
 
@@ -3347,7 +3366,7 @@ namespace NoriAPI.Services
             }
             return gestiones;
         }
-        public async Task<bool> GuardarGestionTelefonicaAsync(GestionTelefonica gestion)
+        public async Task<bool> GuardaGestionTelefonicaAsync(GestionTelefonica gestion)
         {
             try
             {
@@ -3402,6 +3421,11 @@ namespace NoriAPI.Services
                 Debug.WriteLine($"Error al guardar la gestión: {ex.Message}");
                 return false;
             }
+        }
+        public async Task<GuardaGestionTelefonicaResult> GuardarGestionTelefonica(EndGestionRequest infoEndGestion)
+        {
+            var saveGestionResult = await _ejecutivoRepository.GuardarGestionTelefonica(infoEndGestion);
+            return saveGestionResult;
         }
         #endregion
 
@@ -3566,6 +3590,28 @@ namespace NoriAPI.Services
 
         }
         #endregion
+
+        /// <summary>
+        /// Busca un valor en un Hashtable basado en una clave específica.
+        /// </summary>
+        /// <param name="valoresCatalogo">Hashtable que contiene pares clave-valor.</param>
+        /// <param name="valorBuscado">Clave a buscar dentro del Hashtable.</param>
+        /// <returns>El valor asociado a la clave si se encuentra; de lo contrario, retorna <c>null</c>.</returns>
+        public static string BuscarEnValoresHashtable(Hashtable valoresCatalogo, string valorBuscado)
+        {
+            // Recorre todas las entradas en el Hashtable.
+            foreach (DictionaryEntry entry in valoresCatalogo)
+            {
+                // Compara la clave actual con el valor buscado.
+                if (entry.Key.ToString() == valorBuscado)
+                {
+                    return entry.Value.ToString(); // Devuelve el valor asociado si se encuentra.
+                }
+            }
+
+            return null; // Retorna null si no se encuentra la clave en el Hashtable.
+        }
+
     }
 
 

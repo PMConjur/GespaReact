@@ -13,6 +13,7 @@ using NoriAPI.Models.Acciones;
 using System.Collections;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using NoriAPI.Models.Flujo;
 
 namespace NoriAPI.Repositories
 {
@@ -77,6 +78,12 @@ namespace NoriAPI.Repositories
         Task<dynamic> RegisterNewCargo(CargoEnLinea newCargoEnLinea);
         Task<dynamic> RegisterNewEstado(EstadoDeCuenta newEstadoDeCuenta);
         #endregion
+
+        #region GestionTelefonica
+        Task<GuardaGestionTelefonicaResult> GuardarGestionTelefonica(EndGestionRequest parametros);
+
+        #endregion
+
         int ObtenerIdCartera();
         string ObtenerIdCuenta();
         int ObtenerIdEjecutivo();
@@ -1132,11 +1139,6 @@ namespace NoriAPI.Repositories
 
         #endregion
 
-        private SqlConnection GetConnection(string connection)
-        {
-            return new SqlConnection(_configuration.GetConnectionString(connection));
-        }
-
         private static DataTable ConvertToDataTable(IEnumerable<dynamic> data, string tableName)
         {
             DataTable table = new DataTable(tableName);
@@ -1339,64 +1341,54 @@ namespace NoriAPI.Repositories
         }
         #endregion
 
-        #region Gestion Telefonica
-        public async Task<bool> GuardarGestionTelefonicaAsync(GestionTelefonica gestion)
+        #region GestionTelefonica
+        public async Task<GuardaGestionTelefonicaResult> GuardarGestionTelefonica(EndGestionRequest parametros)
         {
-            try
-            {
-                string connectionString = _configuration.GetConnectionString("Piso2Amex");
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    await connection.OpenAsync();
-                    using (SqlCommand command = new SqlCommand("[dbo].[2.1.GuardaGestiónTelefónica]", connection))
-                    {
-                        command.CommandType = System.Data.CommandType.StoredProcedure;
+            using var connection = GetConnection("Piso2Amex");
 
-                        // Parámetros del procedimiento almacenado
-                        command.Parameters.AddWithValue("@idCartera", gestion.IdCartera);
-                        command.Parameters.AddWithValue("@idCuenta", gestion.IdCuenta);
-                        command.Parameters.AddWithValue("@idEjecutivo", gestion.IdEjecutivo);
-                        command.Parameters.AddWithValue("@idContacto", gestion.IdContacto);
-                        command.Parameters.AddWithValue("@idSituación", gestion.IdSituacion ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@idCausaNoPago", gestion.IdCausaNoPago ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@idParentesco", gestion.IdParentesco ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@idSucursal", gestion.IdSucursal);
-                        command.Parameters.AddWithValue("@Extensión", gestion.Extension ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@NombreContacto", gestion.NombreContacto ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@NúmeroTelefónico", gestion.NumeroTelefonico);
-                        command.Parameters.AddWithValue("@Duración", gestion.Duracion);
-                        command.Parameters.AddWithValue("@idModo", gestion.IdModo);
-                        command.Parameters.AddWithValue("@idAcercamiento", gestion.IdAcercamiento ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@Comentario", gestion.Comentario ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@TiempoEnCuenta", gestion.TiempoEnCuenta);
-                        // Parámetros adicionales
-                        command.Parameters.AddWithValue("@Fechavici", gestion.Fechavici ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@Nivel", gestion.Nivel ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@Situacion", gestion.Situacion ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@Productos", gestion.Productos ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@Producto", gestion.Producto ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@NumeroCliente", gestion.NumeroCliente ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@Billing", gestion.Billing ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@Contacto", gestion.Contacto ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@Situaciones", gestion.Situaciones ?? (object)DBNull.Value);
+            string storedGestion = "2.1.GuardaGestionTelefonica";
+            var gestionParameters = new
+            {
+                idCartera = parametros.IdCartera,
+                idCuenta = parametros.IdCuenta,
+                idEjecutivo = parametros.IdEjecutivo,
+                idContacto = parametros.IdContacto,
+                idSituación = parametros.IdSituacion,
+                idCausaNoPago = parametros.IdCausaNoPago,
+                idParentesco = parametros.IdParentesco,
+                idSucursal = parametros.IdSucursal,
+                Extensión = parametros.Extension,
+                NombreContacto = parametros.NombreContacto,
+                CodificaciónCartera = parametros.CodificacionCartera,
+                NúmeroTelefónico = parametros.NumeroTelefonico,
+                Duración = parametros.Duracion,
+                idModo = parametros.IdModo,
+                idAcercamiento = parametros.IdAcercamiento,
+                Comentario = parametros.Comentario,
+                TiempoEnCuenta = parametros.TiempoEnCuenta,
+                Fechavici = parametros.Fechavici,
+                Nivel = parametros.Nivel,
+                Situacion = parametros.Situacion,
+                Productos = parametros.Productos,
+                Producto = parametros.Producto,
+                NumeroCliente = parametros.NumeroCliente,
+                Billing = parametros.Billing,
+                Contacto = parametros.Contacto,
+                Situaciones = parametros.Situaciones
+            };
+            var guardaGestionResult = await connection.QueryFirstOrDefaultAsync<GuardaGestionTelefonicaResult>(storedGestion, gestionParameters, commandType: CommandType.StoredProcedure
+);
 
-                        int rowsAffected = await command.ExecuteNonQueryAsync();
-                        return rowsAffected > 0;
-                    }
-                }
-            }
-            catch (SqlException ex)
-            {
-                Debug.WriteLine($"Error de SQL: {ex.Message}");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error al guardar la gestión: {ex.Message}");
-                return false;
-            }
+            return guardaGestionResult;
+
         }
+
         #endregion
+
+        private SqlConnection GetConnection(string connection)
+        {
+            return new SqlConnection(_configuration.GetConnectionString(connection));
+        }
 
     }
 }
