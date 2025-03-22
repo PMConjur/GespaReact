@@ -995,11 +995,29 @@ export async function Relations() {
 };
 
 // endpoint calculadora primera parte
-export const fetchCalSecondPart = async (Cartera, NoCuenta, idHerr) => {
+export const fetchCalSecondPart = async (
+  idCartera,
+  NoCuenta,
+  idHerramienta,
+  MontoRequerido,
+  Descuento,
+  iMeses,
+  dtpFecha,
+  periodos
+) => {
   try {
     console.log("Llamando al endpoint /ejecutivo/Calculadora-2daParte");
     const response = await servicio.get(`/ejecutivo/Calculadora-2daParte`, {
-      params: { Cartera, NoCuenta, idHerr },
+      params: {
+        idHerramienta,
+        NoCuenta,
+        idCartera,    
+        MontoRequerido,
+        Descuento,
+        iMeses,
+        dtpFecha,
+        periodos,
+      },
     });
 
     console.log("Respuesta recibida:", response);
@@ -1010,11 +1028,10 @@ export const fetchCalSecondPart = async (Cartera, NoCuenta, idHerr) => {
       );
     }
 
-    const result = response.data;
-    console.log("Validación recibida:", result);
-    return result;
+    return response.data;
   } catch (error) {
-    console.error("Error en fetchCalFirtsPart:", error);
+    console.error("Error en fetchCalSecondPart:", error);
+    console.error("Detalles del error:", error.response?.data || error.message);
     throw error;
   }
 };
