@@ -6,7 +6,6 @@ import EstadoCuentaModal from './AccountStatements';
 import FollowUps from './FollowUps';
 import Talks from './Talks';
 import Drives from './Drives';
-import { fetchProcessesWLP } from '../../../services/gespawebServices';
 import Search from './Search';
 import OnlineCharge from './OnlineCharge';
 import Complaints from './Complaints'; // Importar el componente Complaints
@@ -99,7 +98,7 @@ const DropdownActions = () => {
       <Drives showModal={showDrives} handleCloseModal={handleCloseDrives} />
       <Search show={showModal} handleClose={handleCloseModal} />
       <Complaints show={showComplaints} handleClose={handleCloseComplaints} /> {/* Agregar el modal de quejas */}
-      <ProcessesWLP show={showProcessesWLP} handleCloseProcessesWLP={handleCloseProcessesWLP} data={processesWLPData} loading={loadingProcessesWLP} error={errorProcessesWLP} />
+      <ProcessesWLP show={showProcessesWLP} handleCloseProcessesWLP={handleCloseProcessesWLP} />
     </>
   );
 }
