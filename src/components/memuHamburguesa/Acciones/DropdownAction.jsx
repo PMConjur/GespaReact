@@ -47,6 +47,16 @@ const DropdownActions = () => {
   const handleShowFollowUps = () => setShowFollowUps(true); // Solo abre el modal
   const handleCloseFollowUps = () => setShowFollowUps(false);
 
+
+
+
+  const handleShowOnlinecharge = () => setShowOnlinecharge(true); // Solo abre el modal
+  const handleCloseOnlinecharge = () => setShowOnlinecharge(false);
+  
+
+
+
+
   const handleShowTalks = async () => {
     setLoadingtalks(true);
     try {
@@ -68,20 +78,7 @@ const DropdownActions = () => {
 
   const handleCloseDrives = () => setShowDrives(false);
 
-  const handleShowOnlinecharge = async () => {
-    setLoadingonlinecharge(true);
-    try {
-      const onlinecharge = await getOnlinechargeData(searchResults);
-      setOnlinechargeData(onlinecharge.flat());
-      setShowOnlinecharge(true);
-    } catch (error) {
-      console.error('Error al cargar los datos de cargos en línea:', error);
-    } finally {
-      setLoadingonlinecharge(false);
-    }
-  };
-
-  const handleCloseOnlinecharge = () => setShowOnlinecharge(false);
+ 
 
   // Procesos WLP
   const handleShowProcessesWLP = async () => {

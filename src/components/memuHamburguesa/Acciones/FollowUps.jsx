@@ -14,7 +14,6 @@ const FollowUps = ({ show, handleClose }) => {
         <Modal.Title>Seguimiento</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-
         <TableFollowUps />
       </Modal.Body>
       <Modal.Footer>
