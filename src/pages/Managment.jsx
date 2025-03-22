@@ -39,7 +39,7 @@ const Managment = () => {
   const token = responseData?.ejecutivo?.token;
   console.log("Token recibido:", token);
   const nombreEjecutivo =
-    responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
+    responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo; 
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
 
   const handleSearch = async () => {
