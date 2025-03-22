@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
+using System.Data;
+using System.Text.Json;
 
 namespace NoriAPI.Controllers
 {
@@ -92,9 +94,50 @@ namespace NoriAPI.Controllers
             return Ok(new { token = newToken, mensaje = "Éxito" });
         }
 
+        /*Cierre de sesion C#*/
+
+        [HttpGet("cierre-sesion")]
+        public async Task<IActionResult> GetCierreSesion(int idEjecutivo, int idLogIngreso)
+        {
+            DataSet dsTablas = new DataSet();
+            try
+            {
+                DataTable CierreSesion = new DataTable();
+
+                CierreSesion = await _userService.GetCierreSesion(idEjecutivo, idLogIngreso);
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var listaCierre = ConvertDataTableToList(CierreSesion);
+
+                // Serializamos la lista a JSON
+                string jsonCierre = JsonSerializer.Serialize(listaCierre, new JsonSerializerOptions { WriteIndented = true });
+               
+
+                /*------------------------------------------------------------------------*/
+
+                DataTable CierreLog = new DataTable();
+
+                CierreLog = await _userService.GetCierreLog(idLogIngreso);
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var listaCierreLog = ConvertDataTableToList(CierreLog);
+
+                // Serializamos la lista a JSON
+                string jsonCierreLog = JsonSerializer.Serialize(listaCierreLog, new JsonSerializerOptions { WriteIndented = true });
+
+                //return Ok(jsonNegociaciones);
+                return Content(jsonCierreLog, "application/json; charset=utf-8");
 
 
-        
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+
+
 
         private string GenerateJwtToken(AuthRequest user)
         {
@@ -124,5 +167,25 @@ namespace NoriAPI.Controllers
 
             return token;
         }
+
+        #region Directorio
+        private List<Dictionary<string, object>> ConvertDataTableToList(DataTable dataTable)
+        {
+            var list = new List<Dictionary<string, object>>();
+
+            foreach (DataRow row in dataTable.Rows)
+            {
+                var dict = new Dictionary<string, object>();
+                foreach (DataColumn column in dataTable.Columns)
+                {
+                    dict[column.ColumnName] = row[column];
+                }
+                list.Add(dict);
+            }
+
+            return list;
+        }
+
+        #endregion
     }
 }
