@@ -830,47 +830,31 @@ export const fetchDdComplaints = async () => {
 };
 
 // Endpoint de seguimientos para múltiples cuentas
-export async function getAditionalsData(searchResults) {
+export const getAditionalsData = async (idCartera, idCuenta) => {
   try {
-    const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));
-    const token = responseData?.ejecutivo?.token;
-
-    if (!token) {
-      throw new Error("Token de autenticación no disponible");
+    if (!idCartera || !idCuenta) {
+      throw new Error("idCartera o idCuenta no son válidos.");
     }
 
-    const idCartera = 1;
+    const url = `/ejecutivo/Adicionales${idCartera}/${idCuenta}`;
+    console.log("Solicitando datos de Adicionales a:", url); // Depurar URL
 
-    const aditionals = await Promise.all(
-      searchResults.map(async (result) => {
-        const idCuenta = result.idCuenta.trim();
-        console.log("🔍 Buscando Adicionales para idCuenta:", idCuenta);
+    const response = await servicio.get(url);
+    const message = getErrorStatus(response.status);
 
-        try {
-          const response = await axios.get(
-            `${apiUrl}/ejecutivo/Adicionales${idCartera}/${idCuenta}`, // URL corregida
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+    if (response.status !== 200) {
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
+    }
 
-          console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
-          return response.data;
-        } catch (error) {
-          console.error(`❌ Error al obtener datos de aDICIONALES para idCuenta ${idCuenta}:`, error);
-          return null;
-        }
-      })
-    );
-
-    return aditionals.filter((data) => data !== null);
+    return response.data;
   } catch (error) {
-    console.error("❌ Error al obtener los datos de adicionales:", error);
-    throw new Error("Error al cargar los datos de adicionales.");
+    console.error("Error en getFAditionalsData:", error);
+    toast.error("No se pudo obtener los datos de Adicionales. Verifica la conexión o los parámetros.");
+    throw error;
   }
 };
+
 
 // Nueva función para obtener datos de ProcessesWLP
 export const fetchProcessesWLP = async (proceso, idCuenta) => {

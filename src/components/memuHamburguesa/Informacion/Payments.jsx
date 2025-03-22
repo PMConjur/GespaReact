@@ -2,7 +2,6 @@
 import { Modal, Button } from "react-bootstrap";
 import TablePayments from "../../TablePayments";
 
-
 const Payments = ({ show, handleClose }) => {
     return (
         <Modal show={show} onHide={handleClose} size="xl">
