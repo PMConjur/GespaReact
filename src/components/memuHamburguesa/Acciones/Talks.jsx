@@ -2,6 +2,7 @@ import React from "react";
 import { Modal, Button } from "react-bootstrap";
 import TableTalks from "../../TableTalks";
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { Bank } from "react-bootstrap-icons";
 
 
 const Talks = ({ show, handleClose, dataTalks }) => {

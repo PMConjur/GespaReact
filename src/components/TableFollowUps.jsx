@@ -1,31 +1,62 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useContext } from "react";
 import { Table, Form } from "react-bootstrap";
-import { toast } from "sonner"; // Importar toast
+import { toast } from "sonner";
+import { AppContext } from "../pages/Managment";
+import { getFollowUpsData } from "../services/gespawebServices";
 
-const TableFollowUps = ({ data, customColumnNames = {} }) => {
-    const [sortedData, setSortedData] = useState(data || []);
-    const [sortByOldest, setSortByOldest] = useState(false);
-    const [toastShown, setToastShown] = useState(false); // Estado para controlar si el toast ya se mostró
+const TableFollowUps = ({ customColumnNames = {} }) => {
+    const { searchResults } = useContext(AppContext); // Hook 1
+    const [sortedData, setSortedData] = useState([]); // Hook 2
+    const [sortByOldest, setSortByOldest] = useState(false); // Hook 3
+    const [toastShown, setToastShown] = useState(false); // Hook 4
 
-    // Validar si no hay `nuCuenta` al abrir el modal
+    // Hook 5: useEffect para obtener datos
     useEffect(() => {
-        if (!data || data.length === 0) {
-            if (!toastShown) {
+        const fetchData = async () => {
+            if (!searchResults || searchResults.length === 0) {
                 toast.error("Error 428: Primero debes buscar una Cuenta");
-                setToastShown(true); // Marcar que el toast ya se mostró
+                return;
             }
-        } else {
-            if (toastShown) {
-                setToastShown(false); // Resetear el estado si los datos están disponibles
+
+            try {
+                const idCuenta = searchResults[0]?.idCuenta; // Obtener el primer idCuenta como ejemplo
+                if (!idCuenta) {
+                    toast.error("No se encontró un idCuenta válido.");
+                    return;
+                }
+
+                const followUpsData = await getFollowUpsData(1, idCuenta); // idCartera fijo como 1
+                setSortedData(followUpsData);
+            } catch (error) {
+                console.error("Error al obtener los datos de seguimiento:", error);
             }
+        };
+
+        fetchData();
+    }, [searchResults]);
+
+    // Hook 6: useCallback para manejar el ordenamiento
+    const handleSortChange = useCallback(() => {
+        if (!toastShown) {
+            setSortByOldest(prev => !prev);
+            setSortedData(prevData => {
+                const sorted = !sortByOldest
+                    ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
+                    : [...sortedData]; // Restaurar datos originales si se desmarca el checkbox
+
+                toast.success(
+                    !sortByOldest
+                        ? "Datos ordenados por fecha más antigua."
+                        : "Orden original restaurado."
+                );
+                setToastShown(true);
+                setTimeout(() => setToastShown(false), 2000);
+                return sorted;
+            });
         }
-    }, [data, toastShown]);
+    }, [sortByOldest, sortedData, toastShown]);
 
-    useEffect(() => {
-        setSortedData(data);
-    }, [data]);
-
-    if (!data || data.length === 0) {
+    if (!sortedData || sortedData.length === 0) {
         return <p>No hay datos disponibles.</p>;
     }
 
@@ -56,29 +87,10 @@ const TableFollowUps = ({ data, customColumnNames = {} }) => {
     // 🔹 Combina los nombres personalizados con los predeterminados
     const columnNames = { ...defaultColumnNames, ...customColumnNames };
 
-    // 🔹 Ordenar por fecha (más antiguo/más reciente)
-    const handleSortChange = useCallback(() => {
-        if (!toastShown) { // Evitar mostrar múltiples toasts
-            setSortByOldest(prev => !prev);
-            setSortedData(prevData => {
-                const sorted = !sortByOldest
-                    ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
-                    : [...data]; // Restaurar datos originales si se desmarca el checkbox
-
-                toast.success(
-                    !sortByOldest
-                        ? "Datos ordenados por fecha más antigua."
-                        : "Orden original restaurado."
-                );
-                setToastShown(true); // Marcar que el toast ya se mostró
-                setTimeout(() => setToastShown(false), 2000); // Resetear después de 2 segundos
-                return sorted;
-            });
-        }
-    }, [sortByOldest, data, toastShown]);
-
     // 🔹 Filtrar claves de los datos, excluyendo los campos ocultos
-    const headers = Object.keys(data[0]).filter(header => !hiddenFields.includes(header));
+    const headers = Array.isArray(sortedData) && sortedData.length > 0 && sortedData[0] && typeof sortedData[0] === "object"
+        ? Object.keys(sortedData[0]).filter(header => !hiddenFields.includes(header))
+        : [];
 
     return (
         <>
@@ -91,38 +103,39 @@ const TableFollowUps = ({ data, customColumnNames = {} }) => {
                 onChange={handleSortChange}
             />
             <div style={{
-                maxHeight: "400px",  // Altura máxima del contenedor
-                   // Scroll horizontal si es necesario
-                width: "100%",       // Que la tabla use el ancho disponible
+                maxHeight: "400px",
+                width: "100%",
             }}>
-
-
-                <Table striped bordered hover responsive variant="dark">
-                    <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#343a40" }}> {/* Encabezado fijo */}
-                        <tr>
-                            {headers.map((header) => (
-                                <th key={header}>
-                                    {columnNames[header] || header.replace(/_/g, " ")}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {sortedData.map((item, index) => (
-                            <tr key={index}>
+                {headers.length > 0 ? (
+                    <Table striped bordered hover responsive variant="dark">
+                        <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#343a40" }}>
+                            <tr>
                                 {headers.map((header) => (
-                                    <td key={header}>
-                                        {header === "Fecha_Insert"
-                                            ? item[header].split("T")[0] // Extrae solo la fecha
-                                            : typeof item[header] === "object" && Object.keys(item[header]).length === 0
-                                                ? "--" // Si el valor es un objeto vacío, mostrar "--"
-                                                : item[header] ?? "--"}
-                                    </td>
+                                    <th key={header}>
+                                        {columnNames[header] || header.replace(/_/g, " ")}
+                                    </th>
                                 ))}
                             </tr>
-                        ))}
-                    </tbody>
-                </Table>
+                        </thead>
+                        <tbody>
+                            {sortedData.map((item, index) => (
+                                <tr key={index}>
+                                    {headers.map((header) => (
+                                        <td key={header}>
+                                            {header === "Fecha_Insert"
+                                                ? item[header]?.split("T")[0]
+                                                : typeof item[header] === "object" && (!item[header] || Object.keys(item[header]).length === 0)
+                                                    ? "--"
+                                                    : item[header] ?? "--"}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+                ) : (
+                    <p>No hay datos disponibles para mostrar.</p>
+                )}
             </div>
         </>
     );

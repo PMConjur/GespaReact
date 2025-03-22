@@ -25,8 +25,17 @@ const DropExecutive = () => {
       className="me-3"
       style={{ alignItems: "center" }}
     >
-      {/* Mostrar el nombre del ejecutivo */}
-      <span className="text-white me-1 ms-1">{nombreEjecutivo}</span>
+      {/* Mostrar el nombre del ejecutivo con degradado */}
+      <span
+        className="me-1 ms-1"
+        style={{
+          background: "linear-gradient(90deg, #6dd6ff, #07fb70)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+        }}
+      >
+        {nombreEjecutivo}
+      </span>
       {/* Botón de toggle para el dropdown */}
       <Dropdown.Toggle split variant="dark" id="dropdown-split-basic" />
       <Dropdown.Menu
@@ -37,8 +46,10 @@ const DropExecutive = () => {
         {/* Mostrar el nombre y el ID del ejecutivo en el menú del dropdown */}
         <p>{nombreEjecutivo}</p>
         <p>{idEjecutivo}</p>
-        {/* Opción del menú del dropdown */}
-        <Dropdown.Item href="/maintenance">Ejecutivo Telefonico</Dropdown.Item>
+        {/* Opción del menú del dropdown con degradado */}
+        <Dropdown.Item href="/maintenance">
+          Ejecutivo Telefonico
+        </Dropdown.Item>
       </Dropdown.Menu>
 
       {/* Imagen del usuario */}
