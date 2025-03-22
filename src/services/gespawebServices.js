@@ -429,60 +429,35 @@ export const fetchSaveAccount = async (requestData) => {
   }
 };
 
-export async function getTalksData(searchResults) {
+export const getTalksData = async (idCartera, idCuenta) => {
   try {
-    // Obtener token desde localStorage
-    const responseData = JSON.parse(localStorage.getItem("responseData"));
-    const token = responseData?.ejecutivo?.token;
-
-    if (!token) {
-      toast.error("Error 401: Token de autenticación no disponible.");
-      throw new Error("Token de autenticación no disponible");
+    if (!idCartera || !idCuenta) {
+      throw new Error("idCartera o idCuenta no son válidos.");
     }
 
-    // Definir idCartera fijo (siempre 1)
-    const idCartera = 1;
+    const url = `/ejecutivo/accionesNegociacion?idCartera=${idCartera}&idCuenta=${idCuenta}`;
+    console.log("Solicitando datos de Negociaciones a:", url); // Depurar URL"
 
-    // Realizar solicitudes en paralelo para cada idCuenta
-    const talks = await Promise.all(
-      searchResults.map(async (result) => {
-        const idCuenta = result.idCuenta?.trim();
-        console.log(
-          "🔍 Buscando negociaciones para idCuenta:",
-          idCuenta,
-          idCartera
-        );
+    const response = await servicio.get(url);
+    const message = getErrorStatus(response.status);
 
-        try {
-          const response = await axios.get(
-            `${apiUrl}/ejecutivo/accionesNegociacion?idCartera=${idCartera}&idCuenta=${idCuenta}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+    if (response.status !== 200) {
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
+    }
 
-          console.log(
-            `✅ Respuesta recibida para idCuenta ${idCuenta}:`,
-            response.data
-          );
-          return response.data; // Retorna los datos obtenidos
-        } catch (error) {
-          toast.error(`Error 408: Error al obtener negociaciones para idCuenta ${idCuenta}.`);
-          console.error(`❌ Error al obtener negociaciones para idCuenta ${idCuenta}:`, error);
-          return null; // Evita que falle `Promise.all`
-        }
-      })
-    );
-
-    return talks.filter(Boolean); // 🔹 Filtrar valores nulos
+    return response.data;
   } catch (error) {
-    toast.error("Error 408: Error al cargar los datos de negociaciones.");
-    console.error(" Error al obtener los datos de negociaciones:", error);
-    throw new Error("Error al cargar los datos de negociaciones.");
+    console.error("Error en getTalksData:", error);
+    toast.error("No se pudo obtener los datos de Negociaciones. Verifica la conexión o los parámetros.");
+    throw error;
   }
-}
+};
+
+      
+
+
+
 //endpoint acciones-busquedas
 export const fetchActionsSearch = async (idCuenta) => {
   try {

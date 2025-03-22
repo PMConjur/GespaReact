@@ -6,7 +6,7 @@ import EstadoCuentaModal from './AccountStatements';
 import FollowUps from './FollowUps';
 import Talks from './Talks';
 import Drives from './Drives';
-import { getTalksData, getOnlinechargeData, fetchProcessesWLP } from '../../../services/gespawebServices';
+import { fetchProcessesWLP } from '../../../services/gespawebServices';
 import Search from './Search';
 import OnlineCharge from './OnlineCharge';
 import Complaints from './Complaints'; // Importar el componente Complaints
@@ -48,29 +48,16 @@ const DropdownActions = () => {
   const handleCloseFollowUps = () => setShowFollowUps(false);
 
 
-
-
   const handleShowOnlinecharge = () => setShowOnlinecharge(true); // Solo abre el modal
   const handleCloseOnlinecharge = () => setShowOnlinecharge(false);
   
 
-
-
-
-  const handleShowTalks = async () => {
-    setLoadingtalks(true);
-    try {
-      const talks = await getTalksData(searchResults);
-      setTalksData(talks.flat());
-      setShowTalks(true);
-    } catch (error) {
-      console.error('Error al cargar los datos de negociaciones:', error);
-    } finally {
-      setLoadingtalks(false);
-    }
-  };
-
+  const handleShowTalks = () => setShowTalks(true);
   const handleCloseTalks = () => setShowTalks(false);
+
+
+
+
 
   const handleShowDrives = () => {
     setShowDrives(true);
@@ -126,7 +113,7 @@ const DropdownActions = () => {
 
       <EstadoCuentaModal show={modalShow} handleClose={() => setModalShow(false)} />
       <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps} />
-      <Talks show={showTalks} handleClose={handleCloseTalks} dataTalks={talksData} loading={loadingtalks} />
+      <Talks show={showTalks} handleClose={handleCloseTalks} />
       <OnlineCharge show={showOnlinecharge} handleClose={handleCloseOnlinecharge} data={onlinechargeData} loading={loadingOnlinecharge} />
       <Drives showModal={showDrives} handleCloseModal={handleCloseDrives} />
       <Search show={showModal} handleClose={handleCloseModal} />
