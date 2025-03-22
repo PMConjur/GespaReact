@@ -57,6 +57,11 @@ const DropdownActions = () => {
 
 
 
+  const handleShowProcessesWLP = () => setShowProcessesWLP(true);
+  const handleCloseProcessesWLP = () => setShowProcessesWLP(false);
+
+
+
 
 
   const handleShowDrives = () => {
@@ -65,31 +70,7 @@ const DropdownActions = () => {
 
   const handleCloseDrives = () => setShowDrives(false);
 
- 
 
-  // Procesos WLP
-  const handleShowProcessesWLP = async () => {
-    setShowProcessesWLP(true);
-    setLoadingProcessesWLP(true);
-    setErrorProcessesWLP(null);
-    try {
-      if (searchResults && Array.isArray(searchResults)) {
-        console.log("searchResults en DropdownAction:", searchResults); // Depuración
-        const data = await fetchProcessesWLP('Arrangement', searchResults);
-        setProcessesWLPData(data.flat()); // Asegúrate de aplanar los datos si es necesario
-      } else {
-        console.error("searchResults no es un array válido.");
-        setErrorProcessesWLP("searchResults no es un array válido.");
-      }
-    } catch (error) {
-      console.error("Error al obtener datos de ProcessesWLP:", error);
-      setErrorProcessesWLP(error);
-    } finally {
-      setLoadingProcessesWLP(false);
-    }
-  };
-
-  const handleCloseProcessesWLP = () => setShowProcessesWLP(false);
 
   return (
     <>
