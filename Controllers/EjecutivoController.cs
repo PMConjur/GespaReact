@@ -29,7 +29,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/ejecutivo")]
-    //[Authorize]
+    [Authorize]
     public class EjecutivoController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -316,7 +316,6 @@ namespace NoriAPI.Controllers
 
         #region Busqueda
         [HttpGet("busqueda/{idCartera}/{idCuenta}/{Jerarquia}")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetBusqueda(int idCartera, string idCuenta, int Jerarquia)
         {
 
@@ -375,7 +374,6 @@ namespace NoriAPI.Controllers
             }
         }
         [HttpPost("GuardarBusqueda")]
-        [AllowAnonymous]
         public async Task<IActionResult> GuardarBusqueda([FromBody] BusquedaNueva busqueda)
         {
             if (await _ejecutivoService.GuardarBusquedaAsync(busqueda))
@@ -419,7 +417,8 @@ namespace NoriAPI.Controllers
                 var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Cargos"]);
                 string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
 
-                return Ok(jsonString);
+                return Content(jsonString, "application/json; charset=utf-8");
+
             }
             catch (Exception ex)
             {
@@ -480,7 +479,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost("SaveEstadoDeCuenta")]
-        [AllowAnonymous]
         public async Task<IActionResult> SaveCargoEstadoDeCuenta([FromBody] EstadoDeCuentaRe newEstadoCuenta)
         {
             if (newEstadoCuenta == null)
@@ -718,9 +716,10 @@ namespace NoriAPI.Controllers
 
                 // Convertir DataTable a JSON usando el método auxiliar
                 var listaScripts = ConvertDataTableToList(scripts);
-                string jsonString = JsonSerializer.Serialize(listaScripts, new JsonSerializerOptions { WriteIndented = true });
+                string jsonScripts = JsonSerializer.Serialize(listaScripts, new JsonSerializerOptions { WriteIndented = true });
 
-                return Ok(jsonString);
+                return Content(jsonScripts, "application/json; charset=utf-8");
+
             }
             catch (Exception ex)
             {
@@ -737,12 +736,12 @@ namespace NoriAPI.Controllers
             DataSet dsTablas = new DataSet();
             try
             {
-                DataTable Negociaciones = new DataTable();
+                DataTable negociaciones = new DataTable();
 
-                Negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
+                negociaciones = await _ejecutivoService.GetAccionesNegociacionesAsync(idCartera, idCuenta);
 
                 // Convertimos el DataTable a una lista de diccionarios
-                var listaNegociaciones = ConvertDataTableToList(Negociaciones);
+                var listaNegociaciones = ConvertDataTableToList(negociaciones);
 
                 // Serializamos la lista a JSON
                 string jsonNegociaciones = JsonSerializer.Serialize(listaNegociaciones, new JsonSerializerOptions { WriteIndented = true });
@@ -1299,7 +1298,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost("save-gestion-telefonica")]
-        [AllowAnonymous]
         public async Task<IActionResult> TerminaFlujo([FromBody] EndGestionRequest infoTermina)
         {
             var resultado = await _ejecutivoService.GuardarGestionTelefonica(infoTermina);
