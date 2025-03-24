@@ -70,7 +70,7 @@ const DropExecutive = () => {
         />
         {/* Opción del menú del dropdown */}
         <Dropdown.Item
-          href="/maintenance"
+          //
           className="d-flex align-items-center justify-content-start" // Alineación horizontal y vertical
           style={{
             fontSize: "14px",

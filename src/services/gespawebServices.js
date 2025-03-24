@@ -632,7 +632,7 @@ export const getGestionTeData = async (idCartera, idCuenta) => {
       throw new Error("idCartera o idCuenta no son válidos.");
     }
 
-    //const url = `/ejecutivo/gestionTe/${idCartera}/${idCuenta}`;
+    const url = `/ejecutivo/gestionTe/${idCartera}/${idCuenta}`;
     console.log("Solicitando datos de gestion Telefonica a:", url); // Depurar URL
 
     const response = await servicio.get(url);
@@ -926,3 +926,30 @@ export const fetchCalSecondPart = async (
     throw error;
   }
 };
+
+
+export const closeSession = async (idEjecutivo, idLogIngreso) => {
+  try {
+    const url = `/login/cierre-sesion?idEjecutivo=${idEjecutivo}&idLogIngreso=${idLogIngreso}`;
+
+
+    const response = await servicio.get(url);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta del backend. Estado: ${response.status}`
+      );
+    }
+
+    const data = response.data;
+
+    return data;
+  } catch (error) {
+    console.error("Error en closeSession:", error.response || error.message);
+    const errorMessage =
+      error.response?.data?.mensaje ||
+      error.message ||
+      "Error desconocido al cerrar sesión.";
+    throw new Error(errorMessage);
+  }
+}
