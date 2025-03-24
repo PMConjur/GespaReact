@@ -925,3 +925,30 @@ export const fetchCalSecondPart = async (
     throw error;
   }
 };
+
+
+export const closeSession = async (idEjecutivo, idLogIngreso) => {
+  try {
+    const url = `/login/cierre-sesion?idEjecutivo=${idEjecutivo}&idLogIngreso=${idLogIngreso}`;
+
+
+    const response = await servicio.get(url);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta del backend. Estado: ${response.status}`
+      );
+    }
+
+    const data = response.data;
+
+    return data;
+  } catch (error) {
+    console.error("Error en closeSession:", error.response || error.message);
+    const errorMessage =
+      error.response?.data?.mensaje ||
+      error.message ||
+      "Error desconocido al cerrar sesión.";
+    throw new Error(errorMessage);
+  }
+}

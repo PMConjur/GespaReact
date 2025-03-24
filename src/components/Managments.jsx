@@ -9,6 +9,8 @@ const Managments = () => {
   const [selectedGestion, setSelectedGestion] = useState(null); // Estado para el registro seleccionado
   const [showToast, setShowToast] = useState(false); // Estado para mostrar el toast
   const [toastMessage, setToastMessage] = useState(""); // Mensaje dinámico para el toast
+  const [currentPage, setCurrentPage] = useState(1); // Página actual para la carga perezosa
+  const [isLoading, setIsLoading] = useState(false); // Estado para indicar si se está cargando más data
 
   // Hook para obtener los datos
   useEffect(() => {
@@ -27,17 +29,20 @@ const Managments = () => {
           return;
         }
 
-        const gestionData = await getGestionTeData(1, idCuenta); // idCartera fijo como 1
-        setSortedData(gestionData); // Guardar los datos obtenidos
+        setIsLoading(true); // Iniciar carga
+        const gestionData = await getGestionTeData(currentPage, idCuenta); // Usar currentPage para la paginación
+        setSortedData((prevData) => [...prevData, ...gestionData]); // Agregar nuevos datos a los existentes
+        setIsLoading(false); // Finalizar carga
       } catch (error) {
         console.error("Error al obtener los datos de gestión:", error);
         setToastMessage("❌ Error al obtener los datos de gestión. Intente nuevamente.");
         setShowToast(true);
+        setIsLoading(false); // Finalizar carga en caso de error
       }
     };
 
     fetchData();
-  }, [searchResults]);
+  }, [searchResults, currentPage]);
 
   // Validar campos para evitar errores al renderizar
   const validateField = (field) => {
@@ -53,6 +58,17 @@ const Managments = () => {
   // Manejar la selección de un registro
   const handleRowClick = (gestion) => {
     setSelectedGestion(gestion); // Establecer el registro seleccionado
+  };
+
+  // Manejar el scroll para cargar más datos
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    const scrollPosition = scrollTop + clientHeight;
+    const threshold = scrollHeight * 0.5; // Umbral para cargar más datos (50% del scroll)
+
+    if (scrollPosition >= threshold && !isLoading) {
+      setCurrentPage((prevPage) => prevPage + 1); // Incrementar la página actual
+    }
   };
 
   return (
@@ -86,6 +102,7 @@ const Managments = () => {
                   overflowY: "auto", // Habilitar scroll vertical dentro de la tabla
                   display: "block", // Necesario para que funcione el scroll en tablas
                 }}
+                onScroll={handleScroll} // Agregar evento de scroll
               >
                 <thead>
                   <tr>
@@ -324,6 +341,13 @@ const Managments = () => {
                         <td>{validateField(gestion.idExtensión)}</td>
                       </tr>
                     ))
+                  )}
+                  {isLoading && (
+                    <tr>
+                      <td colSpan="18" style={{ textAlign: "center" }}>
+                        Cargando más datos...
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>

@@ -75,7 +75,14 @@ function Login() {
         // Store the response data
         setResponseData(response.data);
 
-        localStorage.setItem("responseData", JSON.stringify(response.data)); // Save response data to localStorage
+        // Save response data to localStorage
+        localStorage.setItem("responseData", JSON.stringify(response.data));
+
+        // Save idLogIngreso to localStorage for later use
+        const idLogIngreso = response.data.ejecutivo.infoEjecutivo.idLogIngreso;
+        if (idLogIngreso) {
+          localStorage.setItem("idLogIngreso", idLogIngreso);
+        }
       }
     } catch (error) {
       console.error("There was a problem with the axios operation:", error);
