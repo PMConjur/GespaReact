@@ -22,6 +22,7 @@ using Newtonsoft.Json.Linq;
 using NoriAPI.Models.Acciones;
 using static NoriAPI.Services.EjecutivoService;
 using NoriAPI.Models.Flujo;
+using NoriAPI.Models.CargaGestionamiento;
 
 
 
@@ -110,6 +111,31 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+        [HttpPost("CreaSeguimiento")]
+        [AllowAnonymous]
+        public async Task<IActionResult> CreaSeguimiento([FromBody] Seguimiento SeguimientoCuenta, [FromQuery] int idEjecutivo, [FromQuery] string nombreEjecutivo, [FromQuery] DateTime? Fecha, [FromQuery] TimeSpan? Segundo, [FromQuery] bool Automático = false)
+        {
+            try
+            {
+                string resultado = await _ejecutivoService.CreaSeguimientoConModelosAsync(SeguimientoCuenta, idEjecutivo, nombreEjecutivo, Fecha, Segundo, Automático); // Llamada al método correcto
+
+                if (string.IsNullOrEmpty(resultado))
+                {
+                    return Ok("Seguimiento creado con éxito.");
+                }
+                else
+                {
+                    return BadRequest(resultado);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+
         #endregion
 
         #region Recordatorios
