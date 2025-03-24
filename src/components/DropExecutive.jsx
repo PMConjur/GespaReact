@@ -2,6 +2,7 @@ import { Dropdown, ButtonGroup, Image, Col } from "react-bootstrap";
 import User from "../assets/img/user.svg";
 import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import {Hash, PersonSquare} from "react-bootstrap-icons";
 
 const DropExecutive = () => {
   const location = useLocation(); // Hook para obtener la ubicación actual
@@ -43,7 +44,7 @@ const DropExecutive = () => {
         align="end" // Cambiado a "end" para que se alinee hacia la izquierda
         style={{
           top: "40px",
-          left: "-200px", // Cambiado para que se ajuste automáticamente
+          left: "-150px", // Cambiado para que se ajuste automáticamente
           right: "0", // Posición hacia la izquierda
           borderRadius: "10px",
           boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
@@ -56,7 +57,7 @@ const DropExecutive = () => {
             {nombreEjecutivo}
           </p>
           <p className="mb-0 text-muted" style={{ fontSize: "16px" }}> {/* Letra más grande */}
-            {idEjecutivo}
+          <Hash></Hash>{idEjecutivo}
           </p>
         </div>
         <hr
@@ -70,15 +71,16 @@ const DropExecutive = () => {
         {/* Opción del menú del dropdown */}
         <Dropdown.Item
           href="/maintenance"
-          className="text-center" // Cambiado a text-center para centrar
+          className="d-flex align-items-center justify-content-start" // Alineación horizontal y vertical
           style={{
             fontSize: "14px",
             color: "#fff", // Cambiado a blanco
-            padding: "10px 15px",
+            padding: "10px 15px", // Ajuste de padding para mejor alineación
             borderRadius: "5px",
           }}
         >
-          Ejecutivo Telefonico
+          <PersonSquare className="me-2" style={{ alignItems: "center"}} /> {/* Ajuste de tamaño del ícono */}
+          <span style={{ lineHeight: "18px" }}>Ejecutivo Telefonico</span> {/* Alineación del texto */}
         </Dropdown.Item>
       </Dropdown.Menu>
 
