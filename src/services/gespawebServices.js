@@ -632,7 +632,7 @@ export const getGestionTeData = async (idCartera, idCuenta) => {
       throw new Error("idCartera o idCuenta no son válidos.");
     }
 
-    const url = `/ejecutivo/gestionTe/${idCartera}/${idCuenta}`;
+    //const url = `/ejecutivo/gestionTe/${idCartera}/${idCuenta}`;
     console.log("Solicitando datos de gestion Telefonica a:", url); // Depurar URL
 
     const response = await servicio.get(url);
@@ -649,7 +649,8 @@ export const getGestionTeData = async (idCartera, idCuenta) => {
     toast.error("No se pudo obtener los datos de gestion telefonica. Verifica la conexión o los parámetros.");
     throw error;
   }
-};
+
+}; 
 
 
 // Endpoint Recordatorios

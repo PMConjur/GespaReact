@@ -33,6 +33,12 @@ const CalculatorSimulator = ({ show, handleClose }) => {
     meses: "",
     fechaPago: "",
   });
+  const [isCalculateButtonEnabled, setIsCalculateButtonEnabled] = useState(false);
+  const [isAddButtonEnabled, setIsAddButtonEnabled] = useState(false);
+  const [montoPago, setMontoPago] = useState(""); // Estado para almacenar el valor de "Monto Pago"
+  const [montoNegociado, setMontoNegociado] = useState(""); // Estado para almacenar el valor de "Monto Negociado"
+  const [tablaPagos, setTablaPagos] = useState([]); // Estado para almacenar los datos de la tabla
+  const [areFieldsEnabled, setAreFieldsEnabled] = useState(false); // Estado para habilitar/deshabilitar los campos
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -89,7 +95,45 @@ const CalculatorSimulator = ({ show, handleClose }) => {
     }
   };
   const handleHerramientaChange = (e) => {
-    setSelectedHerramienta(Number(e.target.value)); // Actualiza el idHerramienta seleccionado
+    const selectedValue = e.target.value;
+    setSelectedHerramienta(Number(selectedValue)); // Actualiza el idHerramienta seleccionado
+
+    // Limpia los campos al cambiar de herramienta
+    setMontoPago("");
+    setMontoNegociado("");
+    setFormInputs((prev) => ({
+      ...prev,
+      fechaPago: "",
+    }));
+
+    // Habilita el botón "Calcular" si la herramienta seleccionada es válida
+    const validHerramientasCalcular = ["Convenio", "PIF", "PPA", "APR", "PPA+AC"];
+    const validHerramientasAgregar = ["Parcial", "Ajuste"];
+    const herramientaSeleccionada = herramientas.find(
+      (herramienta) => herramienta.idHerramienta === Number(selectedValue)
+    );
+
+    setIsCalculateButtonEnabled(
+      herramientaSeleccionada &&
+        validHerramientasCalcular.includes(herramientaSeleccionada.nombre)
+    );
+
+    setIsAddButtonEnabled(
+      herramientaSeleccionada &&
+        validHerramientasAgregar.includes(herramientaSeleccionada.nombre)
+    );
+
+    // Habilita los campos si la herramienta seleccionada es "Parcial" o "Ajuste"
+    setAreFieldsEnabled(
+      herramientaSeleccionada &&
+        validHerramientasAgregar.includes(herramientaSeleccionada.nombre)
+    );
+  };
+
+  const handleMontoPagoChange = (e) => {
+    const value = e.target.value;
+    setMontoPago(value); // Actualiza el estado de "Monto Pago"
+    setMontoNegociado(value); // Actualiza el estado de "Monto Negociado" con el mismo valor
   };
 
   const handleCalculateSecondPart = async () => {
@@ -98,18 +142,18 @@ const CalculatorSimulator = ({ show, handleClose }) => {
       const requestData = {
         idHerramienta: selectedHerramienta, // Enviar el idHerramienta seleccionado
         NoCuenta: idCuenta,
-        IdCartera: 1,
-        MontoRequerido: summaryData.montoRequerido || 17313.91,
-        Descuento: 45,
-        iMeses: parseInt(formInputs.meses, 10) || 5, // Toma el valor de "Meses"
-        dtpFecha: formInputs.fechaPago || "2025-03-22", // Toma el valor de "Fecha Pago"
+        idCartera: 1,
+        MontoRequerido: parseFloat(formValues.montoRequerido) || 0, // Toma el valor ingresado en el formulario
+        Descuento: parseFloat(formValues.descuento) || 0, // Toma el valor ingresado en el formulario
+        iMeses: parseInt(formInputs.meses, 10) || 0, // Toma el valor ingresado en el formulario
+        dtpFecha: formInputs.fechaPago || "", // Toma el valor ingresado en el formulario
         periodos: 1,
       };
   
       console.log("Enviando datos al endpoint fetchCalSecondPart:", requestData);
   
       const response = await fetchCalSecondPart(
-        requestData.IdCartera,
+        requestData.idCartera,
         requestData.NoCuenta,
         requestData.idHerramienta,
         requestData.MontoRequerido,
@@ -139,6 +183,21 @@ const CalculatorSimulator = ({ show, handleClose }) => {
       montoRequerido: summaryData.montoRequerido.toFixed(2),
       descuento: summaryData.descuento.toFixed(2),
     });
+  };
+
+  const handleAgregarPago = () => {
+    if (montoNegociado && formInputs.fechaPago) {
+      const nuevoPago = {
+        fecha: formInputs.fechaPago,
+        hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }), // Agrega hora y minutos en formato 12 horas
+        pago: montoNegociado,
+      };
+      setTablaPagos((prev) => [...prev, nuevoPago]); // Agrega el nuevo pago a la tabla
+    }
+  };
+
+  const handleEliminarPago = (index) => {
+    setTablaPagos((prev) => prev.filter((_, i) => i !== index)); // Elimina el registro por índice
   };
 
   return (
@@ -196,7 +255,7 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                       ) : (
                         <tr>
                           <td colSpan="5" className="text-center">
-                            No hay datos disponibles
+                            No hay cuenta seleccionada
                           </td>
                         </tr>
                       )}
@@ -277,30 +336,55 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                         Acuerdo con el cliente
                       </Card.Title>
                       <Form>
-                        <Form.Group className="d-flex gap-3">
+                        <Form.Group className="d-flex w-100" style={{ opacity: areFieldsEnabled ? 1 : 0.5 }}>
+                          <Form.Control
+                          className="w-100"
+                            type="text"
+                            placeholder="Monto Pago"
+                            value={montoPago}
+                            onChange={handleMontoPagoChange} // Actualiza el estado de "Monto Pago"
+                            disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
+                          />
+                        </Form.Group>
+                        <div className="d-flex gap-3 w-100" style={{ opacity: areFieldsEnabled ? 1 : 0.5 }}>
+                          <Form.Group className="mt-3 w-100">
                           <Form.Control
                             type="text"
-                            placeholder="Monto negociado"
+                            placeholder="Monto Negociado"
+                            value={montoNegociado} // Muestra el valor de "Monto Negociado"
+                            readOnly // Hace que el campo no sea editable
+                            disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
                           />
-                          <div className="text-center ">
-                        
-                          </div>
-                        </Form.Group>
-                        <div className="d-flex gap-3 w-100 mb-3">
-                          <Form.Group className="mt-3 w-100">
-                            <Form.Label>Monto Pago</Form.Label>
-                            <Form.Control type="text" />
                           </Form.Group>
                           <Form.Group className="mt-3 w-100">
+                            <Form.Control
+                              type="date"
+                              name="fechaPago"
+                              value={formInputs.fechaPago}
+                              onChange={handleInputChange} // Actualiza el estado de "Fecha Pago"
+                              disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
+                            />
                             <Form.Label>Máximo 15 días</Form.Label>
-                            <Form.Control type="date" />
                           </Form.Group>
                         </div>
 
-                        <div className="mt-3 gap-3 d-flex">
+                        <div className=" gap-3 d-flex">
                           <div>
-                            <Button variant="primary" onClick={handleSetFormValues}>
+                            <Button
+                              variant="primary"
+                              onClick={handleSetFormValues}
+                              disabled={!isCalculateButtonEnabled} // Deshabilita el botón si no es válido
+                            >
                               Calcular
+                            </Button>
+                          </div>
+                          <div>
+                          <Button
+                              variant="primary"
+                              onClick={handleAgregarPago} // Llama a la función para agregar el pago
+                              disabled={!isAddButtonEnabled} // Deshabilita el botón si no es válido
+                            >
+                              Agregar
                             </Button>
                           </div>
                         </div>
@@ -313,15 +397,36 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                     <Table striped bordered hover variant="dark">
                       <thead>
                         <tr>
-                          <th>Fecha</th>
+                          <th>Fecha y Hora</th>
                           <th>Pago</th>
+                          <th>Eliminar</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td>22/01/2025 8:31 a.m.</td>
-                          <td>$10,479.83</td>
-                        </tr>
+                        {tablaPagos.length > 0 ? (
+                          tablaPagos.map((pago, index) => (
+                            <tr key={index}>
+                              <td>{`${new Date(pago.fecha).toLocaleDateString()} ${pago.hora}`}</td> {/* Combina fecha y hora */}
+                              <td>${parseFloat(pago.pago).toFixed(2)}</td>
+                              <td>
+                                <Button
+                                style={{padding: '1px 5px'}}
+                                  variant="danger"
+                                  size="sm"
+                                  onClick={() => handleEliminarPago(index)} // Llama a la función para eliminar el registro
+                                >
+                                  X
+                                </Button>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="3" className="text-center">
+                              No hay datos 
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </Table>
                   </div>
@@ -356,16 +461,31 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                     <Form className="d-flex gap-5 w-100">
                       <Row className="d-flex w-100">
                         <Form.Group>
-                          <Form.Label>Monto Requerido</Form.Label>
-                          <Form.Control type="text" value={formValues.montoRequerido} readOnly />
+                          <Form.Control
+                           placeholder="Monto Requerido"
+                            type="text"
+                            name="montoRequerido"
+                            value={formValues.montoRequerido}
+                            onChange={(e) =>
+                              setFormValues((prev) => ({ ...prev, montoRequerido: e.target.value }))
+                            }
+                          />
                         </Form.Group>
                         <Form.Group className="mt-3">
-                          <Form.Label>Descuento</Form.Label>
-                          <Form.Control type="text" value={formValues.descuento} readOnly />
+                          <Form.Control
+                          placeholder="Descuento"
+                            type="text"
+                            name="descuento"
+                            value={parseInt(formValues.descuento, 10) || ""} // Convierte a entero antes de mostrar
+                            onChange={(e) =>
+                              setFormValues((prev) => ({ ...prev, descuento: e.target.value }))
+                            }
+                          />
                         </Form.Group>
                         <Form.Group className="mt-3">
-                          <Form.Label>Tasa Mensual</Form.Label>
-                          <Form.Control type="text" />
+                          <Form.Control 
+                          placeholder="Tasa Mensual"
+                          type="text" />
                         </Form.Group>
                       </Row>
                       <Row className="d-flex w-100">
@@ -375,7 +495,7 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                             placeholder="Meses"
                             name="meses"
                             value={formInputs.meses}
-                            onChange={handleInputChange}
+                            onChange={handleInputChange} // Actualiza el estado formInputs
                           />
                         </Form.Group>
                         <Form.Group className="mt-3">
@@ -384,11 +504,11 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                             placeholder="Fecha Pago"
                             name="fechaPago"
                             value={formInputs.fechaPago}
-                            onChange={handleInputChange}
+                            onChange={handleInputChange} // Actualiza el estado formInputs
                           />
                         </Form.Group>
                         <div className="mt-4">
-                        <Button variant="secondary" onClick={handleCalculateSecondPart}>
+                        <Button variant="primary" onClick={handleCalculateSecondPart}>
                             Terminar
                           </Button>
                         </div>
@@ -400,9 +520,11 @@ const CalculatorSimulator = ({ show, handleClose }) => {
               {/* agregar aqui */}
               <Row>
                 {/* Resumen */}
+                <Col>
                 <Card className="mb-3">
                   <Card.Body>
                     <Row>
+                      <Row >
                       <Col>
                         <h6>Plazos</h6>
                         <h5>{calculosData.plazos}</h5>
@@ -415,6 +537,8 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                         <h6>Saldo</h6>
                         <h5>${calculosData.saldo.toFixed(2)}</h5>
                       </Col>
+                      </Row>
+                      <Row>
                       <Col>
                         <h6>Monto Negociado</h6>
                         <h5>${calculosData.montoNegociado.toFixed(2)}</h5>
@@ -423,13 +547,16 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                         <h6>Descuento</h6>
                         <h5>${calculosData.descuento.toFixed(2)}</h5>
                       </Col>
+                      </Row> 
                     </Row>
                   </Card.Body>
                 </Card>
+                </Col>
 
-                {/* Plazos */}
-                <Card className="mb-3">
-                  <Card.Body>
+                <Col className=" ">
+                 {/* Plazos */}
+                 <Card className="mb-0">
+                  <Card.Body className="">
                     <h6>Plazos</h6>
                     <Table striped bordered hover variant="dark">
                       <thead>
@@ -455,7 +582,7 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                         ) : (
                           <tr>
                             <td colSpan="5" className="text-center">
-                              No hay datos disponibles
+                              No hay datos 
                             </td>
                           </tr>
                         )}
@@ -463,28 +590,33 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                     </Table>
                   </Card.Body>
                 </Card>
+                </Col>
 
                 {/* Pagos */}
-                <Card>
+                <Card className="mt-0">
                   <Card.Body>
+                    <Form style={{alignItems: 'end'}} className=" d-flex gap-3 me-3">
                     <h6>Pagos</h6>
-                    <Form>
                       <Form.Check
                         type="checkbox"
                         label="Pago Inicial"
-                        className="mb-3"
+                        className=""
                       />
-                      <Form.Group className="mb-3">
+                      <Form.Group className="">
                         <Form.Label>
                           Seleccione el pago para modificar
                         </Form.Label>
-                        <Form.Control type="text" value={`$${0}`} readOnly />
+                        <Form.Control 
+                        placeholder="Monto"
+                        type="text" value="" readOnly />
                       </Form.Group>
-                      <Form.Group className="mb-3">
+                      <Form.Group className="">
                         <Form.Label>Fecha Pago</Form.Label>
                         <Form.Control type="date" />
                       </Form.Group>
+                      <div>
                       <Button variant="primary">Modificar</Button>
+                      </div>
                     </Form>
                   </Card.Body>
                 </Card>
