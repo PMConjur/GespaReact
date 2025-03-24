@@ -605,13 +605,20 @@ namespace NoriAPI.Controllers
         #endregion
 
         #region Gestiones
-        [HttpGet("gestionTe/{idCartera}/{idCuenta}")]
-        public async Task<IActionResult> GetGestionTe(int idCartera, string idCuenta)
+        [HttpGet("gestionTe/{idCartera}/{idCuenta}/{Top}")]
+
+        public async Task<IActionResult> GetGestionTe(int idCartera, string idCuenta, int Top)
         {
             try
             {
+                // Validar el valor de Top
+                if (Top <= 0)
+                {
+                    return BadRequest("El valor de 'Top' debe ser un entero positivo.");
+                }
+
                 // Llamar al servicio para obtener las gestiones
-                DataTable gestiones = await _ejecutivoService.ObtieneGestionTeAsync(idCartera, idCuenta);
+                DataTable gestiones = await _ejecutivoService.ObtieneGestionTeAsync(idCartera, idCuenta, Top);
 
                 if (gestiones == null || gestiones.Rows.Count == 0)
                 {

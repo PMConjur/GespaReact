@@ -73,7 +73,7 @@ namespace NoriAPI.Services
         Task ObtenerMultideudores(DataRow drDatos, DataSet dsTablas, Hashtable htProducto, string sortMultideudores, string connectionString);
         Task ObtenerPagos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerPago(DataRow drDatos, DataSet dsTablas);
-        Task<DataTable> ObtieneGestionTeAsync(int idCartera, string idCuenta);
+        Task<DataTable> ObtieneGestionTeAsync(int idCartera, string idCuenta,int Top);
         Task ObtenerDomicilios(DataRow drDatos, DataSet dsTablas);
         DataTable ObtieneGestionesDelDia(int idEjecutivo);
         DataTable BuscaScripts(int idProducto);
@@ -3086,7 +3086,7 @@ namespace NoriAPI.Services
         #endregion
 
         #region Gestiones
-        public async Task<DataTable> ObtieneGestionTeAsync(int idCartera, string idCuenta)
+        public async Task<DataTable> ObtieneGestionTeAsync(int idCartera, string idCuenta, int Top)
         {
             DataTable gestiones = new DataTable();
 
@@ -3094,10 +3094,11 @@ namespace NoriAPI.Services
             {
                 await connection.OpenAsync();
 
+                // Construir la consulta SQL dinámicamente
+                string sql = $"SELECT TOP ({Top}) * FROM fn_GestionesTelefónicas(@IdCartera, @IdCuenta)";
+
                 var parameters = new { IdCartera = idCartera, IdCuenta = idCuenta };
-                var gestionesResult = await connection.QueryAsync<dynamic>(
-                    "SELECT * FROM fn_GestionesTelefónicas(@IdCartera, @IdCuenta)",
-                    parameters);
+                var gestionesResult = await connection.QueryAsync<dynamic>(sql, parameters);
 
                 if (gestionesResult.Any())
                 {
