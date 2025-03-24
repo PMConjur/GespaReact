@@ -279,6 +279,29 @@ namespace NoriAPI.Services
                 }
             }
 
+            DataColumn nuevaColumna = new("Estado", typeof(string));
+            // Agregar la columna después de "idEstado"
+            int index = negociacion.Columns.IndexOf("idEstado");
+            if (index != -1) // Verificar que la columna existe
+            {
+                // Insertar la nueva columna después de la columna específica
+                negociacion.Columns.Add(nuevaColumna);
+                negociacion.Columns["Estado"].SetOrdinal(index + 1);
+            }
+
+            ClasesGespaNonStatic gespaAcciones = new();
+            gespaAcciones.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            gespaAcciones.CargaCatalogos();
+
+            // Llenar los valores de las nuevas columnas usando la lógica de "traducción"
+            foreach (DataRow row in negociacion.Rows)
+            {
+
+                row["Estado"] = BuscarEnValoresHashtable(gespaAcciones._htValoresCatálogo, Convert.ToString(row["idEstado"]));
+
+            }
+
+
             return negociacion;
         }
 
@@ -2125,6 +2148,30 @@ namespace NoriAPI.Services
             }
 
             accionamientoGet.TableName = "Accionamiento";
+
+            ClasesGespaNonStatic gespaAccionamientos = new();
+            gespaAccionamientos.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            gespaAccionamientos.CargaCatalogos();
+
+            // Agregar la columna "Acercamiento" justo después de "idAcercamiento"
+            if (accionamientoGet.Columns.Contains("idAcercamiento"))
+            {
+                DataColumn acercamientoColumna = new DataColumn("Acercamiento", typeof(string));
+                accionamientoGet.Columns.Add(acercamientoColumna);
+                accionamientoGet.Columns["Acercamiento"].SetOrdinal(accionamientoGet.Columns.IndexOf("idAcercamiento") + 1);
+            }
+
+            // Llenar los valores de las nuevas columnas sobre la Hashtable ValoresCatálogo.
+            foreach (DataRow row in accionamientoGet.Rows)
+            {
+                if (accionamientoGet.Columns.Contains("idAcercamiento") && row["idAcercamiento"] != DBNull.Value)
+                {
+                    row["Acercamiento"] = BuscarEnValoresHashtable(gespaAccionamientos._htValoresCatálogo, Convert.ToString(row["idAcercamiento"]));
+                }
+            }
+
+
+
             dsTablas.Tables.Add(accionamientoGet);
         }
 
@@ -2336,14 +2383,27 @@ namespace NoriAPI.Services
 
             busquedaGet.TableName = "Busqueda";
 
-            // Agregar las nuevas columnas
-            busquedaGet.Columns.Add("Dato", typeof(string));
-            busquedaGet.Columns.Add("Fuente", typeof(string));
+            // Agregar las nuevas columnas justo después de "idDato" y "idFuente"
+            if (busquedaGet.Columns.Contains("idDato"))
+            {
+                // Crear e insertar la columna "Dato" después de "idDato"
+                DataColumn datoColumna = new DataColumn("Dato", typeof(string));
+                busquedaGet.Columns.Add(datoColumna);
+                busquedaGet.Columns["Dato"].SetOrdinal(busquedaGet.Columns.IndexOf("idDato") + 1);
+            }
 
-            // Llenar los valores de las nuevas columnas usando la lógica de "traducción"
+            if (busquedaGet.Columns.Contains("idFuente"))
+            {
+                // Crear e insertar la columna "Fuente" después de "idFuente"
+                DataColumn fuenteColumna = new DataColumn("Fuente", typeof(string));
+                busquedaGet.Columns.Add(fuenteColumna);
+                busquedaGet.Columns["Fuente"].SetOrdinal(busquedaGet.Columns.IndexOf("idFuente") + 1);
+            }
+
+
+            // Llenar los valores de las nuevas columnas sobre la Hashtable ValoresCatálogo.
             foreach (DataRow row in busquedaGet.Rows)
             {
-                // Supongamos que tienes una columna llamada "idTelefonia" en busquedaGet
                 if (busquedaGet.Columns.Contains("idDato") && row["idDato"] != DBNull.Value)
                 {
                     row["Dato"] = BuscarEnValoresHashtable(gespaBusqueda._htValoresCatálogo, Convert.ToString(row["idDato"]));
@@ -2496,9 +2556,9 @@ namespace NoriAPI.Services
             var idCartera = Convert.ToInt32(drDatos["idCartera"]);
             var idCuenta = Convert.ToString(drDatos["idCuenta"]);
 
-            DataTable CargoGet = await GetCargosEnLineaAsync(idCartera, idCuenta);
+            DataTable cargoGet = await GetCargosEnLineaAsync(idCartera, idCuenta);
 
-            if (CargoGet == null || CargoGet.Rows.Count == 0)
+            if (cargoGet == null || cargoGet.Rows.Count == 0)
                 return;
 
             if (dsTablas.Tables.Contains("Cargos"))
@@ -2506,8 +2566,34 @@ namespace NoriAPI.Services
                 dsTablas.Tables.Remove("Cargos");
             }
 
-            CargoGet.TableName = "Cargos";
-            dsTablas.Tables.Add(CargoGet);
+            cargoGet.TableName = "Cargos";
+
+            // Agregar la columna "Banco" justo después de "idBanco"
+            if (cargoGet.Columns.Contains("idBanco"))
+            {
+                // Crear e insertar la columna "Banco" después de "idBanco"
+                DataColumn bancoColumna = new DataColumn("Banco", typeof(string));
+                cargoGet.Columns.Add(bancoColumna);
+                cargoGet.Columns["Banco"].SetOrdinal(cargoGet.Columns.IndexOf("idBanco") + 1);
+            }
+
+            ClasesGespaNonStatic gespaCargos = new();
+            gespaCargos.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            gespaCargos.CargaCatalogos();
+
+
+            // Llenar los valores de la nueva columna usando la lógica de "traducción"
+            foreach (DataRow row in cargoGet.Rows)
+            {
+                if (cargoGet.Columns.Contains("idBanco") && row["idBanco"] != DBNull.Value)
+                {
+                    row["Banco"] = BuscarEnValoresHashtable(gespaCargos._htValoresCatálogo, Convert.ToString(row["idBanco"]));
+                }
+            }
+
+
+
+            dsTablas.Tables.Add(cargoGet);
         }
         public async Task<string> SaveCargoEnlinea(CargoEnLineaRe newCargoEn)
         {

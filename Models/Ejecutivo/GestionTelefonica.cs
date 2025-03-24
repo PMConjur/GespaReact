@@ -6,8 +6,6 @@ namespace NoriAPI.Models.Ejecutivo
     {
         public int IdCartera { get; set; }
         public string IdCuenta { get; set; }
-        public DateTime FechaInsert { get; set; }
-        public TimeSpan SegundoInsert { get; set; }
         public int IdEjecutivo { get; set; }
         public string NumeroTelefonico { get; set; }
         public short IdContacto { get; set; }
