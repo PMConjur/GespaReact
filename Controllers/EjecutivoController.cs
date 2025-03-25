@@ -14,6 +14,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NoriAPI.Models.Flujo;
+using NoriAPI.Models.CargaGestionamiento;
 using NoriAPI.Models.Ofrecimiento;
 
 
@@ -103,6 +104,31 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+        [HttpPost("CreaSeguimiento")]
+        [AllowAnonymous]
+        public async Task<IActionResult> CreaSeguimiento([FromBody] Seguimiento SeguimientoCuenta, [FromQuery] int idEjecutivo, [FromQuery] string nombreEjecutivo, [FromQuery] DateTime? Fecha, [FromQuery] TimeSpan? Segundo, [FromQuery] bool Automático = false)
+        {
+            try
+            {
+                string resultado = await _ejecutivoService.CreaSeguimientoConModelosAsync(SeguimientoCuenta, idEjecutivo, nombreEjecutivo, Fecha, Segundo, Automático); // Llamada al método correcto
+
+                if (string.IsNullOrEmpty(resultado))
+                {
+                    return Ok("Seguimiento creado con éxito.");
+                }
+                else
+                {
+                    return BadRequest(resultado);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+
         #endregion
 
         #region Recordatorios
@@ -586,13 +612,20 @@ namespace NoriAPI.Controllers
         #endregion
 
         #region Gestiones
-        [HttpGet("gestionTe/{idCartera}/{idCuenta}")]
-        public async Task<IActionResult> GetGestionTe(int idCartera, string idCuenta)
+        [HttpGet("gestionTe/{idCartera}/{idCuenta}/{Top}")]
+
+        public async Task<IActionResult> GetGestionTe(int idCartera, string idCuenta, int Top)
         {
             try
             {
+                // Validar el valor de Top
+                if (Top <= 0)
+                {
+                    return BadRequest("El valor de 'Top' debe ser un entero positivo.");
+                }
+
                 // Llamar al servicio para obtener las gestiones
-                DataTable gestiones = await _ejecutivoService.ObtieneGestionTeAsync(idCartera, idCuenta);
+                DataTable gestiones = await _ejecutivoService.ObtieneGestionTeAsync(idCartera, idCuenta, Top);
 
                 if (gestiones == null || gestiones.Rows.Count == 0)
                 {

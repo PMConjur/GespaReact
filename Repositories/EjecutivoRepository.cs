@@ -1424,6 +1424,8 @@ namespace NoriAPI.Repositories
 
         #endregion
 
+      
+
         private SqlConnection GetConnection(string connection)
         {
             return new SqlConnection(_configuration.GetConnectionString(connection));
