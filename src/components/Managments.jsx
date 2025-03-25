@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { Row, Col, Card, Toast } from "react-bootstrap";
+import { Row, Col, Card, Toast, Pagination } from "react-bootstrap";
 import { AppContext } from "../pages/Managment"; // Importar el contexto
 import { getGestionTeData } from "../services/gespawebServices"; // Importar el endpoint
 
@@ -11,6 +11,9 @@ const Managments = () => {
   const [toastMessage, setToastMessage] = useState(""); // Mensaje dinámico para el toast
   const [currentPage, setCurrentPage] = useState(1); // Página actual para la carga perezosa
   const [isLoading, setIsLoading] = useState(false); // Estado para indicar si se está cargando más data
+  const [itemsPerPage] = useState(200); // Número de registros por página
+  const [currentTablePage, setCurrentTablePage] = useState(1); // Página actual de la tabla
+  const [paginationGroup, setPaginationGroup] = useState(0); // Grupo actual de 10 páginas
 
   // Hook para obtener los datos
   useEffect(() => {
@@ -60,14 +63,51 @@ const Managments = () => {
     setSelectedGestion(gestion); // Establecer el registro seleccionado
   };
 
-  // Manejar el scroll para cargar más datos
-  const handleScroll = (e) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.target;
-    const scrollPosition = scrollTop + clientHeight;
-    const threshold = scrollHeight * 0.5; // Umbral para cargar más datos (50% del scroll)
+  // Manejar el cambio de página
+  const handlePageChange = async (pageNumber) => {
+    if (pageNumber > 0) {
+      setCurrentTablePage(pageNumber);
 
-    if (scrollPosition >= threshold && !isLoading) {
-      setCurrentPage((prevPage) => prevPage + 1); // Incrementar la página actual
+      try {
+        setIsLoading(true); // Iniciar carga
+        const idCuenta = searchResults[0]?.idCuenta; // Obtener el idCuenta actual
+        const gestionData = await getGestionTeData(pageNumber, idCuenta); // Solicitar datos para la página seleccionada
+        setSortedData(gestionData); // Actualizar los datos con los nuevos elementos
+        setIsLoading(false); // Finalizar carga
+      } catch (error) {
+        console.error("Error al obtener los datos de la página:", error);
+        setToastMessage("❌ Error al obtener los datos de la página. Intente nuevamente.");
+        setShowToast(true);
+        setIsLoading(false); // Finalizar carga en caso de error
+      }
+    }
+  };
+
+  // Calcular el número total de páginas
+  const totalPages = Math.ceil(10530 / itemsPerPage); // Cambiar 10530 por el total dinámico de la DB
+
+  // Calcular los datos a mostrar en la página actual
+  const paginatedData = sortedData.slice(
+    (currentTablePage - 1) * itemsPerPage,
+    currentTablePage * itemsPerPage
+  );
+
+  // Calcular las páginas visibles en el grupo actual
+  const visiblePages = Array.from(
+    { length: Math.min(10, totalPages - paginationGroup * 10) },
+    (_, index) => paginationGroup * 10 + index + 1
+  );
+
+  // Manejar el cambio de grupo de páginas
+  const handleNextGroup = () => {
+    if ((paginationGroup + 1) * 10 < totalPages) {
+      setPaginationGroup(paginationGroup + 1);
+    }
+  };
+
+  const handlePrevGroup = () => {
+    if (paginationGroup > 0) {
+      setPaginationGroup(paginationGroup - 1);
     }
   };
 
@@ -102,7 +142,6 @@ const Managments = () => {
                   overflowY: "auto", // Habilitar scroll vertical dentro de la tabla
                   display: "block", // Necesario para que funcione el scroll en tablas
                 }}
-                onScroll={handleScroll} // Agregar evento de scroll
               >
                 <thead>
                   <tr>
@@ -307,12 +346,12 @@ const Managments = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedData.length === 0 ? (
+                  {paginatedData.length === 0 ? (
                     <tr>
                       <td colSpan="18" style={{ height: "200px" }}></td>
                     </tr>
                   ) : (
-                    sortedData.map((gestion, index) => (
+                    paginatedData.map((gestion, index) => (
                       <tr
                         key={index}
                         onClick={() => handleRowClick(gestion)} // Manejar clic en la fila
@@ -353,34 +392,46 @@ const Managments = () => {
               </table>
             </Card.Body>
             <Card.Body>
-              
-              <table
-                className="table table-dark"
-                style={{
-                  maxHeight: "120px", // Ajuste de altura a 1520px
-                  overflowY: "auto", // Habilitar scroll vertical dentro de la tabla
-                  display: "block", // Necesario para que funcione el scroll en tablas
-                }}
-              >
-                <thead>
-                  <tr>
-                    <th>Comentario</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <div style={{ display: "flex", justifyContent: "", marginBottom: "16px" }}>
+                <div style={{ width: "40%", display: "flex", justifyContent: "", alignItems: "center", marginRight: "16px" }}>
+                  <strong style={{ marginRight: "8px" }}>Comentario:</strong>
                   {selectedGestion ? (
-                    <tr>
-                      <td>{validateField(selectedGestion.Comentario)}</td>
-                    </tr>
+                    <span>{validateField(selectedGestion.Comentario)}</span>
                   ) : (
-                    <tr>
-                      <td colSpan="2" style={{ height: "100px" }}>
-                        Selecciona un registro para ver los comentarios.
-                      </td>
-                    </tr>
+                    <span>Selecciona un registro.</span>
                   )}
-                </tbody>
-              </table>
+                </div>
+                <Pagination variant="dark">
+                  <Pagination.First onClick={() => handlePageChange(1)} disabled={currentTablePage === 1} />
+                  <Pagination.Prev
+                    onClick={() => handlePageChange(currentTablePage - 1)}
+                    disabled={currentTablePage === 1}
+                  />
+                  {paginationGroup > 0 && (
+                    <Pagination.Ellipsis onClick={handlePrevGroup} title="Páginas anteriores" />
+                  )}
+                  {visiblePages.map((page) => (
+                    <Pagination.Item
+                      key={page}
+                      active={page === currentTablePage}
+                      onClick={() => handlePageChange(page)}
+                    >
+                      {page}
+                    </Pagination.Item>
+                  ))}
+                  {(paginationGroup + 1) * 10 < totalPages && (
+                    <Pagination.Ellipsis onClick={handleNextGroup} title="Siguientes páginas" />
+                  )}
+                  <Pagination.Next
+                    onClick={() => handlePageChange(currentTablePage + 1)}
+                    disabled={currentTablePage === totalPages}
+                  />
+                  <Pagination.Last
+                    onClick={() => handlePageChange(totalPages)}
+                    disabled={currentTablePage === totalPages}
+                  />
+                </Pagination>
+              </div>
             </Card.Body>
           </Card>
         </Col>

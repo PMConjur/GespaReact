@@ -687,7 +687,9 @@ const CalculatorSimulator = ({show, handleClose}) => {
                       </Form.Group>
                       <Form.Group className="">
                         <Form.Check
-                          type="checkbox"
+                          ty
+                          
+                          pe="checkbox"
                           label="Agregar Pagos"
                           name="agregarPagos"
                           checked={modifyForm.agregarPagos}

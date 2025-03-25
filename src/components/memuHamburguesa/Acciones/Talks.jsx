@@ -1,7 +1,7 @@
 
 import { Modal, Button } from "react-bootstrap";
 import TableTalks from "../../TableTalks";
-import 'bootstrap-icons/font/bootstrap-icons.css';
+// import 'bootstrap-icons/font/bootstrap-icons.css';
 
 
 const Talks = ({ show, handleClose }) => {

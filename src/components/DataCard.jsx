@@ -3,34 +3,36 @@ import { Card, Row, Col } from "react-bootstrap";
 import { PersonFill, Cash, CurrencyDollar } from "react-bootstrap-icons";
 import "../scss/styles.scss";
 import { useContext } from "react";
-import { AppContext } from "../pages/Managment"; // Importa el contexto
+import { AppContext } from "../pages/Managment";
+import CorazonRojo from "../assets/img/CRojo.jpg";
+import CorazonVerde from "../assets/img/CVerde.jpg";
+import CorazonBlanco from "../assets/img/CBlanco.jpg";
 
 const DataCard = () => {
   const { searchResults } = useContext(AppContext);
 
   const renderSituacion = (situacion) => {
-    let color;
+    let iconoCorazon;
+    let colorTexto;
+
+    // Asignar la URL de la imagen y el color del texto según la situación
     switch (situacion) {
       case "Incumplió negociación":
-        color = "#f14b41";
+      case "En Proceso":
+      case "Accionamiento":
+        iconoCorazon = CorazonRojo; // Corazón rojo
+        colorTexto = "#f14b41"; // Texto rojo
         break;
       case "Sondeo":
-        color = "#65f3a3";
-        break;
       case "Pagada":
-        color = "#65f3a3";
-        break;
-      case "En Proceso":
-        color = "#f1a441";
+        iconoCorazon = CorazonVerde; // Corazón verde
+        colorTexto = "#65f3a3"; // Texto verde
         break;
       case "Nueva":
-        color = "#55b0d5";
-        break;
-      case "Accionamiento":
-        color = "#f1a441";
-        break;
       default:
-        color = "#f14b41";
+        iconoCorazon = CorazonBlanco; // Corazón blanco
+        colorTexto = "#ffffff"; // Texto blanco
+        break;
     }
 
     return (
@@ -38,18 +40,19 @@ const DataCard = () => {
         <Card.Title>Situación:</Card.Title>
         <div className="d-flex align-items-center">
           <div className="card-icon rounded-circle d-flex align-items-center justify-content-center">
-            <CurrencyDollar
-              style={{ fontSize: "32px", color }}
-            ></CurrencyDollar>
+            <img
+              src={iconoCorazon} // Renderizar la imagen como <img>
+              alt="Situación"
+              style={{
+                width: "42px",
+                height: "42px",
+                marginTop: "3px",
+              }}
+            />
           </div>
           <div className="ps-3">
-            <h6
-              style={{
-                fontSize: "1.8rem",
-                color
-              }}
-            >
-              {situacion || "N/A"}
+            <h6 style={{ fontSize: "1.8rem", color: colorTexto }}>
+              {situacion || "N/A"} {/* Mostrar "N/A" si no hay situación */}
             </h6>
             <span className="small pt-1 fw-bold">Negociación</span>
           </div>
@@ -62,7 +65,7 @@ const DataCard = () => {
     nombreDeudor: "-",
     saldo: "-",
     minimoAtrasado: "-",
-    situacion: "-"
+    situacion: "-",
   };
 
   const result = searchResults[0] || defaultData;
@@ -71,7 +74,7 @@ const DataCard = () => {
     if (isNaN(number)) return "-";
     return number.toLocaleString("es-MX", {
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     });
   };
 
@@ -83,16 +86,11 @@ const DataCard = () => {
             <Card.Title>Nombre:</Card.Title>
             <div className="d-flex align-items-center">
               <div className="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                <PersonFill
-                  style={{ fontSize: "32px", color: "#6dd6ff" }}
-                ></PersonFill>
+                <PersonFill style={{ fontSize: "32px", color: "#6dd6ff" }} />
               </div>
               <div className="ps-3">
                 <h6
-                  style={{
-                    fontSize: "1.2rem",
-                    color: "#6dd6ff"
-                  }}
+                  style={{ fontSize: "1.2rem", color: "#6dd6ff" }}
                   id="nombreDeudor"
                 >
                   {result.nombreDeudor}
@@ -110,15 +108,10 @@ const DataCard = () => {
             <Card.Title>Saldo Actual:</Card.Title>
             <div className="d-flex align-items-center">
               <div className="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                <Cash style={{ fontSize: "32px", color: "#39FC8D" }}></Cash>
+                <Cash style={{ fontSize: "32px", color: "#39FC8D" }} />
               </div>
               <div className="ps-3">
-                <h6
-                  style={{
-                    fontSize: "1.5rem",
-                    color: "#39FC8D"
-                  }}
-                >
+                <h6 style={{ fontSize: "1.5rem", color: "#39FC8D" }}>
                   {result.saldo !== "-"
                     ? "$" + formatNumber(parseFloat(result.saldo))
                     : "-"}
@@ -129,6 +122,7 @@ const DataCard = () => {
           </Card.Body>
         </Card>
       </Col>
+
       <Col xxl={3} xl={6} md={6}>
         <Card className="warning-card text-light">
           <Card.Body>
@@ -137,15 +131,10 @@ const DataCard = () => {
               <div className="card-icon rounded-circle d-flex align-items-center justify-content-center">
                 <CurrencyDollar
                   style={{ fontSize: "32px", color: "#f1a441" }}
-                ></CurrencyDollar>
+                />
               </div>
               <div className="ps-3">
-                <h6
-                  style={{
-                    fontSize: "1.5rem",
-                    color: "#f1a441"
-                  }}
-                >
+                <h6 style={{ fontSize: "1.5rem", color: "#f1a441" }}>
                   {result.minimoAtrasado !== "-"
                     ? "$" + formatNumber(parseFloat(result.minimoAtrasado))
                     : "-"}
@@ -156,6 +145,7 @@ const DataCard = () => {
           </Card.Body>
         </Card>
       </Col>
+
       <Col xxl={3} xl={6} md={6}>
         <Card className="warning-card text-light">
           {renderSituacion(result.situacion)}
