@@ -1,29 +1,24 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using NoriAPI.Models;
 using NoriAPI.Models.Acciones;
 using NoriAPI.Models.Busqueda;
 using NoriAPI.Models.Ejecutivo;
-using NoriAPI.Models.Login;
 using NoriAPI.Services;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
-using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using NoriAPI.Models.Acciones;
-using static NoriAPI.Services.EjecutivoService;
 using NoriAPI.Models.Flujo;
 using NoriAPI.Models.CargaGestionamiento;
+
 using System.ComponentModel.DataAnnotations;
+using NoriAPI.Models.Ofrecimiento;
+
 
 
 
@@ -345,19 +340,34 @@ namespace NoriAPI.Controllers
         {
             var InfoCalculadora = await _ejecutivoService.ValidateInfoCalculadora1(Cartera, NoCuenta, idHerr);
 
-            return Ok(InfoCalculadora);
+            return Ok(InfoCalculadora); ;
 
         }
 
         [HttpGet("Calculadora-2daParte")]
-
-        public async Task<ActionResult<ResultadoCalculadora2>> Calculadora([FromQuery] int idHerramienta, string NoCuenta, int IdCartera, double MontoRequerido, int Descuento, int iMeses, string dtpFecha, int periodos)
+        public async Task<ActionResult<ResultadoCalculadora2>> Calculadora([FromQuery] int idHerramienta, string NoCuenta, int IdCartera, double MontoRequerido, int Descuento, int iMeses, string dtpFecha, int periodos, int modificar, double montoMod, string fechaPagoMod, int agregarPagos, int filaMod)
         {
-            var InfoCalucladora2 = await _ejecutivoService.ValidateInfoCalculadora2(idHerramienta, NoCuenta, IdCartera, MontoRequerido, Descuento, iMeses, dtpFecha, periodos);
-
-            return Ok(InfoCalucladora2);
+            var InfoCalucladora2 = await _ejecutivoService.ValidateInfoCalculadora2(idHerramienta, NoCuenta, IdCartera, MontoRequerido, Descuento, iMeses, dtpFecha, periodos, modificar, montoMod, fechaPagoMod, agregarPagos, filaMod);
+            if (InfoCalucladora2.mensaje == "")
+                return Ok(InfoCalucladora2);
+            else
+                return Ok(InfoCalucladora2.mensaje);
 
         }
+
+        [HttpPost("save-ofrecimiento")]
+        public async Task<ActionResult<OfrecimientoValidadores>> SaveOfrecimiento([FromBody] SaveOfrecimientoRequest ofrecimientoInfo)
+        {
+            var result = await _ejecutivoService.GuardarOfrecimiento(ofrecimientoInfo);
+
+            if (!result.Success)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result);
+        }
+
 
         #endregion
 
@@ -504,7 +514,7 @@ namespace NoriAPI.Controllers
         {
             try
             {
-                DataSet dsTablas = new DataSet();
+                DataSet dsTablas = new();
                 DataTable EstadoTable = dsTablas.Tables.Add("EstadoDeCuenta");
                 EstadoTable.Columns.Add("idCartera", typeof(int));
                 EstadoTable.Columns.Add("idCuenta", typeof(string));

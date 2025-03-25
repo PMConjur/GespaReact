@@ -14,6 +14,7 @@ using System.Collections;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using NoriAPI.Models.Flujo;
+using NoriAPI.Models.Ofrecimiento;
 
 namespace NoriAPI.Repositories
 {
@@ -53,6 +54,8 @@ namespace NoriAPI.Repositories
         List<OfrecimientosInfo> ConvertirDataTableALista(DataTable dt);
         List<HerramientasInfo> ConvertirDataTableALista_(DataTable dt);
         List<CalculosInfo> ConvertirDataTableAListaC(DataTable dt);
+        Task<IEnumerable<OfrecimientoValidadores>> GuardaOfrecimientoStored(SaveOfrecimientoRequest ofrecimientoInfo);
+
         #endregion
 
         #region Tiempos
@@ -718,6 +721,42 @@ namespace NoriAPI.Repositories
              ));
             return ConvertToDataTable(InfoCuenta, "InfoCuenta");
         }
+
+        public async Task<IEnumerable<OfrecimientoValidadores>> GuardaOfrecimientoStored(SaveOfrecimientoRequest ofrecimientoInfo)
+        {
+            using var connection = GetConnection("Piso2Amex");
+            string queryOfrecimiento = "[dbo].[3.1.GuardaOfrecimiento]";
+
+            var parameters = new
+            {
+                idCartera = ofrecimientoInfo.IdCartera,
+                idCuenta = ofrecimientoInfo.IdCuenta,
+                idProducto = ofrecimientoInfo.IdProducto,
+                idEjecutivo = ofrecimientoInfo.IdEjecutivo,
+
+                idHerramienta = ofrecimientoInfo.IdHerramienta,
+                MontoRequerido = ofrecimientoInfo.MontoRequerido,
+                Descuento = ofrecimientoInfo.Descuento,
+                Saldo = ofrecimientoInfo.Saldo,
+                FechaCorte = ofrecimientoInfo.FechaCorte,
+
+                Fecha_Insert = ofrecimientoInfo.FechaInsert,
+                Segundo_Insert = ofrecimientoInfo.SegundoInsert,
+
+                MontoOfrecido = ofrecimientoInfo.MontoNegociado,
+                Plazos = ofrecimientoInfo.Plazos.Length,
+
+            };
+
+            var result = await connection.QueryAsync<OfrecimientoValidadores>(
+                queryOfrecimiento,
+                parameters,
+                commandType: CommandType.StoredProcedure
+            );
+
+            return result;
+        }
+
         public object CampoCalculado(string Expresión)
         {
 
@@ -730,10 +769,10 @@ namespace NoriAPI.Repositories
                     sResult = sResult.Replace("[" + sCampos[i] + "]", _htProducto[sCampos[i]].ToString().Trim());
             }
 
-            if (Expresión.StartsWith("#"))
+            if (Expresión.StartsWith('#'))
                 return EvaluateDate(sResult.Replace("#", ""));
 
-            else if (sCampos.Length > 1 && (Expresión.Contains("+") || Expresión.Contains("-") || Expresión.Contains("*") || Expresión.Contains("/") || Expresión.Contains("^")))
+            else if (sCampos.Length > 1 && (Expresión.Contains('+') || Expresión.Contains('-') || Expresión.Contains('*') || Expresión.Contains('/') || Expresión.Contains('^')))
                 return Evaluate(sResult);
 
             return sResult;
