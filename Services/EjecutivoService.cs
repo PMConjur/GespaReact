@@ -27,6 +27,7 @@ using NoriAPI.Models.Acciones;
 using NoriAPI.Models.Flujo;
 using static NoriAPI.Models.Ejecutivo.NegociacionClass;
 using NoriAPI.Models.CargaGestionamiento;
+using Microsoft.IdentityModel.Tokens;
 
 
 namespace NoriAPI.Services
@@ -92,7 +93,7 @@ namespace NoriAPI.Services
         Task<GuardaGestionTelefonicaResult> GuardarGestionTelefonica(EndGestionRequest infoEndGestion);
         Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas);
 
-        Task<string> CreaSeguimientoConModelosAsync(Seguimiento SeguimientoCuenta, int idEjecutivo, string nombreEjecutivo, DateTime? _Fecha, TimeSpan? _Segundo, bool Automático = false);
+        
         
         
         #region Acciones
@@ -116,6 +117,7 @@ namespace NoriAPI.Services
         Task<DataTable> GetDropDQuejasAsync();
         Task<DataTable> GetDropDOrigenQuejasAsync();
         Task<DataTable> GetViewQuejasAsync(int idCartera, string idCuenta);
+        Task<string> CreaSeguimientoAsync(SeguimientoCompletoModel seguimiento, DataRow _drInfo, int idEjecutivo);
 
         #endregion
     }
@@ -157,7 +159,17 @@ namespace NoriAPI.Services
             _catalogos = catalogos;
 
         }
-        
+
+        public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository, IBusquedaRepository busquedaRepository, ISearchRepository searchRepository, ISearchService searchService, Catalogos catalogos)
+        {
+            _configuration = configuration;
+            _ejecutivoRepository = ejecutivoRepository;
+            _busquedaRepository = busquedaRepository;
+            _searchRepository = searchRepository;
+            _searchService = searchService;
+            _catalogos = catalogos;
+        }
+
         private DataTable CreaTablaEnviados()
         {
             DataTable enviados = new DataTable();
@@ -1819,21 +1831,7 @@ namespace NoriAPI.Services
             dsTablas.Tables.Add(seguimientosGet);
         }
 
-        public async Task<string> CreaSeguimientoConModelosAsync(Seguimiento SeguimientoCuenta, int idEjecutivo, string nombreEjecutivo, DateTime? _Fecha, TimeSpan? _Segundo, bool Automático = false)
-        {
-            DrInfo drInfo = ObtenerDrInfo();
-            List<SeguimientoModel> seguimientosModel = ObtenerSeguimientos();
-            UltimaGestionModel ultimaGestionModel = ObtenerUltimaGestion(SeguimientoCuenta.IdCuenta);
-            List<CatalogoModel> catalogosModel = ObtenerCatalogos();
-
-            DataRow drInfoRow = drInfo.AsDataRow();
-            DataTable seguimientosTable = seguimientosModel.AsDataTable();
-            DataRow ultimaGestionRow = ultimaGestionModel.AsDataRow();
-            DataTable catalogosTable = catalogosModel.AsDataTable();
-
-            return await CreaSeguimientoAsync(SeguimientoCuenta, drInfoRow, idEjecutivo, nombreEjecutivo, seguimientosTable, ultimaGestionRow, _Fecha, _Segundo, catalogosTable, Automático);
-        }
-
+       
         private DrInfo ObtenerDrInfo()
         {
             string connectionString = _configuration.GetConnectionString("Piso2Amex");
@@ -1945,19 +1943,12 @@ namespace NoriAPI.Services
                 }
             }
         }
-        public async Task<string> CreaSeguimientoAsync(Seguimiento SeguimientoCuenta, DataRow _drInfo, int idEjecutivo, string nombreEjecutivo, DataTable Seguimientos, DataRow _ÚltimaGestión, DateTime? _Fecha, TimeSpan? _Segundo, DataTable Catálogos, bool Automático = false)
+        public async Task<string> CreaSeguimientoAsync(SeguimientoCompletoModel seguimiento, DataRow _drInfo, int idEjecutivo)
         {
-            string connectionString = _configuration.GetConnectionString("dbCollection");
+            string connectionString = _configuration.GetConnectionString("Piso2Amex");
 
             try
             {
-                // Verificar si FechaSeguimiento es un valor predeterminado
-                if (SeguimientoCuenta.Fecha > new DateTime(9000, 1, 1))
-                {
-                    // No llamar al procedimiento almacenado si FechaSeguimiento es un valor predeterminado
-                    return "Advertencia: No se puede crear el seguimiento debido a un valor de fecha inválido.";
-                }
-
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
                     await connection.OpenAsync();
@@ -1965,43 +1956,34 @@ namespace NoriAPI.Services
                     {
                         command.CommandType = CommandType.StoredProcedure;
 
+                        // Imprime los parámetros para depuración
                         Debug.WriteLine("Entrada a CreaSeguimientoAsync:");
-                        Debug.WriteLine($"SeguimientoCuenta: {SeguimientoCuenta}");
-                        Debug.WriteLine($"idEjecutivo: {idEjecutivo}");
-                        Debug.WriteLine($"nombreEjecutivo: {nombreEjecutivo}");
-                        Debug.WriteLine($"_Fecha: {_Fecha}");
-                        Debug.WriteLine($"_Segundo: {_Segundo}");
-                        Debug.WriteLine($"Automático: {Automático}");
-
                         Debug.WriteLine($"idCartera: {_drInfo["idCartera"]}");
                         Debug.WriteLine($"idCuenta: {_drInfo["idCuenta"]}");
                         Debug.WriteLine($"idEjecutivo: {idEjecutivo}");
-                        Debug.WriteLine($"FechaSeguimiento: {SeguimientoCuenta.Fecha}");
-                        Debug.WriteLine($"SegundoSeguimiento: {SeguimientoCuenta.Segundo}");
-                        Debug.WriteLine($"idAcercamiento: {SeguimientoCuenta.IdAcercamiento}");
-                        Debug.WriteLine($"Recordatorio: {SeguimientoCuenta.Recordatorio}");
-                        Debug.WriteLine($"NúmeroTelefónico: {SeguimientoCuenta.NumeroTelefonico}");
-                        Debug.WriteLine($"DatoContacto: {SeguimientoCuenta.DatoContacto}");
-                        Debug.WriteLine($"Fecha_Insert: {_Fecha}");
-                        Debug.WriteLine($"Segundo_Insert: {_Segundo}");
-                        Debug.WriteLine($"idMotivoS: {SeguimientoCuenta.IdMotivoSeguimiento}");
+                        Debug.WriteLine($"FechaSeguimiento: {seguimiento.Fecha}");
+                        Debug.WriteLine($"SegundoSeguimiento: {seguimiento.Segundo}");
+                        Debug.WriteLine($"idAcercamiento: {seguimiento.IdAcercamiento}");
+                        Debug.WriteLine($"Recordatorio: {seguimiento.Recordatorio}");
+                        Debug.WriteLine($"NúmeroTelefónico: {seguimiento.NumeroTelefonico}");
+                        Debug.WriteLine($"DatoContacto: {seguimiento.DatoContacto}");
+                        Debug.WriteLine($"idMotivoS: {seguimiento.IdMotivoS}");
 
+                        // Asigna los parámetros al comando
                         command.Parameters.AddWithValue("@idCartera", _drInfo["idCartera"]);
                         command.Parameters.AddWithValue("@idCuenta", _drInfo["idCuenta"]);
-                        command.Parameters.AddWithValue("@idEjecutivo", Automático ? 0 : idEjecutivo);
-                        command.Parameters.AddWithValue("@FechaSeguimiento", SeguimientoCuenta.Fecha);
-                        command.Parameters.AddWithValue("@SegundoSeguimiento", SeguimientoCuenta.Segundo);
-                        command.Parameters.AddWithValue("@idAcercamiento", SeguimientoCuenta.IdAcercamiento);
-                        command.Parameters.AddWithValue("@Recordatorio", SeguimientoCuenta.Recordatorio);
-                        command.Parameters.AddWithValue("@NúmeroTelefónico", string.IsNullOrEmpty(SeguimientoCuenta.NumeroTelefonico) ? DBNull.Value : (object)SeguimientoCuenta.NumeroTelefonico);
-                        command.Parameters.AddWithValue("@DatoContacto", string.IsNullOrEmpty(SeguimientoCuenta.DatoContacto) ? DBNull.Value : (object)SeguimientoCuenta.DatoContacto);
-                        command.Parameters.AddWithValue("@Fecha_Insert", _Fecha == null || Automático ? DBNull.Value : (object)_Fecha);
-                        command.Parameters.AddWithValue("@Segundo_Insert", _Segundo == null || Automático ? DBNull.Value : (object)_Segundo);
-                        command.Parameters.AddWithValue("@idMotivoS", SeguimientoCuenta.IdMotivoSeguimiento == null ? DBNull.Value : (object)SeguimientoCuenta.IdMotivoSeguimiento);
+                        command.Parameters.AddWithValue("@idEjecutivo", idEjecutivo);
+                        command.Parameters.AddWithValue("@FechaSeguimiento", seguimiento.Fecha);
+                        command.Parameters.AddWithValue("@SegundoSeguimiento", seguimiento.Segundo);
+                        command.Parameters.AddWithValue("@idAcercamiento", seguimiento.IdAcercamiento);
+                        command.Parameters.AddWithValue("@Recordatorio", seguimiento.Recordatorio);
+                        command.Parameters.AddWithValue("@NúmeroTelefónico", seguimiento.NumeroTelefonico.HasValue ? (object)seguimiento.NumeroTelefonico.Value : DBNull.Value);
+                        command.Parameters.AddWithValue("@DatoContacto", string.IsNullOrEmpty(seguimiento.DatoContacto) ? DBNull.Value : (object)seguimiento.DatoContacto);
+                        command.Parameters.AddWithValue("@IdMotivoS ", string.IsNullOrEmpty(seguimiento.IdMotivoS) ? DBNull.Value : (object)seguimiento.IdMotivoS);
 
                         await command.ExecuteNonQueryAsync();
 
-                        return "";
+                        return ""; // Indica éxito
                     }
                 }
             }
@@ -2028,48 +2010,46 @@ namespace NoriAPI.Services
                 return $"Error inesperado al crear el seguimiento: {ex.Message}";
             }
         }
-
-        // Método para obtener FechaPróximoSeguimiento desde la base de datos
-        private DateTime? ObtenerFechaProximoSeguimiento(string idCartera, string idCuenta)
-        {
-            string connectionString = _configuration.GetConnectionString("dbCollection");
-            try
-            {
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    connection.Open();
-                    string query = "SELECT FechaPróximoSeguimiento FROM Cuentas WHERE idCartera = @idCartera AND idCuenta = @idCuenta";
-                    using (SqlCommand command = new SqlCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@idCartera", idCartera);
-                        command.Parameters.AddWithValue("@idCuenta", idCuenta);
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                if (reader["FechaPróximoSeguimiento"] != DBNull.Value)
-                                {
-                                    return reader.GetDateTime(0);
-                                }
-                                else
-                                {
-                                    return null;
-                                }
-                            }
-                            else
-                            {
-                                return null;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error al obtener FechaPróximoSeguimiento: {ex.Message}");
-                return null;
-            }
-        }
+        //private DateTime? ObtenerFechaProximoSeguimiento(string idCartera, string idCuenta)
+        //{
+        //    string connectionString = _configuration.GetConnectionString("Piso2Amex");
+        //    try
+        //    {
+        //        using (SqlConnection connection = new SqlConnection(connectionString))
+        //        {
+        //            connection.Open();
+        //            string query = "SELECT FechaPróximoSeguimiento FROM Cuentas WHERE idCartera = @idCartera AND idCuenta = @idCuenta";
+        //            using (SqlCommand command = new SqlCommand(query, connection))
+        //            {
+        //                command.Parameters.AddWithValue("@idCartera", idCartera);
+        //                command.Parameters.AddWithValue("@idCuenta", idCuenta);
+        //                using (SqlDataReader reader = command.ExecuteReader())
+        //                {
+        //                    if (reader.Read())
+        //                    {
+        //                        if (reader["FechaPróximoSeguimiento"] != DBNull.Value)
+        //                        {
+        //                            return reader.GetDateTime(0);
+        //                        }
+        //                        else
+        //                        {
+        //                            return null;
+        //                        }
+        //                    }
+        //                    else
+        //                    {
+        //                        return null;
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Debug.WriteLine($"Error al obtener FechaPróximoSeguimiento: {ex.Message}");
+        //        return null;
+        //    }
+        //}
         public static class DateTimeExtensions // Usar una clase estática para métodos de extensión
         {
             public static DateTime CombineDateTimeWithTimeSpan(object oFecha, object oSegundo)

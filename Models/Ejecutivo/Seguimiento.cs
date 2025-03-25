@@ -4,14 +4,15 @@ namespace NoriAPI.Models.Ejecutivo
 {
     public class Seguimiento
     {
+        public int IdCartera { get; set; }
+        public string IdCuenta { get; set; }
+        public int IdEjecutivo { get; set; }
         public DateTime Fecha { get; set; }
         public TimeSpan Segundo { get; set; }
-        public int IdAcercamiento { get; set; }
+        public short IdAcercamiento { get; set; }
         public bool Recordatorio { get; set; }
-        public string NumeroTelefonico { get; set; }
+        public long? NumeroTelefonico { get; set; }
         public string DatoContacto { get; set; }
-        public int? IdMotivoSeguimiento { get; set; }
-        public DateTime FechaHora { get; set; } // Asegúrate de calcular esto correctamente
-        public string IdCuenta { get; internal set; }
+        public string IdMotivoSeguimiento { get; set; }
     }
 }
