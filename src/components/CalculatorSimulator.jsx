@@ -1,10 +1,10 @@
 import { useState, useEffect, useContext } from "react";
 import { Modal, Button, Form, Table, Card, Row, Col } from "react-bootstrap";
 import "../scss/styles.scss";
-import { fetchCalFirtsPart, fetchCalSecondPart } from "../services/gespawebServices";
+import { fetchCalFirtsPart, fetchCalSecondPart, fetchCalSecondPartModify } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 
-const CalculatorSimulator = ({ show, handleClose }) => {
+const CalculatorSimulator = ({show, handleClose}) => {
   const { searchResults } = useContext(AppContext); // Obtiene searchResults desde AppContext
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [tableData, setTableData] = useState([]);
@@ -39,6 +39,13 @@ const CalculatorSimulator = ({ show, handleClose }) => {
   const [montoNegociado, setMontoNegociado] = useState(""); // Estado para almacenar el valor de "Monto Negociado"
   const [tablaPagos, setTablaPagos] = useState([]); // Estado para almacenar los datos de la tabla
   const [areFieldsEnabled, setAreFieldsEnabled] = useState(false); // Estado para habilitar/deshabilitar los campos
+  const [modifyForm, setModifyForm] = useState({
+    modificar: false,
+    montoMod: "",
+    fechaPagoMod: "",
+    agregarPagos: false,
+    filaMod: null,
+  });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -147,7 +154,8 @@ const CalculatorSimulator = ({ show, handleClose }) => {
         Descuento: parseFloat(formValues.descuento) || 0, // Toma el valor ingresado en el formulario
         iMeses: parseInt(formInputs.meses, 10) || 0, // Toma el valor ingresado en el formulario
         dtpFecha: formInputs.fechaPago || "", // Toma el valor ingresado en el formulario
-        periodos: 1,
+        periodo: 1,
+
       };
   
       console.log("Enviando datos al endpoint fetchCalSecondPart:", requestData);
@@ -160,7 +168,7 @@ const CalculatorSimulator = ({ show, handleClose }) => {
         requestData.Descuento,
         requestData.iMeses,
         requestData.dtpFecha,
-        requestData.periodos
+        requestData.periodo
       );
   
       console.log("Respuesta del endpoint fetchCalSecondPart:", response);
@@ -198,6 +206,58 @@ const CalculatorSimulator = ({ show, handleClose }) => {
 
   const handleEliminarPago = (index) => {
     setTablaPagos((prev) => prev.filter((_, i) => i !== index)); // Elimina el registro por índice
+  };
+
+  const handleModifyFormChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setModifyForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleModifyPayment = async () => {
+    const idCuenta = searchResults?.[0]?.idCuenta?.trim();
+    try {
+      const requestData = {
+        idHerramienta: selectedHerramienta,
+        NoCuenta: idCuenta,
+        idCartera: 1,
+        MontoRequerido: parseFloat(formValues.montoRequerido) || 0,
+        Descuento: parseFloat(formValues.descuento) || 0,
+        iMeses: parseInt(formInputs.meses, 10) || 0,
+        dtpFecha: formInputs.fechaPago || "",
+        periodos: 1,
+        modificar: modifyForm.modificar,
+        montoMod: parseFloat(modifyForm.montoMod) || 0,
+        fechaPagoMod: modifyForm.fechaPagoMod,
+        agregarPagos: modifyForm.agregarPagos,
+        filaMod: modifyForm.filaMod,
+      };
+
+      console.log("Enviando datos al endpoint fetchCalSecondPartModify:", requestData);
+
+      const response = await fetchCalSecondPartModify(
+        requestData.idCartera,
+        requestData.NoCuenta,
+        requestData.idHerramienta,
+        requestData.MontoRequerido,
+        requestData.Descuento,
+        requestData.iMeses,
+        requestData.dtpFecha,
+        requestData.periodos,
+        requestData.modificar,
+        requestData.montoMod,
+        requestData.fechaPagoMod,
+        requestData.agregarPagos,
+        requestData.filaMod
+      );
+
+      console.log("Respuesta del endpoint fetchCalSecondPartModify:", response);
+      // Manejar la respuesta según sea necesario
+    } catch (error) {
+      console.error("Error al enviar los datos al endpoint fetchCalSecondPartModify:", error);
+    }
   };
 
   return (
@@ -327,7 +387,7 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                 </Card.Body>
               </Card>
             </Col>
-            <Row className="">
+            <Col className="">
               <Row className="d-flex gap-4">
                 <Col>
                   <Card>
@@ -458,7 +518,7 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                 <Card className="p-3">
                   <Card.Body className="p-0">
                     <Card.Title className="pt-0 ms-3">Datos</Card.Title>
-                    <Form className="d-flex gap-5 w-100">
+                    <Form className="d-flex gap-4 w-100">
                       <Row className="d-flex w-100">
                         <Form.Group>
                           <Form.Control
@@ -484,7 +544,7 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                         </Form.Group>
                         <Form.Group className="mt-3">
                           <Form.Control 
-                          placeholder="Tasa Mensual"
+                          placeholder="Periodo"
                           type="text" />
                         </Form.Group>
                       </Row>
@@ -600,7 +660,9 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                       <Form.Check
                         type="checkbox"
                         label="Pago Inicial"
-                        className=""
+                        name="modificar"
+                        checked={modifyForm.modificar}
+                        onChange={handleModifyFormChange}
                       />
                       <Form.Group className="">
                         <Form.Label>
@@ -608,20 +670,49 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                         </Form.Label>
                         <Form.Control 
                         placeholder="Monto"
-                        type="text" value="" readOnly />
+                        type="text" 
+                        name="montoMod"
+                        value={modifyForm.montoMod}
+                        onChange={handleModifyFormChange}
+                        />
                       </Form.Group>
                       <Form.Group className="">
                         <Form.Label>Fecha Pago</Form.Label>
-                        <Form.Control type="date" />
+                        <Form.Control 
+                        type="date" 
+                        name="fechaPagoMod"
+                        value={modifyForm.fechaPagoMod}
+                        onChange={handleModifyFormChange}
+                        />
+                      </Form.Group>
+                      <Form.Group className="">
+                        <Form.Check
+                          type="checkbox"
+                          label="Agregar Pagos"
+                          name="agregarPagos"
+                          checked={modifyForm.agregarPagos}
+                          onChange={handleModifyFormChange}
+                        />
+                      </Form.Group>
+                      <Form.Group className="">
+                        <Form.Label>Fila Modificar</Form.Label>
+                        <Form.Control
+                          type="number"
+                          name="filaMod"
+                          value={modifyForm.filaMod || ""}
+                          onChange={handleModifyFormChange}
+                        />
                       </Form.Group>
                       <div>
-                      <Button variant="primary">Modificar</Button>
+                      <Button variant="primary" onClick={handleModifyPayment}>
+                        Modificar
+                      </Button>
                       </div>
                     </Form>
                   </Card.Body>
                 </Card>
               </Row>
-            </Row>
+            </Col>
           </Col>
         </Col>
       </Modal.Body>

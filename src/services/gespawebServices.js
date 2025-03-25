@@ -953,3 +953,54 @@ export const closeSession = async (idEjecutivo, idLogIngreso) => {
     throw new Error(errorMessage);
   }
 }
+ 
+export const fetchCalSecondPartModify = async (
+  idCartera,
+  NoCuenta,
+  idHerramienta,
+  MontoRequerido,
+  Descuento,
+  iMeses,
+  dtpFecha,
+  periodos,
+  modificar,
+  montoMod,
+  fechaPagoMod,
+  agregarPagos,
+  filaMod
+) => {
+  try {
+    console.log("Llamando al endpoint /ejecutivo/Calculadora-2daParte");
+    const response = await servicio.get(`/ejecutivo/Calculadora-2daParte`, {
+      params: {
+        idHerramienta,
+        NoCuenta,
+        idCartera,    
+        MontoRequerido,
+        Descuento,
+        iMeses,
+        dtpFecha,
+        periodos,
+        modificar,
+        montoMod,
+        fechaPagoMod,
+        agregarPagos,
+        filaMod
+      },
+    });
+
+    console.log("Respuesta recibida:", response);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error en fetchCalSecondPart:", error);
+    console.error("Detalles del error:", error.response?.data || error.message);
+    throw error;
+  }
+};
