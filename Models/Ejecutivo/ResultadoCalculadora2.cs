@@ -12,5 +12,6 @@ namespace NoriAPI.Models.Ejecutivo
         public double Descuento { get; set; }
         public double Monto {  get; set; }
         public double TasaMensual {  get; set; }
+        public string mensaje { get; set; }
     }
 }

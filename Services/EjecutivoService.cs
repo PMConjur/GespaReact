@@ -15,6 +15,7 @@ using static NoriAPI.Models.ClasesGespa;
 using Microsoft.Identity.Client;
 using System.Drawing;
 using System.Security.Cryptography;
+using System.IO;
 
 namespace NoriAPI.Services
 {
@@ -28,7 +29,8 @@ namespace NoriAPI.Services
         Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
         Task<List<Preguntas_Respuestas_info>> ValidatePreguntas_Respuestas();
         Task<ResultadoCalculadora> ValidateInfoCalculadora1(int Cartera, string NoCuenta, int idHerr);
-        Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int IdCartera, double MontoRequerido, int Descuento, int iMeses, string dtpFecha, int periodos, int modificar, double montoMod, string fechaPagoMod);
+        Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int IdCartera, double MontoRequerido, int Descuento, int iMeses, string dtpFecha, int periodos, int modificar, double montoMod, string fechaPagoMod, int agregarPagos, int filaMod
+            );
     }
 
     public class EjecutivoService : IEjecutivoService
@@ -268,8 +270,6 @@ namespace NoriAPI.Services
             //----------------------------------------Saldo y producto----------------------------------------------//
 
             tblCuenta = await _ejecutivoRepository.InfoCuenta(Cartera, NoCuenta);
-
-
             //-----------------------------------------------------------------------------------------//
 
             dtDescuentos.Columns.Add("idHerramienta");
@@ -479,7 +479,7 @@ namespace NoriAPI.Services
 
         #region Calculadora-2daParte
 
-        public async Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int idcartera, double MontoRequerido, int Descuento, int iMeses_, string dtpFecha, int periodos, int modificar, double montoMod, string fechaPagoMod)
+        public async Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int idcartera, double MontoRequerido, int Descuento, int iMeses_, string dtpFecha, int periodos, int modificar, double montoMod, string fechaPagoMod, int agregarPagos, int filaMod)
         {         
             DataTable dtDescuentos = new DataTable();
             DataTable HerramientasC = new DataTable();
@@ -489,17 +489,15 @@ namespace NoriAPI.Services
             DataTable tblCuenta = new DataTable();
             DataTable tblsaldo = new DataTable();
             DataTable dtPagosOriginal = new DataTable();
-            DataTable dtPagos = new DataTable();
-            DataTable tblPlazos = new DataTable();
+            DataTable dtPagos = new DataTable();            
             DataTable dtHerrFiltradas = new DataTable();
+            DataTable tblPlazos = new DataTable();
             bool _bLendingPrimes;
-            int iAñadidos, iPeriodos = periodos;
-            double dMontoRequerido = 0, dMensualidad, tasamensual = 0, dTasa = 0;
+            int iAñadidos = 0, iPeriodos = periodos;
+            string mensaje = "";
 
             //---------------------------------------Negociaciones--------------------------------//
             //con el Idestado se valida si la promesa esta vigente
-
-
             dtnegociaciones = await _ejecutivoRepository.ObtieneNegociaciones(idcartera, nocuenta);
 
             dtnegociaciones.PrimaryKey = new DataColumn[] {
@@ -648,168 +646,19 @@ namespace NoriAPI.Services
                 dtPagos.Rows.Add(nuevaFila);
             }
             dtPagos.DefaultView.Sort = "FechaPago DESC";
-            
-            /////////////////////////////////////////////////Metodo Calcula pagos////////////////////////////////////////////////////////////////////            
-
+                      
             DateTime dtFechaPago = DateTime.Now;//este siempre va a ser un dia despues de la fecha actual y la manda el omi
             dtFechaPago = dtFechaPago.AddDays(1);
 
-            double dMontoNegociado = 0, dPago, dCentavos, dMontoAjuste = 0, dSumaPagos = 0, dPago635 = 0;
-            int iMeses = iMeses_;//valor que me debe mandar el omi
-
-            DateTime dtFechaCorte = new DateTime(),
-                    dtActualización = new DateTime();
-
-            //if (_OfreNegAmex.idHerramienta == 143)
-            //    double.TryParse(txtMontoAjuste.Text.Replace("$", ""), out dMontoAjuste);
-
-            if (dMontoAjuste > 0 && !_bLendingPrimes)
-                dMontoNegociado = MontoRequerido;
-            else
-                dMontoNegociado = MontoRequerido; 
-
-            if (idherramienta == 1010)
-                dMontoNegociado = MontoRequerido = saldo;
-
-            //if (frmCuenta.herramientaAmex == "25")
-            //{
-            //    PrimerPagoAmex = Math.Round(_OfreNegAmex.Saldo * (0.25), 2);
-            //}
-            //if (frmCuenta.herramientaAmex == "14")
-            //{
-            //    PrimerPagoAmex = Math.Round(_OfreNegAmex.Saldo * (0.14), 2);
-            //}
-            //if (frmCuenta.herramientaAmex == "18")
-            //{
-            //    PrimerPagoAmex = Math.Round(_OfreNegAmex.Saldo * (0.18), 2);
-            //}
-            //if (frmCuenta.herramientaAmex == "13")
-            //{
-            //    PrimerPagoAmex = Math.Round(_OfreNegAmex.Saldo * (0.13), 2);
-            //}
-
-            iAñadidos = 0;
-
-            //Cálculo con intereses.
-            if (_bLendingPrimes)
-            {
-                if (idherramienta == 1010)
-                {
-                    dPago = dMontoNegociado / (iPeriodos * iMeses);
-                    dCentavos = Math.Round(((float)(dPago - Math.Truncate(dPago)) * (iMeses * iPeriodos)) * 100) / 100;
-                    dPago = Math.Truncate(dPago);
-
-                    //EstablecePagos(dMontoNegociado, dPago, dCentavos, iMeses, dtFechaCorte, dtFechaPago, dPago635); este metodo me falta
-                }
-                else
-                {
-                    //Calcula fecha corte.
-                    DateTime.TryParse(_ejecutivoRepository.CampoCalculado(drHerramienta["CampoFechaCorte"].ToString()).ToString().Replace("00:00:00:000", ""), out dtFechaCorte);
-                    DateTime.TryParse(tblCuenta.Rows[0]["CurrentBalanceUpdate"].ToString(), out dtActualización);
-
-                    // Obtener la fecha actual
-                    DateTime Hoy = DateTime.Today;
-                    dtFechaCorte = new DateTime(Hoy.Year, Hoy.Month, dtFechaCorte.Day);
-
-                    if (dtFechaCorte >= Hoy) 
-                        dtFechaCorte = dtFechaCorte.AddMonths(-1);
-
-                    //Suma los pagos al monto requerido.
-                    if (dtPagos != null && idherramienta == 136)
-                        double.TryParse(dtPagos.Compute("SUM (MontoPago)", "Reportado = '' AND FechaPago > '" + dtFechaCorte.ToShortDateString() + "'").ToString(), out dSumaPagos);
-
-                    //Actualiza fecha corte 3 días después o antes si hubo actualización de saldo en sistema.   
-                    if (Hoy > dtFechaCorte.AddDays(3) || DateTime.Today >= dtFechaCorte && dtActualización <= dtFechaCorte.AddDays(3) && dtFechaCorte <= dtActualización)
-                        dtFechaCorte = dtFechaCorte.AddMonths(1);
-
-                    if (idherramienta == 136 || idherramienta == 144)
-                        iMeses += 1;
-
-                    //Interés con pagos en el ciclo.
-                    if (dSumaPagos > 0)
-                    {
-                        MontoRequerido = saldo + dSumaPagos;
-                        dPago = (MontoRequerido / TasaAnual(1, 1, idherramienta, dtHerramientas));
-                        MontoRequerido = (dPago - dSumaPagos) * (1 - Descuento / 100);
-                        dMontoNegociado = MontoRequerido;
-                    }
-                   
-                    //Interés de fecha corte cercano
-                    if ((idherramienta != 138 && idherramienta != 143 &&
-                        !(idherramienta == 140 && iMeses == 1)) &&
-                        ((dtFechaPago >= dtFechaCorte.AddDays(-Convert.ToInt16(drHerramienta["Margen"])))
-                        || dtFechaPago > dtFechaCorte))
-                    {
-                        dPago = (dMontoNegociado / TasaAnual(1, 1, idherramienta, dtHerramientas));
-                        dPago = (dPago / TasaAnual(iPeriodos, iMeses, idherramienta, dtHerramientas));
-                    }
-                    else
-                        dPago = (dMontoNegociado / TasaAnual(iPeriodos, iMeses, idherramienta, dtHerramientas));
-
-                    dTasa = TasaAnual(iPeriodos, iMeses, idherramienta, dtHerramientas);
-
-                    tasamensual = TasaMensual(iPeriodos, iMeses, idherramienta, dtHerramientas);
-
-
-                    dPago = Math.Round(dPago, 2);
-
-                    //Cálculo de Monto Requerido
-                    dMontoNegociado = dPago * (iPeriodos * (iMeses));
-                    dMontoNegociado = Math.Round(dMontoNegociado, 2);
-
-                    dMontoRequerido = dMontoNegociado;// necesito este
-
-                    if (idherramienta == 143 && dMontoAjuste > 0 && _bLendingPrimes)
-                    {
-                        dPago = Math.Round(dMontoNegociado - dMontoAjuste / (iPeriodos * iMeses), 2);
-                        dMontoNegociado = dPago * (iPeriodos * (iMeses));
-                        dMontoRequerido = dMontoNegociado;
-                    }
-
-                    if (idherramienta == 136 || idherramienta == 144)
-                    {
-                        iMeses -= 1;
-                        dPago = Math.Round((dMontoNegociado / (iPeriodos * iMeses)), 2);
-                    }
-
-                    dMensualidad = dPago;
-
-                    tblPlazos = EstablecePagos(dMontoNegociado, dPago, 0, iMeses, dtFechaCorte, dtFechaPago, dPago635, iPeriodos, idherramienta, dtpFecha);                    
-           
-                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-                }
-            }
-            //Cálculo sin intereses
-            else
-            {
-                if (idherramienta == 635)
-                {
-                    dPago635 = dMontoNegociado * .04;
-                    //dPago635 = Math.Round(dPago635);
-                    dPago = (dMontoNegociado - dPago635) / (iPeriodos * (iMeses - 1));
-                    dCentavos = Math.Round(((float)(dPago - Math.Truncate(dPago)) * ((iMeses - 1) * iPeriodos)) * 100) / 100;
-                    dPago = Math.Truncate(dPago);
-                    tblPlazos = EstablecePagos(dMontoNegociado, dPago, dCentavos, iMeses, dtFechaCorte, dtFechaPago, dPago635, iPeriodos, idherramienta, dtpFecha);
-
-                }
-                else
-                {
-                    dPago = dMontoNegociado / (iPeriodos * iMeses);
-                    dCentavos = Math.Round(((float)(dPago - Math.Truncate(dPago)) * (iMeses * iPeriodos)) * 100) / 100;
-                    dPago = Math.Truncate(dPago);
-
-                    tblPlazos = EstablecePagos(dMontoNegociado, dPago, dCentavos, iMeses, dtFechaCorte, dtFechaPago, dPago635, iPeriodos, idherramienta, dtpFecha);
-
-                }
-
-            }
-            if(modificar == 1)
+            (double dMontoRequerido, double dMontoNegociado, tblPlazos, double dPago, double tasamensual) = CalculaPagos(dtFechaPago, iMeses_, _bLendingPrimes, MontoRequerido, idherramienta, saldo, iAñadidos, iPeriodos, drHerramienta, tblCuenta, dtPagos, dtHerramientas, Descuento, dtpFecha);
+            
+            if (modificar == 1)
             {
                 //validar que los meses no vengan en 0
 
-                DateTime dtFechaPago_, dtFechaPagoAnt;
-                double dPago_ = 0, dMontoNegociado_, dPagoAnt;
+                DateTime dtFechaPago_ = Convert.ToDateTime(fechaPagoMod);
+                DateTime dtFechaPagoAnt;
+                double dPago_ = montoMod, dMontoNegociado_, dPagoAnt;
 
                 dPagoAnt = Math.Round(Convert.ToDouble(tblPlazos.Rows[0]["Pago"].ToString()), 2);
                 dtFechaPagoAnt = Convert.ToDateTime(tblPlazos.Rows[0]["Fecha"].ToString());
@@ -818,46 +667,73 @@ namespace NoriAPI.Services
                 {
                     if (Convert.ToDateTime(row["Fecha"]) == Convert.ToDateTime(tblPlazos.Rows[tblPlazos.Rows.Count - 1]["Fecha"]) && tblPlazos.Rows.IndexOf(row) != tblPlazos.Rows.Count - 1)
                     {
-                        //Ya existe un pago con dicha fecha                   
+                        mensaje = "Ya existe un pago con dicha fecha.";
                     }
                 }
                 if (dPago <= 0)
                 {
-
-                    //No puede haber pagos de $0.00"                    
+                    mensaje = "No puede haber pagos de $0.00";
                 }
-                /*Añadir Pagos*/
-                //aqui va el de agregar pagos
-                if ()
+                /*Añadir Pagos*/                
+                if (agregarPagos == 1)
                 {
-
+                    (tblPlazos, double montoMod_, mensaje) = AgregaPagos(dtFechaPago, dPago, tblPlazos, _bLendingPrimes, montoMod, fechaPagoMod, dMontoRequerido, filaMod, dPagoAnt, dtFechaPago_);                    
+                    dPago = montoMod_;
                 }
                 else
-                {
+                {                    
+
+                    dMontoNegociado = Convert.ToDouble(tblPlazos.Rows[0]["Saldo"]);
+                    if (_bLendingPrimes)
+                    {
+                        if (montoMod < dPagoAnt)
+                        {
+                            mensaje = "El monto no puede ser menor al pago calculado.";                           
+                        }
+                        if(dtFechaPagoAnt != dtFechaPago_)//&& dgvPlazos.CurrentCell.RowIndex == 0 Aqui solo cambia la fecha de los pagos
+                        {
+                            DateTime nuevaFecha = Convert.ToDateTime(fechaPagoMod);
+                            foreach (DataRow fila in tblPlazos.Rows)
+                            {
+                                fila["Fecha"] = nuevaFecha; // Actualizar la columna 'Fecha' con la nueva fecha
+                            }
+
+                        }
+                        if (montoMod != dPagoAnt)
+                        {
+                            dMontoNegociado = Convert.ToDouble(tblPlazos.Rows[0]["Saldo"]);
+                            (tblPlazos, double nuevoPago) = ModificaPagos(filaMod, dMontoNegociado, dtFechaPago_, tblPlazos, montoMod, _bLendingPrimes);                            
+                            dPago = nuevoPago;
+                        }
+                    }
+                    else
+                    {
+                        if (idherramienta == 635 && filaMod != 0 && dPago < dMontoNegociado * .04)
+                        {
+                            (tblPlazos, double nuevoPago) = ModificaPagos(filaMod, dMontoNegociado, dtFechaPago_, tblPlazos, montoMod, _bLendingPrimes);                            
+                            dPago = nuevoPago;
+                        }                           
+                        else
+                        {
+                            (tblPlazos, double nuevoPago) = ModificaPagos(filaMod, dMontoNegociado, dtFechaPago_, tblPlazos, montoMod, _bLendingPrimes);                            
+                            dPago = nuevoPago;
+                        }
+                            
+                    }
 
                 }
 
-
-
-
-
-
-
-
-
-            }
-
+            }            
             //Muestra cálculos
             double MontoRequerido_ = Convert.ToDouble(dMontoRequerido.ToString());
             double MontoNegociado_ = Convert.ToDouble(dMontoNegociado.ToString());
             double Pago = Convert.ToDouble(tblPlazos.Rows[0]["Pago"].ToString());
             string Plazos = tblPlazos.Rows.Count.ToString();
-            double Remanente = Convert.ToDouble(Math.Max(saldo - MontoNegociado_, 0).ToString());
-            double Monto = Convert.ToDouble(dPago);
-
+            double Remanente = Math.Round(Convert.ToDouble(Math.Max(saldo - MontoNegociado_, 0).ToString()));
+            double Monto = Math.Round(Convert.ToDouble(dPago));            
+            List<CalculosInfo> listaCalculos = _ejecutivoRepository.ConvertirDataTableAListaC(tblPlazos);
 
             /////Regresa valores///////////////////////
-            List<CalculosInfo> listaCalculos = _ejecutivoRepository.ConvertirDataTableAListaC(tblPlazos);                        
             var ResultadoCalculadora2 = new ResultadoCalculadora2
             {
                 Calculos = listaCalculos,
@@ -867,10 +743,10 @@ namespace NoriAPI.Services
                 Plazos = Plazos,
                 Descuento = Descuento,    
                 Monto = Monto,
-                TasaMensual = tasamensual
+                TasaMensual = tasamensual,
+                mensaje = mensaje
             };            
             return ResultadoCalculadora2; 
-
         }
 
         #endregion
@@ -1072,7 +948,6 @@ namespace NoriAPI.Services
             // lblTasaMensual.Text = "Tasa Mensual: " + (Math.Truncate((100 * dTasa) * 1000) / 1000).ToString() + "%";
             return ((1 / dTasa) * (1 - Math.Pow(1 / (1 + dTasa), iMeses)) * iPeriodos);
         }
-
         private double TasaMensual(int iPeriodos, int iMeses, int idherramienta, DataTable Herramienta)
         {
 
@@ -1094,9 +969,160 @@ namespace NoriAPI.Services
             // lblTasaMensual.Text = "Tasa Mensual: " + (Math.Truncate((100 * dTasa) * 1000) / 1000).ToString() + "%";
             return (Math.Truncate((100 * dTasa) * 1000) / 1000);
         }
+        public (double dMontoRequerido, double dMontoNegociado, DataTable tblPlazos, double dPago, double tasamensual) CalculaPagos(DateTime dtFechaPago, int iMeses_, bool _bLendingPrimes, double MontoRequerido, int idherramienta, double saldo, int iAñadidos, int iPeriodos, DataRow drHerramienta, DataTable tblCuenta, DataTable dtPagos, DataTable dtHerramientas, int Descuento, string dtpFecha)
+        {           
+            double dMontoNegociado = 0, dPago, dCentavos, dMontoAjuste = 0, dSumaPagos = 0, dPago635 = 0, dTasa = 0, tasamensual = 0, dMontoRequerido = 0, dMensualidad;
+            int iMeses = iMeses_;//valor que me debe mandar el omi
+            DataTable tblPlazos = new DataTable();
 
+            DateTime dtFechaCorte = new DateTime(),
+                    dtActualización = new DateTime();
 
+            //if (_OfreNegAmex.idHerramienta == 143)
+            //    double.TryParse(txtMontoAjuste.Text.Replace("$", ""), out dMontoAjuste);
 
+            if (dMontoAjuste > 0 && !_bLendingPrimes)
+                dMontoNegociado = MontoRequerido;
+            else
+                dMontoNegociado = MontoRequerido;
+
+            if (idherramienta == 1010)
+                dMontoNegociado = MontoRequerido = saldo;
+
+            //if (frmCuenta.herramientaAmex == "25")
+            //{
+            //    PrimerPagoAmex = Math.Round(_OfreNegAmex.Saldo * (0.25), 2);
+            //}
+            //if (frmCuenta.herramientaAmex == "14")
+            //{
+            //    PrimerPagoAmex = Math.Round(_OfreNegAmex.Saldo * (0.14), 2);
+            //}
+            //if (frmCuenta.herramientaAmex == "18")
+            //{
+            //    PrimerPagoAmex = Math.Round(_OfreNegAmex.Saldo * (0.18), 2);
+            //}
+            //if (frmCuenta.herramientaAmex == "13")
+            //{
+            //    PrimerPagoAmex = Math.Round(_OfreNegAmex.Saldo * (0.13), 2);
+            //}
+
+            iAñadidos = 0;
+
+            //Cálculo con intereses.
+            if (_bLendingPrimes)
+            {
+                if (idherramienta == 1010)
+                {
+                    dPago = dMontoNegociado / (iPeriodos * iMeses);
+                    dCentavos = Math.Round(((float)(dPago - Math.Truncate(dPago)) * (iMeses * iPeriodos)) * 100) / 100;
+                    dPago = Math.Truncate(dPago);
+
+                    //EstablecePagos(dMontoNegociado, dPago, dCentavos, iMeses, dtFechaCorte, dtFechaPago, dPago635); este metodo me falta
+                }
+                else
+                {
+                    //Calcula fecha corte.
+                    DateTime.TryParse(_ejecutivoRepository.CampoCalculado(drHerramienta["CampoFechaCorte"].ToString()).ToString().Replace("00:00:00:000", ""), out dtFechaCorte);
+                    DateTime.TryParse(tblCuenta.Rows[0]["CurrentBalanceUpdate"].ToString(), out dtActualización);
+
+                    // Obtener la fecha actual
+                    DateTime Hoy = DateTime.Today;
+                    dtFechaCorte = new DateTime(Hoy.Year, Hoy.Month, dtFechaCorte.Day);
+
+                    if (dtFechaCorte >= Hoy)
+                        dtFechaCorte = dtFechaCorte.AddMonths(-1);
+
+                    //Suma los pagos al monto requerido.
+                    if (dtPagos != null && idherramienta == 136)
+                        double.TryParse(dtPagos.Compute("SUM (MontoPago)", "Reportado = '' AND FechaPago > '" + dtFechaCorte.ToShortDateString() + "'").ToString(), out dSumaPagos);
+
+                    //Actualiza fecha corte 3 días después o antes si hubo actualización de saldo en sistema.   
+                    if (Hoy > dtFechaCorte.AddDays(3) || DateTime.Today >= dtFechaCorte && dtActualización <= dtFechaCorte.AddDays(3) && dtFechaCorte <= dtActualización)
+                        dtFechaCorte = dtFechaCorte.AddMonths(1);
+
+                    if (idherramienta == 136 || idherramienta == 144)
+                        iMeses += 1;
+
+                    //Interés con pagos en el ciclo.
+                    if (dSumaPagos > 0)
+                    {
+                        MontoRequerido = saldo + dSumaPagos;
+                        dPago = (MontoRequerido / TasaAnual(1, 1, idherramienta, dtHerramientas));
+                        MontoRequerido = (dPago - dSumaPagos) * (1 - Descuento / 100);
+                        dMontoNegociado = MontoRequerido;
+                    }
+
+                    //Interés de fecha corte cercano
+                    if ((idherramienta != 138 && idherramienta != 143 &&
+                        !(idherramienta == 140 && iMeses == 1)) &&
+                        ((dtFechaPago >= dtFechaCorte.AddDays(-Convert.ToInt16(drHerramienta["Margen"])))
+                        || dtFechaPago > dtFechaCorte))
+                    {
+                        dPago = (dMontoNegociado / TasaAnual(1, 1, idherramienta, dtHerramientas));
+                        dPago = (dPago / TasaAnual(iPeriodos, iMeses, idherramienta, dtHerramientas));
+                    }
+                    else
+                        dPago = (dMontoNegociado / TasaAnual(iPeriodos, iMeses, idherramienta, dtHerramientas));
+
+                    dTasa = TasaAnual(iPeriodos, iMeses, idherramienta, dtHerramientas);
+
+                    tasamensual = TasaMensual(iPeriodos, iMeses, idherramienta, dtHerramientas);
+
+                    dPago = Math.Round(dPago, 2);
+
+                    //Cálculo de Monto Requerido
+                    dMontoNegociado = dPago * (iPeriodos * (iMeses));
+                    dMontoNegociado = Math.Round(dMontoNegociado, 2);
+
+                    dMontoRequerido = dMontoNegociado;
+
+                    if (idherramienta == 143 && dMontoAjuste > 0 && _bLendingPrimes)
+                    {
+                        dPago = Math.Round(dMontoNegociado - dMontoAjuste / (iPeriodos * iMeses), 2);
+                        dMontoNegociado = dPago * (iPeriodos * (iMeses));
+                        dMontoRequerido = dMontoNegociado;
+                    }
+
+                    if (idherramienta == 136 || idherramienta == 144)
+                    {
+                        iMeses -= 1;
+                        dPago = Math.Round((dMontoNegociado / (iPeriodos * iMeses)), 2);
+                    }
+
+                    dMensualidad = dPago;
+
+                    tblPlazos = EstablecePagos(dMontoNegociado, dPago, 0, iMeses, dtFechaCorte, dtFechaPago, dPago635, iPeriodos, idherramienta, dtpFecha);
+
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+                }
+            }
+            //Cálculo sin intereses
+            else
+            {
+                if (idherramienta == 635)
+                {
+                    dPago635 = dMontoNegociado * .04;
+                    //dPago635 = Math.Round(dPago635);
+                    dPago = (dMontoNegociado - dPago635) / (iPeriodos * (iMeses - 1));
+                    dCentavos = Math.Round(((float)(dPago - Math.Truncate(dPago)) * ((iMeses - 1) * iPeriodos)) * 100) / 100;
+                    dPago = Math.Truncate(dPago);
+                    tblPlazos = EstablecePagos(dMontoNegociado, dPago, dCentavos, iMeses, dtFechaCorte, dtFechaPago, dPago635, iPeriodos, idherramienta, dtpFecha);
+
+                }
+                else
+                {
+                    dPago = dMontoNegociado / (iPeriodos * iMeses);
+                    dCentavos = Math.Round(((float)(dPago - Math.Truncate(dPago)) * (iMeses * iPeriodos)) * 100) / 100;
+                    dPago = Math.Truncate(dPago);
+
+                    tblPlazos = EstablecePagos(dMontoNegociado, dPago, dCentavos, iMeses, dtFechaCorte, dtFechaPago, dPago635, iPeriodos, idherramienta, dtpFecha);
+
+                }
+
+            }
+            return (dMontoRequerido, dMontoNegociado, tblPlazos, dPago, tasamensual);
+        }
         private DataTable EstablecePagos(double dMontoNegociado, double dPago, double dCentavos, int iMeses, DateTime dtFechaCorte, DateTime dtFechaPago, double dPago635, int iPeriodos, int idherramienta, string dtpFecha)
         {
             DataTable tblPlazos = new DataTable();
@@ -1198,7 +1224,6 @@ namespace NoriAPI.Services
             if (tblPlazos.Rows.Count >= 2)//herramientaAmex != "0" &&
             {
                 //TerminaCálculo("Recuerde que el primer mes debe de pagar el Saldo minimo ( $" + (PrimerPagoAmex + 0.1) + ")");
-
                 pagoRequerido = Math.Round(Convert.ToDouble(tblPlazos.Rows[0]["Pago"]) + Convert.ToDouble(tblPlazos.Rows[1]["Pago"]), 2);
                 FechaPagoInicial = Convert.ToString(tblPlazos.Rows[0]["Fecha"]);
                 FechaPagoInicial = FechaPagoInicial.Substring(4, 1);
@@ -1224,6 +1249,113 @@ namespace NoriAPI.Services
                 //TerminaCálculo("Presione Terminado para continuar.");
             }
         }
-    }
+        private (DataTable tblPlazo, double montoMod, string mensaje) AgregaPagos(DateTime dtFechaPago, double dPago, DataTable tblPlazos, bool _bLendingPrimes, double montoMod, string fechaPagoMod, double dMontoRequerido, int filaMod, double dPagoAnt, DateTime dtFechaPago_)
+        {
+            int iAñadidos = 0;
+            string mensaje_ = "";
+            double dMensualidad = Convert.ToDouble(tblPlazos.Rows[0]["Pago"].ToString());
+            double dMontoNegociado = Convert.ToDouble(tblPlazos.Rows[0]["Saldo"]);
+            if (Convert.ToDateTime(fechaPagoMod) >= Convert.ToDateTime(tblPlazos.Rows[0]["Fecha"]))
+            {
+                mensaje_ = "Todos los pagos deben de ser antes de " + Convert.ToDateTime(tblPlazos.Rows[0]["Fecha"]).ToShortDateString();                
+            }
+            if (_bLendingPrimes)
+                if (montoMod > dMensualidad)
+                {
+                    mensaje_ = "El pago no puede se mayor a " + dMensualidad.ToString();                    
+                }
+            for (int i = 0; i < tblPlazos.Rows.Count; i++)
+                if (Convert.ToDateTime(tblPlazos.Rows[i]["Fecha"]) == Convert.ToDateTime(fechaPagoMod))
+                {
+                    mensaje_ = "Ya existe un pago con dicha fecha";                    
+                }
 
+            //Pago añadido.
+            DataRow drPrimerPago = tblPlazos.NewRow();
+            drPrimerPago["Fecha"] = Convert.ToDateTime(fechaPagoMod);
+            drPrimerPago["Pago"] = montoMod;
+            drPrimerPago["Saldo"] = dMontoRequerido;
+            drPrimerPago["Saldo Final"] = Math.Max(0, dMontoRequerido - montoMod);
+            tblPlazos.Rows.Add(drPrimerPago);
+
+            DataView dvPlazos = tblPlazos.DefaultView;
+            dvPlazos.Sort = "Fecha asc";
+            tblPlazos = dvPlazos.ToTable();            
+            iAñadidos++;
+
+            //Requerido en plazo agregado.
+            tblPlazos.Rows[0]["Saldo"] = dMontoRequerido;
+            tblPlazos.Rows[0]["Saldo Final"] = dMontoRequerido - Convert.ToDouble(tblPlazos.Rows[0]["Pago"]);
+
+            if (_bLendingPrimes)
+            {
+                tblPlazos.Rows[iAñadidos]["Pago"] = Convert.ToDouble(tblPlazos.Rows[iAñadidos]["Pago"]) - montoMod;
+                tblPlazos.Rows[iAñadidos]["Saldo"] = Convert.ToDouble(tblPlazos.Rows[iAñadidos - 1]["Saldo Final"]);
+
+            }
+            //Inicial
+            for (int i = 1; i <= iAñadidos; i++)
+            {
+                tblPlazos.Rows[i]["Saldo"] = tblPlazos.Rows[i - 1]["Saldo Final"];
+                tblPlazos.Rows[i]["Saldo Final"] = Convert.ToDouble(tblPlazos.Rows[i]["Saldo"]) - Convert.ToDouble(tblPlazos.Rows[i]["Pago"]);
+            }
+
+            //if (!_bLendingPrimes)
+            //    (DataTable tblPlazo, double nuevoPago) = ModificaPagos(filaMod, dMontoNegociado, dtFechaPago_, tblPlazos, montoMod, _bLendingPrimes);
+            //Conteo
+            for (int i = 0; i < tblPlazos.Rows.Count; i++)
+            {
+                tblPlazos.Rows[i]["No."] = i + 1;
+            }
+            dMensualidad = Convert.ToDouble(tblPlazos.Rows[iAñadidos]["Pago"]);
+
+            return (tblPlazos, montoMod, mensaje_);
+
+        }
+        private (DataTable tblPlazo, double nuevoPago) ModificaPagos(int iPlazo, double dMontoNegociado, DateTime dtFechaPago, DataTable tblPlazo, double montoMod, bool _bLendingPrimes)
+        {
+            float dCentavos = 0;
+            if(iPlazo > 0)
+                iPlazo = iPlazo - 1;// Se resta 1 ya que el datarow inicia en 0
+            else
+                iPlazo = 0;
+
+            // modificamos el pago de la fila seleccionada
+            int rowIndex = iPlazo; // Reemplaza con el índice de la fila que deseas modificar
+            double nuevoPago = montoMod; // Reemplaza con el nuevo valor de pago
+
+            if (rowIndex >= 0 && rowIndex < tblPlazo.Rows.Count)
+            {
+                tblPlazo.Rows[rowIndex]["Pago"] = nuevoPago; // Actualizar la columna 'Pago'
+            }
+            for (int i = iPlazo; i <= tblPlazo.Rows.Count - 1; i++)
+            {
+                nuevoPago = (tblPlazo.Rows.Count - 1 == i ? dCentavos + nuevoPago : nuevoPago);
+                tblPlazo.Rows[i]["Pago"] = Math.Round(Math.Max(0, nuevoPago),2);
+                tblPlazo.Rows[i]["Saldo"] = Math.Round(Math.Max(0, dMontoNegociado),2);
+                tblPlazo.Rows[i]["Saldo Final"] = Math.Round(Math.Max(0, dMontoNegociado - nuevoPago),2);
+                dMontoNegociado -= nuevoPago;
+
+                if (i == tblPlazo.Rows.Count - 1 && dMontoNegociado > 0)
+                    tblPlazo.Rows[i]["Pago"] = nuevoPago + dMontoNegociado;
+
+                if (i == tblPlazo.Rows.Count - 1 && dMontoNegociado < 0)
+                    tblPlazo.Rows[i]["Pago"] = nuevoPago + Math.Round(dMontoNegociado, 2);
+
+                if (iPlazo == i)
+                {
+                    nuevoPago = (dMontoNegociado / (tblPlazo.Rows.Count - i - 1));
+                    if (!_bLendingPrimes)
+                    {
+                        dCentavos += Convert.ToSingle(Math.Round(((float)(nuevoPago - Math.Truncate(nuevoPago)) * (tblPlazo.Rows.Count - i - 1)) * 100) / 100);
+                        nuevoPago = Math.Truncate(nuevoPago);
+                    }
+                    else
+                        nuevoPago = Math.Round(nuevoPago, 2);
+                }
+            }
+            return (tblPlazo, montoMod);
+        }        
+
+    }
 }
