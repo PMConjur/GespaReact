@@ -1,27 +1,20 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using NoriAPI.Models;
 using NoriAPI.Models.Acciones;
 using NoriAPI.Models.Busqueda;
 using NoriAPI.Models.Ejecutivo;
-using NoriAPI.Models.Login;
 using NoriAPI.Services;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
-using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using NoriAPI.Models.Acciones;
-using static NoriAPI.Services.EjecutivoService;
 using NoriAPI.Models.Flujo;
+using NoriAPI.Models.Ofrecimiento;
 
 
 
@@ -307,6 +300,20 @@ namespace NoriAPI.Controllers
 
         }
 
+        [HttpPost("save-ofrecimiento")]
+        public async Task<ActionResult<OfrecimientoValidadores>> SaveOfrecimiento([FromBody] SaveOfrecimientoRequest ofrecimientoInfo)
+        {
+            var result = await _ejecutivoService.GuardarOfrecimiento(ofrecimientoInfo);
+
+            if (!result.Success)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result);
+        }
+
+
         #endregion
 
 
@@ -452,7 +459,7 @@ namespace NoriAPI.Controllers
         {
             try
             {
-                DataSet dsTablas = new DataSet();
+                DataSet dsTablas = new();
                 DataTable EstadoTable = dsTablas.Tables.Add("EstadoDeCuenta");
                 EstadoTable.Columns.Add("idCartera", typeof(int));
                 EstadoTable.Columns.Add("idCuenta", typeof(string));

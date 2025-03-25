@@ -25,6 +25,9 @@ using static NoriAPI.Services.EjecutivoService;
 
 using NoriAPI.Models.Acciones;
 using NoriAPI.Models.Flujo;
+using NoriAPI.Models.Ofrecimiento;
+using System.Text.RegularExpressions;
+using Microsoft.IdentityModel.Tokens;
 
 
 namespace NoriAPI.Services
@@ -57,6 +60,7 @@ namespace NoriAPI.Services
         Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta);
         Task<ResultadoCalculadora> ValidateInfoCalculadora1(int Cartera, string NoCuenta, int idHerr);
         Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int IdCartera, double MontoRequerido, int Descuento, int iMeses, string dtpFecha, int periodos);
+        Task<dynamic> GuardarOfrecimiento(SaveOfrecimientoRequest ofrecimientoInfo);
 
         #endregion
         Task ObtenerBusquedaEJE(DataRow drDatos, DataSet dsTablas);
@@ -1660,6 +1664,95 @@ namespace NoriAPI.Services
         }
 
 
+        public async Task<dynamic> GuardarOfrecimiento(SaveOfrecimientoRequest ofrecimientoInfo)
+        {
+            string verificaOfrecimiento = VerificaOfrecimientoNegociación(ofrecimientoInfo);
+            if (!verificaOfrecimiento.IsNullOrEmpty())
+            {
+                return new { Message = verificaOfrecimiento, Success = false };
+            }
+
+            if (ofrecimientoInfo.IdHerramienta == 0)
+            {
+                return new { Message = "Indique la herramienta que se va a ofrecer.", Success = false };
+            }
+
+            var validaPootis = await _ejecutivoRepository.GuardaOfrecimientoStored(ofrecimientoInfo);
+
+            // Si no hay resultados, devolvemos un mensaje de error
+            if (validaPootis == null || !validaPootis.Any())
+            {
+                return new { Message = "No se encontraron validadores para el producto.", Success = false };
+            }
+
+
+            return new { Validadores = validaPootis, Message = verificaOfrecimiento, Success = false };
+
+        }
+
+        public static string VerificaOfrecimientoNegociación(SaveOfrecimientoRequest ofrecimiento)
+        {
+            // Validación de Monto Negociado vs Monto Requerido
+            if (Math.Round(ofrecimiento.MontoNegociado, 2, MidpointRounding.ToEven) < ofrecimiento.MontoRequerido
+                && !(new[] { 501, 503, 92, 106, 101, 108, 578, 583, 137 }.Contains(ofrecimiento.IdHerramienta)))
+            {
+                return "El Monto Negociado debe ser MAYOR que el Monto Requerido.";
+            }
+
+            // Validación de saldo según cartera
+            if (ofrecimiento.MontoNegociado > ofrecimiento.Saldo + 1 &&
+                new[] { 5, 7 }.Contains(ofrecimiento.IdCartera))
+            {
+                return "El Monto Negociado debe ser menor o igual al Saldo.";
+            }
+
+            if (ofrecimiento.MontoNegociado > ofrecimiento.Saldo + 1 &&
+                ofrecimiento.IdCartera == 4 &&
+                new[] { 126, 127, 133 }.Contains(ofrecimiento.IdProducto))
+            {
+                return "El Monto Negociado debe ser menor o igual al Saldo.";
+            }
+
+            // Validación de plazos
+            if (ofrecimiento.Plazos == null || ofrecimiento.Plazos.Length == 0)
+                return "Se debe de indicar el primer pago y su fecha.";
+
+            if (ofrecimiento.Plazos.Length == 1 && ofrecimiento.Plazos[0].Monto != ofrecimiento.MontoNegociado)
+                return "Al elegir un solo pago, el primer pago debe ser IGUAL al monto megociado.";
+
+            if (DateTime.Today.AddDays(ofrecimiento.SegundoInsert.TotalDays) < ofrecimiento.Plazos[0].Fecha)
+                return $"El primer pago debe de ser antes de {ofrecimiento.SegundoInsert.TotalDays} días.";
+
+            // Herramientas con pagos en el mismo mes
+            if (new[] { 87, 89, 104, 99, 100, 107 }.Contains(ofrecimiento.IdHerramienta) &&
+                ofrecimiento.Plazos[0].Fecha.Month != ofrecimiento.Plazos.Last().Fecha.Month)
+            {
+                return "Todos los plazos para esta herramienta deben de ser en el mismo mes.";
+            }
+
+            // Cálculo del descuento si aplica
+            if (ofrecimiento.MontoRequerido + 1 < ofrecimiento.MontoNegociado &&
+                ofrecimiento.Descuento > 0 &&
+                ofrecimiento.MontoRequerido > 0 &&
+                ofrecimiento.IdEjecutivoValidador == 0 &&
+                ofrecimiento.IdCartera != 1)
+            {
+                ofrecimiento.Descuento = (int)Math.Round(
+                    (1 - ((1 - (ofrecimiento.Descuento / 100.0)) * ofrecimiento.MontoNegociado / ofrecimiento.MontoRequerido)) * 100, 0
+                );
+            }
+
+            if (ofrecimiento.Descuento < 0)
+                return $"El Monto Negociado es mayor al Saldo. Verifique el cálculo del descuento ({ofrecimiento.Descuento}).";
+
+            // Validación de correo para carta convenio
+            if (ofrecimiento.CartaConvenio == 1 && !Funciones.ValidaCorreo(ofrecimiento.Correo?.Trim() ?? ""))
+                return "Para el envío de la Carta Convenio es necesario un Correo válido.";
+
+            return "";
+        }
+
+
         #endregion
 
 
@@ -2488,9 +2581,13 @@ namespace NoriAPI.Services
                     case "Expediente":     //El equipo Front debe validar que no tenga letras
 
                         queryBusqueda += " WHERE CuentaActiva = 1 AND CL.Abreviación = '";
-                        foreach (char Caracter in ValorBusqueda.Substring(0, 3))
-                            if (char.IsLetter(Caracter))
-                                queryBusqueda += Caracter;
+                        foreach (var Caracter in from char Caracter in ValorBusqueda.Substring(0, 3)
+                                                 where char.IsLetter(Caracter)
+                                                 select Caracter)
+                        {
+                            queryBusqueda += Caracter;
+                        }
+
                         queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
                         //quitar letras cuando se libere a todas las carteras
                         queryBusqueda += "' AND C.Expediente = " + ValorBusqueda.Replace("AMX", "").Replace("amx", "").Replace(" ", "");
@@ -3629,6 +3726,24 @@ namespace NoriAPI.Services
                 {
                     Console.WriteLine($"Error en AddParametersToRow: {ex.Message}");
                 }
+            }
+
+            /// <summary>
+            /// Valida la dirección de correo electrónico.
+            /// </summary>
+            /// <param name="DirecciónCorreo">Dirección de correo electrónico.</param>
+            /// <returns>True si es correcta, Falso si es incorrecta.</returns>
+            public static bool ValidaCorreo(string DirecciónCorreo)
+            {
+
+                string validEmailPattern =
+                    @"^(?!\.)(""([^""\r\\]|\\[""\r\\])*""|"
+                    + @"([-a-z0-9!#$%&'*+/=?^_`{|}~]|(?<!\.)\.)*)(?<!\.)"
+                    + @"@[-a-z0-9][\w\.-]*[a-z0-9]\.[a-z][a-z\.]*[a-z]$";
+
+                Regex ValidEmailRegex = new(validEmailPattern, RegexOptions.IgnoreCase);
+
+                return ValidEmailRegex.IsMatch(DirecciónCorreo);
             }
         }
         #endregion
