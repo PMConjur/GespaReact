@@ -83,6 +83,7 @@ namespace NoriAPI.Controllers
 
         #region Seguimientos
         [HttpGet("seguimientos/{idCartera}/{idCuenta}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetSeguimiento(int idCartera, string idCuenta)
         {
             try

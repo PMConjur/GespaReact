@@ -2010,46 +2010,7 @@ namespace NoriAPI.Services
                 return $"Error inesperado al crear el seguimiento: {ex.Message}";
             }
         }
-        //private DateTime? ObtenerFechaProximoSeguimiento(string idCartera, string idCuenta)
-        //{
-        //    string connectionString = _configuration.GetConnectionString("Piso2Amex");
-        //    try
-        //    {
-        //        using (SqlConnection connection = new SqlConnection(connectionString))
-        //        {
-        //            connection.Open();
-        //            string query = "SELECT FechaPróximoSeguimiento FROM Cuentas WHERE idCartera = @idCartera AND idCuenta = @idCuenta";
-        //            using (SqlCommand command = new SqlCommand(query, connection))
-        //            {
-        //                command.Parameters.AddWithValue("@idCartera", idCartera);
-        //                command.Parameters.AddWithValue("@idCuenta", idCuenta);
-        //                using (SqlDataReader reader = command.ExecuteReader())
-        //                {
-        //                    if (reader.Read())
-        //                    {
-        //                        if (reader["FechaPróximoSeguimiento"] != DBNull.Value)
-        //                        {
-        //                            return reader.GetDateTime(0);
-        //                        }
-        //                        else
-        //                        {
-        //                            return null;
-        //                        }
-        //                    }
-        //                    else
-        //                    {
-        //                        return null;
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Debug.WriteLine($"Error al obtener FechaPróximoSeguimiento: {ex.Message}");
-        //        return null;
-        //    }
-        //}
+       
         public static class DateTimeExtensions // Usar una clase estática para métodos de extensión
         {
             public static DateTime CombineDateTimeWithTimeSpan(object oFecha, object oSegundo)
