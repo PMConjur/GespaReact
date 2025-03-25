@@ -712,6 +712,46 @@ namespace NoriAPI.Services
                 }
             }
 
+            ClasesGespaNonStatic gespaQuejas = new();
+            gespaQuejas.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            gespaQuejas.CargaCatalogos();
+
+
+            // Agregar la columna "Queja" justo después de "idQueja"
+            if (viewQuejas.Columns.Contains("idQueja"))
+            {
+                // Crear e insertar la columna "Banco" después de "idBanco"
+                DataColumn quejasColumna = new DataColumn("Queja", typeof(string));
+                viewQuejas.Columns.Add(quejasColumna);
+                viewQuejas.Columns["Queja"].SetOrdinal(viewQuejas.Columns.IndexOf("idQueja") + 1);
+            }
+
+            // Agregar la columna "Queja" justo después de "idQueja"
+            if (viewQuejas.Columns.Contains("idInstitución"))
+            {
+                // Crear e insertar la columna "Banco" después de "idBanco"
+                DataColumn institucionColumna = new DataColumn("Institución", typeof(string));
+                viewQuejas.Columns.Add(institucionColumna);
+                viewQuejas.Columns["Institución"].SetOrdinal(viewQuejas.Columns.IndexOf("idInstitución") + 1);
+            }
+
+            // Llenar los valores de la nueva columna usando la lógica de "traducción"
+            foreach (DataRow row in viewQuejas.Rows)
+            {
+                if (viewQuejas.Columns.Contains("idQueja") && row["idQueja"] != DBNull.Value)
+                {
+                    row["Queja"] = BuscarEnValoresHashtable(gespaQuejas._htValoresCatálogo, Convert.ToString(row["idQueja"]));
+                }
+            }
+
+            foreach (DataRow row in viewQuejas.Rows)
+            {
+                if (viewQuejas.Columns.Contains("idInstitución") && row["idInstitución"] != DBNull.Value)
+                {
+                    row["Institución"] = BuscarEnValoresHashtable(gespaQuejas._htValoresCatálogo, Convert.ToString(row["idInstitución"]));
+                }
+            }
+
             return viewQuejas;
         }
 
@@ -973,7 +1013,7 @@ namespace NoriAPI.Services
             {
                 //Herramientas que no aplica (0 en idHerramienta)
                 if (dtHerramientas.Rows[0][i].ToString().Equals("0") || dtHerramientas.Columns[i].ColumnName.Contains("Tasa"))
-                {  // Convenios 
+                {  // Convenios
                     if (dtHerramientas.Columns[i].ColumnName.Contains("136") || dtHerramientas.Columns[i].ColumnName.Contains("144"))
                         i += 2;
                     continue;
@@ -1089,7 +1129,7 @@ namespace NoriAPI.Services
             double Saldo, MontoRequerido, Montodescuento;
             int días1erPago = 0;
 
-            //Falta validar el saldo 
+            //Falta validar el saldo
             if (!double.TryParse(tblCuenta.Rows[0]["Saldo"].ToString(), out Saldo))
             {
                 //mandar error
@@ -1145,7 +1185,7 @@ namespace NoriAPI.Services
 
             /////////////////////////////Aqui termina el metodo///////////////////////////////////////////
 
-            //Convierte datatable a list 
+            //Convierte datatable a list
 
             List<OfrecimientosInfo> listaOfrecimientos = _ejecutivoRepository.ConvertirDataTableALista(dtFiltrado);
             List<HerramientasInfo> listaHerramientas = _ejecutivoRepository.ConvertirDataTableALista_(dtHerrFiltradas);
