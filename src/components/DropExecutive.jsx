@@ -44,7 +44,7 @@ const DropExecutive = () => {
         align="end" // Cambiado a "end" para que se alinee hacia la izquierda
         style={{
           top: "40px",
-          left: "-150px", // Cambiado para que se ajuste automáticamente
+          left: "-200px", // Cambiado para que se ajuste automáticamente
           right: "0", // Posición hacia la izquierda
           borderRadius: "10px",
           boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
@@ -70,17 +70,16 @@ const DropExecutive = () => {
         />
         {/* Opción del menú del dropdown */}
         <Dropdown.Item
-          //
-          className="d-flex align-items-center justify-content-start" // Alineación horizontal y vertical
+          href="/maintenance"
+          className="text-center" // Cambiado a text-center para centrar
           style={{
             fontSize: "14px",
             color: "#fff", // Cambiado a blanco
-            padding: "10px 15px", // Ajuste de padding para mejor alineación
+            padding: "10px 15px",
             borderRadius: "5px",
           }}
         >
-          <PersonSquare className="me-2" style={{ alignItems: "center"}} /> {/* Ajuste de tamaño del ícono */}
-          <span style={{ lineHeight: "18px" }}>Ejecutivo Telefonico</span> {/* Alineación del texto */}
+          Ejecutivo Telefonico
         </Dropdown.Item>
       </Dropdown.Menu>
 

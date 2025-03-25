@@ -1,39 +1,33 @@
-import { useState, useContext } from 'react';
-import Dropdown from 'react-bootstrap/Dropdown'; // Importar el componente Dropdown de Bootstrap
-import { AppContext } from '../../../pages/Managment'; // Importar el contexto de la aplicación
+import { useState, useContext } from "react";
+import Dropdown from "react-bootstrap/Dropdown"; // Importar el componente Dropdown de Bootstrap
+import { AppContext } from "../../../pages/Managment"; // Importar el contexto de la aplicación
 import "../../../scss/styles.scss";
-import Addresses from './Addresses'; // Importar el componente Addresses
-import Payments from './Payments'; // Importar el componente Payments
-import Aditionals from './Aditionals'; // Importar el componente Aditionals
-
+import Addresses from "./Addresses"; // Importar el componente Addresses
+import Payments from "./Payments"; // Importar el componente Payments
+import Aditionals from "./Aditionals"; // Importar el componente Aditionals
+import { InfoCircleFill } from "react-bootstrap-icons"; // Importar el ícono de Info de Bootstrap
 
 function DropdownInfo() {
   // Estados para controlar la visibilidad de los modales y la carga de datos
   const [showAddresses, setShowAddresses] = useState(false); // Estado para el modal de Addresses
 
-
-
-//payments
+  //payments
   const [showPayments, setShowPayments] = useState(false); // Estado para el modal de Payments
 
   const handleShowPayments = () => setShowPayments(true);
   const handleClosePayments = () => setShowPayments(false);
-//payments
+  //payments
 
-//adicionales
+  //adicionales
   const [showAditionals, setShowAditionals] = useState(false); // Estado para el modal de Aditionals
 
   const handleShowAditionals = () => setShowAditionals(true);
   const handleCloseAditionals = () => setShowAditionals(false);
-//adiconaslers
-
-
-
-
+  //adiconaslers
 
   const [paymentsData, setPaymentsData] = useState([]); // Estado para almacenar los datos de pagos
   const [loadingPayments, setLoadingPayments] = useState(false); // Estado para indicar si se están cargando los pagos
-  
+
   const [aditionalsData, setAditionalsData] = useState([]); // Estado para almacenar los datos adicionales
   const [loadingAditionals, setLoadingAditionals] = useState(false); // Estado para indicar si se están cargando los datos adicionales
 
@@ -49,33 +43,68 @@ function DropdownInfo() {
   const handleCloseAddresses = () => setShowAddresses(false);
 
   // Función para manejar la apertura del modal de Aditionals
-  
- 
 
   return (
     <>
       {/* Dropdown para mostrar las opciones de información */}
-      <Dropdown className=''>
-        <Dropdown.Toggle className="custom-dropdown-toggle d-flex align-items-center" id="dropdown-right">
-          Información
+      <Dropdown className="">
+        <Dropdown.Toggle
+          className="custom-dropdown-toggle d-flex align-items-center"
+          id="dropdown-right"
+        >
+          <span><InfoCircleFill /> Información</span>
+          
         </Dropdown.Toggle>
-        <Dropdown.Menu placement="end" style={{backgroundColor: '#1d1f20', border: 'none'}} className='custom-dropdown-menu'>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Multideudores</Dropdown.Item>
-          <Dropdown.Item onClick={handleShowAddresses} className="custom-dropdown-item">Domicilios</Dropdown.Item>
-          <Dropdown.Item onClick={handleShowAditionals} className="custom-dropdown-item">Adicionales</Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">Correos</Dropdown.Item>
-          <Dropdown.Item onClick={handleShowPayments} className="custom-dropdown-item">Pagos</Dropdown.Item>
+        <Dropdown.Menu
+          placement="end"
+          style={{ backgroundColor: "#1d1f20", border: "none" }}
+          className="custom-dropdown-menu"
+        >
+          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">
+            Multideudores
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={handleShowAddresses}
+            className="custom-dropdown-item"
+          >
+            Domicilios
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={handleShowAditionals}
+            className="custom-dropdown-item"
+          >
+            Adicionales
+          </Dropdown.Item>
+          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">
+            Correos
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={handleShowPayments}
+            className="custom-dropdown-item"
+          >
+            Pagos
+          </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
 
       {/* Renderizar el modal de Payments */}
-      <Payments show={showPayments} handleClose={handleClosePayments} data={paymentsData} loadingPayments={loadingPayments} />
+      <Payments
+        show={showPayments}
+        handleClose={handleClosePayments}
+        data={paymentsData}
+        loadingPayments={loadingPayments}
+      />
 
       {/* Renderizar el modal de Addresses */}
       <Addresses show={showAddresses} handleClose={handleCloseAddresses} />
 
       {/* Renderizar el modal de Aditionals */}
-      <Aditionals show={showAditionals} handleClose={handleCloseAditionals} data={aditionalsData} loadingAditionals={loadingAditionals} />
+      <Aditionals
+        show={showAditionals}
+        handleClose={handleCloseAditionals}
+        data={aditionalsData}
+        loadingAditionals={loadingAditionals}
+      />
     </>
   );
 }
