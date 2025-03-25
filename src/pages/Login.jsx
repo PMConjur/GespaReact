@@ -15,7 +15,7 @@ import { PersonFillLock, KeyFill } from "react-bootstrap-icons";
 import "../index.css";
 import ModalChange from "../components/ModalChange"; // Import ModalChange component
 import ModalChangePassword from "../components/ModalChangePassword"; // Import ModalChangePassword component
-import logo from "../assets/img/logo-login.png";
+import logo from "../assets/img/Gespa_LogoFrame.svg";
 
 function Login() {
   const [user, setUser] = useState("");
@@ -103,66 +103,67 @@ function Login() {
         <Container className="position-absolute top-50 start-50 translate-middle ">
           <Row className="justify-content-center">
             <Col xxl={4} xl={8} md={6}>
-              <div className="">
-                <h1 className="text-white">
-                  <Image src={logo} rounded className="img-logo" />
-                  Gespa Web
+              <div className="text-center">
+                <h1 className="text-white" style={{ fontSize: "50px" }}>
+                  GESPA <Image src={logo} rounded className="img-logo" />
                 </h1>
-                <Card
-                  className="p-4 text-white shadow-lg"
-                  style={{ backgroundColor: "#1c1f24" }}
-                >
-                  <h3>Inicio sesión CJ</h3>
-
-                  <span className="bg-gray">
-                    Ingresa tu usuario de 4 dígitos y tu contraseña
-                  </span>
-
-                  <br />
-                  {/* Usuario */}
-                  <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Usuario</Form.Label>
-                    <InputGroup>
-                      <InputGroup.Text>
-                        <PersonFillLock></PersonFillLock>
-                      </InputGroup.Text>
-                      <Form.Control
-                        type="text"
-                        placeholder="Teclea tu usuario"
-                        value={user}
-                        onChange={(e) => setUser(e.target.value)}
-                      />
-                    </InputGroup>
-                  </Form.Group>
-                  {/* Contraseña */}
-                  <Form.Group className="mb-3" controlId="formBasicPassword">
-                    <Form.Label>Contraseña</Form.Label>
-                    <InputGroup>
-                      <InputGroup.Text>
-                        <KeyFill></KeyFill>
-                      </InputGroup.Text>
-                      <Form.Control
-                        type="password"
-                        placeholder="Teclea tu contraseña"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                    </InputGroup>
-                  </Form.Group>
-                  {/* Cartera */}
-                  <Form.Group className="mb-3">
-                    <Form.Label>Cartera</Form.Label>
-                    <Form.Select required>
-                      <option value="">Selecciona una cartera...</option>
-                      <option value="1">American Express</option>
-                    </Form.Select>
-                  </Form.Group>
-
-                  <Button variant="primary" type="submit" className="w-100">
-                    Ingresar
-                  </Button>
-                </Card>
               </div>
+              <br/>
+              <br/>
+              <Card
+                className="p-4 text-white shadow-lg"
+                style={{ backgroundColor: "#1c1f24" }}
+              >
+                <h3>Inicio sesión CJ</h3>
+
+                <span className="bg-gray">
+                  Ingresa tu usuario de 4 dígitos y tu contraseña
+                </span>
+
+                <br />
+                {/* Usuario */}
+                <Form.Group className="mb-3" controlId="formBasicEmail">
+                  <Form.Label>Usuario</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text>
+                      <PersonFillLock></PersonFillLock>
+                    </InputGroup.Text>
+                    <Form.Control
+                      type="text"
+                      placeholder="Teclea tu usuario"
+                      value={user}
+                      onChange={(e) => setUser(e.target.value)}
+                    />
+                  </InputGroup>
+                </Form.Group>
+                {/* Contraseña */}
+                <Form.Group className="mb-3" controlId="formBasicPassword">
+                  <Form.Label>Contraseña</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text>
+                      <KeyFill></KeyFill>
+                    </InputGroup.Text>
+                    <Form.Control
+                      type="password"
+                      placeholder="Teclea tu contraseña"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </InputGroup>
+                </Form.Group>
+                {/* Cartera */}
+                <Form.Group className="mb-3">
+                  <Form.Label>Cartera</Form.Label>
+                  <Form.Select required>
+                    <option value="">Selecciona una cartera...</option>
+                    <option value="1">American Express</option>
+                  </Form.Select>
+                </Form.Group>
+
+                <Button variant="primary" type="submit" className="w-100">
+                  Ingresar
+                </Button>
+              </Card>
             </Col>
           </Row>
         </Container>

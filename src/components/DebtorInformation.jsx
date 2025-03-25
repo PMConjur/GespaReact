@@ -67,7 +67,7 @@ const DebtorInformation = () => {
         <Times show={showModalTim} handleClose={handleCloseModalTim} />
       )}
        {/* Modal de la Calculadora */}
-       {showCalculatorModal && (
+        {showCalculatorModal && (
         <CalculatorSimulator
           show={showCalculatorModal}
           handleClose={handleCloseCalculatorModal}
