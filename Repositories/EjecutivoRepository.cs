@@ -769,10 +769,10 @@ namespace NoriAPI.Repositories
                     sResult = sResult.Replace("[" + sCampos[i] + "]", _htProducto[sCampos[i]].ToString().Trim());
             }
 
-            if (Expresión.StartsWith("#"))
+            if (Expresión.StartsWith('#'))
                 return EvaluateDate(sResult.Replace("#", ""));
 
-            else if (sCampos.Length > 1 && (Expresión.Contains("+") || Expresión.Contains("-") || Expresión.Contains("*") || Expresión.Contains("/") || Expresión.Contains("^")))
+            else if (sCampos.Length > 1 && (Expresión.Contains('+') || Expresión.Contains('-') || Expresión.Contains('*') || Expresión.Contains('/') || Expresión.Contains('^')))
                 return Evaluate(sResult);
 
             return sResult;
