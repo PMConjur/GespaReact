@@ -193,7 +193,7 @@ const Calculator = () => {
         </button>
         <button
           type="button"
-          className="equal-sign operator btn btn-primary"
+          className="equal-sign operator btn btn-success"
           value="="
           onClick={handleEqualsClick}
         >
