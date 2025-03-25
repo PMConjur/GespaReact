@@ -11,10 +11,10 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
+    "@vitejs/plugin-react": "^4.3.4",
     "apexcharts": "^4.5.0",
     "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
-    "bootstrap-icons": "^1.11.3",
     "cally": "^0.8.0",
     "react": "^19.0.0",
     "react-apexcharts": "^1.7.0",

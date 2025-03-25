@@ -626,13 +626,13 @@ export async function fetchScripts(idProducto) {
 
 
 // Endpoint de gestión TE para múltiples cuentas
-export const getGestionTeData = async (idCartera, idCuenta) => {
+export const getGestionTeData = async (idCartera, idCuenta, Top) => {
   try {
     if (!idCartera || !idCuenta) {
       throw new Error("idCartera o idCuenta no son válidos.");
     }
 
-    const url = `/ejecutivo/gestionTe/${idCartera}/${idCuenta}`;
+    const url = `/ejecutivo/gestionTe/${idCartera}/${idCuenta}/${Top}`;
     console.log("Solicitando datos de gestion Telefonica a:", url); // Depurar URL
 
     const response = await servicio.get(url);
