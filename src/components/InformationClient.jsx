@@ -48,21 +48,24 @@ const InformationClient = () => {
 
   const renderRow = (item) => {
     // Filtrar las entradas para omitir "Dif_diasTotales"
-    const entries = Object.entries(item).filter(([key]) => key !== "Dif_diasTotales");
+    const entries = Object.entries(item).filter(
+      ([key]) => key !== "Dif_diasTotales"
+    );
     const rows = [];
-  
-    for (let i = 0; i < entries.length; i += 3) { // Dividir en filas de 3 columnas
+
+    for (let i = 0; i < entries.length; i += 3) {
+      // Dividir en filas de 3 columnas
       rows.push(
-        <tr key={i} className="gap-3">
+        <tr key={i} >
           {entries.slice(i, i + 3).map(([key, value], index) => (
-            <td key={index} className="text-success">
+            <td key={index} className="text-info">
               {key}: {value || "--"}
             </td>
           ))}
         </tr>
       );
     }
-  
+
     return rows;
   };
   return (
@@ -74,11 +77,7 @@ const InformationClient = () => {
       </Card.Header>
       <Card.Body>
         <div className="table-container">
-          <Table
-            hover
-            className="table table-borderless table-custom2"
-            variant="dark"
-          >
+          <Table hover className="table table-borderless table-custom2">
             <tbody>
               {isLoading
                 ? [...Array(4)].map((_, i) => (

@@ -46,7 +46,7 @@ const NegotiationsMonth = () => {
                 <tr>
                   <th>Cuenta</th>
                   <th>Herramienta</th>
-                  <th>Estado</th>
+                  <th>Status</th>
                   <th>Fecha Creación</th>
                   <th>Fecha Término</th>
                   <th>Negociado</th>

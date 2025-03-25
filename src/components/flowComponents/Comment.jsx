@@ -21,8 +21,14 @@ const Comment = ({ comentario, isValid, onSave }) => {
 
   const handleSave = () => {
     if (valid) {
-      onSave(comment); // Envía el comentario al componente padre
-      toast.success("Comentario guardado correctamente.");
+      if (comment === "") {
+        toast.warning("El comentario no puede estar vacío."); // Muestra un mensaje de error
+        setValid(false); // Marca como no válido
+      } else {
+        onSave(comment); // Envía el comentario al componente padre
+        toast.success("Comentario guardado correctamente.");
+        setComment(""); // Limpia el campo de comentario
+      }
     }
   };
 

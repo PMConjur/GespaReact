@@ -6,7 +6,7 @@ import InformationClient from "../components/InformationClient";
 import { Row, Col, Container } from "react-bootstrap";
 import DebtorInformation from "../components/DebtorInformation";
 import Calculator from "../components/Calculator";
-import Calendar from "../components/Calendar";
+import DatePickerComponent from "../components/Calendar";
 import NavbarComponent from "../components/NavbarComponent";
 import axios from "axios";
 import { toast, Toaster } from "sonner";
@@ -16,6 +16,7 @@ import CustomToast from "../components/CustomToast";
 import Managments from "../components/Managments";
 import NotesWidget from "../components/NotesWidget";
 import { searchCustomer } from "../services/gespawebServices";
+import { Calendar } from "react-bootstrap-icons";
 // Crear el contexto
 export const AppContext = createContext();
 
@@ -245,23 +246,26 @@ const Managment = () => {
                     </Col>
                   </Row>
                   <Col xs={12}>
-                    <Managments /> {/* Componente de gestiones */}
+                    {/* <Managments /> Componente de gestiones */}
                   </Col>
                 </Col>
                 <Col xs={12} md={6} lg={4}>
-                  <Col xs={12} md={12}>
-                    <Flow /> {/* Componente con el flujo de información */}
-                  </Col>
-                  <Col xs={12} md={12}>
-                    <Calculator /> {/* Componente con la calculadora */}
-                  </Col>
-                  <Col xs={12} md={12}>
-                    <Calendar /> {/* Componente con el calendario */}
-                  </Col>
-                  {/* Componente de gestiones */}
-                  <Col>
-                    <NotesWidget /> {/* Componente de recordatorios */}
-                  </Col>
+                  <Row>
+                    <Col xs={12} md={12}>
+                      <Flow /> {/* Componente con el flujo de información */}
+                    </Col>
+                    <Col xs={6} md={6}>
+                      <Calculator /> {/* Componente con la calculadora */}
+                    </Col>
+                    <Col xs={6} md={6}>
+                      <DatePickerComponent />{" "}
+                      {/* Componente con el calendario */}
+                    </Col>
+                    {/* Componente de gestiones */}
+                    <Col xs={12} md={12}>
+                      <NotesWidget /> {/* Componente de recordatorios */}
+                    </Col>
+                  </Row>
                 </Col>
               </Row>
             </Row>
