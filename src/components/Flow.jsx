@@ -11,8 +11,7 @@ import { AppContext } from "../pages/Managment"; // Import AppContext
 import { getResponse, getValidateResponse } from "../utils/flowLogic"; // Import Response function, para la logica del funcionamiento del flujo
 import Comment from "./flowComponents/Comment";
 import FollowUps from "./memuHamburguesa/Acciones/FollowUps"; // Importa el componente FollowUps
-import CalculatorSimulator from "./CalculatorSimulator"; // Importa el componente CalculatorSimulator
-
+import CommunicationPhone from "./flowComponents/CommunicationPhone"; // Importa el componente CommunicationPhone
 const Flow = () => {
   const { selectedAnswer, setNegotiationActive, setFollowUpActive } =
     useContext(AppContext); // Agrega setFollowUpActive del contexto
@@ -160,6 +159,9 @@ const Flow = () => {
       (item) => item.idValor === 1101 || item.idValor === 1102
     );
 
+    // Calcular idComunico basado en answerHistory
+    const idComunico = answerHistory.some((item) => item.idValor === 1102);
+
     const handleAnswerChange = async (
       idPregunta,
       idRespuesta,
@@ -243,7 +245,7 @@ const Flow = () => {
           negociacion: negociacion,
           identificador: identificador
         },
-        userFlowData
+        selectedAnswer
       );
 
       const nextQuestionId = validatedNextQuestion.idSiguientePregunta;
@@ -307,11 +309,13 @@ const Flow = () => {
             {isFlowFinished ? (
               shouldShowComment ? (
                 <>
+                  <CommunicationPhone idComunico={idComunico} />
                   <Comment
                     comentario=""
                     isValid={true}
                     onSave={handleSaveComment}
                   />
+
                   {savedComment && (
                     <p className="mt-3 text-success">
                       Comentario guardado: {savedComment}

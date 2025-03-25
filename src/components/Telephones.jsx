@@ -40,7 +40,7 @@ const Telephones = () => {
         searchResults.map(async (result) => {
           return await fetchPhones(result.idCuenta);
         })
-      ); 
+      );
       const flatPhones = phones.flat();
       setData(flatPhones);
       if (flatPhones.length === 0 && !toastShown) {
@@ -200,7 +200,30 @@ const Telephones = () => {
                     className="me-2 input-phone"
                     style={{ width: "25%" }}
                     onClick={() => {
-                      setSelectedAnswer(10); // Enviar valor 10 al Form.Check en Flow.jsx
+                      setSelectedAnswer({
+                        value: 10,
+                        dataPhone: {
+                          idClase: 0,
+                          titulares: 0,
+                          conocidos: 0,
+                          desconocidos: 0,
+                          sinContacto: 0,
+                          intentosViciDial: 0,
+                          id: 0,
+                          númeroTelefónico: 0,
+                          idTelefonía: 0,
+                          idOrigen: 0,
+                          estado: 0,
+                          municipio: 0,
+                          husoHorario: 0,
+                          segHorarioContacto: 0,
+                          extensión: 0,
+                          _Confirmado: 0,
+                          fecha_Insert: 0,
+                          calificacion: 0,
+                          activo: 0
+                        }
+                      }); // Enviar valor 10 al Form.Check en Flow.jsx
                     }}
                   >
                     Llamada de entrada

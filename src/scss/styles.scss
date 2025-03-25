@@ -1230,7 +1230,7 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
 
   .rdp-nav {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     padding: 2px 4px; /* Ajustado para mejor ajuste */
     border-bottom: 1px solid #444444;
