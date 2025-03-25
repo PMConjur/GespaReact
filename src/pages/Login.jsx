@@ -119,7 +119,7 @@ function Login() {
                   className="p-4 text-white shadow-lg"
                   style={{ backgroundColor: "#1c1f24" }}
                 >
-                  <h3>Inicio sesión CJ</h3>
+                  <h3>Inicio sesión</h3>
 
                   <span className="bg-gray">
                     Ingresa tu usuario de 4 dígitos y tu contraseña

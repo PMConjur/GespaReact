@@ -4,9 +4,9 @@ import { PersonFill, Cash, CurrencyDollar } from "react-bootstrap-icons";
 import "../scss/styles.scss";
 import { useContext } from "react";
 import { AppContext } from "../pages/Managment";
-import CorazonRojo from "../assets/img/Rojo.jpeg";
-import CorazonVerde from "../assets/img/Verde.jpeg";
-import CorazonBlanco from "../assets/img/Blanco.jpeg";
+import CorazonRojo from "../assets/img/CRojo.jpg";
+import CorazonVerde from "../assets/img/CVerde.jpg";
+import CorazonBlanco from "../assets/img/CBlanco.jpg";
 
 const DataCard = () => {
   const { searchResults } = useContext(AppContext);
