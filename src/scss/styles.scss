@@ -10,11 +10,10 @@ $card-cap-bg: transparent;
 $card-spacer-y: 1.5rem;
 $card-spacer-x: 2rem;
 
-
-.icon-corazon {
-  color: #f14b41 !important;
-}
-
+// Definición de colores personalizados
+$text-color: #333333; // Color de texto predeterminado
+$primary-color: #007bff; // Color primario
+$hover-bg: #e9ecef; // Color de fondo al pasar el mouse
 
 .card {
   margin-bottom: 20px;
@@ -88,8 +87,8 @@ $card-spacer-x: 2rem;
   opacity: 0.3; /* Ajusta la opacidad si es necesario */
 }
 .img-logo {
-  width: 40px;
-  height: 40px;
+  width: 60px;
+  height: 60px;
   object-fit: contain;
 }
 
@@ -155,7 +154,7 @@ $breadcrumb-bg: rgba(#c5c5c5, 0.8);
 $breadcrumb-border-radius: 10px;
 
 // Colores
-$breadcrumb-divider-color: #6dd6ff;
+$breadcrumb-divider-color: #39fc8d;
 $breadcrumb-active-color: #e1e1e1;
 $breadcrumb-divider: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24'%3E%3Cpath fill='%236c757d' d='M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z'/%3E%3C/svg%3E");
 
@@ -293,7 +292,6 @@ $modal-transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     .btn-close {
       filter: invert(0.5);
       transition: all 0.3s ease;
-      
 
       &:hover {
         transform: rotate(90deg);
@@ -357,7 +355,7 @@ $modal-transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       position: absolute;
       top: 1rem;
       right: 1rem;
-      background: rgba(white, 1);;
+      background: rgba(white, 1);
       border-radius: 50%;
       padding: 0.5rem;
     }
@@ -465,10 +463,12 @@ $table-border-radius: 8px;
 }
 
 .table-custom2 {
+  font-family: Poppins;
+
   width: 100%;
   border-collapse: initial;
   border-spacing: 0px px;
-  padding: 1px;
+  padding: 0.5px;
   border-radius: 5px;
   thead {
     background-color: #343a40;
@@ -486,7 +486,7 @@ $table-border-radius: 8px;
     border-radius: 5px;
     tr {
       td {
-        color: #adb5bd;
+        color: #bfcddb;
         text-align: center;
         border-right: #6c757d;
       }
@@ -509,16 +509,9 @@ $table-border-radius: 8px;
   }
 
   td {
-    color: #28a745; // Color verde para valores
     padding: 10px;
-    background-color: #232629;
-  }
-  .card-info {
     background-color: #1d1f20;
-  }
-
-  .card-phones {
-    background-color: #1d1f20;
+    font-weight: 500;
   }
 }
 //termina informacion
@@ -689,7 +682,7 @@ $list-group-transition: all 0.3s ease;
 //Tamaño ventana de Flujo
 
 .flow-size {
-  height: 305px;
+  height: 355px;
 }
 //Scroll para las carda
 
@@ -972,8 +965,8 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
   border-color: #444;
 }
 
-.table-bg-action{
-  background-color: #232629 ;
+.table-bg-action {
+  background-color: #232629;
   color: white;
 }
 
@@ -988,7 +981,7 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
   width: 150px;
   padding: 5px;
   font-size: 16px;
-  border: 2px solid  #6c757d;
+  border: 2px solid #6c757d;
   border-radius: 5px;
   background-color: #6c757d;
   color: white;
@@ -1006,10 +999,10 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 //estilos de componente AccountStatements
-.custom-table-account{
-  thead{
-    th{
-      padding: .5rem 1rem;
+.custom-table-account {
+  thead {
+    th {
+      padding: 0.5rem 1rem;
     }
   }
 }
@@ -1035,7 +1028,7 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
   background: #888; /* Color del thumb al pasar el mouse */
 }
 
-.container-scroll-down{
+.container-scroll-down {
   justify-content: center;
   left: auto;
   right: auto;
@@ -1063,7 +1056,7 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
 
 .chevron:before,
 .chevron:after {
-  content: ' ';
+  content: " ";
   position: absolute;
   top: 0;
   height: 100%;
@@ -1085,7 +1078,6 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
 @keyframes move {
   25% {
     opacity: 1;
-
   }
   33% {
     opacity: 1;
@@ -1110,7 +1102,7 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
   color: #0dcaf0;
   text-transform: uppercase;
   white-space: nowrap;
-  opacity: .25;
+  opacity: 0.25;
   animation: pulse 2s linear alternate infinite;
 }
 
@@ -1139,5 +1131,298 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
 
   &::-webkit-scrollbar-track {
     background-color: #212529; /* Fondo del track */
+  }
+}
+/*------------------Calculadora--------------------*/
+/* Estilo para los botones */
+.calculator-keys {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columnas */
+  gap: 5px; /* Espacio entre botones */
+  padding: 5px;
+}
+
+.calculator button {
+  height: 45px;
+  font-size: 1.2rem; /* Tamaño de texto ajustado */
+  border-radius: 5px;
+  background-color: #646262;
+  border: 1px solid #646262;
+  transition: background-color 0.3s ease;
+}
+
+.calculator button:hover {
+  background-color: #ddd;
+}
+
+.operator {
+  background-color: #ff9900;
+  color: rgb(255, 255, 255);
+}
+
+.equal-sign {
+  grid-column: span 2; /* Ocupa dos columnas */
+  background-color: #d4dbdd;
+  color: white;
+}
+
+.function {
+  background-color: #ff6666;
+  color: white;
+}
+
+/* Respuesta a pantallas más pequeñas */
+@media (max-width: 600px) {
+  .calculator-screen {
+    font-size: 1.5rem;
+  }
+
+  .calculator-keys {
+    grid-template-columns: repeat(4, 1fr); /* Ajuste para pantallas pequeñas */
+  }
+
+  .calculator button {
+    font-size: 1.25rem; /* Ajuste del tamaño de los botones */
+  }
+}
+
+/* Estilos para el calendario */
+.calendar-header {
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.calendar-nav-btn {
+  padding: 0.2rem 0.8rem;
+  font-size: 1.2rem;
+  border-radius: 50%;
+}
+
+.calendar-table {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 400px;
+  border-collapse: collapse;
+
+  th {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 0.5rem;
+  }
+
+  td {
+    font-size: 1rem;
+    padding: 0.8rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+
+    &.bg-info {
+      background-color: #17a2b8 !important;
+      color: #fff !important;
+    }
+
+    &:hover {
+      background-color: #343a40;
+      color: #fff;
+    }
+  }
+}
+
+.date-picker-container {
+  font-family: "Arial", sans-serif;
+  max-width: 320px;
+  margin: 20px auto;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  .picker-title {
+    color: $text-color;
+    margin-bottom: 16px;
+    font-size: 1.2rem;
+    text-align: center;
+  }
+
+  .rdp {
+    margin: 0;
+
+    &-caption {
+      color: $primary-color;
+      font-weight: bold;
+    }
+
+    &-day {
+      border-radius: 4px;
+      margin: 2px;
+      transition: all 0.2s;
+
+      &:hover:not(.selected-day) {
+        background-color: $hover-bg;
+      }
+    }
+
+    .selected-day {
+      background-color: $primary-color !important;
+      color: white !important;
+    }
+
+    .today-day {
+      font-weight: bold;
+      color: $primary-color;
+    }
+  }
+
+  .selected-date-text {
+    margin-top: 12px;
+    color: darken($text-color, 10%);
+    text-align: center;
+    font-size: 0.9rem;
+  }
+}
+
+/* Estilos personalizados para el calendario */
+
+.date-picker-container {
+  font-family: "Poppins", sans-serif;
+  max-width: 280px; /* Ajustar el ancho */
+  margin: 0 auto; /* Centrar el calendario */
+  padding: 10px;
+  background-color: #000000; /* Fondo negro */
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  color: #ffffff;
+
+  .custom-day-picker {
+    .rdp-caption {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #ffffff;
+      font-weight: bold;
+      margin-bottom: 10px;
+
+      .rdp-caption_label {
+        text-transform: capitalize;
+        font-size: 1rem;
+      }
+
+      .rdp-nav_button {
+        background: none;
+        border: none;
+        color: #ffffff;
+        font-size: 15px;
+        cursor: pointer;
+        transition: color 0.3s ease;
+
+        &:hover {
+          color: #007bff;
+        }
+      }
+    }
+
+    .rdp-head_row {
+      color: #cccccc;
+      font-size: 0.9rem;
+    }
+
+    .rdp-day {
+      width: 35px;
+      height: 35px;
+      line-height: 35px;
+      text-align: center;
+      margin: 2px;
+      border-radius: 50%;
+      font-size: 0.85rem;
+      transition: background-color 0.3s ease, color 0.3s ease;
+
+      &:hover:not(.rdp-day_disabled):not(.selected-day) {
+        background-color: #343a40;
+        color: #ffffff;
+      }
+    }
+
+    .selected-day {
+      background-color: #007bff !important;
+      color: #ffffff !important;
+    }
+
+    .today-day {
+      border: 2px solid #007bff;
+      color: #007bff;
+    }
+
+    .rdp-day_disabled {
+      color: #555555;
+      cursor: not-allowed;
+    }
+  }
+
+  .selected-date-text {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #cccccc;
+  }
+}
+
+.calendar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 300px; /* Ajustar al tamaño de la calculadora */
+  margin: 0 auto;
+  padding: 10px;
+  background-color: #000000;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  color: #ffffff;
+
+  .calendar-keys {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); /* 7 columnas para los días */
+    gap: 5px;
+    padding: 5px;
+ 
+    .rdp-day {
+      width: 35px;
+      height: 35px;
+      
+      text-align: center;
+      margin: 1px;
+      border-radius: 5px;
+      font-size: 10px;
+      background-color: #1d1f20;
+      color: #ffffff;
+      transition: background-color 0.3s ease, color 0.3s ease;
+
+      &:hover:not(.rdp-day_disabled):not(.selected-day) {
+        background-color: #343a40;
+        color: #ffffff;
+      }
+    }
+
+    .selected-day {
+      background-color: #007bff !important;
+      color: #ffffff !important;
+    }
+
+    .today-day {
+      border: 2px solid #007bff;
+      color: #007bff;
+    }
+
+    .rdp-day_disabled {
+      color: #555555;
+      cursor: not-allowed;
+    }
+  }
+
+  .calendar-screen {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #cccccc;
   }
 }

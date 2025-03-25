@@ -3,15 +3,15 @@ import Home1 from "../assets/img/CallCenter.svg"; // Asegúrate de que la imagen
 
 import NavbarComponent from "../components/NavbarComponent";
 import Productivity from "../components/Productivity";
-import { Modal } from "react-bootstrap";
-import ProductivityModal from "../components/ProductivityModal";
 
+import ProductivityModal from "../components/ProductivityModal";
+import { CheckCircleFill } from "react-bootstrap-icons";
 const Home = () => {
   return (
     <>
       <NavbarComponent></NavbarComponent>
 
-      <main id="main" data-bs-theme="dark" style={{ minHeight: "100vh" }}>
+      <main id="main" data-bs-theme="dark" style={{}}>
         <div className="jumbotron" style={{ marginTop: "60px" }}>
           <div className="row">
             <div
@@ -19,11 +19,11 @@ const Home = () => {
               style={{
                 backgroundColor: "black",
                 color: "white",
-                height: "100vh",
+                height: "65vh",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
-                alignItems: "center",
+                alignItems: "center"
               }}
             >
               {/* Imagen CallCenter.svg */}
@@ -33,29 +33,21 @@ const Home = () => {
                 style={{
                   maxWidth: "80%",
                   height: "auto",
-                  marginBottom: "20px",
+                  marginBottom: "20px"
                 }}
               />
 
-              <span
+              <h1
                 className="pagetitlehome-max-size"
-                style={{ fontSize: "2rem" }}
+                style={{ fontFamily: "Poppins" }}
               >
-                Bienvenido a Gespa Web
-              </span>
+                Bienvenido a Gespa
+              </h1>
               <span
                 className="pagetitlehome-max"
-                style={{ fontSize: "1.5rem" }}
+                style={{ fontSize: "1.2rem", fontFamily: "Poppins" }}
               >
                 Gestionando Con Pasión
-              </span>
-
-              {/* Colocando el texto en la parte inferior */}
-              <span style={{ marginTop: "auto" }}>
-                <p style={{ textAlign: "left", color: "white" }}>
-                  El éxito es la suma de pequeños esfuerzos repetidos día tras
-                  día.
-                </p>
               </span>
             </div>
 
@@ -64,11 +56,11 @@ const Home = () => {
               style={{
                 backgroundColor: "black",
                 color: "black",
-                height: "100vh",
+                height: "75vh",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
-                alignItems: "center",
+                alignItems: "center"
               }}
             >
               <div className="card-body" style={{ textAlign: "center" }}>
@@ -79,10 +71,10 @@ const Home = () => {
                     fontSize: "50px",
                     textAlign: "center",
                     display: "block", // Asegura que el span ocupe todo el ancho
+                    fontFamily: "Poppins"
                   }}
                 >
-                  <i className="bi bi-exclamation-triangle"></i> Tus Metas Mes
-                  Son
+                  <CheckCircleFill /> Tus metas del mes son.
                 </span>
                 <br />
                 <span className="pagetitle-max">
@@ -94,22 +86,27 @@ const Home = () => {
                 </p>
                 <Productivity />{" "}
                 {/* Se ha agregado el componente Productivity */}
+                {/* Colocando el texto en la parte inferior */}
+                <span style={{ marginTop: "auto" }}>
+                  <h5 style={{ textAlign: "center", color: "white" }}>
+                    El éxito es la suma de pequeños esfuerzos repetidos día tras
+                    día.
+                  </h5>
+                </span>
               </div>
             </div>
           </div>
         </div>
-
-        <section className="section dashboard"></section>
       </main>
 
       {/* Footer */}
       <footer
         style={{
-          backgroundColor: "#6c757d",
+          backgroundColor: "#212529",
           color: "white",
           padding: "10px",
           textAlign: "center",
-          marginTop: "auto",
+          marginTop: "auto"
         }}
       >
         <p>&copy; {new Date().getFullYear()} Derechos reservados - Gespa Web</p>

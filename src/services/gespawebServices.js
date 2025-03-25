@@ -650,7 +650,8 @@ export const getGestionTeData = async (idCartera, idCuenta) => {
   
     throw error;
   }
-};
+
+}; 
 
 
 // Endpoint Recordatorios
