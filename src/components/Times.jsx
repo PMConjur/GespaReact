@@ -1,61 +1,50 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { Modal, Button, Form, Container, Row } from "react-bootstrap";
 import TableTimes from "./TableTimes";
 import { toast } from "sonner";
 import { userTimesUpdate } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 
+const REASON_OPTIONS = [
+    "Permiso", "Curso", "Calidad", "Comida", "Baño"
+];
+
 const Times = ({ show, handleClose }) => {
+    const { idEjecutivo } = useContext(AppContext);
+    const intervalRef = useRef(null);
 
-    const {idEjecutivo} = useContext(AppContext);
-
-    const [executiveId, setExecutiveId] = useState(idEjecutivo || null);
     const [selectedReason, setSelectedReason] = useState("");
-    const [timers, setTimers] = useState({});
+    const [timers, setTimers] = useState(
+        Object.fromEntries(REASON_OPTIONS.map(reason => [reason, 0]))
+    );
     const [currentTimer, setCurrentTimer] = useState(0);
-    const [intervalId, setIntervalId] = useState(null);
     const [isPaused, setIsPaused] = useState(false);
     const [contrasenia, setContrasenia] = useState("");
 
-    // Inicializar timers y obtener ID de ejecutivo si no está disponible
     useEffect(() => {
-        if (!executiveId) {
-            const responseDataString = sessionStorage.getItem("responseData");
-            if (responseDataString) {
-                try {
-                    const responseData = JSON.parse(responseDataString);
-                    setExecutiveId(responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo || null);
-                } catch (error) {
-                    console.error("Error al parsear responseData:", error);
-                }
-            }
-        }
-
-        setTimers({
-            Permiso: 0,
-            Curso: 0,
-            Calidad: 0,
-            Comida: 0,
-            Baño: 0,
-        });
-
         return () => {
-            if (intervalId) clearInterval(intervalId);
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
         };
     }, []);
 
-    const handleStartTimer = () => {
+    const validateReason = () => {
         if (!selectedReason || selectedReason === "Selecciona") {
             toast.error("Por favor seleccione una razón válida.");
-            return;
+            return false;
         }
+        return true;
+    };
+
+    const handleStartTimer = () => {
+        if (!validateReason()) return;
 
         setIsPaused(true);
         setCurrentTimer(0);
-        const newIntervalId = setInterval(() => {
+        intervalRef.current = setInterval(() => {
             setCurrentTimer(prev => prev + 1);
         }, 1000);
-        setIntervalId(newIntervalId);
     };
 
     const handleStopTimer = async () => {
@@ -64,18 +53,15 @@ const Times = ({ show, handleClose }) => {
             return;
         }
 
-        if (!selectedReason || selectedReason === "Selecciona") {
-            toast.error("Error: Seleccione una razón válida.");
-            return;
-        }
+        if (!validateReason()) return;
 
-        clearInterval(intervalId);
-        setIntervalId(null);
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
         setIsPaused(false);
 
         const updatedTimers = {
             ...timers,
-            [selectedReason]: (timers[selectedReason] || 0) + currentTimer,
+            [selectedReason]: timers[selectedReason] + currentTimer,
         };
 
         setTimers(updatedTimers);
@@ -84,7 +70,7 @@ const Times = ({ show, handleClose }) => {
         try {
             const duracion = new Date(currentTimer * 1000).toISOString().substr(11, 8);
             await userTimesUpdate({
-                idEjecutivo: executiveId,
+                idEjecutivo: idEjecutivo,
                 contrasenia: contrasenia.trim(),
                 peCausa: selectedReason,
                 duracion: duracion,
@@ -97,13 +83,14 @@ const Times = ({ show, handleClose }) => {
     };
 
     const formatTime = (seconds) => {
+        if (seconds === null || isNaN(seconds)) return "--:--:--";
         const hrs = Math.floor(seconds / 3600).toString().padStart(2, "0");
         const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, "0");
         const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
         return `${hrs}:${mins}:${secs}`;
     };
 
-    if (!executiveId) {
+    if (!idEjecutivo) {
         return (
             <div className="alert alert-warning text-center" role="alert">
                 ⚠️ No se encontró un ID de ejecutivo válido. Verifica tu sesión.
@@ -133,11 +120,9 @@ const Times = ({ show, handleClose }) => {
                                 disabled={isPaused}
                             >
                                 <option>Selecciona</option>
-                                <option value="Permiso">Permiso</option>
-                                <option value="Curso">Curso</option>
-                                <option value="Calidad">Calidad</option>
-                                <option value="Comida">Comida</option>
-                                <option value="Baño">Baño</option>
+                                {REASON_OPTIONS.map(option => (
+                                    <option key={option} value={option}>{option}</option>
+                                ))}
                             </Form.Select>
                         </Form.Group>
                     </Row>

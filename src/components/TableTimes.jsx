@@ -5,59 +5,26 @@ import { userTimes } from "../services/gespawebServices";
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
 
+const TIME_CATEGORIES = [
+    'cuentas', 'negociacion', 'titulares', 
+    'conocidos', 'desconocidos', 'sinContacto',
+    'Permiso', 'Curso', 'Calidad', 'Comida', 'Baño'
+];
+
 const TableTimes = ({ updatedTimes }) => {
     const { idEjecutivo } = useContext(AppContext);
 
-    const [executiveId, setExecutiveId] = useState(idEjecutivo || null);
     const [timesData, setTimesData] = useState({
-        total: {
-            cuentas: "--:--:--",
-            negociacion: "--:--:--",
-            titulares: "--:--:--",
-            conocidos: "--:--:--",
-            desconocidos: "--:--:--",
-            sinContacto: "--:--:--",
-            Permiso: "--:--:--",
-            Curso: "--:--:--",
-            Calidad: "--:--:--",
-            Comida: "--:--:--",
-            Baño: "--:--:--",
-        },
-        promedio: {
-            cuentas: "--:--:--",
-            negociacion: "--:--:--",
-            titulares: "--:--:--",
-            conocidos: "--:--:--",
-            desconocidos: "--:--:--",
-            sinContacto: "--:--:--",
-            Permiso: "--:--:--",
-            Curso: "--:--:--",
-            Calidad: "--:--:--",
-            Comida: "--:--:--",
-            Baño: "--:--:--",
-        },
+        total: Object.fromEntries(TIME_CATEGORIES.map(cat => [cat, "--:--:--"])),
+        promedio: Object.fromEntries(TIME_CATEGORIES.map(cat => [cat, "--:--:--"]))
     });
 
     useEffect(() => {
-        if (!executiveId) {
-            const responseDataString = sessionStorage.getItem("responseData");
-            if (responseDataString) {
-                try {
-                    const responseData = JSON.parse(responseDataString);
-                    setExecutiveId(responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo || null);
-                } catch (error) {
-                    console.error("Error al parsear responseData:", error);
-                }
-            }
-        }
-    }, []);
-
-    useEffect(() => {
-        if (!executiveId) return;
+        if (!idEjecutivo) return;
 
         const fetchTimes = async () => {
             try {
-                const data = await userTimes(executiveId);
+                const data = await userTimes(idEjecutivo);
                 
                 if (!data || !data.resultadosTiempos) {
                     toast.warning("No hay datos de tiempos disponibles");
@@ -65,31 +32,33 @@ const TableTimes = ({ updatedTimes }) => {
                 }
 
                 const tiempos = data.resultadosTiempos;
-                const processTime = (timeValue) => {
-                    if (timeValue == null || isNaN(timeValue) || timeValue === "") {
-                        return "--:--:--";
-                    }
-                    return formatTime(Number(timeValue));
-                };
-
+                
                 setTimesData({
                     total: {
-                        cuentas: processTime(tiempos.tiempoCuentas),
-                        negociacion: processTime(tiempos.tiempoNegociaciones),
-                        titulares: processTime(tiempos.tiempoTitulares),
-                        conocidos: processTime(tiempos.tiempoConocidos),
-                        desconocidos: processTime(tiempos.tiempoDesconocidos),
-                        sinContacto: processTime(tiempos.tiempoSinContacto),
-                        Permiso: processTime(tiempos.tiempoPermiso),
-                        Curso: processTime(tiempos.tiempoCurso),
-                        Calidad: processTime(tiempos.tiempoCalidad),
-                        Comida: processTime(tiempos.tiempoComida),
-                        Baño: processTime(tiempos.tiempoBaño),
+                        cuentas: tiempos.tiempoCuentas || "--:--:--",
+                        negociacion: tiempos.tiempoNegociaciones || "--:--:--",
+                        titulares: tiempos.tiempoTitulares || "--:--:--",
+                        conocidos: tiempos.tiempoConocidos || "--:--:--",
+                        desconocidos: tiempos.tiempoDesconocidos || "--:--:--",
+                        sinContacto: tiempos.tiempoSinContacto || "--:--:--",
+                        Permiso: tiempos.tiempoPermiso || "--:--:--",
+                        Curso: tiempos.tiempoCurso || "--:--:--",
+                        Calidad: tiempos.tiempoCalidad || "--:--:--",
+                        Comida: tiempos.tiempoComida || "--:--:--",
+                        Baño: tiempos.tiempoBaño || "--:--:--",
                     },
                     promedio: {
-                        ...Object.fromEntries(
-                            Object.keys(timesData.promedio).map(key => [key, processTime(tiempos[key])])
-                        )
+                        cuentas: tiempos.promedioCuentas || "--:--:--",
+                        negociacion: tiempos.promedioNegociaciones || "--:--:--",
+                        titulares: tiempos.promedioTitulares || "--:--:--",
+                        conocidos: tiempos.promedioConocidos || "--:--:--",
+                        desconocidos: tiempos.promedioDesconocidos || "--:--:--",
+                        sinContacto: tiempos.promedioSinContacto || "--:--:--",
+                        Permiso: tiempos.promedioPermiso || "--:--:--",
+                        Curso: tiempos.promedioCurso || "--:--:--",
+                        Calidad: tiempos.promedioCalidad || "--:--:--",
+                        Comida: tiempos.promedioComida || "--:--:--",
+                        Baño: tiempos.promedioBaño || "--:--:--",
                     }
                 });
             } catch (error) {
@@ -98,46 +67,27 @@ const TableTimes = ({ updatedTimes }) => {
         };
 
         fetchTimes();
-    }, [executiveId]);
+    }, [idEjecutivo]);
 
-    // Efecto corregido para updatedTimes
     useEffect(() => {
         if (updatedTimes) {
             setTimesData(prev => ({
                 ...prev,
                 total: {
                     ...prev.total,
-                    ...Object.fromEntries(
-                        Object.entries(updatedTimes).map(([key, value]) => 
-                            [key, formatTime(value)]
-                        )
-                    )
+                    ...updatedTimes
                 }
             }));
         }
     }, [updatedTimes]);
 
-    const formatTime = (seconds) => {
-        if (seconds === null || seconds === undefined || isNaN(seconds)) {
-            return "--:--:--";
-        }
-        if (seconds === 0) {
-            return "00:00:00";
-        }
-        
-        const hrs = Math.floor(seconds / 3600).toString().padStart(2, "0");
-        const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, "0");
-        const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
-        return `${hrs}:${mins}:${secs}`;
-    };
-
     const renderRows = (type) => {
-        return Object.keys(timesData[type]).map((key) => (
+        return TIME_CATEGORIES.map((key) => (
             <td key={key} style={{ minWidth: "100px" }}>{timesData[type][key]}</td>
         ));
     };
 
-    if (!executiveId) {
+    if (!idEjecutivo) {
         return (
             <div className="alert alert-warning text-center" role="alert">
                 ⚠️ No se encontró un ID de ejecutivo válido. Verifica tu sesión.
@@ -150,17 +100,11 @@ const TableTimes = ({ updatedTimes }) => {
             <thead>
                 <tr>
                     <th>Indicador</th>
-                    <th style={{ minWidth: "100px" }}>Cuentas</th>
-                    <th style={{ minWidth: "100px" }}>Negociación</th>
-                    <th style={{ minWidth: "100px" }}>Titulares</th>
-                    <th style={{ minWidth: "100px" }}>Conocidos</th>
-                    <th style={{ minWidth: "100px" }}>Desconocidos</th>
-                    <th style={{ minWidth: "100px" }}>Sin contacto</th>
-                    <th style={{ minWidth: "100px" }}>Permiso</th>
-                    <th style={{ minWidth: "100px" }}>Curso</th>
-                    <th style={{ minWidth: "100px" }}>Calidad</th>
-                    <th style={{ minWidth: "100px" }}>Comida</th>
-                    <th style={{ minWidth: "100px" }}>Baño</th>
+                    {TIME_CATEGORIES.map(category => (
+                        <th key={category} style={{ minWidth: "100px" }}>
+                            {category.charAt(0).toUpperCase() + category.slice(1)}
+                        </th>
+                    ))}
                 </tr>
             </thead>
             <tbody>

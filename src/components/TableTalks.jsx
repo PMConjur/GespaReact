@@ -64,7 +64,8 @@ const TableTalks = ({ customColumnNames = {} }) => {
     const hiddenFieldstalks = [
         "Fecha_Insert",
         "Segundo_Insert",
-        "idHerramienta"
+        "idHerramienta",
+        "idEstado"
     ];
 
     // ✅ Renombrar los encabezados de la tabla

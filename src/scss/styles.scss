@@ -1477,3 +1477,8 @@ $pagination-disabled-border-color: #ffffff;
   border-color: #6c757d;
 }
 
+
+.selected-row {
+  background-color: #0dcaf0 !important; // Color de fondo para la fila seleccionada
+  color: #fff !important; // Color del texto para mayor contraste
+}

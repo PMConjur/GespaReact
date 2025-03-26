@@ -3,9 +3,10 @@ import { Modal, Button, Form, Table, Card, Row, Col } from "react-bootstrap";
 import "../scss/styles.scss";
 import { fetchCalFirtsPart, fetchCalSecondPart, fetchCalSecondPartModify } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
+import { toast } from "sonner";
 
 const CalculatorSimulator = ({show, handleClose}) => {
-  const { searchResults } = useContext(AppContext); // Obtiene searchResults desde AppContext
+  const { searchResults,  } = useContext(AppContext); // Obtiene searchResults desde AppContext
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [tableData, setTableData] = useState([]);
   const [summaryData, setSummaryData] = useState({
@@ -46,6 +47,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
     agregarPagos: false,
     filaMod: null,
   });
+  const [selectedRow, setSelectedRow] = useState(null); // Estado para almacenar la fila seleccionada
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -146,19 +148,25 @@ const CalculatorSimulator = ({show, handleClose}) => {
   const handleCalculateSecondPart = async () => {
     const idCuenta = searchResults?.[0]?.idCuenta?.trim();
     try {
+      // Validar los datos antes de enviarlos
+      if (!selectedHerramienta || !idCuenta || !formValues.montoRequerido || !formValues.descuento || !formInputs.fechaPago) {
+        console.error("Datos incompletos. Verifica los campos antes de enviar.");
+        toast.error("Por favor, completa todos los campos requeridos.");
+        return;
+      }
+  
       const requestData = {
-        idHerramienta: selectedHerramienta, // Enviar el idHerramienta seleccionado
+        idHerramienta: selectedHerramienta,
         NoCuenta: idCuenta,
         idCartera: 1,
-        MontoRequerido: parseFloat(formValues.montoRequerido) || 0, // Toma el valor ingresado en el formulario
-        Descuento: parseFloat(formValues.descuento) || 0, // Toma el valor ingresado en el formulario
-        iMeses: parseInt(formInputs.meses, 10) || 0, // Toma el valor ingresado en el formulario
-        dtpFecha: formInputs.fechaPago || "", // Toma el valor ingresado en el formulario
-        periodo: 1,
-
+        MontoRequerido: parseFloat(formValues.montoRequerido) || 0,
+        Descuento: parseFloat(formValues.descuento) || 0,
+        iMeses: parseInt(formInputs.meses, 10) || 0,
+        dtpFecha: formInputs.fechaPago || "",
+        periodos: parseInt(formInputs.periodos, 10) || 1,
       };
   
-      console.log("Enviando datos al endpoint fetchCalSecondPart:", requestData);
+      console.log("Datos enviados al endpoint fetchCalSecondPart:", requestData);
   
       const response = await fetchCalSecondPart(
         requestData.idCartera,
@@ -168,11 +176,11 @@ const CalculatorSimulator = ({show, handleClose}) => {
         requestData.Descuento,
         requestData.iMeses,
         requestData.dtpFecha,
-        requestData.periodo
+        requestData.periodos
       );
   
       console.log("Respuesta del endpoint fetchCalSecondPart:", response);
-      // Aquí puedes manejar la respuesta como desees
+      toast.success("Cálculo realizado correctamente.");
       setCalculosData({
         plazos: response.plazos,
         primerPago: response.pago,
@@ -183,8 +191,11 @@ const CalculatorSimulator = ({show, handleClose}) => {
       });
     } catch (error) {
       console.error("Error al enviar los datos al endpoint fetchCalSecondPart:", error);
+      const errorMessage = error.response?.data?.errors || "Error desconocido al realizar el cálculo.";
+      toast.error(errorMessage);
     }
   };
+  
 
   const handleSetFormValues = () => {
     setFormValues({
@@ -219,6 +230,13 @@ const CalculatorSimulator = ({show, handleClose}) => {
   const handleModifyPayment = async () => {
     const idCuenta = searchResults?.[0]?.idCuenta?.trim();
     try {
+      // Validar los datos antes de enviarlos
+      if (!selectedHerramienta || !idCuenta || !modifyForm.montoMod || !modifyForm.fechaPagoMod) {
+        console.error("Datos incompletos. Verifica los campos antes de enviar.");
+        toast.error("Por favor, completa todos los campos requeridos.");
+        return;
+      }
+  
       const requestData = {
         idHerramienta: selectedHerramienta,
         NoCuenta: idCuenta,
@@ -227,16 +245,16 @@ const CalculatorSimulator = ({show, handleClose}) => {
         Descuento: parseFloat(formValues.descuento) || 0,
         iMeses: parseInt(formInputs.meses, 10) || 0,
         dtpFecha: formInputs.fechaPago || "",
-        periodos: 1,
-        modificar: modifyForm.modificar,
+        periodos: parseInt(formInputs.periodos, 10) || 1, // Asigna el valor seleccionado en el select
+        modificar: 1, // Siempre se envía 1 al hacer clic en el botón "Modificar"
         montoMod: parseFloat(modifyForm.montoMod) || 0,
         fechaPagoMod: modifyForm.fechaPagoMod,
-        agregarPagos: modifyForm.agregarPagos,
+        agregarPagos: modifyForm.agregarPagos ? 1 : 0, // 1 si el checkbox está marcado, 0 si no
         filaMod: modifyForm.filaMod,
       };
-
-      console.log("Enviando datos al endpoint fetchCalSecondPartModify:", requestData);
-
+  
+      console.log("Datos enviados al endpoint fetchCalSecondPartModify:", requestData);
+  
       const response = await fetchCalSecondPartModify(
         requestData.idCartera,
         requestData.NoCuenta,
@@ -252,11 +270,37 @@ const CalculatorSimulator = ({show, handleClose}) => {
         requestData.agregarPagos,
         requestData.filaMod
       );
-
+  
       console.log("Respuesta del endpoint fetchCalSecondPartModify:", response);
-      // Manejar la respuesta según sea necesario
+  
+      // Actualizar los datos en la tabla y el formulario
+      setCalculosData({
+        plazos: response.plazos,
+        primerPago: response.pago,
+        saldo: response.montoRequerido,
+        montoNegociado: response.montoNegociado,
+        descuento: response.descuento,
+        calculos: response.calculos,
+        tasaMensual: response.tasaMensual, // Agregar la tasa mensual al estado
+      });
+  
+      toast.success("Datos enviados correctamente.");
     } catch (error) {
       console.error("Error al enviar los datos al endpoint fetchCalSecondPartModify:", error);
+      const errorMessage = error.response?.data?.title || "Error desconocido al enviar los datos.";
+      toast.error(errorMessage);
+    }
+  };
+  
+
+  const handleRowClick = (index) => {
+    if (!modifyForm.agregarPagos) { // Solo permite seleccionar filas si el checkbox no está marcado
+      console.log("Fila seleccionada:", index); // Depuración
+      setSelectedRow(index); // Actualiza el índice de la fila seleccionada
+      setModifyForm((prev) => ({
+        ...prev,
+        filaMod: index, // Actualiza filaMod con el índice seleccionado
+      }));
     }
   };
 
@@ -543,9 +587,15 @@ const CalculatorSimulator = ({show, handleClose}) => {
                           />
                         </Form.Group>
                         <Form.Group className="mt-3">
-                          <Form.Control 
-                          placeholder="Periodo"
-                          type="text" />
+                          <Form.Select
+                            name="periodos"
+                            value={formInputs.periodos || 1} // Valor por defecto: 1 (Mes)
+                            onChange={handleInputChange} // Actualiza el estado formInputs
+                          >
+                            <option value="1">Mensual</option>
+                            <option value="2">Quincenal</option>
+                            <option value="4">Semanal</option>
+                          </Form.Select>
                         </Form.Group>
                       </Row>
                       <Row className="d-flex w-100">
@@ -587,83 +637,54 @@ const CalculatorSimulator = ({show, handleClose}) => {
                       <Row >
                       <Col>
                         <h6>Plazos</h6>
-                        <h5>{calculosData.plazos}</h5>
+                        <h5>{calculosData.plazos || 0}</h5>
                       </Col>
                       <Col>
                         <h6>Primer Pago</h6>
-                        <h5>${calculosData.primerPago.toFixed(2)}</h5>
+                        <h5>${(calculosData.primerPago || 0).toFixed(2)}</h5>
                       </Col>
                       <Col>
                         <h6>Saldo</h6>
-                        <h5>${calculosData.saldo.toFixed(2)}</h5>
+                        <h5>${(calculosData.saldo || 0).toFixed(2)}</h5>
                       </Col>
                       </Row>
                       <Row>
                       <Col>
                         <h6>Monto Negociado</h6>
-                        <h5>${calculosData.montoNegociado.toFixed(2)}</h5>
+                        <h5>${(calculosData.montoNegociado || 0).toFixed(2)}</h5>
                       </Col>
                       <Col>
                         <h6>Descuento</h6>
-                        <h5>${calculosData.descuento.toFixed(2)}</h5>
+                        <h5>{(calculosData.descuento || 0).toFixed(2)}</h5>
+                      </Col>
+                      <Col>
+                        <h6>Tasa Mensual</h6>
+                        <h5>{calculosData.tasaMensual ? `${calculosData.tasaMensual}%` : "N/A"}</h5> {/* Mostrar la tasa mensual */}
                       </Col>
                       </Row> 
                     </Row>
                   </Card.Body>
                 </Card>
-                </Col>
-
-                <Col className=" ">
-                 {/* Plazos */}
-                 <Card className="mb-0">
-                  <Card.Body className="">
-                    <h6>Plazos</h6>
-                    <Table striped bordered hover variant="dark">
-                      <thead>
-                        <tr>
-                          <th>No.</th>
-                          <th>Fecha</th>
-                          <th>Saldo</th>
-                          <th>Pago</th>
-                          <th>Saldo Final</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {calculosData.calculos.length > 0 ? (
-                          calculosData.calculos.map((calculo, index) => (
-                            <tr key={index}>
-                              <td>{calculo.no}</td>
-                              <td>{new Date(calculo.fecha).toLocaleDateString()}</td>
-                              <td>${calculo.saldo.toFixed(2)}</td>
-                              <td>${calculo.pago.toFixed(2)}</td>
-                              <td>${calculo.saldoFinal.toFixed(2)}</td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan="5" className="text-center">
-                              No hay datos 
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </Table>
-                  </Card.Body>
-                </Card>
-                </Col>
-
-                {/* Pagos */}
-                <Card className="mt-0">
+                  {/* Pagos */}
+                  <Card className="mt-0">
                   <Card.Body>
-                    <Form style={{alignItems: 'end'}} className=" d-flex gap-3 me-3">
-                    <h6>Pagos</h6>
-                      <Form.Check
-                        type="checkbox"
-                        label="Pago Inicial"
-                        name="modificar"
-                        checked={modifyForm.modificar}
-                        onChange={handleModifyFormChange}
-                      />
+                  <div className="d-flex gap-3 mb-3">
+                      <h6>Pagos</h6>
+                    <Form.Check
+                          type="checkbox"
+                          label="Pago Inicial"
+                          name="agregarPagos"
+                          checked={modifyForm.agregarPagos}
+                          onChange={(e) =>
+                            setModifyForm((prev) => ({
+                              ...prev,
+                              agregarPagos: e.target.checked, // Cambia el valor de agregarPagos según el estado del checkbox
+                              filaMod: e.target.checked ? 0 : null, // Si está marcado, establece filaMod en 0; si no, lo resetea
+                            }))
+                          }
+                        />
+                      </div>
+                    <Form style={{alignItems: 'end'}} className=" d-flex gap-3">
                       <Form.Group className="">
                         <Form.Label>
                           Seleccione el pago para modificar
@@ -685,34 +706,71 @@ const CalculatorSimulator = ({show, handleClose}) => {
                         onChange={handleModifyFormChange}
                         />
                       </Form.Group>
-                      <Form.Group className="">
-                        <Form.Check
-                          ty
-                          
-                          pe="checkbox"
-                          label="Agregar Pagos"
-                          name="agregarPagos"
-                          checked={modifyForm.agregarPagos}
-                          onChange={handleModifyFormChange}
-                        />
-                      </Form.Group>
-                      <Form.Group className="">
-                        <Form.Label>Fila Modificar</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="filaMod"
-                          value={modifyForm.filaMod || ""}
-                          onChange={handleModifyFormChange}
-                        />
-                      </Form.Group>
+                      
                       <div>
-                      <Button variant="primary" onClick={handleModifyPayment}>
-                        Modificar
-                      </Button>
+                        <Button
+                          variant="primary"
+                          onClick={() => {
+                            setModifyForm((prev) => ({ ...prev, modificar: 1 })); // Cambia "modificar" a 1 al hacer clic
+                            handleModifyPayment();
+                          }}
+                        >
+                          Modificar
+                        </Button>
                       </div>
                     </Form>
                   </Card.Body>
                 </Card>
+                </Col>
+
+                <Col className=" ">
+                 {/* Plazos */}
+                 <Card className="mb-0">
+                  <Card.Body className="">
+                    <h6>Plazos</h6>
+                    <Table striped bordered hover variant="dark">
+                      <thead>
+                        <tr>
+                          <th>No.</th>
+                          <th>Fecha</th>
+                          <th>Saldo</th>
+                          <th>Pago</th>
+                          <th>Saldo Final</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Array.isArray(calculosData.calculos) && calculosData.calculos.length > 0 ? (
+                          calculosData.calculos.map((calculo, index) => (
+                            <tr
+                              key={index}
+                              onClick={() => handleRowClick(index)} // Maneja el clic en la fila
+                              style={{
+                                cursor: modifyForm.agregarPagos ? "not-allowed" : "pointer", // Deshabilita el cursor si el checkbox está marcado
+                                backgroundColor: selectedRow === index ? "#0dcaf0" : "transparent", // Aplica el color directamente
+                                color: selectedRow === index ? "#fff" : "inherit", // Cambia el color del texto si está seleccionada
+                              }}
+                            >
+                              <td>{calculo.no}</td>
+                              <td>{new Date(calculo.fecha).toLocaleDateString()}</td>
+                              <td>${(calculo.saldo || 0).toFixed(2)}</td>
+                              <td>${(calculo.pago || 0).toFixed(2)}</td>
+                              <td>${(calculo.saldoFinal || 0).toFixed(2)}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="5" className="text-center">
+                              No hay datos 
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </Table>
+                  </Card.Body>
+                </Card>
+                </Col>
+
+              
               </Row>
             </Col>
           </Col>
