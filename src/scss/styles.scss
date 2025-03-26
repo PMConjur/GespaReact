@@ -1426,3 +1426,8 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
     color: #cccccc;
   }
 }
+
+.selected-row {
+  background-color: #0dcaf0 !important; // Color de fondo para la fila seleccionada
+  color: #fff !important; // Color del texto para mayor contraste
+}

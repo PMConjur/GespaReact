@@ -899,11 +899,22 @@ export const fetchCalSecondPart = async (
 ) => {
   try {
     console.log("Llamando al endpoint /ejecutivo/Calculadora-2daParte");
+    console.log("Datos enviados:", {
+      idCartera,
+      NoCuenta,
+      idHerramienta,
+      MontoRequerido,
+      Descuento,
+      iMeses,
+      dtpFecha,
+      periodos,
+    });
+
     const response = await servicio.get(`/ejecutivo/Calculadora-2daParte`, {
       params: {
         idHerramienta,
         NoCuenta,
-        idCartera,    
+        idCartera,
         MontoRequerido,
         Descuento,
         iMeses,
@@ -972,11 +983,27 @@ export const fetchCalSecondPartModify = async (
 ) => {
   try {
     console.log("Llamando al endpoint /ejecutivo/Calculadora-2daParte");
+    console.log("Datos enviados:", {
+      idCartera,
+      NoCuenta,
+      idHerramienta,
+      MontoRequerido,
+      Descuento,
+      iMeses,
+      dtpFecha,
+      periodos,
+      modificar,
+      montoMod,
+      fechaPagoMod,
+      agregarPagos,
+      filaMod,
+    });
+
     const response = await servicio.get(`/ejecutivo/Calculadora-2daParte`, {
       params: {
         idHerramienta,
         NoCuenta,
-        idCartera,    
+        idCartera,
         MontoRequerido,
         Descuento,
         iMeses,
@@ -986,7 +1013,7 @@ export const fetchCalSecondPartModify = async (
         montoMod,
         fechaPagoMod,
         agregarPagos,
-        filaMod
+        filaMod,
       },
     });
 
@@ -1000,7 +1027,7 @@ export const fetchCalSecondPartModify = async (
 
     return response.data;
   } catch (error) {
-    console.error("Error en fetchCalSecondPart:", error);
+    console.error("Error en fetchCalSecondPartModify:", error);
     console.error("Detalles del error:", error.response?.data || error.message);
     throw error;
   }
