@@ -96,9 +96,9 @@ namespace NoriAPI.Services
         Task<GuardaGestionTelefonicaResult> GuardarGestionTelefonica(EndGestionRequest infoEndGestion);
         Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas);
 
-        
-        
-        
+
+
+
         #region Acciones
         Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
         Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
@@ -163,7 +163,7 @@ namespace NoriAPI.Services
             _catalogos = catalogos;
 
         }
-        
+
         private DataTable CreaTablaEnviados()
         {
             DataTable enviados = new DataTable();
@@ -2167,7 +2167,7 @@ namespace NoriAPI.Services
             dsTablas.Tables.Add(seguimientosGet);
         }
 
-       
+
         private DrInfo ObtenerDrInfo()
         {
             string connectionString = _configuration.GetConnectionString("Piso2Amex");
@@ -2346,7 +2346,7 @@ namespace NoriAPI.Services
                 return $"Error inesperado al crear el seguimiento: {ex.Message}";
             }
         }
-       
+
         public static class DateTimeExtensions // Usar una clase estática para métodos de extensión
         {
             public static DateTime CombineDateTimeWithTimeSpan(object oFecha, object oSegundo)
@@ -3362,6 +3362,14 @@ namespace NoriAPI.Services
             }
 
             pagosGet.TableName = "Pagos";
+
+            ClasesGespaNonStatic gespaPagos = new();
+            gespaPagos.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            gespaPagos.CargaCatalogos();
+
+            AgregarYTraducirColumna(pagosGet, "Sucursal", "SucursalValor", gespaPagos._htValoresCatálogo);
+            AgregarYTraducirColumna(pagosGet, "idEtapa", "Etapa", gespaPagos._htValoresCatálogo);
+
             dsTablas.Tables.Add(pagosGet);
         }
         #endregion
@@ -4450,11 +4458,22 @@ namespace NoriAPI.Services
                 {
                     if (row[columnaBase] != DBNull.Value)
                     {
-                        row[nuevaColumna] = BuscarEnValoresHashtable(valoresCatalogo, Convert.ToString(row[columnaBase]));
+                        string valor = Convert.ToString(row[columnaBase]);
+
+                        // Validar si el valor es un número antes de traducirlo
+                        if (int.TryParse(valor, out _))
+                        {
+                            row[nuevaColumna] = BuscarEnValoresHashtable(valoresCatalogo, valor);
+                        }
+                        else
+                        {
+                            row[nuevaColumna] = DBNull.Value;
+                        }
                     }
                 }
             }
         }
+
 
 
         /// <summary>

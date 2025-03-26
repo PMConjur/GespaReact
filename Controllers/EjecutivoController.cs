@@ -155,7 +155,7 @@ namespace NoriAPI.Controllers
             return dt.Rows[0];
         }
 
-        
+
 
         #endregion
 
@@ -629,9 +629,8 @@ namespace NoriAPI.Controllers
                 }
 
                 var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Pagos"]);
-                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
-
-                return Ok(jsonString);
+                string jsonPagos = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+                return Content(jsonPagos, "application/json; charset=utf-8");
             }
             catch (Exception ex)
             {
