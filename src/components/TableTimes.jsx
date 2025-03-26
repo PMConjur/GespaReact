@@ -11,6 +11,25 @@ const TIME_CATEGORIES = [
     'Permiso', 'Curso', 'Calidad', 'Comida', 'Baño'
 ];
 
+const formatTime = (value) => {
+    // Si ya está formateado (HH:MM:SS)
+    if (typeof value === 'string' && /^\d{2}:\d{2}:\d{2}$/.test(value)) {
+        return value;
+    }
+    
+    // Si es null/undefined o no convertible a número
+    if (value == null || isNaN(Number(value))) {
+        return "--:--:--";
+    }
+    
+    const seconds = Math.floor(Number(value));
+    const hrs = Math.floor(seconds / 3600).toString().padStart(2, "0");
+    const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, "0");
+    const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
+    
+    return `${hrs}:${mins}:${secs}`;
+};
+
 const TableTimes = ({ updatedTimes }) => {
     const { idEjecutivo } = useContext(AppContext);
 
@@ -19,14 +38,15 @@ const TableTimes = ({ updatedTimes }) => {
         promedio: Object.fromEntries(TIME_CATEGORIES.map(cat => [cat, "--:--:--"]))
     });
 
+    // Cargar datos iniciales
     useEffect(() => {
         if (!idEjecutivo) return;
 
-        const fetchTimes = async () => {
+        const loadInitialData = async () => {
             try {
                 const data = await userTimes(idEjecutivo);
                 
-                if (!data || !data.resultadosTiempos) {
+                if (!data?.resultadosTiempos) {
                     toast.warning("No hay datos de tiempos disponibles");
                     return;
                 }
@@ -35,30 +55,30 @@ const TableTimes = ({ updatedTimes }) => {
                 
                 setTimesData({
                     total: {
-                        cuentas: tiempos.tiempoCuentas || "--:--:--",
-                        negociacion: tiempos.tiempoNegociaciones || "--:--:--",
-                        titulares: tiempos.tiempoTitulares || "--:--:--",
-                        conocidos: tiempos.tiempoConocidos || "--:--:--",
-                        desconocidos: tiempos.tiempoDesconocidos || "--:--:--",
-                        sinContacto: tiempos.tiempoSinContacto || "--:--:--",
-                        Permiso: tiempos.tiempoPermiso || "--:--:--",
-                        Curso: tiempos.tiempoCurso || "--:--:--",
-                        Calidad: tiempos.tiempoCalidad || "--:--:--",
-                        Comida: tiempos.tiempoComida || "--:--:--",
-                        Baño: tiempos.tiempoBaño || "--:--:--",
+                        cuentas: formatTime(tiempos.tiempoCuentas),
+                        negociacion: formatTime(tiempos.tiempoNegociaciones),
+                        titulares: formatTime(tiempos.tiempoTitulares),
+                        conocidos: formatTime(tiempos.tiempoConocidos),
+                        desconocidos: formatTime(tiempos.tiempoDesconocidos),
+                        sinContacto: formatTime(tiempos.tiempoSinContacto),
+                        Permiso: formatTime(tiempos.tiempoPermiso),
+                        Curso: formatTime(tiempos.tiempoCurso),
+                        Calidad: formatTime(tiempos.tiempoCalidad),
+                        Comida: formatTime(tiempos.tiempoComida),
+                        Baño: formatTime(tiempos.tiempoBaño),
                     },
                     promedio: {
-                        cuentas: tiempos.promedioCuentas || "--:--:--",
-                        negociacion: tiempos.promedioNegociaciones || "--:--:--",
-                        titulares: tiempos.promedioTitulares || "--:--:--",
-                        conocidos: tiempos.promedioConocidos || "--:--:--",
-                        desconocidos: tiempos.promedioDesconocidos || "--:--:--",
-                        sinContacto: tiempos.promedioSinContacto || "--:--:--",
-                        Permiso: tiempos.promedioPermiso || "--:--:--",
-                        Curso: tiempos.promedioCurso || "--:--:--",
-                        Calidad: tiempos.promedioCalidad || "--:--:--",
-                        Comida: tiempos.promedioComida || "--:--:--",
-                        Baño: tiempos.promedioBaño || "--:--:--",
+                        cuentas: formatTime(tiempos.promedioCuentas),
+                        negociacion: formatTime(tiempos.promedioNegociaciones),
+                        titulares: formatTime(tiempos.promedioTitulares),
+                        conocidos: formatTime(tiempos.promedioConocidos),
+                        desconocidos: formatTime(tiempos.promedioDesconocidos),
+                        sinContacto: formatTime(tiempos.promedioSinContacto),
+                        Permiso: formatTime(tiempos.promedioPermiso),
+                        Curso: formatTime(tiempos.promedioCurso),
+                        Calidad: formatTime(tiempos.promedioCalidad),
+                        Comida: formatTime(tiempos.promedioComida),
+                        Baño: formatTime(tiempos.promedioBaño),
                     }
                 });
             } catch (error) {
@@ -66,24 +86,38 @@ const TableTimes = ({ updatedTimes }) => {
             }
         };
 
-        fetchTimes();
+        loadInitialData();
     }, [idEjecutivo]);
 
+    // Actualizar datos cuando cambia updatedTimes
     useEffect(() => {
-        if (updatedTimes) {
-            setTimesData(prev => ({
-                ...prev,
-                total: {
-                    ...prev.total,
-                    ...updatedTimes
+        if (!updatedTimes) return;
+
+        setTimesData(prev => {
+            const newTotal = { ...prev.total };
+
+            // Actualizar y sumar los campos que vienen en updatedTimes
+            Object.entries(updatedTimes).forEach(([key, value]) => {
+                if (TIME_CATEGORIES.includes(key)) {
+                    const dbValueInSeconds = prev.total[key] !== "--:--:--"
+                        ? Number(prev.total[key].split(":").reduce((acc, time) => (60 * acc) + +time, 0))
+                        : 0;
+                    newTotal[key] = formatTime(dbValueInSeconds + Number(value));
                 }
-            }));
-        }
+            });
+
+            return {
+                ...prev,
+                total: newTotal
+            };
+        });
     }, [updatedTimes]);
 
     const renderRows = (type) => {
         return TIME_CATEGORIES.map((key) => (
-            <td key={key} style={{ minWidth: "100px" }}>{timesData[type][key]}</td>
+            <td key={`${type}-${key}`} style={{ minWidth: "100px" }}>
+                {timesData[type][key]}
+            </td>
         ));
     };
 
@@ -96,7 +130,7 @@ const TableTimes = ({ updatedTimes }) => {
     }
 
     return (
-        <Table responsive variant="dark">
+        <Table responsive variant="dark" className="mt-3">
             <thead>
                 <tr>
                     <th>Indicador</th>
@@ -122,7 +156,14 @@ const TableTimes = ({ updatedTimes }) => {
 };
 
 TableTimes.propTypes = {
-    updatedTimes: PropTypes.object,
+    updatedTimes: PropTypes.shape(
+        Object.fromEntries(
+            TIME_CATEGORIES.map(cat => [cat, PropTypes.oneOfType([
+                PropTypes.string,
+                PropTypes.number
+            ])])
+        )
+    )
 };
 
 export default TableTimes;

@@ -6,7 +6,7 @@ const Aditionals = ({ show, handleClose}) => {
     return (
         <Modal show={show} onHide={handleClose} size="xl">
             <Modal.Header closeButton>
-                <Modal.Title>Aditionales</Modal.Title>
+                <Modal.Title>Adicionjales</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <TableAditionals/>
