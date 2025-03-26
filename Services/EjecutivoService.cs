@@ -3476,6 +3476,20 @@ namespace NoriAPI.Services
                 }
             }
 
+            ClasesGespaNonStatic gespaGestiones = new();
+            gespaGestiones.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            gespaGestiones.CargaCatalogos();
+
+            AgregarYTraducirColumna(gestiones, "idContacto", "Contacto", gespaGestiones._htValoresCatálogo);
+            AgregarYTraducirColumna(gestiones, "idSituación", "Situación", gespaGestiones._htValoresCatálogo);
+            AgregarYTraducirColumna(gestiones, "idParentesco", "Parentesco", gespaGestiones._htValoresCatálogo);
+            AgregarYTraducirColumna(gestiones, "idCausaNoPago", "CausaNoPago", gespaGestiones._htValoresCatálogo);
+            AgregarYTraducirColumna(gestiones, "idModo", "Modo", gespaGestiones._htValoresCatálogo);
+            AgregarYTraducirColumna(gestiones, "idAcercamiento", "Acercamiento", gespaGestiones._htValoresCatálogo);
+            AgregarYTraducirColumna(gestiones, "idEtapa", "Etapa", gespaGestiones._htValoresCatálogo);
+            AgregarYTraducirColumna(gestiones, "idSucursal", "Sucursal", gespaGestiones._htValoresCatálogo);
+
+
             return gestiones;
         }
         public async Task<DataTable> GetDomiciliosAsync(int idCartera, string idCuenta)
@@ -4489,6 +4503,28 @@ namespace NoriAPI.Services
         //    }
         //}
         #endregion
+
+        public static void AgregarYTraducirColumna(DataTable table, string columnaBase, string nuevaColumna, Hashtable valoresCatalogo)
+        {
+            // Verificar si la columna base existe en la DataTable
+            if (table.Columns.Contains(columnaBase))
+            {
+                // Crear e insertar la nueva columna después de la columna base
+                DataColumn nuevaCol = new DataColumn(nuevaColumna, typeof(string));
+                table.Columns.Add(nuevaCol);
+                table.Columns[nuevaColumna].SetOrdinal(table.Columns.IndexOf(columnaBase) + 1);
+
+                // Llenar los valores de la nueva columna usando la lógica de "traducción"
+                foreach (DataRow row in table.Rows)
+                {
+                    if (row[columnaBase] != DBNull.Value)
+                    {
+                        row[nuevaColumna] = BuscarEnValoresHashtable(valoresCatalogo, Convert.ToString(row[columnaBase]));
+                    }
+                }
+            }
+        }
+
 
         /// <summary>
         /// Busca un valor en un Hashtable basado en una clave específica.

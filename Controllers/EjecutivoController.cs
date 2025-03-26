@@ -23,7 +23,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/ejecutivo")]
-    [Authorize]
+    //[Authorize]
     public class EjecutivoController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -635,9 +635,9 @@ namespace NoriAPI.Controllers
 
                 // Convertir DataTable a JSON
                 var listaSeguimientos = ConvertDataTableToList(gestiones);
-                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+                string jsonGestionTe = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
 
-                return Ok(jsonString);
+                return Content(jsonGestionTe, "application/json; charset=utf-8");
             }
             catch (Exception ex)
             {
