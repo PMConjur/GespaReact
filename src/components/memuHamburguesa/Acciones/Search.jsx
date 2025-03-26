@@ -169,12 +169,12 @@ const Search = ({ show, handleClose }) => {
   };
 
   return (
-    <Modal show={show} onHide={handleClose} size="xl" centered >
+    <Modal show={show} onHide={handleClose} size="xl" >
       <Modal.Header closeButton>
-        <Modal.Title>Búsquedas - Gespa</Modal.Title>
+        <Modal.Title>Búsquedas</Modal.Title>
       </Modal.Header>
-      <Modal.Body style={{maxHeight: '400px', overflowY: 'auto', display: 'flex', width: '100%', justifyContent: 'space-between'}} className="d-block d-lg-flex">
-        <div className="scroll-container" style={{ width: '100%', maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column'}}>
+      <Modal.Body style={{maxHeight: '70vh', overflowY: 'auto', display: 'flex', width: '100%', justifyContent: 'space-between'}} className="d-block d-lg-flex">
+        <div className="scroll-container" style={{ width: '100%', maxHeight: '70vh', overflowY: 'auto', display: 'flex', flexDirection: 'column'}}>
           <Form style={{ flexGrow: 1 }}>
             <div style={{display: 'flex', justifyContent:'space-between', marginRight: '20px'}}>
               <Form.Group className="mb-3">
@@ -305,7 +305,7 @@ const Search = ({ show, handleClose }) => {
             </Spinner>
           </div>
         ) : (
-          <div className="scroll-container" style={{ overflow: 'auto', maxHeight: '400px', maxWidth: '800px', minWidth: '250px'}}>
+          <div className="scroll-container" style={{ overflow: 'auto', maxHeight: '70vh', maxWidth: '800px', minWidth: '250px'}}>
             <Table striped bordered hover variant="dark" className="mt-3">
               <thead>
                 <tr>

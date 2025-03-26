@@ -313,7 +313,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
       </Modal.Header>
       <Modal.Body
         style={{
-          maxHeight: "80vh", // Limitar la altura máxima del cuerpo del modal
+          maxHeight: "70vh", // Limitar la altura máxima del cuerpo del modal
           overflowY: "auto", // Habilitar scroll vertical
           position: "relative", // Necesario para posicionar el indicador
         }}
@@ -559,7 +559,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
                 Calculadora AMEX
               </h5>
               <Col className="p-0">
-                <Card className="p-3">
+                <Card className="p-3 mb-0">
                   <Card.Body className="p-0">
                     <Card.Title className="pt-0 ms-3">Datos</Card.Title>
                     <Form className="d-flex gap-4 w-100">
@@ -631,7 +631,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
               <Row>
                 {/* Resumen */}
                 <Col>
-                <Card className="mb-3">
+                <Card className="mb-0">
                   <Card.Body>
                     <Row>
                       <Row >

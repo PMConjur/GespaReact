@@ -145,15 +145,15 @@ const Complaints = ({ show, handleClose }) => {
   };
 
   return (
-    <Modal show={show} onHide={handleClose} size="xl" centered>
+    <Modal show={show} onHide={handleClose} size="xl" >
       <Modal.Header closeButton>
-        <Modal.Title>Quejas - Gespa</Modal.Title>
+        <Modal.Title>Quejas</Modal.Title>
       </Modal.Header>
       <Modal.Body className="d-block d-lg-flex gap-1">
         <Col>
           <div
             className="scroll-container"
-            style={{ maxHeight: "500px", overflowY: "auto" }}
+            style={{ maxHeight: '70vh', overflowY: "auto" }}
           >
             <Form>
               <div style={{ justifyContent: "space-between" }}>
@@ -319,7 +319,7 @@ const Complaints = ({ show, handleClose }) => {
           className="scroll-container"
           style={{
             overflow: "auto",
-            maxHeight: "500px",
+            maxHeight: '70vh',
             maxWidth: "800px",
             minWidth: "250px",
           }}

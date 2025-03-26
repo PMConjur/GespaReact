@@ -7,7 +7,7 @@ import "../../../scss/styles.scss";
 
 const AccionamientosTable = ({ data }) => {
   return (
-    <div className='scroll-container' style={{ maxHeight: '400px', overflowY: 'auto' }}>
+    <div className='scroll-container' style={{ maxHeight: '70vh', overflowY: 'auto' }}>
       <Table striped bordered hover className="custom-table" variant='dark'>
         <thead>
           <tr>
@@ -36,7 +36,7 @@ const AccionamientosModal = ({ show, handleClose, data }) => {
   return (
     <Modal show={show} onHide={handleClose} size="xl" dialogClassName="dark-modal">
       <Modal.Header closeButton>
-        <Modal.Title>Accionamientos - Gespa</Modal.Title>
+        <Modal.Title>Accionamientos</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <AccionamientosTable data={data} />

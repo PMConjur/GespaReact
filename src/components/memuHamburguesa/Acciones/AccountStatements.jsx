@@ -118,13 +118,13 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
     .filter((email) => typeof email === "string");
 
   return (
-    <Modal show={show} onHide={handleClose} size="xl" centered>
+    <Modal show={show} onHide={handleClose} size="xl" >
       <Modal.Header closeButton>
-        <Modal.Title>Estado de Cuenta - Gespa</Modal.Title>
+        <Modal.Title>Estado de Cuenta</Modal.Title>
       </Modal.Header>
 
       <Modal.Body
-        style={{ padding: "5px 10px", maxHeight: "420px", overflowY: "auto" }}
+        style={{ padding: "5px 10px", maxHeight: '70vh', overflowY: "auto", position: 'relative' }}
       >
         <div className="d-block d-lg-flex">
           <div>
@@ -133,9 +133,8 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
               style={{
                 overflow: "auto ",
                 maxWidth: "800px",
-                maxHeight: "420px",
                 marginBottom: "auto",
-                height: "100%"
+                maxHeight: '70vh'
               }}
             >
               {loading ? (
