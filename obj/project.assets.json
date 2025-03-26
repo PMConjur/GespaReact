@@ -1689,23 +1689,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Yoshua Rodriguez\\.nuget\\packages\\": {},
-    "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\César Rodríguez\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Users\\Yoshi\\Documentos\\Fusion\\NoriAPI.csproj",
+      "projectUniqueName": "D:\\CésarRdz\\1 Gespa Web React\\NoriAPI.csproj",
       "projectName": "NoriAPI",
-      "projectPath": "D:\\Users\\Yoshi\\Documentos\\Fusion\\NoriAPI.csproj",
-      "packagesPath": "C:\\Users\\Yoshua Rodriguez\\.nuget\\packages\\",
-      "outputPath": "D:\\Users\\Yoshi\\Documentos\\Fusion\\obj\\",
+      "projectPath": "D:\\CésarRdz\\1 Gespa Web React\\NoriAPI.csproj",
+      "packagesPath": "C:\\Users\\César Rodríguez\\.nuget\\packages\\",
+      "outputPath": "D:\\CésarRdz\\1 Gespa Web React\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\Yoshua Rodriguez\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\César Rodríguez\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -1731,8 +1731,7 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      },
-      "SdkAnalysisLevel": "9.0.200"
+      }
     },
     "frameworks": {
       "net8.0": {
@@ -1790,7 +1789,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.202/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
