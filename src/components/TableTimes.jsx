@@ -1,140 +1,93 @@
-import { useState, useEffect } from "react";
-import PropTypes from "prop-types"; // Importar PropTypes
+import { useState, useEffect, useContext } from "react";
+import PropTypes from "prop-types";
 import { Table } from "react-bootstrap";
 import { userTimes } from "../services/gespawebServices";
-import { toast } from "sonner"; // Notificaciones
+import { toast } from "sonner";
+import { AppContext } from "../pages/Managment";
+
+const TIME_CATEGORIES = [
+    'cuentas', 'negociacion', 'titulares', 
+    'conocidos', 'desconocidos', 'sinContacto',
+    'Permiso', 'Curso', 'Calidad', 'Comida', 'Baño'
+];
 
 const TableTimes = ({ updatedTimes }) => {
-    // Obtener responseData de location.state o localStorage
-    const responseData = location.state || JSON.parse(localStorage.getItem("responseData"));
-    const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+    const { idEjecutivo } = useContext(AppContext);
 
-    // Si `idEjecutivo` no se pasa como prop, intentamos obtenerlo de sessionStorage
-    const [executiveId, setExecutiveId] = useState(idEjecutivo || null);
     const [timesData, setTimesData] = useState({
-        total: {
-            cuentas: "00:00:00",
-            negociacion: "00:00:00",
-            titulares: "00:00:00",
-            conocidos: "00:00:00",
-            desconocidos: "00:00:00",
-            sinContacto: "00:00:00",
-            Permiso: "00:00:00",
-            Curso: "00:00:00",
-            Calidad: "00:00:00",
-            Comida: "00:00:00",
-            Baño: "00:00:00",
-        },
-        promedio: {
-            cuentas: "00:00:00",
-            negociacion: "00:00:00",
-            titulares: "00:00:00",
-            conocidos: "00:00:00",
-            desconocidos: "00:00:00",
-            sinContacto: "00:00:00",
-            Permiso: "00:00:00",
-            Curso: "00:00:00",
-            Calidad: "00:00:00",
-            Comida: "00:00:00",
-            Baño: "00:00:00",
-        },
+        total: Object.fromEntries(TIME_CATEGORIES.map(cat => [cat, "--:--:--"])),
+        promedio: Object.fromEntries(TIME_CATEGORIES.map(cat => [cat, "--:--:--"]))
     });
 
-    // Verificar si idEjecutivo no se pasó como prop, intentar obtenerlo de sessionStorage
     useEffect(() => {
-        if (!executiveId) {
-            const responseDataString = sessionStorage.getItem("responseData");
+        if (!idEjecutivo) return;
 
-            if (responseDataString) {
-                try {
-                    const responseData = JSON.parse(responseDataString);
-                    console.log("📌 Datos obtenidos de sessionStorage:", responseData);
-                    setExecutiveId(responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo || null);
-                } catch (error) {
-                    console.error("❌ Error al parsear responseData:", error);
-                }
-            } else {
-                console.warn("⚠️ No se encontró responseData en sessionStorage.");
-            }
-        }
-    }, [executiveId]);
-
-    const formatTime = (seconds) => {
-        if (!seconds) return "00:00:00";
-        const hrs = Math.floor(seconds / 3600).toString().padStart(2, "0");
-        const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, "0");
-        const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
-        return `${hrs}:${mins}:${secs}`;
-    };
-
-    useEffect(() => {
-        if (!executiveId) {
-            console.warn("⚠️ No se encontró un ID de ejecutivo válido.");
-            return;
-        }
-
-        console.log(`📡 Consultando tiempos para el ejecutivo con ID: ${executiveId}`);
-
-        userTimes(executiveId)
-            .then((data) => {
+        const fetchTimes = async () => {
+            try {
+                const data = await userTimes(idEjecutivo);
+                
                 if (!data || !data.resultadosTiempos) {
-                    console.warn("⚠️ La API no devolvió resultados válidos.");
-                    toast.warning("No hay datos de tiempos disponibles.");
+                    toast.warning("No hay datos de tiempos disponibles");
                     return;
                 }
 
                 const tiempos = data.resultadosTiempos;
-
-                setTimesData((prevData) => ({
-                    ...prevData,
+                
+                setTimesData({
                     total: {
-                        ...prevData.total,
-                        cuentas: formatTime(tiempos.tiempoCuentas),
-                        negociacion: formatTime(tiempos.tiempoNegociaciones),
-                        titulares: formatTime(tiempos.tiempoTitulares),
-                        conocidos: formatTime(tiempos.tiempoConocidos),
-                        desconocidos: formatTime(tiempos.tiempoDesconocidos),
-                        sinContacto: formatTime(tiempos.tiempoSinContacto),
+                        cuentas: tiempos.tiempoCuentas || "--:--:--",
+                        negociacion: tiempos.tiempoNegociaciones || "--:--:--",
+                        titulares: tiempos.tiempoTitulares || "--:--:--",
+                        conocidos: tiempos.tiempoConocidos || "--:--:--",
+                        desconocidos: tiempos.tiempoDesconocidos || "--:--:--",
+                        sinContacto: tiempos.tiempoSinContacto || "--:--:--",
+                        Permiso: tiempos.tiempoPermiso || "--:--:--",
+                        Curso: tiempos.tiempoCurso || "--:--:--",
+                        Calidad: tiempos.tiempoCalidad || "--:--:--",
+                        Comida: tiempos.tiempoComida || "--:--:--",
+                        Baño: tiempos.tiempoBaño || "--:--:--",
                     },
                     promedio: {
-                        ...prevData.promedio,
-                        cuentas: formatTime(tiempos.tiempoCuentas),
-                        negociacion: formatTime(tiempos.tiempoNegociaciones),
-                        titulares: formatTime(tiempos.tiempoTitulares),
-                        conocidos: formatTime(tiempos.tiempoConocidos),
-                        desconocidos: formatTime(tiempos.tiempoDesconocidos),
-                        sinContacto: formatTime(tiempos.tiempoSinContacto),
-                    },
-                }));
-            })
-            .catch((error) => {
-                console.error("❌ Error al obtener los tiempos:", error);
-                toast.error("❌ Error al cargar los tiempos.");
-            });
-    }, [executiveId]);
+                        cuentas: tiempos.promedioCuentas || "--:--:--",
+                        negociacion: tiempos.promedioNegociaciones || "--:--:--",
+                        titulares: tiempos.promedioTitulares || "--:--:--",
+                        conocidos: tiempos.promedioConocidos || "--:--:--",
+                        desconocidos: tiempos.promedioDesconocidos || "--:--:--",
+                        sinContacto: tiempos.promedioSinContacto || "--:--:--",
+                        Permiso: tiempos.promedioPermiso || "--:--:--",
+                        Curso: tiempos.promedioCurso || "--:--:--",
+                        Calidad: tiempos.promedioCalidad || "--:--:--",
+                        Comida: tiempos.promedioComida || "--:--:--",
+                        Baño: tiempos.promedioBaño || "--:--:--",
+                    }
+                });
+            } catch (error) {
+                toast.error(`Error al cargar tiempos: ${error.message}`);
+            }
+        };
+
+        fetchTimes();
+    }, [idEjecutivo]);
 
     useEffect(() => {
         if (updatedTimes) {
-            const formattedTimes = {};
-            for (const key in updatedTimes) {
-                formattedTimes[key] = formatTime(updatedTimes[key]);
-            }
-
-            setTimesData((prevData) => ({
-                ...prevData,
+            setTimesData(prev => ({
+                ...prev,
                 total: {
-                    ...prevData.total,
-                    ...formattedTimes,
-                },
-                promedio: {
-                    ...prevData.promedio,
-                    ...formattedTimes,
-                },
+                    ...prev.total,
+                    ...updatedTimes
+                }
             }));
         }
     }, [updatedTimes]);
 
-    if (!executiveId) {
+    const renderRows = (type) => {
+        return TIME_CATEGORIES.map((key) => (
+            <td key={key} style={{ minWidth: "100px" }}>{timesData[type][key]}</td>
+        ));
+    };
+
+    if (!idEjecutivo) {
         return (
             <div className="alert alert-warning text-center" role="alert">
                 ⚠️ No se encontró un ID de ejecutivo válido. Verifica tu sesión.
@@ -142,28 +95,16 @@ const TableTimes = ({ updatedTimes }) => {
         );
     }
 
-    const renderRows = (type) => {
-        return Object.keys(timesData[type]).map((key) => (
-            <td key={key} style={{ minWidth: "100px" }}>{timesData[type][key]}</td>
-        ));
-    };
-
     return (
         <Table responsive variant="dark">
             <thead>
                 <tr>
                     <th>Indicador</th>
-                    <th style={{ minWidth: "100px" }}>Cuentas</th>
-                    <th style={{ minWidth: "100px" }}>Negociación</th>
-                    <th style={{ minWidth: "100px" }}>Titulares</th>
-                    <th style={{ minWidth: "100px" }}>Conocidos</th>
-                    <th style={{ minWidth: "100px" }}>Desconocidos</th>
-                    <th style={{ minWidth: "100px" }}>Sin contacto</th>
-                    <th style={{ minWidth: "100px" }}>Permiso</th>
-                    <th style={{ minWidth: "100px" }}>Curso</th>
-                    <th style={{ minWidth: "100px" }}>Calidad</th>
-                    <th style={{ minWidth: "100px" }}>Comida</th>
-                    <th style={{ minWidth: "100px" }}>Baño</th>
+                    {TIME_CATEGORIES.map(category => (
+                        <th key={category} style={{ minWidth: "100px" }}>
+                            {category.charAt(0).toUpperCase() + category.slice(1)}
+                        </th>
+                    ))}
                 </tr>
             </thead>
             <tbody>
@@ -181,7 +122,7 @@ const TableTimes = ({ updatedTimes }) => {
 };
 
 TableTimes.propTypes = {
-    updatedTimes: PropTypes.object, // Validación de prop
+    updatedTimes: PropTypes.object,
 };
 
 export default TableTimes;
