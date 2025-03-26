@@ -188,88 +188,7 @@ export const fetchValidationTel = async (data) => {
   }
 };
 
-// Obtener tiempos del ejecutivo
-export async function userTimes(numEmpleado) {
-  try {
-    console.log(`📡 Solicitando tiempos para empleado: ${numEmpleado}`);
-
-    const response = await servicio.get(
-      `/ejecutivo/tiempos-ejecutivo?numEmpleado=${numEmpleado}`
-    );
-
-    // Filtramos la contraseña si estuviera en la respuesta
-    const { ...dataSinContraseña } = response.data;
-    return dataSinContraseña;
-  } catch (error) {
-    console.error("❌ Error al recibir la productividad:", error);
-    const errorMessage =
-      error.response?.data?.mensaje || "Error al recibir la productividad.";
-    throw new Error(errorMessage);
-  }
-}
-
-export async function userTimesUpdate(data) {
-  try {
-    console.log(
-      "📤 Enviando datos de pausa a la API:",
-      JSON.stringify(data, null, 2)
-    );
-
-    const responseData = JSON.parse(localStorage.getItem("responseData"));
-    const token = responseData?.ejecutivo?.token;
-
-    if (!token) {
-      throw new Error("⚠️ No se encontró un token de autenticación.");
-    }
-
-    if (
-      !data.idEjecutivo ||
-      !data.contrasenia ||
-      !data.peCausa ||
-      !data.duracion
-    ) {
-      throw new Error(
-        "⚠️ Datos incompletos. Verifica que todos los campos estén llenos."
-      );
-    }
-
-    const response = await axios.post(
-      `${apiUrl}/ejecutivo/pause-ejecutivo`,
-      {
-        idEjecutivo: data.idEjecutivo,
-        contrasenia: data.contrasenia.trim(),
-        peCausa: data.peCausa,
-        duracion: data.duracion
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      }
-    );
-
-    console.log("✅ Respuesta de la API:", response.data);
-
-    if (!response.data || response.data.error) {
-      throw new Error(response.data.error || "Error desconocido en la API.");
-    }
-
-    toast.success("Datos enviados correctamente.");
-    return response.data;
-  } catch (error) {
-    console.error("❌ Error al enviar los datos:", error);
-    const errorMessage =
-      error.response?.data?.mensaje ||
-      error.message ||
-      "Error al enviar los datos.";
-    toast.error(errorMessage);
-    throw new Error(errorMessage);
-  }
-}
-
 //Endpoint Flow
-
 export async function userFlow() {
   try {
     const response = await servicio.get(
@@ -1002,6 +921,51 @@ export const fetchCalSecondPartModify = async (
   } catch (error) {
     console.error("Error en fetchCalSecondPart:", error);
     console.error("Detalles del error:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+
+export async function userTimes(numEmpleado) {
+  try {
+    const response = await servicio.get(
+      `/ejecutivo/tiempos-ejecutivo`,
+      { params: { numEmpleado } }
+    );
+    
+    if (!response.data) {
+      throw new Error("No se recibieron datos del servidor");
+    }
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error en userTimes:', error);
+    if (error.response) {
+      const errorMessage = error.response.data?.mensaje || "Error al obtener tiempos";
+      throw new Error(errorMessage);
+    }
+    throw new Error("Error de conexión al obtener tiempos");
+  }
+}
+
+export const userTimesUpdate = async (data) => {
+  try {
+    const response = await servicio.post(
+      `/ejecutivo/pause-ejecutivo`,
+      data
+    );
+
+    if (response.status !== 200) {
+      throw new Error(`Error en la respuesta. Estado: ${response.status}`);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error en userTimesUpdate:", error);
+    if (error.response) {
+      const errorMessage = error.response.data?.mensaje || "Error al actualizar tiempos";
+      throw new Error(errorMessage);
+    }
     throw error;
   }
 };

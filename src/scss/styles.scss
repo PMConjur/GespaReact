@@ -1426,3 +1426,54 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
     color: #cccccc;
   }
 }
+
+
+/* Estilos para paginacion */
+$pagination-color: #4a9dff;
+$pagination-bg: rgba(0, 0, 0, 0.08);
+$pagination-border-color: #ffffff;
+$pagination-hover-color: #4a9dff;
+$pagination-hover-bg: #ffffff;
+$pagination-hover-border-color: #ffffff;
+$pagination-active-color: #ffffff;
+$pagination-active-bg: #4a9dff;
+$pagination-active-border-color: #4a9dff;
+$pagination-disabled-color: #ffffff;
+$pagination-disabled-bg: #ffffff;
+$pagination-disabled-border-color: #ffffff;
+
+.pagination {
+  margin-top: 1rem;
+  
+  .page-item {
+    margin: 0 0.2rem;
+    background-color: $pagination-bg;
+    .page-link {
+      border: none;
+      font-weight: 500;
+      background-color: $pagination-bg;
+      color: $pagination-color;
+    }
+  }
+}
+
+/* styles.css */
+.page-item .page-link {
+  color: #4a9dff;
+  background-color: #ffffff;
+  border-color: #ffffff;
+}
+
+.page-item.active .page-link {
+  
+  color: #39fc8d; ///
+  background-color: rgba(0, 0, 0, 0.08);
+  border-color: #4a9dff;
+}
+
+.page-item.disabled .page-link {
+  color:  #ffffff;
+  background-color:  #6c757d;
+  border-color: #6c757d;
+}
+
