@@ -159,9 +159,13 @@ const Flow = () => {
       (item) => item.idValor === 1101 || item.idValor === 1102
     );
 
-    // Calcular idComunico basado en answerHistory
-    const idComunico = answerHistory.some((item) => item.idValor === 1102);
+    // Calcular idComunico e idDijo basado en answerHistory
+    const idComunico = answerHistory.some(
+      (item) => item.idValor === 1102 || item.idPregunta === 7
+    );
+    const idDijo = answerHistory.some((item) => item.idPregunta === 7);
 
+    console.log("Comunico =" + idComunico, "Dijo =" + idDijo);
     const handleAnswerChange = async (
       idPregunta,
       idRespuesta,
@@ -307,21 +311,49 @@ const Flow = () => {
         <Card.Body className="scroll-flow">
           <Form>
             {isFlowFinished ? (
-              shouldShowComment ? (
-                <>
-                  <CommunicationPhone idComunico={idComunico} />
-                  <Comment
-                    comentario=""
-                    isValid={true}
-                    onSave={handleSaveComment}
-                  />
-
-                  {savedComment && (
-                    <p className="mt-3 text-success">
-                      Comentario guardado: {savedComment}
-                    </p>
-                  )}
-                </>
+              selectedAnswer.value === 10 ? (
+                idComunico ? (
+                  idDijo ? (
+                    <>
+                      <h1>Aqui cuando que dijo</h1>
+                      <CommunicationPhone idComunico={idComunico} />
+                      <Comment
+                        comentario=""
+                        isValid={true}
+                        onSave={handleSaveComment}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <h5>Flujo finalizado.</h5>
+                      <CommunicationPhone idComunico={idComunico} />
+                    </>
+                  )
+                ) : (
+                  <>
+                    <h1>Aqui cuando comunico</h1>
+                    <CommunicationPhone idComunico={idComunico} />
+                  </>
+                )
+              ) : selectedAnswer.value === 2 ? (
+                shouldShowComment ? (
+                  <>
+                    <Comment
+                      comentario=""
+                      isValid={true}
+                      onSave={handleSaveComment}
+                    />
+                    {savedComment && (
+                      <p className="mt-3 text-success">
+                        Comentario guardado: {savedComment}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <h5>
+                    Flujo para guardar gestión cuando no se muestra comentario
+                  </h5>
+                )
               ) : (
                 <h5>
                   Flujo para guardar gestión cuando no se muestra comentario
