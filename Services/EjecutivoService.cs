@@ -2677,7 +2677,6 @@ namespace NoriAPI.Services
                 busquedaGet.Columns["Fuente"].SetOrdinal(busquedaGet.Columns.IndexOf("idFuente") + 1);
             }
 
-
             // Llenar los valores de las nuevas columnas sobre la Hashtable ValoresCatálogo.
             foreach (DataRow row in busquedaGet.Rows)
             {
@@ -2690,6 +2689,53 @@ namespace NoriAPI.Services
                 {
                     row["Fuente"] = BuscarEnValoresHashtable(gespaBusqueda._htValoresCatálogo, Convert.ToString(row["idFuente"]));
                 }
+            }
+
+            // Mapeo de "Encontrado" y "Confirmado" a "✓" y "X"
+            if (busquedaGet.Columns.Contains("_Encontrado"))
+            {
+                busquedaGet.Columns.Add("_EncontradoString", typeof(string));
+                foreach (DataRow row in busquedaGet.Rows)
+                {
+                    if (row["_Encontrado"] != DBNull.Value)
+                    {
+                        try
+                        {
+                            int valorEncontrado = Convert.ToInt32(row["_Encontrado"]);
+                            row["_EncontradoString"] = valorEncontrado == 1 ? "✓" : "X";
+                        }
+                        catch (InvalidCastException ex)
+                        {
+                            Console.WriteLine($"Error al convertir _Encontrado: {ex.Message}");
+                            row["_EncontradoString"] = "?";
+                        }
+                    }
+                }
+                busquedaGet.Columns.Remove("_Encontrado");
+                busquedaGet.Columns["_EncontradoString"].ColumnName = "_Encontrado";
+            }
+
+            if (busquedaGet.Columns.Contains("_Confirmado"))
+            {
+                busquedaGet.Columns.Add("_ConfirmadoString", typeof(string));
+                foreach (DataRow row in busquedaGet.Rows)
+                {
+                    if (row["_Confirmado"] != DBNull.Value)
+                    {
+                        try
+                        {
+                            int valorConfirmado = Convert.ToInt32(row["_Confirmado"]);
+                            row["_ConfirmadoString"] = valorConfirmado == 1 ? "✓" : "X";
+                        }
+                        catch (InvalidCastException ex)
+                        {
+                            Console.WriteLine($"Error al convertir _Confirmado: {ex.Message}");
+                            row["_ConfirmadoString"] = "?";
+                        }
+                    }
+                }
+                busquedaGet.Columns.Remove("_Confirmado");
+                busquedaGet.Columns["_ConfirmadoString"].ColumnName = "_Confirmado";
             }
 
             dsTablas.Tables.Add(busquedaGet);
@@ -3139,6 +3185,35 @@ namespace NoriAPI.Services
 
             if (estadoGet == null || estadoGet.Rows.Count == 0)
                 return;
+
+            // Crear una nueva columna de tipo string
+            if (estadoGet.Columns.Contains("_Consulta"))
+            {
+                estadoGet.Columns.Add("_ConsultaString", typeof(string));
+
+                // Copiar y mapear los datos a la nueva columna
+                foreach (DataRow row in estadoGet.Rows)
+                {
+                    if (row["_Consulta"] != DBNull.Value)
+                    {
+                        try
+                        {
+                            int valorConsulta = Convert.ToInt32(row["_Consulta"]);
+                            row["_ConsultaString"] = valorConsulta == 1 ? "✓" : "X";
+                        }
+                        catch (InvalidCastException ex)
+                        {
+                            Console.WriteLine($"Error al convertir _Consulta: {ex.Message}");
+                            row["_ConsultaString"] = "?"; // O un valor predeterminado
+                        }
+                    }
+                }
+
+                // Eliminar la columna original _Consulta
+                estadoGet.Columns.Remove("_Consulta");
+                // Cambiar el nombre de la nueva columna para reemplazar la original
+                estadoGet.Columns["_ConsultaString"].ColumnName = "_Consulta";
+            }
 
             if (dsTablas.Tables.Contains("EstadoDeCuenta"))
             {
