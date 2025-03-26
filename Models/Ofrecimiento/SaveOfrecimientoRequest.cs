@@ -14,6 +14,7 @@ namespace NoriAPI.Models.Ofrecimiento
         public double Descuento { get; set; }
         public double Saldo { get; set; }
         public Pago[] Plazos { get; set; }
+        public int Dias1erPago { get; set; }
         public DateTime FechaCorte { get; set; }
         public DateTime FechaInsert { get; set; }
         public TimeSpan SegundoInsert { get; set; }

@@ -30,6 +30,7 @@ using NoriAPI.Models.CargaGestionamiento;
 using NoriAPI.Models.Ofrecimiento;
 using Microsoft.IdentityModel.Tokens;
 using System.Text.RegularExpressions;
+using System.Text;
 
 
 namespace NoriAPI.Services
@@ -80,8 +81,12 @@ namespace NoriAPI.Services
         Task<DataTable> ObtieneGestionTeAsync(int idCartera, string idCuenta, int Top);
         Task ObtenerDomicilios(DataRow drDatos, DataSet dsTablas);
         DataTable ObtieneGestionesDelDia(int idEjecutivo);
-        DataTable BuscaScripts(int idProducto);
 
+        #region Scripts
+        DataTable BuscaScripts(int idProducto);
+        Task<DataTable> BuscaScriptsTranslated(int idEjecutivo, int idProducto, int idCartera, string cuenta);
+
+        #endregion
         DataTable CargaRelaciones();
         Task ObtenerCorreosEJE(DataRow drDatos, DataSet dsTablas);
         Task ObtenerEnviadosEJE(DataRow drDatos, DataSet dsTablas);
@@ -1984,8 +1989,8 @@ namespace NoriAPI.Services
             if (ofrecimiento.Plazos.Length == 1 && ofrecimiento.Plazos[0].Monto != ofrecimiento.MontoNegociado)
                 return "Al elegir un solo pago, el primer pago debe ser IGUAL al monto megociado.";
 
-            if (DateTime.Today.AddDays(ofrecimiento.SegundoInsert.TotalDays) < ofrecimiento.Plazos[0].Fecha)
-                return $"El primer pago debe de ser antes de {ofrecimiento.SegundoInsert.TotalDays} días.";
+            if (DateTime.Today.AddDays(ofrecimiento.Dias1erPago) < ofrecimiento.Plazos[0].Fecha)
+                return $"El primer pago debe de ser antes de {ofrecimiento.Dias1erPago} días.";
 
             // Herramientas con pagos en el mismo mes
             if (new[] { 87, 89, 104, 99, 100, 107 }.Contains(ofrecimiento.IdHerramienta) &&
@@ -3618,24 +3623,20 @@ namespace NoriAPI.Services
         }
         #endregion
 
-        #region Scrips
+        #region Scripts
         public DataTable BuscaScripts(int idProducto)
         {
-            DataTable scripts = new DataTable();
+            DataTable scripts = new();
 
             try
             {
-                using (SqlConnection connection = new SqlConnection(_connectionString)) // Usar la cadena de conexión de tu servicio
+                using (SqlConnection connection = new(_connectionString)) // Usar la cadena de conexión de tu servicio
                 {
                     connection.Open();
 
-                    using (SqlCommand command = new SqlCommand($"SELECT * FROM Scripts (NOLOCK) WHERE idProducto = {idProducto}", connection))
-                    {
-                        using (SqlDataAdapter adapter = new SqlDataAdapter(command))
-                        {
-                            adapter.Fill(scripts);
-                        }
-                    }
+                    using SqlCommand command = new($"SELECT * FROM Scripts (NOLOCK) WHERE idProducto = {idProducto}", connection);
+                    using SqlDataAdapter adapter = new(command);
+                    adapter.Fill(scripts);
                 }
 
                 if (scripts.Rows.Count == 0)
@@ -3652,6 +3653,103 @@ namespace NoriAPI.Services
                 return new DataTable(); // or throw the exception
             }
         }
+
+        public async Task<DataTable> BuscaScriptsTranslated(int idEjecutivo, int idProducto, int idCartera, string cuenta)
+        {
+            var scripts = await _ejecutivoRepository.ObtenerScriptsAsync(idProducto);
+            var infoCuenta = await _ejecutivoRepository.InfoCuenta(idCartera, cuenta);
+            var producto = await _ejecutivoRepository.ObtieneProducto(cuenta);
+            var datosEjecutivo = await _ejecutivoRepository.ObtenerDatosEjecutivo(idEjecutivo);
+
+            // Convertimos info de producto en diccionario
+            var productoDictionary = new Dictionary<string, string>();
+            if (producto.Rows.Count > 0)
+            {
+                foreach (DataColumn column in producto.Columns)
+                {
+                    productoDictionary[column.ColumnName] = producto.Rows[0][column].ToString();
+                }
+            }
+
+
+            // InfoCuenta: se asume una sola fila
+            var drInfo = infoCuenta.Rows.Count > 0 ? infoCuenta.Rows[0] : null;
+            var drEjecutivo = datosEjecutivo.Rows.Count > 0 ? datosEjecutivo.Rows[0] : null;
+
+            // Recorremos cada fila del script y aplicamos reemplazo
+            foreach (DataRow row in scripts.Rows)
+            {
+                foreach (DataColumn column in scripts.Columns)
+                {
+                    if (column.DataType == typeof(string) && row[column] != DBNull.Value)
+                    {
+                        string original = row[column].ToString();
+                        string reemplazado = FormatoScript(original, drInfo, drEjecutivo, productoDictionary);
+                        row[column] = reemplazado;
+                    }
+                }
+            }
+
+            return scripts;
+        }
+
+        private static string FormatoScript(string texto, DataRow drInfo, DataRow drEjecutivo, Dictionary<string, string> productoDict)
+        {
+            if (string.IsNullOrEmpty(texto))
+                return texto;
+
+            var resultado = new StringBuilder();
+            int start = 0;
+
+            while (start < texto.Length)
+            {
+                int openBracket = texto.IndexOf('[', start);
+                if (openBracket == -1)
+                {
+                    resultado.Append(texto.Substring(start));
+                    break;
+                }
+
+                int closeBracket = texto.IndexOf(']', openBracket);
+                if (closeBracket == -1)
+                {
+                    resultado.Append(texto.Substring(start));
+                    break;
+                }
+
+                // Agrega el texto antes del token
+                resultado.Append(texto.Substring(start, openBracket - start));
+
+                // Extrae el contenido dentro de los corchetes
+                string key = texto.Substring(openBracket + 1, closeBracket - openBracket - 1);
+
+                // Realiza el reemplazo usando ReemplazaInfo
+                string reemplazo = ReemplazaInfo(key, drInfo, drEjecutivo, productoDict);
+                resultado.Append(reemplazo);
+
+                // Continúa después del cierre del corchete
+                start = closeBracket + 1;
+            }
+
+            return resultado.ToString();
+        }
+
+        private static string ReemplazaInfo(string key, DataRow drInfo, DataRow drEjecutivo, Dictionary<string, string> productoDict)
+        {
+            if (drInfo != null && drInfo.Table.Columns.Contains(key) && drInfo[key] != DBNull.Value)
+                return drInfo[key].ToString();
+
+            if (productoDict != null && productoDict.TryGetValue(key, out var valProducto))
+                return valProducto;
+
+            if (drEjecutivo != null && drEjecutivo.Table.Columns.Contains(key) && drEjecutivo[key] != DBNull.Value)
+                return drEjecutivo[key].ToString();
+
+            return string.Empty; // Si no se encuentra nada
+        }
+
+
+
         #endregion
 
         #region Relaciones

@@ -74,9 +74,11 @@ namespace NoriAPI.Repositories
 
         #endregion
 
-        //Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
-        //Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
-        //Task<DataTable> GetValidadorAsync(int idProducto);
+        #region Scripts
+        Task<DataTable> ObtenerScriptsAsync(int idProducto);
+
+        #endregion
+
         #region Cargo En Linea
         Task<dynamic> RegisterNewCargo(CargoEnLinea newCargoEnLinea);
         Task<dynamic> RegisterNewEstado(EstadoDeCuenta newEstadoDeCuenta);
@@ -87,10 +89,13 @@ namespace NoriAPI.Repositories
 
         #endregion
 
+        #region Datos
         int ObtenerIdCartera();
         string ObtenerIdCuenta();
         int ObtenerIdEjecutivo();
         string ObtenerNombreEjecutivo();
+        Task<DataTable> ObtenerDatosEjecutivo(int idEjecutivo);
+        #endregion
     }
     public class EjecutivoRepository : IEjecutivoRepository
     {
@@ -564,6 +569,7 @@ namespace NoriAPI.Repositories
 
         */
         #endregion
+
         #endregion
 
         #region Preguntas_Respuestas
@@ -703,6 +709,7 @@ namespace NoriAPI.Repositories
             _htProducto = ConvertirDataTableAHashtable(ConvertToDataTable(producto, "Producto"));
             return ConvertToDataTable(producto, "Producto");
         }
+
         public async Task<DataTable> InfoCuenta(int Cartera, string NoCuenta)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -843,7 +850,6 @@ namespace NoriAPI.Repositories
         }
 
         #endregion
-
 
         #region Tiempos
         public async Task<ResultadoTiempos> ValidateTimes(int numEmpleado)
@@ -1026,7 +1032,24 @@ namespace NoriAPI.Repositories
 
         #endregion
 
-        #region Acciones
+        #region Scripts
+
+        public async Task<DataTable> ObtenerScriptsAsync(int idProducto)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            string query = "SELECT * FROM Scripts (NOLOCK) WHERE idProducto = @idProducto";
+
+            var scripts = new DataTable();
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@idProducto", idProducto);
+
+            using var adapter = new SqlDataAdapter(command);
+            adapter.Fill(scripts);
+
+            return scripts;
+        }
 
 
 
@@ -1178,6 +1201,9 @@ namespace NoriAPI.Repositories
 
         #endregion
 
+
+
+
         private static DataTable ConvertToDataTable(IEnumerable<dynamic> data, string tableName)
         {
             DataTable table = new DataTable(tableName);
@@ -1204,7 +1230,6 @@ namespace NoriAPI.Repositories
 
             return table;
         }
-
         public Hashtable ConvertirDataTableAHashtable(DataTable dt)
         {
             Hashtable ht = new Hashtable();
@@ -1378,6 +1403,41 @@ namespace NoriAPI.Repositories
                 return command.ExecuteScalar().ToString();
             }
         }
+
+        public async Task<DataTable> ObtenerDatosEjecutivo(int idEjecutivo)
+        {
+            string query = @"
+                SELECT TOP 1
+                E.idEjecutivo,
+                E.idEncargado,
+                E.Usuario,
+                E.idCartera,
+	            S.NombreEjecutivo Encargado,
+	            E.NombreEjecutivo NombreEjecutivo,
+	            E.idSucursal,
+	            E.Jerarquía,
+	            E.idÁrea,
+	            M.Segmento
+	            FROM dbCollection..Ejecutivos E
+				            LEFT JOIN dbCollection..Ejecutivos S ON S.idEjecutivo = E.idEncargado
+				            LEFT JOIN dbCollection..MetasEjecutivo M ON E.idEjecutivo = M.idEjecutivo
+	            WHERE E.idEjecutivo = @idEjecutivo";
+
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@idEjecutivo", idEjecutivo);
+
+            var table = new DataTable();
+            using var adapter = new SqlDataAdapter(command);
+            adapter.Fill(table);
+
+            return table;
+
+        }
+
+
         #endregion
 
         #region GestionTelefonica
@@ -1424,7 +1484,6 @@ namespace NoriAPI.Repositories
 
         #endregion
 
-      
 
         private SqlConnection GetConnection(string connection)
         {

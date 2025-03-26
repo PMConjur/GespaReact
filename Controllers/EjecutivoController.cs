@@ -18,6 +18,7 @@ using NoriAPI.Models.CargaGestionamiento;
 
 using System.ComponentModel.DataAnnotations;
 using NoriAPI.Models.Ofrecimiento;
+using NoriAPI.Models;
 
 
 
@@ -26,7 +27,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/ejecutivo")]
-    //[Authorize]
+    [Authorize]
     public class EjecutivoController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -78,7 +79,6 @@ namespace NoriAPI.Controllers
 
         #region Seguimientos
         [HttpGet("seguimientos/{idCartera}/{idCuenta}")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetSeguimiento(int idCartera, string idCuenta)
         {
             try
@@ -109,7 +109,6 @@ namespace NoriAPI.Controllers
             }
         }
         [HttpPost("crearSeguimiento")]
-        [AllowAnonymous]
         public async Task<IActionResult> CrearSeguimiento([FromBody] SeguimientoCompletoModel request)
         {
             try
@@ -793,6 +792,23 @@ namespace NoriAPI.Controllers
             {
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
+        }
+
+        [HttpGet("scripts-full/{idProducto}/{idCartera}/{cuenta}")]
+        public async Task<IActionResult> BuscaScripts(int idEjecutivo, int idProducto, int idCartera, string cuenta)
+        {
+            var resultado = await _ejecutivoService.BuscaScriptsTranslated(idEjecutivo, idProducto, idCartera, cuenta);
+
+            if (resultado.Rows.Count == 0)
+            {
+                return NotFound("No se encontraron scripts para el producto.");
+            }
+
+
+            var listaScripts = ConvertDataTableToList(resultado);
+            string jsonScripts = JsonSerializer.Serialize(listaScripts, new JsonSerializerOptions { WriteIndented = true });
+
+            return Content(jsonScripts, "application/json; charset=utf-8");
         }
         #endregion
 
