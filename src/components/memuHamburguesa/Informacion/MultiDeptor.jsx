@@ -1,43 +1,79 @@
-import { useState } from "react";
-import Dropdown from "react-bootstrap/Dropdown";
-import "../../../scss/styles.scss";
-import MultiDeptor from "../Informacion/MultiDeptor"; // Ajusta la ruta según la ubicación de tu archivo // Ajusta la ruta según la ubicación de tu archivo
+import { useState, useEffect } from "react";
+import { Modal, Container } from "react-bootstrap";
+import { toast } from "sonner";
+import { fetchMultideudores } from "../../../services/gespawebServices";
+import TableMultiDeptor from "../../TableMultiDeptor";
 
-function DropdownInfo() {
-  const [showModal, setShowModal] = useState(false);
+const Multideudores = ({ show, handleClose, searchResults }) => {
+  const [idCuenta, setIdCuenta] = useState(""); // Define el estado para idCuenta
+  const [tableData, setTableData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleShow = () => setShowModal(true);
-  const handleClose = () => setShowModal(false);
+  // Datos por defecto
+  const defaultData = {
+    idCuenta: "--", // Otros campos por defecto si es necesario
+  };
+
+  // Verificar que searchResults no esté vacío antes de acceder
+  const result =
+    Array.isArray(searchResults) && searchResults.length > 0
+      ? searchResults[0]
+      : defaultData;
+
+  useEffect(() => {
+    // Validar si el componente está visible y si searchResults tiene datos
+    if (show && result.idCuenta !== "--") {
+      const idCuentaFromSearch = result.idCuenta?.trim() || "--"; // Elimina espacios en blanco
+      console.log("searchResults:", searchResults); // Para depurar la estructura de searchResults
+
+      if (idCuentaFromSearch !== "--") {
+        setIdCuenta(idCuentaFromSearch); // Actualiza el estado de idCuenta
+        console.log("idCuenta obtenido:", idCuentaFromSearch); // Muestra el idCuenta obtenido
+      } else {
+        toast.error("No se encontró un idCuenta válido.");
+      }
+    } else {
+      console.log("searchResults está vacío o no tiene un idCuenta válido.");
+    }
+  }, [show, searchResults]);
+
+  useEffect(() => {
+    // Fetch de datos si idCuenta es válido
+    if (show && idCuenta && idCuenta !== "--") {
+      fetchData();
+    }
+  }, [show, idCuenta]);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const data = await fetchMultideudores(idCuenta);
+      setTableData(data);
+    } catch (error) {
+      console.error("Error fetching multideudores:", error);
+      toast.error(`Error al obtener los datos: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <>
-      <Dropdown className="">
-        <Dropdown.Toggle
-          className="custom-dropdown-toggle d-flex align-items-center"
-          id="dropdown-right"
-        >
-          Información
-        </Dropdown.Toggle>
-        <Dropdown.Menu
-          placement="end"
-          style={{ backgroundColor: "#1d1f20", border: "none" }}
-          className="custom-dropdown-menu"
-        >
-          <Dropdown.Item onClick={handleShow} className="custom-dropdown-item">
-            Multideudores
-          </Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">
-            Adicionales
-          </Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">
-            Pagos
-          </Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown>
-
-      <MultiDeptor show={showModal} handleClose={handleClose} />
-    </>
+    <Modal show={show} onHide={handleClose} size="xl">
+      <Modal.Header closeButton>
+        <Modal.Title>Multideudores</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Container>
+          {isLoading ? (
+            <p>Cargando...</p>
+          ) : (
+            <TableMultiDeptor tableData={tableData} />
+          )}
+        </Container>
+      </Modal.Body>
+      <Modal.Footer></Modal.Footer>
+    </Modal>
   );
-}
+};
 
-export default DropdownInfo;
+export default Multideudores;

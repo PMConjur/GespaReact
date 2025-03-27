@@ -10,6 +10,7 @@ import Search from "./Search";
 import OnlineCharge from "./OnlineCharge";
 import Complaints from "./Complaints"; // Importar el componente Complaints
 import { Back } from "react-bootstrap-icons";
+import Comments from "./Comments"; // Importar el componente Comments
 
 import ProcessesWLP from "./ProcessesWLP";
 import { data } from "react-router-dom";
@@ -27,11 +28,14 @@ const DropdownActions = () => {
   const [showDrives, setShowDrives] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showComplaints, setShowComplaints] = useState(false);
+  const [showComments, setShowComments] = useState(false); // Agregar el estado para el modal de comentarios
 
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
   const handleOpenComplaints = () => setShowComplaints(true); // Función para abrir el modal de quejas
   const handleCloseComplaints = () => setShowComplaints(false);
+  const handleOpenComments = () => setShowComments(true); // Función para abrir el modal de comentarios
+  const handleCloseComments = () => setShowComments(false); // Función para cerrar el modal de comentarios
 
   const [showOnlinecharge, setShowOnlinecharge] = useState(false);
   const [onlinechargeData, setOnlinechargeData] = useState([]);
@@ -108,7 +112,10 @@ const DropdownActions = () => {
           >
             Cargos en línea
           </Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">
+          <Dropdown.Item
+            onClick={handleOpenComments} // Actualizar para abrir el modal de comentarios
+            className="custom-dropdown-item"
+          >
             Comentarios
           </Dropdown.Item>
           <Dropdown.Item
@@ -158,6 +165,10 @@ const DropdownActions = () => {
       <ProcessesWLP
         show={showProcessesWLP}
         handleCloseProcessesWLP={handleCloseProcessesWLP}
+      />
+      <Comments
+        show={showComments} // Pasar el estado al modal
+        handleClose={handleCloseComments} // Pasar la función de cierre al modal
       />
     </>
   );
