@@ -116,6 +116,7 @@ namespace NoriAPI.Services
         Task<DataTable> GetWlpAsync(string Proceso, string idCuenta);
         Task ObtieneNegociacionesEjecutivosAsync(DataRow drDatos, DataSet dsTablas);
         Task<DataTable> GetAdiccionalesAsync(int idCartera, string idCuenta);
+        Task ObtenerEstadodeCuentaCorreos(DataRow drDatos, DataSet dsTablas);
 
 
 
@@ -3219,6 +3220,52 @@ namespace NoriAPI.Services
                 // Cambiar el nombre de la nueva columna para reemplazar la original
                 estadoGet.Columns["_ConsultaString"].ColumnName = "_Consulta";
             }
+
+            if (dsTablas.Tables.Contains("EstadoDeCuenta"))
+            {
+                dsTablas.Tables.Remove("EstadoDeCuenta");
+            }
+
+            estadoGet.TableName = "EstadoDeCuenta";
+            dsTablas.Tables.Add(estadoGet);
+        }
+        public async Task<DataTable> GetEstadoDeCuentaCorreoAsync(int idCartera, string idCuenta)
+        {
+            DataTable estado = new DataTable();
+            string query = "SELECT * FROM fn_Correos(@idCartera, @idCuenta) where idInformación in (1901,1906,1907)";
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(estado);
+                    }
+                }
+            }
+            return estado;
+        }
+
+        public async Task ObtenerEstadodeCuentaCorreos(DataRow drDatos, DataSet dsTablas)
+        {
+            if (drDatos == null)
+                return;
+
+            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
+                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
+
+            var idCartera = Convert.ToInt32(drDatos["idCartera"]);
+            var idCuenta = Convert.ToString(drDatos["idCuenta"]);
+
+            DataTable estadoGet = await GetEstadoDeCuentaCorreoAsync(idCartera, idCuenta);
+
+            if (estadoGet == null || estadoGet.Rows.Count == 0)
+                return;
 
             if (dsTablas.Tables.Contains("EstadoDeCuenta"))
             {
