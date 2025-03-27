@@ -355,7 +355,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost("save-ofrecimiento")]
-        [AllowAnonymous]
         public async Task<ActionResult<OfrecimientoValidadores>> SaveOfrecimiento([FromBody] SaveOfrecimientoRequest ofrecimientoInfo)
         {
             var result = await _ejecutivoService.GuardarOfrecimiento(ofrecimientoInfo);
@@ -544,7 +543,6 @@ namespace NoriAPI.Controllers
 
 
         [HttpGet("estadoDeCuentaCorreo/{idCartera}/{idCuenta}")]
-
         public async Task<IActionResult> GetEstadoDeCuentaCorreo(int idCartera, string idCuenta)
         {
             try
@@ -576,7 +574,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost("SaveEstadoDeCuenta")]
-
         public async Task<IActionResult> SaveCargoEstadoDeCuenta([FromBody] EstadoDeCuentaRe newEstadoCuenta)
         {
             if (newEstadoCuenta == null)

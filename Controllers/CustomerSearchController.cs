@@ -71,7 +71,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("products-info")]
-        [AllowAnonymous]
+        
         public async Task<IActionResult> GetProductData([FromQuery] string idCuenta)
         {
             var datos = await _searchService.CalculateProductData(idCuenta);

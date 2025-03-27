@@ -431,12 +431,11 @@ namespace NoriAPI.Services
             string[] campos = expresion.Split(['[', ']'], StringSplitOptions.RemoveEmptyEntries);
             string resultado = expresion;
 
-            foreach (var campo in campos)
+            foreach (var campo in from campo in campos
+                                  where valoresProducto.ContainsKey(campo)
+                                  select campo)
             {
-                if (valoresProducto.ContainsKey(campo))
-                {
-                    resultado = resultado.Replace("[" + campo + "]", valoresProducto[campo].ToString().Trim());
-                }
+                resultado = resultado.Replace("[" + campo + "]", valoresProducto[campo].ToString().Trim());
             }
 
             if (expresion.StartsWith('#'))
