@@ -3,8 +3,7 @@ import Dropdown from "react-bootstrap/Dropdown"; // Importar el componente Dropd
 import { AppContext } from "../../../pages/Managment"; // Importar el contexto de la aplicación
 import "../../../scss/styles.scss";
 import Addresses from "./Addresses"; // Importar el componente Addresses
-import Mail from "./Mail"; // Importar el componente Addresses
-
+import Mail from "./Mail"; // Importar el componente Mail
 import Payments from "./Payments"; // Importar el componente Payments
 import Aditionals from "./Aditionals"; // Importar el componente Aditionals
 import { InfoCircleFill } from "react-bootstrap-icons"; // Importar el ícono de Info de Bootstrap
@@ -50,7 +49,6 @@ function DropdownInfo() {
   const handleCloseMultideudores = () => setShowMultideudores(false);
 
   // Función para manejar la apertura del modal de Aditionals
-
   const handleShowMail = () => setShowMail(true);
   const handleCloseMail = () => setShowMail(false);
   return (

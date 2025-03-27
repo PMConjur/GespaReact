@@ -52,7 +52,7 @@ const CalculatorSimulator = ({ show, handleClose }) => {
     agregarPagos: false,
     filaMod: null,
   });
-  const [selectedRow, setSelectedRow] = useState(null);// Estado para almacenar la fila seleccionada
+  const [selectedRow, setSelectedRow] = useState(null); // Estado para almacenar la fila seleccionada
   const [showDetails, setShowDetails] = useState(false); // Estado para controlar la visibilidad del Row
   const [showCalculator, setShowCalculator] = useState(false); // Estado para controlar la visibilidad del Col
 
@@ -349,23 +349,11 @@ const CalculatorSimulator = ({ show, handleClose }) => {
   };
 
   const handleRowClick = (index) => {
-<<<<<<< HEAD
     setSelectedRow(index); // Actualiza el índice de la fila seleccionada
     setModifyForm((prev) => ({
       ...prev,
       filaMod: index, // Actualiza filaMod con el índice seleccionado
     }));
-=======
-    if (!modifyForm.agregarPagos) {
-      // Solo permite seleccionar filas si el checkbox no está marcado
-      console.log("Fila seleccionada:", index); // Depuración
-      setSelectedRow(index); // Actualiza el índice de la fila seleccionada
-      setModifyForm((prev) => ({
-        ...prev,
-        filaMod: index, // Actualiza filaMod con el índice seleccionado
-      }));
-    }
->>>>>>> origin/HU-Fer
   };
 
   return (
@@ -408,18 +396,27 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                     <tbody>
                       {Array.isArray(tableData) && tableData.length > 0 ? (
                         tableData.map((row, index) => {
-                          const fechaSinHora = row.fecha_Insert?.split(" ")[0] || "--"; // Muestra "--" si no hay valor
-                          const fechaConHora = row.fecha_Insert ? `${fechaSinHora} ${row.segundo_Insert || "--"}` : "--"; // Combina fecha y hora o muestra "--"
+                          const fechaSinHora =
+                            row.fecha_Insert?.split(" ")[0] || "--"; // Muestra "--" si no hay valor
+                          const fechaConHora = row.fecha_Insert
+                            ? `${fechaSinHora} ${row.segundo_Insert || "--"}`
+                            : "--"; // Combina fecha y hora o muestra "--"
                           return (
                             <tr key={index}>
                               <td>{fechaConHora}</td>
-                              <td>{row.herramienta || "--"}</td> {/* Muestra "--" si no hay valor */}
-                              <td>{row.idEstado || "--"}</td> {/* Muestra "--" si no hay valor */}
-                              <td>{row.vencimiento || "--"}</td> {/* Muestra "--" si no hay valor */}
+                              <td>{row.herramienta || "--"}</td>{" "}
+                              {/* Muestra "--" si no hay valor */}
+                              <td>{row.idEstado || "--"}</td>{" "}
+                              {/* Muestra "--" si no hay valor */}
+                              <td>{row.vencimiento || "--"}</td>{" "}
+                              {/* Muestra "--" si no hay valor */}
                               <td>
                                 {row.saldoInterés !== undefined
-                                  ? `$${parseFloat(row.saldoInterés).toFixed(2)}`
-                                  : "--"} {/* Muestra "--" si no hay valor */}
+                                  ? `$${parseFloat(row.saldoInterés).toFixed(
+                                      2
+                                    )}`
+                                  : "--"}{" "}
+                                {/* Muestra "--" si no hay valor */}
                               </td>
                             </tr>
                           );
@@ -567,18 +564,6 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                           <div>
                             <Button
                               variant="primary"
-<<<<<<< HEAD
-=======
-                              onClick={handleSetFormValues}
-                              disabled={!isCalculateButtonEnabled} // Deshabilita el botón si no es válido
-                            >
-                              Calcular
-                            </Button>
-                          </div>
-                          <div>
-                            <Button
-                              variant="primary"
->>>>>>> origin/HU-Fer
                               onClick={handleAgregarPago} // Llama a la función para agregar el pago
                               disabled={!isAddButtonEnabled} // Deshabilita el botón si no es válido
                             >
@@ -634,514 +619,328 @@ const CalculatorSimulator = ({ show, handleClose }) => {
                 </Col>
               </Row>
               <Col className="p-0">
-              {showScrollIndicator && (
-                <div
-                  className="container-scroll-down"
-                  style={{
-                    position: "absolute",
-                    bottom: "80px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    textAlign: "start",
-                    zIndex: 10,
-                  }}
-                >
-                  <div className="chevron"></div>
-                  <div className="chevron"></div>
-                  <div className="chevron"></div>
-                  <span className="text">Desliza hacia abajo</span>
-                </div>
-              )}
-<<<<<<< HEAD
-            
+                {showScrollIndicator && (
+                  <div
+                    className="container-scroll-down"
+                    style={{
+                      position: "absolute",
+                      bottom: "80px",
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      textAlign: "start",
+                      zIndex: 10,
+                    }}
+                  >
+                    <div className="chevron"></div>
+                    <div className="chevron"></div>
+                    <div className="chevron"></div>
+                    <span className="text">Desliza hacia abajo</span>
+                  </div>
+                )}
+
                 {showCalculator && ( // Muestra el contenido solo si showCalculator es true
-    <>
-      {/* Calculadora AMEX */}
-      <h5 style={{ textAlign: "center", color: "#20c997" }}>Calculadora AMEX</h5>
-      <Card className="p-3 mb-0">
-        <Card.Body className="p-0">
-          <Card.Title className="pt-0 ms-3">Datos</Card.Title>
-          <Form className="d-flex gap-4 w-100">
-            <Row className="d-flex w-100">
-              <Form.Group>
-                <Form.Control
-                  placeholder="Monto Requerido"
-                  name="montoRequerido"
-                  value={formValues.montoRequerido}
-                  onChange={(e) =>
-                    setFormValues((prev) => ({
-                      ...prev,
-                      montoRequerido: e.target.value,
-                    }))
-                  }
-                  readOnly // Hace que el campo sea de solo lectura
-                  style={{
-                    backgroundColor: "#e9ecef", // Color de fondo para indicar que es no editable
-                    cursor: "not-allowed", // Cambia el cursor para indicar que no es editable
-                  }}
-                />
-              </Form.Group>
-              <Form.Group className="mt-3">
-                <Form.Control
-                  placeholder="Descuento"
-                  name="descuento"
-                  value={parseInt(formValues.descuento, 10) || ""} // Convierte a entero antes de mostrar
-                  onChange={(e) =>
-                    setFormValues((prev) => ({
-                      ...prev,
-                      descuento: e.target.value,
-                    }))
-                  }
-                  readOnly // Hace que el campo sea de solo lectura
-                  style={{
-                    backgroundColor: "#e9ecef", // Color de fondo para indicar que es no editable
-                    cursor: "not-allowed", // Cambia el cursor para indicar que no es editable
-                  }}
-                />
-              </Form.Group>
-              <Form.Group className="mt-3">
-                <Form.Select
-                  name="periodos"
-                  value={formInputs.periodos || 1} // Valor por defecto: 1 (Mes)
-                  onChange={handleInputChange} // Actualiza el estado formInputs
-                >
-                  <option value="1">Mensual</option>
-                  <option value="2">Quincenal</option>
-                  <option value="4">Semanal</option>
-                </Form.Select>
-              </Form.Group>
-            </Row>
-            <Row className="d-flex w-100">
-              <Form.Group className="mt-3">
-                <Form.Control
-                  type="text"
-                  placeholder="Meses"
-                  name="meses"
-                  value={formInputs.meses}
-                  onChange={handleInputChange} // Actualiza el estado formInputs
-                />
-              </Form.Group>
-              <Form.Group className="mt-3">
-                <Form.Control
-                  type="date"
-                  placeholder="Fecha Pago"
-                  name="fechaPago"
-                  value={formInputs.fechaPago}
-                  onChange={handleInputChange} // Actualiza el estado formInputs
-                />
-              </Form.Group>
-              <div className="mt-4">
-                <Button
-                  variant="primary"
-                  onClick={handleCalculateSecondPart}
-                >
-                  Terminar
-                </Button>
-              </div>
-            </Row>
-          </Form>
-        </Card.Body>
-      </Card>
-    </>
-  )}
-</Col>
-              <Row>
-  {showDetails && ( // Muestra el contenido solo si showDetails es true
-    <>
-      {/* Resumen */}
-      <Col>
-        <Card className="mb-0">
-          <Card.Body>
-            <Row>
-=======
-              {/* Calculadora AMEX */}
-              <h5 style={{ textAlign: "center", color: "#20c997" }}>
-                Calculadora AMEX
-              </h5>
-              <Col className="p-0">
-                <Card className="p-3 mb-0">
-                  <Card.Body className="p-0">
-                    <Card.Title className="pt-0 ms-3">Datos</Card.Title>
-                    <Form className="d-flex gap-4 w-100">
-                      <Row className="d-flex w-100">
-                        <Form.Group>
-                          <Form.Control
-                            placeholder="Monto Requerido"
-                            type="text"
-                            name="montoRequerido"
-                            value={formValues.montoRequerido}
-                            onChange={(e) =>
-                              setFormValues((prev) => ({
-                                ...prev,
-                                montoRequerido: e.target.value,
-                              }))
-                            }
-                          />
-                        </Form.Group>
-                        <Form.Group className="mt-3">
-                          <Form.Control
-                            placeholder="Descuento"
-                            type="text"
-                            name="descuento"
-                            value={parseInt(formValues.descuento, 10) || ""} // Convierte a entero antes de mostrar
-                            onChange={(e) =>
-                              setFormValues((prev) => ({
-                                ...prev,
-                                descuento: e.target.value,
-                              }))
-                            }
-                          />
-                        </Form.Group>
-                        <Form.Group className="mt-3">
-                          <Form.Select
-                            name="periodos"
-                            value={formInputs.periodos || 1} // Valor por defecto: 1 (Mes)
-                            onChange={handleInputChange} // Actualiza el estado formInputs
-                          >
-                            <option value="1">Mensual</option>
-                            <option value="2">Quincenal</option>
-                            <option value="4">Semanal</option>
-                          </Form.Select>
-                        </Form.Group>
-                      </Row>
-                      <Row className="d-flex w-100">
-                        <Form.Group className="mt-3">
-                          <Form.Control
-                            type="text"
-                            placeholder="Meses"
-                            name="meses"
-                            value={formInputs.meses}
-                            onChange={handleInputChange} // Actualiza el estado formInputs
-                          />
-                        </Form.Group>
-                        <Form.Group className="mt-3">
-                          <Form.Control
-                            type="date"
-                            placeholder="Fecha Pago"
-                            name="fechaPago"
-                            value={formInputs.fechaPago}
-                            onChange={handleInputChange} // Actualiza el estado formInputs
-                          />
-                        </Form.Group>
-                        <div className="mt-4">
-                          <Button
-                            variant="primary"
-                            onClick={handleCalculateSecondPart}
-                          >
-                            Terminar
-                          </Button>
-                        </div>
-                      </Row>
-                    </Form>
-                  </Card.Body>
-                </Card>
-              </Col>
-              {/* agregar aqui */}
->>>>>>> origin/HU-Fer
-              <Row>
-                <Col>
-<<<<<<< HEAD
-                  <span className="text-light small pt-1 fw-bold">Plazos</span>
-                  <h5 style={{ color: "#4a9dff" }}>{calculosData.plazos || 0}</h5>
-                </Col>
-                <Col>
-                  <span className="text-light small pt-1 fw-bold">Primer Pago</span>
-                  <h5 style={{ color: "#07fb70" }}>${(calculosData.primerPago || 0).toFixed(2)}</h5>
-                </Col>
-                <Col>
-                  <span className="text-light small pt-1 fw-bold">Saldo</span>
-                  <h5 style={{ color: "#ffc400" }}>${(calculosData.saldo || 0).toFixed(2)}</h5>
-=======
-                  <Card className="mb-0">
-                    <Card.Body>
-                      <Row>
-                        <Row>
-                          <Col>
-                            <h6>Plazos</h6>
-                            <h5>{calculosData.plazos || 0}</h5>
-                          </Col>
-                          <Col>
-                            <h6>Primer Pago</h6>
-                            <h5>
-                              ${(calculosData.primerPago || 0).toFixed(2)}
-                            </h5>
-                          </Col>
-                          <Col>
-                            <h6>Saldo</h6>
-                            <h5>${(calculosData.saldo || 0).toFixed(2)}</h5>
-                          </Col>
-                        </Row>
-                        <Row>
-                          <Col>
-                            <h6>Monto Negociado</h6>
-                            <h5>
-                              ${(calculosData.montoNegociado || 0).toFixed(2)}
-                            </h5>
-                          </Col>
-                          <Col>
-                            <h6>Descuento</h6>
-                            <h5>{(calculosData.descuento || 0).toFixed(2)}</h5>
-                          </Col>
-                          <Col>
-                            <h6>Tasa Mensual</h6>
-                            <h5>
-                              {calculosData.tasaMensual
-                                ? `${calculosData.tasaMensual}%`
-                                : "N/A"}
-                            </h5>{" "}
-                            {/* Mostrar la tasa mensual */}
-                          </Col>
-                        </Row>
-                      </Row>
-                    </Card.Body>
-                  </Card>
-                  {/* Pagos */}
-                  <Card className="mt-0">
-                    <Card.Body>
-                      <div className="d-flex gap-3 mb-3">
-                        <h6>Pagos</h6>
-                        <Form.Check
-                          type="checkbox"
-                          label="Pago Inicial"
-                          name="agregarPagos"
-                          checked={modifyForm.agregarPagos}
-                          onChange={(e) =>
-                            setModifyForm((prev) => ({
-                              ...prev,
-                              agregarPagos: e.target.checked, // Cambia el valor de agregarPagos según el estado del checkbox
-                              filaMod: e.target.checked ? 0 : null, // Si está marcado, establece filaMod en 0; si no, lo resetea
-                            }))
-                          }
-                        />
-                      </div>
-                      <Form
-                        style={{ alignItems: "end" }}
-                        className=" d-flex gap-3"
-                      >
-                        <Form.Group className="">
-                          <Form.Label>
-                            Seleccione el pago para modificar
-                          </Form.Label>
-                          <Form.Control
-                            placeholder="Monto"
-                            type="text"
-                            name="montoMod"
-                            value={modifyForm.montoMod}
-                            onChange={handleModifyFormChange}
-                          />
-                        </Form.Group>
-                        <Form.Group className="">
-                          <Form.Label>Fecha Pago</Form.Label>
-                          <Form.Control
-                            type="date"
-                            name="fechaPagoMod"
-                            value={modifyForm.fechaPagoMod}
-                            onChange={handleModifyFormChange}
-                          />
-                        </Form.Group>
-
-                        <div>
-                          <Button
-                            variant="primary"
-                            onClick={() => {
-                              setModifyForm((prev) => ({
-                                ...prev,
-                                modificar: 1,
-                              })); // Cambia "modificar" a 1 al hacer clic
-                              handleModifyPayment();
-                            }}
-                          >
-                            Modificar
-                          </Button>
-                        </div>
-                      </Form>
-                    </Card.Body>
-                  </Card>
-                </Col>
-
-                <Col className=" ">
-                  {/* Plazos */}
-                  <Card className="mb-0">
-                    <Card.Body className="">
-                      <h6>Plazos</h6>
-                      <Table striped bordered hover variant="dark">
-                        <thead>
-                          <tr>
-                            <th>No.</th>
-                            <th>Fecha</th>
-                            <th>Saldo</th>
-                            <th>Pago</th>
-                            <th>Saldo Final</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {Array.isArray(calculosData.calculos) &&
-                          calculosData.calculos.length > 0 ? (
-                            calculosData.calculos.map((calculo, index) => (
-                              <tr
-                                key={index}
-                                onClick={() => handleRowClick(index)} // Maneja el clic en la fila
+                  <>
+                    {/* Calculadora AMEX */}
+                    <h5 style={{ textAlign: "center", color: "#20c997" }}>
+                      Calculadora AMEX
+                    </h5>
+                    <Card className="p-3 mb-0">
+                      <Card.Body className="p-0">
+                        <Card.Title className="pt-0 ms-3">Datos</Card.Title>
+                        <Form className="d-flex gap-4 w-100">
+                          <Row className="d-flex w-100">
+                            <Form.Group>
+                              <Form.Control
+                                placeholder="Monto Requerido"
+                                name="montoRequerido"
+                                value={formValues.montoRequerido}
+                                onChange={(e) =>
+                                  setFormValues((prev) => ({
+                                    ...prev,
+                                    montoRequerido: e.target.value,
+                                  }))
+                                }
+                                readOnly // Hace que el campo sea de solo lectura
                                 style={{
-                                  cursor: modifyForm.agregarPagos
-                                    ? "not-allowed"
-                                    : "pointer", // Deshabilita el cursor si el checkbox está marcado
-                                  backgroundColor:
-                                    selectedRow === index
-                                      ? "#0dcaf0"
-                                      : "transparent", // Aplica el color directamente
-                                  color:
-                                    selectedRow === index ? "#fff" : "inherit", // Cambia el color del texto si está seleccionada
+                                  backgroundColor: "#e9ecef", // Color de fondo para indicar que es no editable
+                                  cursor: "not-allowed", // Cambia el cursor para indicar que no es editable
+                                }}
+                              />
+                            </Form.Group>
+                            <Form.Group className="mt-3">
+                              <Form.Control
+                                placeholder="Descuento"
+                                name="descuento"
+                                value={parseInt(formValues.descuento, 10) || ""} // Convierte a entero antes de mostrar
+                                onChange={(e) =>
+                                  setFormValues((prev) => ({
+                                    ...prev,
+                                    descuento: e.target.value,
+                                  }))
+                                }
+                                readOnly // Hace que el campo sea de solo lectura
+                                style={{
+                                  backgroundColor: "#e9ecef", // Color de fondo para indicar que es no editable
+                                  cursor: "not-allowed", // Cambia el cursor para indicar que no es editable
+                                }}
+                              />
+                            </Form.Group>
+                            <Form.Group className="mt-3">
+                              <Form.Select
+                                name="periodos"
+                                value={formInputs.periodos || 1} // Valor por defecto: 1 (Mes)
+                                onChange={handleInputChange} // Actualiza el estado formInputs
+                              >
+                                <option value="1">Mensual</option>
+                                <option value="2">Quincenal</option>
+                                <option value="4">Semanal</option>
+                              </Form.Select>
+                            </Form.Group>
+                          </Row>
+                          <Row className="d-flex w-100">
+                            <Form.Group className="mt-3">
+                              <Form.Control
+                                type="text"
+                                placeholder="Meses"
+                                name="meses"
+                                value={formInputs.meses}
+                                onChange={handleInputChange} // Actualiza el estado formInputs
+                              />
+                            </Form.Group>
+                            <Form.Group className="mt-3">
+                              <Form.Control
+                                type="date"
+                                placeholder="Fecha Pago"
+                                name="fechaPago"
+                                value={formInputs.fechaPago}
+                                onChange={handleInputChange} // Actualiza el estado formInputs
+                              />
+                            </Form.Group>
+                            <div className="mt-4">
+                              <Button
+                                variant="primary"
+                                onClick={handleCalculateSecondPart}
+                              >
+                                Terminar
+                              </Button>
+                            </div>
+                          </Row>
+                        </Form>
+                      </Card.Body>
+                    </Card>
+                  </>
+                )}
+              </Col>
+              <Row>
+                {showDetails && ( // Muestra el contenido solo si showDetails es true
+                  <>
+                    {/* Resumen */}
+                    <Col>
+                      <Card className="mb-0">
+                        <Card.Body>
+                          <Row>
+                            <Row>
+                              <Col>
+                                <span className="text-light small pt-1 fw-bold">
+                                  Plazos
+                                </span>
+                                <h5 style={{ color: "#4a9dff" }}>
+                                  {calculosData.plazos || 0}
+                                </h5>
+                              </Col>
+                              <Col>
+                                <span className="text-light small pt-1 fw-bold">
+                                  Primer Pago
+                                </span>
+                                <h5 style={{ color: "#07fb70" }}>
+                                  ${(calculosData.primerPago || 0).toFixed(2)}
+                                </h5>
+                              </Col>
+                              <Col>
+                                <span className="text-light small pt-1 fw-bold">
+                                  Saldo
+                                </span>
+                                <h5 style={{ color: "#ffc400" }}>
+                                  ${(calculosData.saldo || 0).toFixed(2)}
+                                </h5>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col>
+                                <span className="text-light small pt-1 fw-bold">
+                                  Monto Negociado
+                                </span>
+                                <h5 style={{ color: "#ffc400" }}>
+                                  $
+                                  {(calculosData.montoNegociado || 0).toFixed(
+                                    2
+                                  )}
+                                </h5>
+                              </Col>
+                              <Col>
+                                <span className="text-light small pt-1 fw-bold">
+                                  Descuento
+                                </span>
+                                <h5 style={{ color: "#6dd6ff" }}>
+                                  {(calculosData.descuento || 0).toFixed(2)}
+                                </h5>
+                              </Col>
+                              <Col>
+                                <span className="text-light small pt-1 fw-bold">
+                                  Tasa mensual
+                                </span>
+                                <h5 className="text-light">
+                                  {calculosData.tasaMensual
+                                    ? `${calculosData.tasaMensual}%`
+                                    : "N/A"}
+                                </h5>
+                              </Col>
+                            </Row>
+                          </Row>
+                        </Card.Body>
+                      </Card>
+                      {/* Pagos */}
+                      <Card className="mt-0">
+                        <Card.Body>
+                          <div
+                            style={{
+                              justifyContent: "space-evenly",
+                              paddingLeft: "0",
+                            }}
+                            className="d-flex gap-3 mb-3"
+                          >
+                            <h6 style={{ color: "white" }}>Pagos</h6>
+                            <Form.Check
+                              type="checkbox"
+                              label="Pago Inicial"
+                              name="agregarPagos"
+                              checked={modifyForm.agregarPagos}
+                              onChange={(e) =>
+                                setModifyForm((prev) => ({
+                                  ...prev,
+                                  agregarPagos: e.target.checked,
+                                  filaMod: e.target.checked ? 0 : null,
+                                }))
+                              }
+                            />
+                          </div>
+                          <Form
+                            style={{ alignItems: "end" }}
+                            className=" d-flex gap-3"
+                          >
+                            <Form.Group className="">
+                              <Form.Label>
+                                Seleccione el pago para modificar
+                              </Form.Label>
+                              <Form.Control
+                                placeholder="Monto"
+                                type="text"
+                                name="montoMod"
+                                value={modifyForm.montoMod}
+                                onChange={handleModifyFormChange}
+                              />
+                            </Form.Group>
+                            <Form.Group className="">
+                              <Form.Label>Fecha Pago</Form.Label>
+                              <Form.Control
+                                type="date"
+                                name="fechaPagoMod"
+                                value={modifyForm.fechaPagoMod}
+                                onChange={handleModifyFormChange}
+                              />
+                            </Form.Group>
+
+                            <div>
+                              <Button
+                                variant="primary"
+                                onClick={() => {
+                                  setModifyForm((prev) => ({
+                                    ...prev,
+                                    modificar: 1,
+                                  }));
+                                  handleModifyPayment();
                                 }}
                               >
-                                <td>{calculo.no}</td>
-                                <td>
-                                  {new Date(calculo.fecha).toLocaleDateString()}
-                                </td>
-                                <td>${(calculo.saldo || 0).toFixed(2)}</td>
-                                <td>${(calculo.pago || 0).toFixed(2)}</td>
-                                <td>${(calculo.saldoFinal || 0).toFixed(2)}</td>
+                                Modificar
+                              </Button>
+                            </div>
+                          </Form>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+
+                    <Col className=" ">
+                      {/* Plazos */}
+                      <Card className="mb-0">
+                        <Card.Body className="">
+                          <h6>Plazos</h6>
+                          <Table
+                            bordered
+                            hover
+                            className="custom-calculation-table"
+                          >
+                            <thead className="table-header-custom">
+                              <tr>
+                                <th>No.</th>
+                                <th>Fecha</th>
+                                <th>Saldo</th>
+                                <th>Pago</th>
+                                <th>Saldo Final</th>
                               </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan="5" className="text-center">
-                                No hay datos
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </Table>
-                    </Card.Body>
-                  </Card>
->>>>>>> origin/HU-Fer
-                </Col>
-              </Row>
-              <Row>
-                <Col>
-                  <span className="text-light small pt-1 fw-bold">Monto Negociado</span>
-                  <h5 style={{ color: "#ffc400" }}>${(calculosData.montoNegociado || 0).toFixed(2)}</h5>
-                </Col>
-                <Col>
-                  <span className="text-light small pt-1 fw-bold">Descuento</span>
-                  <h5 style={{ color: "#6dd6ff" }}>{(calculosData.descuento || 0).toFixed(2)}</h5>
-                </Col>
-                <Col>
-                  <span className="text-light small pt-1 fw-bold">Tasa mensual</span>
-                  <h5 className="text-light">
-                    {calculosData.tasaMensual ? `${calculosData.tasaMensual}%` : "N/A"}
-                  </h5>
-                </Col>
-              </Row>
-            </Row>
-          </Card.Body>
-        </Card>
-        {/* Pagos */}
-        <Card className="mt-0">
-          <Card.Body>
-            <div style={{ justifyContent: "space-evenly", paddingLeft: "0" }} className="d-flex gap-3 mb-3">
-              <h6 style={{ color: "white" }}>Pagos</h6>
-              <Form.Check
-                type="checkbox"
-                label="Pago Inicial"
-                name="agregarPagos"
-                checked={modifyForm.agregarPagos}
-                onChange={(e) =>
-                  setModifyForm((prev) => ({
-                    ...prev,
-                    agregarPagos: e.target.checked,
-                    filaMod: e.target.checked ? 0 : null,
-                  }))
-                }
-              />
-            </div>
-            <Form style={{ alignItems: "end" }} className=" d-flex gap-3">
-              <Form.Group className="">
-                <Form.Label>Seleccione el pago para modificar</Form.Label>
-                <Form.Control
-                  placeholder="Monto"
-                  type="text"
-                  name="montoMod"
-                  value={modifyForm.montoMod}
-                  onChange={handleModifyFormChange}
-                />
-              </Form.Group>
-              <Form.Group className="">
-                <Form.Label>Fecha Pago</Form.Label>
-                <Form.Control
-                  type="date"
-                  name="fechaPagoMod"
-                  value={modifyForm.fechaPagoMod}
-                  onChange={handleModifyFormChange}
-                />
-              </Form.Group>
-
-              <div>
-                <Button
-                  variant="primary"
-                  onClick={() => {
-                    setModifyForm((prev) => ({
-                      ...prev,
-                      modificar: 1,
-                    }));
-                    handleModifyPayment();
-                  }}
-                >
-                  Modificar
-                </Button>
-              </div>
-            </Form>
-          </Card.Body>
-        </Card>
-      </Col>
-
-      <Col className=" ">
-        {/* Plazos */}
-        <Card className="mb-0">
-          <Card.Body className="">
-            <h6>Plazos</h6>
-            <Table bordered hover className="custom-calculation-table">
-              <thead className="table-header-custom">
-                <tr>
-                  <th>No.</th>
-                  <th>Fecha</th>
-                  <th>Saldo</th>
-                  <th>Pago</th>
-                  <th>Saldo Final</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Array.isArray(calculosData.calculos) && calculosData.calculos.length > 0 ? (
-                  calculosData.calculos.map((calculo, index) => (
-                    <tr
-                      key={index}
-                      onClick={() => !modifyForm.agregarPagos && handleRowClick(index)}
-                      className={`table-row-custom ${selectedRow === index ? "selected-row" : ""}`}
-                      style={{
-                        cursor: modifyForm.agregarPagos ? "not-allowed" : "pointer",
-                      }}
-                    >
-                      <td>{calculo.no}</td>
-                      <td>{new Date(calculo.fecha).toLocaleDateString()}</td>
-                      <td className="amount-cell">${(calculo.saldo || 0).toFixed(2)}</td>
-                      <td className="amount-cell">${(calculo.pago || 0).toFixed(2)}</td>
-                      <td className="amount-cell">${(calculo.saldoFinal || 0).toFixed(2)}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} className="no-data-message">
-                      No hay datos disponibles
-                    </td>
-                  </tr>
+                            </thead>
+                            <tbody>
+                              {Array.isArray(calculosData.calculos) &&
+                              calculosData.calculos.length > 0 ? (
+                                calculosData.calculos.map((calculo, index) => (
+                                  <tr
+                                    key={index}
+                                    onClick={() =>
+                                      !modifyForm.agregarPagos &&
+                                      handleRowClick(index)
+                                    }
+                                    className={`table-row-custom ${
+                                      selectedRow === index
+                                        ? "selected-row"
+                                        : ""
+                                    }`}
+                                    style={{
+                                      cursor: modifyForm.agregarPagos
+                                        ? "not-allowed"
+                                        : "pointer",
+                                    }}
+                                  >
+                                    <td>{calculo.no}</td>
+                                    <td>
+                                      {new Date(
+                                        calculo.fecha
+                                      ).toLocaleDateString()}
+                                    </td>
+                                    <td className="amount-cell">
+                                      ${(calculo.saldo || 0).toFixed(2)}
+                                    </td>
+                                    <td className="amount-cell">
+                                      ${(calculo.pago || 0).toFixed(2)}
+                                    </td>
+                                    <td className="amount-cell">
+                                      ${(calculo.saldoFinal || 0).toFixed(2)}
+                                    </td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td colSpan={5} className="no-data-message">
+                                    No hay datos disponibles
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </Table>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  </>
                 )}
-              </tbody>
-            </Table>
-          </Card.Body>
-        </Card>
-      </Col>
-    </>
-  )}
-</Row>
+              </Row>
             </Col>
           </Col>
         </Col>

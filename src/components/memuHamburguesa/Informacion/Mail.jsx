@@ -11,7 +11,7 @@ import {
 import axios from "axios";
 import servicio from "../../../services/axiosServices";
 import { toast } from "sonner";
-import Conversation from "./conversation";
+import Conversation from "./Conversation";
 
 const Mail = ({ show, handleClose }) => {
   const [correos, setCorreos] = useState([]);

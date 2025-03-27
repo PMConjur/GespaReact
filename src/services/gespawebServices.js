@@ -188,88 +188,7 @@ export const fetchValidationTel = async (data) => {
   }
 };
 
-// Obtener tiempos del ejecutivo
-export async function userTimes(numEmpleado) {
-  try {
-    console.log(`📡 Solicitando tiempos para empleado: ${numEmpleado}`);
-
-    const response = await servicio.get(
-      `/ejecutivo/tiempos-ejecutivo?numEmpleado=${numEmpleado}`
-    );
-
-    // Filtramos la contraseña si estuviera en la respuesta
-    const { ...dataSinContraseña } = response.data;
-    return dataSinContraseña;
-  } catch (error) {
-    console.error("❌ Error al recibir la productividad:", error);
-    const errorMessage =
-      error.response?.data?.mensaje || "Error al recibir la productividad.";
-    throw new Error(errorMessage);
-  }
-}
-
-export async function userTimesUpdate(data) {
-  try {
-    console.log(
-      "📤 Enviando datos de pausa a la API:",
-      JSON.stringify(data, null, 2)
-    );
-
-    const responseData = JSON.parse(localStorage.getItem("responseData"));
-    const token = responseData?.ejecutivo?.token;
-
-    if (!token) {
-      throw new Error("⚠️ No se encontró un token de autenticación.");
-    }
-
-    if (
-      !data.idEjecutivo ||
-      !data.contrasenia ||
-      !data.peCausa ||
-      !data.duracion
-    ) {
-      throw new Error(
-        "⚠️ Datos incompletos. Verifica que todos los campos estén llenos."
-      );
-    }
-
-    const response = await axios.post(
-      `${apiUrl}/ejecutivo/pause-ejecutivo`,
-      {
-        idEjecutivo: data.idEjecutivo,
-        contrasenia: data.contrasenia.trim(),
-        peCausa: data.peCausa,
-        duracion: data.duracion,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    console.log("✅ Respuesta de la API:", response.data);
-
-    if (!response.data || response.data.error) {
-      throw new Error(response.data.error || "Error desconocido en la API.");
-    }
-
-    toast.success("Datos enviados correctamente.");
-    return response.data;
-  } catch (error) {
-    console.error("❌ Error al enviar los datos:", error);
-    const errorMessage =
-      error.response?.data?.mensaje ||
-      error.message ||
-      "Error al enviar los datos.";
-    toast.error(errorMessage);
-    throw new Error(errorMessage);
-  }
-}
-
 //Endpoint Flow
-
 export async function userFlow() {
   try {
     const response = await servicio.get(
@@ -621,83 +540,31 @@ export async function fetchScripts(idProducto) {
 }
 
 // Endpoint de gestión TE para múltiples cuentas
-export async function getGestionTeData(searchResults) {
+export const getGestionTeData = async (idCartera, idCuenta) => {
   try {
-    console.log("🔍 searchResults recibidos:", searchResults);
-
-    // Validar que searchResults sea un arreglo
-    if (!Array.isArray(searchResults)) {
-      throw new Error("❌ searchResults no es un arreglo válido.");
+    if (!idCartera || !idCuenta) {
+      throw new Error("idCartera o idCuenta no son válidos.");
     }
 
-    // Obtener token de autenticación de localStorage o estado
-    const responseData =
-      location.state || JSON.parse(localStorage.getItem("responseData"));
-    const token = responseData?.ejecutivo?.token;
+    const Top = 2000;
+    const url = `/ejecutivo/gestionTe/${idCartera}/${idCuenta}/${Top}`;
+    console.log("Solicitando datos de gestion Telefonica a:", url); // Depurar URL
 
-    if (!token) {
-      throw new Error("❌ Token de autenticación no disponible");
+    const response = await servicio.get(url);
+    const message = getErrorStatus(response.status);
+
+    if (response.status !== 200) {
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
     }
 
-    // Definir idCartera fijo (siempre 1 según el código original)
-    const idCartera = 1;
-
-    // Realizar múltiples solicitudes en paralelo para cada idCuenta en searchResults
-    const gestionTeData = await Promise.all(
-      searchResults.map(async (result) => {
-        const idCuenta = result?.idCuenta?.trim(); // Limpieza del idCuenta
-        if (!idCuenta) {
-          console.warn("⚠️ idCuenta no válido en el resultado:", result);
-          return null; // Ignorar resultados sin idCuenta válido
-        }
-
-        console.log(`📡 Realizando solicitud para idCuenta: ${idCuenta}`);
-
-        try {
-          const response = await axios.get(
-            `${apiUrl}/ejecutivo/gestionTe/${idCartera}/${idCuenta}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`, // Autenticación con token
-              },
-            }
-          );
-
-          console.log(
-            `✅ Respuesta recibida para idCuenta ${idCuenta}:`,
-            response.data
-          );
-
-          // Validar que la respuesta tenga datos esperados
-          if (!response.data || typeof response.data !== "object") {
-            console.warn(
-              `⚠️ Respuesta inesperada para idCuenta ${idCuenta}:`,
-              response.data
-            );
-            return null;
-          }
-
-          return response.data; // Retornar datos obtenidos
-        } catch (error) {
-          console.error(
-            `❌ Error al obtener datos de gestión TE para idCuenta ${idCuenta}:`,
-            error
-          );
-          return null; // Retornar null en caso de error para evitar fallas en Promise.all
-        }
-      })
-    );
-
-    // Filtrar valores nulos (en caso de errores individuales)
-    const filteredData = gestionTeData.filter((data) => data !== null);
-    console.log("📋 Datos finales gestionTeData filtrados:", filteredData);
-
-    return filteredData;
+    return response.data;
   } catch (error) {
-    console.error("❌ Error al obtener los datos de gestión TE:", error);
-    throw new Error("Error al cargar los datos de gestión TE.");
+    console.error("Error en getGestionTeData:", error);
+
+    throw error;
   }
-}
+};
 
 // Endpoint Recordatorios
 
@@ -931,11 +798,40 @@ export async function Relations() {
 }
 
 // endpoint calculadora primera parte
-export const fetchCalSecondPart = async (Cartera, NoCuenta, idHerr) => {
+export const fetchCalSecondPart = async (
+  idCartera,
+  NoCuenta,
+  idHerramienta,
+  MontoRequerido,
+  Descuento,
+  iMeses,
+  dtpFecha,
+  periodos
+) => {
   try {
     console.log("Llamando al endpoint /ejecutivo/Calculadora-2daParte");
+    console.log("Datos enviados:", {
+      idCartera,
+      NoCuenta,
+      idHerramienta,
+      MontoRequerido,
+      Descuento,
+      iMeses,
+      dtpFecha,
+      periodos,
+    });
+
     const response = await servicio.get(`/ejecutivo/Calculadora-2daParte`, {
-      params: { Cartera, NoCuenta, idHerr },
+      params: {
+        idHerramienta,
+        NoCuenta,
+        idCartera,
+        MontoRequerido,
+        Descuento,
+        iMeses,
+        dtpFecha,
+        periodos,
+      },
     });
 
     console.log("Respuesta recibida:", response);
@@ -946,25 +842,119 @@ export const fetchCalSecondPart = async (Cartera, NoCuenta, idHerr) => {
       );
     }
 
-    const result = response.data;
-    console.log("Validación recibida:", result);
-    return result;
+    return response.data;
   } catch (error) {
-    console.error("Error en fetchCalFirtsPart:", error);
+    console.error("Error en fetchCalSecondPart:", error);
+    console.error("Detalles del error:", error.response?.data || error.message);
     throw error;
   }
 };
-//End point Fernando
 
-//EndPoint - ActivitiesDay
-export const fetchGestionesDelDia = async (idEjecutivo, setErrorMessage) => {
+export const closeSession = async (idEjecutivo, idLogIngreso) => {
   try {
-    const response = await servicio.get(
-      `/ejecutivo/gestionesDelDia/${idEjecutivo}`
-    );
+    const url = `/login/cierre-sesion?idEjecutivo=${idEjecutivo}&idLogIngreso=${idLogIngreso}`;
+
+    const response = await servicio.get(url);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta del backend. Estado: ${response.status}`
+      );
+    }
+
+    const data = response.data;
+
+    return data;
+  } catch (error) {
+    console.error("Error en closeSession:", error.response || error.message);
+    const errorMessage =
+      error.response?.data?.mensaje ||
+      error.message ||
+      "Error desconocido al cerrar sesión.";
+    throw new Error(errorMessage);
+  }
+};
+
+export const fetchCalSecondPartModify = async (
+  idCartera,
+  NoCuenta,
+  idHerramienta,
+  MontoRequerido,
+  Descuento,
+  iMeses,
+  dtpFecha,
+  periodos,
+  modificar,
+  montoMod,
+  fechaPagoMod,
+  agregarPagos,
+  filaMod
+) => {
+  try {
+    console.log("Llamando al endpoint /ejecutivo/Calculadora-2daParte");
+    console.log("Datos enviados:", {
+      idCartera,
+      NoCuenta,
+      idHerramienta,
+      MontoRequerido,
+      Descuento,
+      iMeses,
+      dtpFecha,
+      periodos,
+      modificar,
+      montoMod,
+      fechaPagoMod,
+      agregarPagos,
+      filaMod,
+    });
+
+    const response = await servicio.get(`/ejecutivo/Calculadora-2daParte`, {
+      params: {
+        idHerramienta,
+        NoCuenta,
+        idCartera,
+        MontoRequerido,
+        Descuento,
+        iMeses,
+        dtpFecha,
+        periodos,
+        modificar,
+        montoMod,
+        fechaPagoMod,
+        agregarPagos,
+        filaMod,
+      },
+    });
+
+    console.log("Respuesta recibida:", response);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
     return response.data;
   } catch (error) {
-    let message = "Error desconocido.";
+    console.error("Error en fetchCalSecondPartModify:", error);
+    console.error("Detalles del error:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export async function userTimes(numEmpleado) {
+  try {
+    const response = await servicio.get(`/ejecutivo/tiempos-ejecutivo`, {
+      params: { numEmpleado },
+    });
+
+    if (!response.data) {
+      throw new Error("No se recibieron datos del servidor");
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error en userTimes:", error);
     if (error.response) {
       const errorMessage =
         error.response.data?.mensaje || "Error al obtener tiempos";
@@ -972,7 +962,7 @@ export const fetchGestionesDelDia = async (idEjecutivo, setErrorMessage) => {
     }
     throw new Error("Error de conexión al obtener tiempos");
   }
-};
+}
 
 export async function userTimesPromedio(numEmpleado) {
   try {
@@ -1019,6 +1009,34 @@ export const userTimesUpdate = async (data) => {
 //End point Fernando
 
 //EndPoint - ActivitiesDay
+export const fetchGestionesDelDia = async (idEjecutivo, setErrorMessage) => {
+  try {
+    const response = await servicio.get(
+      `/ejecutivo/gestionesDelDia/${idEjecutivo}`
+    );
+    return response.data;
+  } catch (error) {
+    let message = "Error desconocido.";
+    if (error.response) {
+      const status = error.response.status;
+      message =
+        status === 404
+          ? "No se encontraron resultados para la cuenta especificada."
+          : `Error ${status}: ${error.response.data.message}`;
+    } else if (error.request) {
+      message = "Error: No se recibió respuesta del servidor.";
+    } else {
+      message = `Error: Ocurrió un problema al realizar la solicitud. Detalles: ${error.message}`;
+    }
+
+    if (setErrorMessage) {
+      toast.dismiss();
+      toast.error(message);
+      setErrorMessage(message);
+    }
+    throw error;
+  }
+};
 //EndPoint - ActivitiesDay
 
 //EndPoint - Domicilios
@@ -1098,49 +1116,6 @@ export const createFollows = async (data) => {
         error.response.data?.mensaje || "Error al crear Seguimiento";
       throw new Error(errorMessage);
     }
-    throw error;
-  }
-};
-export const closeSession = async () => {
-  try {
-    // Add logic to handle session closure, e.g., API call or token removal
-    console.log("Session closed successfully.");
-    return { success: true, message: "Session closed successfully." };
-  } catch (error) {
-    console.error("Error in closeSession:", error);
-    throw new Error("Failed to close the session.");
-  }
-};
-export const fetchCalSecondPartModify = async (
-  Cartera,
-  NoCuenta,
-  idHerr,
-  additionalParam
-) => {
-  try {
-    console.log(
-      "Llamando al endpoint /ejecutivo/Calculadora-2daParte-Modificada"
-    );
-    const response = await servicio.get(
-      `/ejecutivo/Calculadora-2daParte-Modificada`,
-      {
-        params: { Cartera, NoCuenta, idHerr, additionalParam },
-      }
-    );
-
-    console.log("Respuesta recibida:", response);
-
-    if (response.status !== 200) {
-      throw new Error(
-        `Error en la respuesta de la API. Estado: ${response.status}`
-      );
-    }
-
-    const result = response.data;
-    console.log("Validación recibida:", result);
-    return result;
-  } catch (error) {
-    console.error("Error en fetchCalSecondPartModify:", error);
     throw error;
   }
 };
