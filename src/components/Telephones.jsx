@@ -245,7 +245,7 @@ const Telephones = () => {
                   )}
                   <InputGroup style={{ width: "35%" }} className="input-phone">
                     <FormControl
-                      placeholder="Numero de telefono"
+                      placeholder="Número de teléfono"
                       value={phoneNumber}
                       onChange={handlePhoneNumberChange}
                       className="input-validation"
