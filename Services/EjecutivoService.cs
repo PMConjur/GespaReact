@@ -1956,7 +1956,7 @@ namespace NoriAPI.Services
             }
 
 
-            return new { Validadores = validaPootis, Message = verificaOfrecimiento, Success = false };
+            return new { Validadores = validaPootis, Message = verificaOfrecimiento, Success = true };
 
         }
         public static string VerificaOfrecimientoNegociación(SaveOfrecimientoRequest ofrecimiento)
