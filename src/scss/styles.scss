@@ -434,6 +434,19 @@ $table-border-radius: 8px;
   }
 }
 
+.table-dark {
+  --bs-table-color: #fff;
+  --bs-table-bg: #212529;
+  --bs-table-border-color: #4d5154;
+  /* --bs-table-striped-bg: #2c3034; */ // Eliminado para evitar conflictos
+  --bs-table-striped-color: #fff;
+  --bs-table-active-bg: #373b3e;
+  --bs-table-active-color: #fff;
+  --bs-table-hover-bg: #323539;
+  --bs-table-hover-color: #fff;
+  color: var(--bs-table-color);
+}
+
 .button-phones {
   justify-content: flex-end;
   width: auto;
@@ -1478,7 +1491,104 @@ $pagination-disabled-border-color: #ffffff;
 }
 
 
-.selected-row {
-  background-color: #0dcaf0 !important; // Color de fondo para la fila seleccionada
-  color: #fff !important; // Color del texto para mayor contraste
+//custom tabla plazos en calculadora
+.custom-calculation-table {
+  // Reset de herencia de Bootstrap
+  --bs-table-bg: transparent;
+  --bs-table-border-color: #343a40;
+  --bs-table-striped-bg: #2c3034;
+  --bs-table-hover-bg: #323539;
+  --bs-table-active-bg: #e9ecef;
+
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  // Header
+  .table-header-custom {
+    th {
+      background-color: #212529;
+      color: white;
+      padding: 0.75rem 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+      border: none;
+      position: relative;
+
+      &:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 25%;
+        height: 50%;
+        width: 1px;
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+    }
+  }
+
+  // Filas
+  .table-row-custom {
+    transition: background-color 0.2s ease;
+
+    td {
+      padding: 0.75rem 1rem;
+      vertical-align: middle;
+      border-bottom: 1px solid var(--bs-table-border-color);
+      background-color: #2c3034;
+      color: white;
+    }
+
+    &:hover:not(.selected-row) {
+      background-color: #4a9dff !important;
+      
+    }
+  }
+
+  // Celdas de montos
+  .amount-cell {
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 500;
+    text-align: right;
+    color: #4a9dff;
+  }
+
+  // Fila seleccionada
+  .selected-row {
+    --bs-table-accent-bg: #4a9dff !important;
+    background-color: #4a9dff !important;
+    color: white;
+
+    td {
+      border-color: #4a9dff;
+      color: white;
+      background-color: #212529;
+    }
+
+    .amount-cell {
+      color: white;
+    }
+  }
+
+  // Mensaje sin datos
+  .no-data-message {
+    padding: .5rem;
+    text-align: center;
+    color: white;
+    background-color:  #2c3034;
+  }
+
+  // Variante dark (opcional)
+  &.table-dark {
+    .table-header-custom th {
+      background-color: #343a40;
+    }
+
+    .selected-row {
+      background-color: #4a9dff !important;
+    }
+  }
 }
