@@ -1,17 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Modal, Container, Row, Table } from "react-bootstrap";
 import { toast } from "sonner";
 import servicio from "../../../services/axiosServices";
-
+import { AppContext } from "../../../pages/Managment"; // Asegúrate de que la ruta sea correcta
 const Conversation = ({ show, handleClose, correoSeleccionadoSolo }) => {
+  const { searchResults } = useContext(AppContext);
   const [gestionesData, setGestionesData] = useState([]);
-  const [selectedGestion, setSelectedGestion] = useState(null);
-  const responseData = JSON.parse(localStorage.getItem("responseData"));
-  const [errorMessage, setErrorMessage] = useState(""); // esto es para evitar doble toast
+  const [errorMessage, setErrorMessage] = useState(""); // Para evitar doble toast
+  const [selectedGestion, setSelectedGestion] = useState(null); // Declare selectedGestion
 
-  const [idCuenta, setIdCuenta] = useState(() => {
-    return localStorage.getItem("idCuenta") || "";
-  });
+  const idCuenta = searchResults.length > 0 ? searchResults[0].idCuenta : null;
 
   const fetchGestionesData = async () => {
     if (!correoSeleccionadoSolo) {
@@ -74,7 +72,7 @@ const Conversation = ({ show, handleClose, correoSeleccionadoSolo }) => {
     if (show) {
       fetchGestionesData();
     }
-  }, [show]);
+  }, [show, correoSeleccionadoSolo, idCuenta]); // Dependencias actualizadas
 
   const renderCell = (value) => {
     if (typeof value === "object" && value !== null) {

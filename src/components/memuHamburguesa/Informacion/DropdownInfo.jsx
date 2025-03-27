@@ -110,7 +110,11 @@ function DropdownInfo() {
       />
 
       {/* Renderizar el modal de Addresses */}
-      <Addresses show={showAddresses} handleClose={handleCloseAddresses} />
+      <Addresses
+        show={showAddresses}
+        handleClose={handleCloseAddresses}
+        searchResults={searchResults}
+      />
 
       {/* Renderizar el modal de Aditionals */}
       <Aditionals

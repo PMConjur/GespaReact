@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   Modal,
   Button,
@@ -8,17 +8,18 @@ import {
   Row,
   Col,
 } from "react-bootstrap";
-import axios from "axios";
 import servicio from "../../../services/axiosServices";
 import { toast } from "sonner";
-import Conversation from "./Conversation";
+import Conversation from "./conversation";
+import { AppContext } from "../../../pages/Managment"; // Asegúrate de que la ruta sea correcta
 
 const Mail = ({ show, handleClose }) => {
+  const { searchResults } = useContext(AppContext); // Obtén el contexto
   const [correos, setCorreos] = useState([]);
   const [nuevoCorreo, setNuevoCorreo] = useState("");
   const [dominio, setDominio] = useState("hotmail.es");
   const [estado, setEstado] = useState("1901");
-  const [errorMessage, setErrorMessage] = useState(""); // esto es para evitar doble toast
+  const [errorMessage, setErrorMessage] = useState(""); // Para evitar doble toast
 
   const [correoSeleccionadoSolo, setCorreoSeleccionadoSolo] = useState(""); // Estado que guarda solo el correo como string
   const [correoSeleccionado, setCorreoSeleccionado] = useState(null); // Nuevo estado para correo seleccionado
@@ -32,15 +33,16 @@ const Mail = ({ show, handleClose }) => {
   };
 
   const responseData = JSON.parse(localStorage.getItem("responseData"));
-  const [idCuenta, setIdCuenta] = useState(() => {
-    return localStorage.getItem("idCuenta") || "";
-  });
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
   const token = responseData?.ejecutivo?.token;
-  //const token = servicio; // Este parece no estar siendo utilizado
+
+  // Obtener el idCuenta del primer resultado de searchResults
+  const idCuenta = searchResults.length > 0 ? searchResults[0].idCuenta : null;
 
   useEffect(() => {
     const fetchCorreos = async () => {
+      if (!idCuenta) return; // Asegúrate de que idCuenta sea válido
+
       try {
         const url = `/ejecutivo/CorreosCarga/1/${idCuenta}`;
         const response = await servicio.get(url); // Usa 'servicio' en lugar de 'axios'
@@ -61,9 +63,7 @@ const Mail = ({ show, handleClose }) => {
       }
     };
 
-    if (idCuenta) {
-      fetchCorreos();
-    }
+    fetchCorreos();
   }, [idCuenta]);
 
   // Función para obtener los correos enviados

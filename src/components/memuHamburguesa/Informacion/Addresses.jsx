@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   Modal,
   Button,
@@ -10,8 +10,9 @@ import {
 } from "react-bootstrap";
 import { toast } from "sonner";
 import servicio from "../../../services/axiosServices";
-
+import { AppContext } from "../../../pages/Managment"; // Asegúrate de que la ruta sea correcta
 const Addresses = ({ show, handleClose }) => {
+  const { searchResults } = useContext(AppContext); // Obtén el contexto
   const [formData, setFormData] = useState({
     calle: "",
     numExt: "",
@@ -26,28 +27,23 @@ const Addresses = ({ show, handleClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isNew, setIsNew] = useState(false);
   const [recordCount, setRecordCount] = useState(0);
-  const responseData = JSON.parse(localStorage.getItem("responseData"));
-  const [tableDomData, setTableDomData] = useState([]);
-  const [idCuenta, setIdCuenta] = useState(() => {
-    return localStorage.getItem("idCuenta") || "";
-  });
   const [errorMessage, setErrorMessage] = useState("");
   const [tableDomicilioData, setTableDomicilioData] = useState([]);
-  const [isPostalTableVisible, setIsPostalTableVisible] = useState(false); // Estado para controlar la visibilidad de la tabla postal
+  const [isPostalTableVisible, setIsPostalTableVisible] = useState(false);
   const [postalTableData, setPostalTableData] = useState([]);
-  const [clase, setClase] = useState(""); // Define el estado
-  const [estado, setEstado] = useState(""); // Agrega este estado
-  const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
-  const [isEstadoVisible, setIsEstadoVisible] = useState(false); // Controla la visibilidad del campo "Estado"
-  const [selectedDomicilio, setSelectedDomicilio] = useState(null); // Almacena el domicilio seleccionado
+  const [selectedDomicilio, setSelectedDomicilio] = useState(null);
+  const [clase, setClase] = useState(""); // Agregar esta línea
+  const [isEstadoVisible, setIsEstadoVisible] = useState(false); // Agregar esta línea
+  const [tableDomData, setTableDomData] = useState([]); // Asegúrate de que esta línea esté presente
+  // Obtener el idCuenta del primer resultado de searchResults
+  const idCuenta = searchResults.length > 0 ? searchResults[0].idCuenta : null;
 
   // Obtener dirección y visitas
   useEffect(() => {
     if (show) {
       fetchAddressData();
-      // fetchTableData();
       fetchTableDomData();
-      fetchTableDomicilioData(); // Llama a la nueva función
+      fetchTableDomicilioData();
     }
   }, [show]);
 
@@ -55,19 +51,15 @@ const Addresses = ({ show, handleClose }) => {
     if (!idCuenta) {
       const errorText = "ID de cuenta no válido. Por favor, verifique.";
       if (errorMessage !== errorText) {
-        console.log("Mostrando toast con mensaje:", errorText);
-        toast.dismiss(); // Cierra cualquier toast abierto
+        toast.dismiss();
         toast.error(errorText);
         setErrorMessage(errorText);
-      } else {
-        console.log("Mensaje duplicado, no se muestra toast:", errorText);
       }
       return;
     }
 
     setIsLoading(true);
     try {
-      // Realiza la solicitud y asigna el resultado a 'response'
       const response = await servicio.get(`/direccion/${idCuenta}`);
       if (response.data) {
         setFormData(response.data);
@@ -79,13 +71,6 @@ const Addresses = ({ show, handleClose }) => {
       }
     } catch (error) {
       console.error("Error fetching address data:", error);
-
-      // Ignorar errores del endpoint `/direccion/{idCuenta}`
-      if (error.config?.url?.includes(`/direccion/${idCuenta}`)) {
-        console.log("Error ignorado para el endpoint /direccion/{idCuenta}");
-        return;
-      }
-
       let message = "No se pudo cargar la dirección.";
       if (error.response) {
         const status = error.response.status;
@@ -93,19 +78,14 @@ const Addresses = ({ show, handleClose }) => {
           status === 404
             ? "No se encontraron resultados para la cuenta especificada."
             : `Error ${status}: ${error.response.data.message}`;
-      } else if (error.request) {
-        message = "Error: No se recibió respuesta del servidor.";
       } else {
         message = `Error: Ocurrió un problema al realizar la solicitud. Detalles: ${error.message}`;
       }
 
       if (errorMessage !== message) {
-        console.log("Mostrando toast con mensaje:", message);
-        toast.dismiss(); // Cierra cualquier toast abierto
+        toast.dismiss();
         toast.error(message);
         setErrorMessage(message);
-      } else {
-        console.log("Mensaje duplicado, no se muestra toast:", message);
       }
     } finally {
       setIsLoading(false);
