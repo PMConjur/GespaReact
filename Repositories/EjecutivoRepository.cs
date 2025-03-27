@@ -1180,10 +1180,10 @@ namespace NoriAPI.Repositories
                 if (dict != null && dict.ContainsKey("Resultado"))
                 {
                     return new Dictionary<string, object>
-            {
-                { "Success", false },
-                { "Resultado", dict["Resultado"].ToString() }
-            };
+                    {
+                        { "Success", false },
+                        { "Resultado", dict["Resultado"].ToString() }
+                    };
                 }
 
                 return new Dictionary<string, object> { { "Success", true }, { "Data ", result } };
@@ -1445,7 +1445,7 @@ namespace NoriAPI.Repositories
         {
             using var connection = GetConnection("Piso2Amex");
 
-            string storedGestion = "2.1.GuardaGestionTelefonica";
+            string storedGestion = "[dbo].[2.1.GuardaGestionTelefonica]";
             var gestionParameters = new
             {
                 idCartera = parametros.IdCartera,

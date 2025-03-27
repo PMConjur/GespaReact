@@ -355,6 +355,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost("save-ofrecimiento")]
+        [AllowAnonymous]
         public async Task<ActionResult<OfrecimientoValidadores>> SaveOfrecimiento([FromBody] SaveOfrecimientoRequest ofrecimientoInfo)
         {
             var result = await _ejecutivoService.GuardarOfrecimiento(ofrecimientoInfo);

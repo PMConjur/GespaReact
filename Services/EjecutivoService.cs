@@ -3272,7 +3272,6 @@ namespace NoriAPI.Services
             {
                 return $"Error al guardar la solicitud de estado de cuenta: {ex.Message}";
             }
-            return "Error desconocido al procesar la solicitud de estado de cuenta.";
         }
         private async Task<string> ValidateBusqueda(EstadoDeCuenta estadoCuenta)
         {
