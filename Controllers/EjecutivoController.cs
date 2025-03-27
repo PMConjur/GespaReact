@@ -1207,8 +1207,8 @@ namespace NoriAPI.Controllers
 
         #region Usos Horarios
         [HttpGet("UsosHorarios/{idCartera}/{idCuenta}/{Telefono}/{idEjecutivo}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetUsosHorarios(int idCartera, string idCuenta,string Telefono, int idEjecutivo)
+
+        public async Task<IActionResult> GetUsosHorarios(int idCartera, string idCuenta, string Telefono, int idEjecutivo)
         {
             try
             {
@@ -1234,7 +1234,7 @@ namespace NoriAPI.Controllers
                 var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["EstadoDeCuenta"]);
                 string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
 
-                return Content(jsonString,"application/json; charset=utf-8");
+                return Content(jsonString, "application/json; charset=utf-8");
             }
             catch (Exception ex)
             {
