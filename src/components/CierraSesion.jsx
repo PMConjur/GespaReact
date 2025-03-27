@@ -1,14 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import Nav from "react-bootstrap/Nav";
 import { BoxArrowLeft } from "react-bootstrap-icons";
-import { closeSession } from "../services/gespawebServices"; // Importar la función closeSession
-
+// Importar la función closeSession
+import { closeSession } from "../services/gespawebServices";
 const CerrarSesion = () => {
   const navigate = useNavigate();
   const responseData = JSON.parse(localStorage.getItem("responseData"));
   const idLogIngreso = responseData?.ejecutivo?.infoEjecutivo?.idLogIngreso;
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
-
 
   const handleLogout = async () => {
     try {
@@ -45,8 +44,15 @@ const CerrarSesion = () => {
   };
 
   return (
-    <Nav.Link as="button" onClick={handleLogout} className="custom-dropdown-toggle d-flex mt-3">
-      <span className="me-2"><BoxArrowLeft/></span><h5 className="mb-0">Cerrar sesion</h5>
+    <Nav.Link
+      as="button"
+      onClick={handleLogout}
+      className="custom-dropdown-toggle d-flex mt-3"
+    >
+      <span className="me-2">
+        <BoxArrowLeft />
+      </span>
+      <h5 className="mb-0">Cerrar sesion</h5>
     </Nav.Link>
   );
 };

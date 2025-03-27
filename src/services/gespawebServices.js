@@ -1022,6 +1022,108 @@ export const userTimesUpdate = async (data) => {
 };
 
 
+
+//End point Fernando
+
+//EndPoint - ActivitiesDay
+export const fetchGestionesDelDia = async (idEjecutivo, setErrorMessage) => {
+  try {
+    const response = await servicio.get(
+      `/ejecutivo/gestionesDelDia/${idEjecutivo}`
+    );
+    return response.data;
+  } catch (error) {
+    let message = "Error desconocido.";
+    if (error.response) {
+      const status = error.response.status;
+      message =
+        status === 404
+          ? "No se encontraron resultados para la cuenta especificada."
+          : `Error ${status}: ${error.response.data.message}`;
+    } else if (error.request) {
+      message = "Error: No se recibió respuesta del servidor.";
+    } else {
+      message = `Error: Ocurrió un problema al realizar la solicitud. Detalles: ${error.message}`;
+    }
+
+    if (setErrorMessage) {
+      toast.dismiss();
+      toast.error(message);
+      setErrorMessage(message);
+    }
+    throw error;
+  }
+};
+//EndPoint - ActivitiesDay
+
+//EndPoint - Domicilios
+
+
+
+
+
+//EndPoint - Domicilios
+
+//EndPoint -Nergocicaciones del mes
+export const fetchNegotiationsData = async (idEjecutivo) => {
+  try {
+    const response = await servicio.get(
+      `/ejecutivo/NegociacionesDelMesEje/${idEjecutivo}`
+    );
+    return response.data; // Devuelve los datos obtenidos
+  } catch (error) {
+    console.error("Error fetching negotiations data:", error);
+
+    let message = "Error desconocido.";
+    if (error.response) {
+      const status = error.response.status;
+      message =
+        status === 404
+          ? "No se encontraron resultados para la cuenta especificada."
+          : `Error ${status}: ${error.response.data.message}`;
+    } else if (error.request) {
+      message = "Error: No se recibió respuesta del servidor.";
+    } else {
+      message = `Error: Ocurrió un problema al realizar la solicitud. Detalles: ${error.message}`;
+    }
+    throw new Error(message); // Lanza el error para manejarlo en el componente
+  }
+};
+
+//EndPoint -Nergocicaciones del mes\
+//EndPoint MultiDeptor
+export const fetchMultideudores = async (idCuenta) => {
+  try {
+    const response = await servicio.get(
+      `/ejecutivo/multideudores/1/${idCuenta}`
+    );
+    return response.data;
+  } catch (error) {
+    let message = "Error desconocido.";
+    if (error.response) {
+      const status = error.response.status;
+      message =
+        status === 404
+          ? "Error 404: No se encontró la cuenta especificada. Por favor, verifique el ID de cuenta e intente nuevamente."
+          : `Error ${status}: ${
+              error.response.data.message || "Ocurrió un error en el servidor."
+            }`;
+    } else if (error.request) {
+      message = "Error: No se recibió respuesta del servidor.";
+    } else {
+      message = `Error: Ocurrió un problema al realizar la solicitud. Detalles: ${error.message}`;
+    }
+    throw new Error(message);
+  }
+};
+
+//EndPoint MultiDeptors
+
+//End point Fernando
+
+
+
+
 export const createFollows = async (data) => {
   try {
     const response = await servicio.post(

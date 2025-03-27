@@ -1,12 +1,16 @@
 import { useState, useEffect, useContext } from "react";
 import { Modal, Button, Form, Table, Card, Row, Col } from "react-bootstrap";
 import "../scss/styles.scss";
-import { fetchCalFirtsPart, fetchCalSecondPart, fetchCalSecondPartModify } from "../services/gespawebServices";
+import {
+  fetchCalFirtsPart,
+  fetchCalSecondPart,
+  fetchCalSecondPartModify,
+} from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 
-const CalculatorSimulator = ({show, handleClose}) => {
-  const { searchResults,  } = useContext(AppContext); // Obtiene searchResults desde AppContext
+const CalculatorSimulator = ({ show, handleClose }) => {
+  const { searchResults } = useContext(AppContext); // Obtiene searchResults desde AppContext
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [tableData, setTableData] = useState([]);
   const [summaryData, setSummaryData] = useState({
@@ -34,7 +38,8 @@ const CalculatorSimulator = ({show, handleClose}) => {
     meses: "",
     fechaPago: "",
   });
-  const [isCalculateButtonEnabled, setIsCalculateButtonEnabled] = useState(false);
+  const [isCalculateButtonEnabled, setIsCalculateButtonEnabled] =
+    useState(false);
   const [isAddButtonEnabled, setIsAddButtonEnabled] = useState(false);
   const [montoPago, setMontoPago] = useState(""); // Estado para almacenar el valor de "Monto Pago"
   const [montoNegociado, setMontoNegociado] = useState(""); // Estado para almacenar el valor de "Monto Negociado"
@@ -69,7 +74,11 @@ const CalculatorSimulator = ({show, handleClose}) => {
           console.error("No se encontró idCuenta en searchResults");
           return;
         }
-        const data = await fetchCalFirtsPart(idCartera, idCuenta, selectedHerramienta || 136); // Usa el idHerramienta seleccionado o un valor por defecto
+        const data = await fetchCalFirtsPart(
+          idCartera,
+          idCuenta,
+          selectedHerramienta || 136
+        ); // Usa el idHerramienta seleccionado o un valor por defecto
         // Extraer datos de ofrecimientos, herramientas y resumen
         if (data) {
           if (Array.isArray(data.ofrecimientos)) {
@@ -83,10 +92,13 @@ const CalculatorSimulator = ({show, handleClose}) => {
             montoDescuento: data.montoDescuento,
             saldo: data.saldo,
             fechaCorte: data.fechaCorte,
-            descuento: data.descuento
+            descuento: data.descuento,
           });
         } else {
-          console.error("La respuesta del endpoint no contiene los datos esperados:", data);
+          console.error(
+            "La respuesta del endpoint no contiene los datos esperados:",
+            data
+          );
           setTableData([]);
         }
       } catch (error) {
@@ -118,7 +130,13 @@ const CalculatorSimulator = ({show, handleClose}) => {
     }));
 
     // Habilita el botón "Calcular" si la herramienta seleccionada es válida
-    const validHerramientasCalcular = ["Convenio", "PIF", "PPA", "APR", "PPA+AC"];
+    const validHerramientasCalcular = [
+      "Convenio",
+      "PIF",
+      "PPA",
+      "APR",
+      "PPA+AC",
+    ];
     const validHerramientasAgregar = ["Parcial", "Ajuste"];
     const herramientaSeleccionada = herramientas.find(
       (herramienta) => herramienta.idHerramienta === Number(selectedValue)
@@ -151,12 +169,20 @@ const CalculatorSimulator = ({show, handleClose}) => {
     const idCuenta = searchResults?.[0]?.idCuenta?.trim();
     try {
       // Validar los datos antes de enviarlos
-      if (!selectedHerramienta || !idCuenta || !formValues.montoRequerido || !formValues.descuento || !formInputs.fechaPago) {
-        console.error("Datos incompletos. Verifica los campos antes de enviar.");
+      if (
+        !selectedHerramienta ||
+        !idCuenta ||
+        !formValues.montoRequerido ||
+        !formValues.descuento ||
+        !formInputs.fechaPago
+      ) {
+        console.error(
+          "Datos incompletos. Verifica los campos antes de enviar."
+        );
         toast.error("Por favor, completa todos los campos requeridos.");
         return;
       }
-  
+
       const requestData = {
         idHerramienta: selectedHerramienta,
         NoCuenta: idCuenta,
@@ -167,9 +193,12 @@ const CalculatorSimulator = ({show, handleClose}) => {
         dtpFecha: formInputs.fechaPago || "",
         periodos: parseInt(formInputs.periodos, 10) || 1,
       };
-  
-      console.log("Datos enviados al endpoint fetchCalSecondPart:", requestData);
-  
+
+      console.log(
+        "Datos enviados al endpoint fetchCalSecondPart:",
+        requestData
+      );
+
       const response = await fetchCalSecondPart(
         requestData.idCartera,
         requestData.NoCuenta,
@@ -180,7 +209,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
         requestData.dtpFecha,
         requestData.periodos
       );
-  
+
       console.log("Respuesta del endpoint fetchCalSecondPart:", response);
       toast.success("Cálculo realizado correctamente.");
       setCalculosData({
@@ -194,12 +223,16 @@ const CalculatorSimulator = ({show, handleClose}) => {
 
       setShowDetails(true); // Muestra el contenido del Row
     } catch (error) {
-      console.error("Error al enviar los datos al endpoint fetchCalSecondPart:", error);
-      const errorMessage = error.response?.data?.errors || "Error desconocido al realizar el cálculo.";
+      console.error(
+        "Error al enviar los datos al endpoint fetchCalSecondPart:",
+        error
+      );
+      const errorMessage =
+        error.response?.data?.errors ||
+        "Error desconocido al realizar el cálculo.";
       toast.error(errorMessage);
     }
   };
-  
 
   const handleSetFormValues = () => {
     setFormValues({
@@ -213,7 +246,11 @@ const CalculatorSimulator = ({show, handleClose}) => {
     if (montoNegociado && formInputs.fechaPago) {
       const nuevoPago = {
         fecha: formInputs.fechaPago,
-        hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }), // Agrega hora y minutos en formato 12 horas
+        hora: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }), // Agrega hora y minutos en formato 12 horas
         pago: montoNegociado,
       };
       setTablaPagos((prev) => [...prev, nuevoPago]); // Agrega el nuevo pago a la tabla
@@ -236,12 +273,19 @@ const CalculatorSimulator = ({show, handleClose}) => {
     const idCuenta = searchResults?.[0]?.idCuenta?.trim();
     try {
       // Validar los datos antes de enviarlos
-      if (!selectedHerramienta || !idCuenta || !modifyForm.montoMod || !modifyForm.fechaPagoMod) {
-        console.error("Datos incompletos. Verifica los campos antes de enviar.");
+      if (
+        !selectedHerramienta ||
+        !idCuenta ||
+        !modifyForm.montoMod ||
+        !modifyForm.fechaPagoMod
+      ) {
+        console.error(
+          "Datos incompletos. Verifica los campos antes de enviar."
+        );
         toast.error("Por favor, completa todos los campos requeridos.");
         return;
       }
-  
+
       const requestData = {
         idHerramienta: selectedHerramienta,
         NoCuenta: idCuenta,
@@ -257,9 +301,12 @@ const CalculatorSimulator = ({show, handleClose}) => {
         agregarPagos: modifyForm.agregarPagos ? 1 : 0, // 1 si el checkbox está marcado, 0 si no
         filaMod: modifyForm.filaMod,
       };
-  
-      console.log("Datos enviados al endpoint fetchCalSecondPartModify:", requestData);
-  
+
+      console.log(
+        "Datos enviados al endpoint fetchCalSecondPartModify:",
+        requestData
+      );
+
       const response = await fetchCalSecondPartModify(
         requestData.idCartera,
         requestData.NoCuenta,
@@ -275,9 +322,9 @@ const CalculatorSimulator = ({show, handleClose}) => {
         requestData.agregarPagos,
         requestData.filaMod
       );
-  
+
       console.log("Respuesta del endpoint fetchCalSecondPartModify:", response);
-  
+
       // Actualizar los datos en la tabla y el formulario
       setCalculosData({
         plazos: response.plazos,
@@ -288,11 +335,15 @@ const CalculatorSimulator = ({show, handleClose}) => {
         calculos: response.calculos,
         tasaMensual: response.tasaMensual, // Agregar la tasa mensual al estado
       });
-  
+
       toast.success("Datos enviados correctamente.");
     } catch (error) {
-      console.error("Error al enviar los datos al endpoint fetchCalSecondPartModify:", error);
-      const errorMessage = error.response?.data?.title || "Error desconocido al enviar los datos.";
+      console.error(
+        "Error al enviar los datos al endpoint fetchCalSecondPartModify:",
+        error
+      );
+      const errorMessage =
+        error.response?.data?.title || "Error desconocido al enviar los datos.";
       toast.error(errorMessage);
     }
   };

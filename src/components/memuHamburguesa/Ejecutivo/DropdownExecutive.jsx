@@ -5,12 +5,15 @@ import "../../../scss/styles.scss";
 import Scripts from "./Scripts"; // Asegúrate de importar el componente
 import { PersonLinesFill } from "react-bootstrap-icons";
 import { fetchScripts } from "../../../services/gespawebServices";
+import Negotiations from "../../../components/memuHamburguesa/Ejecutivo/NegotiationsE";
+import ActivitiesDay from "../../../components/memuHamburguesa/Ejecutivo/ActivitiesDay";
 
 function DropdownExecutive() {
   const [showScripts, setShowScripts] = useState(false);
   const [scriptsData, setScriptsData] = useState([]);
   const [loadingScripts, setLoadingScripts] = useState(false);
-
+  const [showNegotiations, setShowNegotiations] = useState(false);
+  const [showActivities, setShowActivities] = useState(false);
   // Consumir el contexto
   const { searchResults } = useContext(AppContext);
 
@@ -30,6 +33,19 @@ function DropdownExecutive() {
 
   const handleCloseScripts = () => setShowScripts(false);
 
+  const handleShowNegotiations = () => {
+    setShowNegotiations(true);
+    setShowActivities(false);
+  };
+  const handleShowActivities = () => {
+    setShowActivities(true);
+    setShowNegotiations(false);
+  };
+
+  const handleClose = () => {
+    setShowNegotiations(false);
+    setShowActivities(false);
+  };
   return (
     <>
       <Dropdown className="">
@@ -51,10 +67,16 @@ function DropdownExecutive() {
           >
             Scripts
           </Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">
+          <Dropdown.Item
+            onClick={handleShowActivities}
+            className="custom-dropdown-item"
+          >
             Gestiones del dia
           </Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">
+          <Dropdown.Item
+            onClick={handleShowNegotiations}
+            className="custom-dropdown-item"
+          >
             Negociaciones del mes
           </Dropdown.Item>
         </Dropdown.Menu>
@@ -67,6 +89,12 @@ function DropdownExecutive() {
         data={scriptsData}
         loadingScripts={loadingScripts}
       />
+      {showNegotiations && (
+        <Negotiations show={showNegotiations} handleClose={handleClose} />
+      )}
+      {showActivities && (
+        <ActivitiesDay show={showActivities} handleClose={handleClose} />
+      )}
     </>
   );
 }

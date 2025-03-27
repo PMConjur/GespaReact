@@ -6,10 +6,11 @@ import Addresses from "./Addresses"; // Importar el componente Addresses
 import Payments from "./Payments"; // Importar el componente Payments
 import Aditionals from "./Aditionals"; // Importar el componente Aditionals
 import { InfoCircleFill } from "react-bootstrap-icons"; // Importar el ícono de Info de Bootstrap
-
+import Multideudores from "../Informacion/MultiDeptor"; // Importar el componente Multideudores
 function DropdownInfo() {
   // Estados para controlar la visibilidad de los modales y la carga de datos
   const [showAddresses, setShowAddresses] = useState(false); // Estado para el modal de Addresses
+  const [showMultideudores, setShowMultideudores] = useState(false); // Estado para el modal de Multideudores
 
   //payments
   const [showPayments, setShowPayments] = useState(false); // Estado para el modal de Payments
@@ -42,6 +43,9 @@ function DropdownInfo() {
   // Función para manejar el cierre del modal de Addresses
   const handleCloseAddresses = () => setShowAddresses(false);
 
+  const handleShowMultideudores = () => setShowMultideudores(true);
+  const handleCloseMultideudores = () => setShowMultideudores(false);
+
   // Función para manejar la apertura del modal de Aditionals
 
   return (
@@ -52,15 +56,19 @@ function DropdownInfo() {
           className="custom-dropdown-toggle d-flex align-items-center"
           id="dropdown-right"
         >
-          <span><InfoCircleFill /> Información</span>
-          
+          <span>
+            <InfoCircleFill /> Información
+          </span>
         </Dropdown.Toggle>
         <Dropdown.Menu
           placement="end"
           style={{ backgroundColor: "#1d1f20", border: "none" }}
           className="custom-dropdown-menu"
         >
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">
+          <Dropdown.Item
+            onClick={handleShowMultideudores}
+            className="custom-dropdown-item"
+          >
             Multideudores
           </Dropdown.Item>
           <Dropdown.Item
@@ -104,6 +112,12 @@ function DropdownInfo() {
         handleClose={handleCloseAditionals}
         data={aditionalsData}
         loadingAditionals={loadingAditionals}
+      />
+      {/* Renderizar el modal de Multideudores */}
+      <Multideudores
+        show={showMultideudores}
+        handleClose={handleCloseMultideudores}
+        searchResults={searchResults} // Pasar searchResults como prop
       />
     </>
   );
