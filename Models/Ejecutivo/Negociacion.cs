@@ -15,5 +15,7 @@ namespace NoriAPI.Models.Ejecutivo
         public int? Pagos { get; set; }
         public bool? CartaConvenio { get; set; } // `_CartaConvenio` lo mapearemos como `CartaConvenio`
         public string? MesActual { get; set; } // Depende si es un nombre o un número
+        public string? Estado { get; set; }
+
     }
 }
