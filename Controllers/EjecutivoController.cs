@@ -1234,7 +1234,7 @@ namespace NoriAPI.Controllers
                 var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["EstadoDeCuenta"]);
                 string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
 
-                return Ok(jsonString);
+                return Content(jsonString,"application/json; charset=utf-8");
             }
             catch (Exception ex)
             {
