@@ -2,7 +2,7 @@ import { useState, useEffect, useContext, useRef } from "react";
 import { Modal, Button, Form, Container, Row } from "react-bootstrap";
 import TableTimes from "./TableTimes";
 import { toast } from "sonner";
-import { userTimesUpdate } from "../services/gespawebServices";
+import { userTimesUpdate, userTimesPromedio } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 
 const REASONS = {

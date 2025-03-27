@@ -1,15 +1,29 @@
-import React, { useState } from "react";
+import { useState, useContext } from "react"; // Añadido useContext
 import { Form, Button, Row, Col } from "react-bootstrap";
+import { AppContext } from "../../../pages/Managment"; // Descomentado
+import { createFollows } from "../../../services/gespawebServices"; // Añadido
+import "../../../scss/styles.scss";
 
 const FormFollowUps = ({ onSubmit }) => {
+    const { searchResults, responseData, selectedDateRange } = useContext(AppContext); // Añadidos responseData y selectedDateRange
+
+    const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+    
+    // Corregido el useState (eliminado requestData y formData del array)
     const [formData, setFormData] = useState({
-        acercamiento: "",
-        telefono: "",
-        fecha: "",
-        hora: "",
-        recordatorio: false,
-        situacion: "",
+        idCartera: 1,
+        idCuenta: searchResults?.[0]?.idCuenta?.trim() || "string", // Añadido ? después de idCuenta
+        idEjecutivo: idEjecutivo,
+        fecha: selectedDateRange?.startDate ? new Date(selectedDateRange.startDate).toISOString() : new Date().toISOString(), // Manejo de fecha por defecto
+        segundo: "",
+        idAcercamiento: "",
+        recordatorio: true,
+        numeroTelefonico: "",
+        datoContacto: "",
+        idMotivoS: ""
     });
+
+    const [loading, setLoading] = useState(false); // Nuevo estado para manejar la carga
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -19,21 +33,30 @@ const FormFollowUps = ({ onSubmit }) => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onSubmit(formData);
+        setLoading(true); // Inicia el estado de carga
+        try {
+            const response = await createFollows(formData); // Llama a la función createFollows con los datos del formulario
+            console.log("Seguimiento creado:", response); // Manejo de la respuesta
+            onSubmit(formData); // Llama a la función onSubmit con los datos del formulario
+        } catch (error) {
+            console.error("Error al crear seguimiento:", error); // Manejo de errores
+        } finally {
+            setLoading(false); // Finaliza el estado de carga
+        }
     };
 
     return (
         <Form onSubmit={handleSubmit}>
             <Row className="mb-3">
                 <Col>
-                    <Form.Group controlId="acercamiento">
+                    <Form.Group controlId="idAcercamiento"> 
                         <Form.Label>Acercamiento</Form.Label>
                         <Form.Control
                             as="select"
-                            name="acercamiento"
-                            value={formData.acercamiento}
+                            name="idAcercamiento" // Cambiado para coincidir con el estado
+                            value={formData.idAcercamiento}
                             onChange={handleChange}
                         >
                             <option value="">Seleccionar</option>
@@ -43,12 +66,12 @@ const FormFollowUps = ({ onSubmit }) => {
                     </Form.Group>
                 </Col>
                 <Col>
-                    <Form.Group controlId="telefono">
+                    <Form.Group controlId="numeroTelefonico">
                         <Form.Label>Teléfono</Form.Label>
                         <Form.Control
                             type="text"
-                            name="telefono"
-                            value={formData.telefono}
+                            name="numeroTelefonico" // Cambiado para coincidir con el estado
+                            value={formData.numeroTelefonico}
                             onChange={handleChange}
                             placeholder="xxx-xxx-xxxx"
                         />
@@ -62,18 +85,18 @@ const FormFollowUps = ({ onSubmit }) => {
                         <Form.Control
                             type="date"
                             name="fecha"
-                            value={formData.fecha}
+                            value={formData.fecha.split('T')[0]} // Formatear para input date
                             onChange={handleChange}
                         />
                     </Form.Group>
                 </Col>
                 <Col>
-                    <Form.Group controlId="hora">
+                    <Form.Group controlId="segundo"> 
                         <Form.Label>Hora</Form.Label>
                         <Form.Control
                             type="time"
-                            name="hora"
-                            value={formData.hora}
+                            name="segundo" // Cambiado para coincidir con el estado
+                            value={formData.segundo}
                             onChange={handleChange}
                         />
                     </Form.Group>
@@ -88,12 +111,12 @@ const FormFollowUps = ({ onSubmit }) => {
                     onChange={handleChange}
                 />
             </Form.Group>
-            <Form.Group controlId="situacion" className="mb-3">
+            <Form.Group controlId="idMotivoS" className="mb-3"> 
                 <Form.Label>Situación</Form.Label>
                 <Form.Control
                     as="select"
-                    name="situacion"
-                    value={formData.situacion}
+                    name="idMotivoS" // Cambiado para coincidir con el estado
+                    value={formData.idMotivoS}
                     onChange={handleChange}
                 >
                     <option value="">Seleccionar</option>
@@ -101,8 +124,8 @@ const FormFollowUps = ({ onSubmit }) => {
                     <option value="situacion2">Otra situación</option>
                 </Form.Control>
             </Form.Group>
-            <Button variant="primary" type="submit">
-                Guardar
+            <Button variant="primary" type="submit" disabled={loading}>
+                {loading ? "Guardando..." : "Guardar"} {/* Cambia el texto del botón según el estado de carga */}
             </Button>
         </Form>
     );

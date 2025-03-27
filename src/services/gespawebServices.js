@@ -975,6 +975,30 @@ export async function userTimes(numEmpleado) {
   }
 }
 
+
+export async function userTimesPromedio(numEmpleado) {
+  try {
+    const response = await servicio.get(
+      `/ejecutivo/promedios-ejecutivo`,
+      { params: { numEmpleado } }
+    );
+    
+    if (!response.data) {
+      throw new Error("No se recibieron datos del servidor");
+    }
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error en userTimesPromedio:', error);
+    if (error.response) {
+      const errorMessage = error.response.data?.mensaje || "Error al obtener promedio";
+      throw new Error(errorMessage);
+    }
+    throw new Error("Error de conexión al obtener promedio");
+  }
+}
+
+
 export const userTimesUpdate = async (data) => {
   try {
     const response = await servicio.post(
@@ -991,6 +1015,28 @@ export const userTimesUpdate = async (data) => {
     console.error("Error en userTimesUpdate:", error);
     if (error.response) {
       const errorMessage = error.response.data?.mensaje || "Error al actualizar tiempos";
+      throw new Error(errorMessage);
+    }
+    throw error;
+  }
+};
+
+export const createFollows = async (data) => {
+  try {
+    const response = await servicio.post(
+      `/ejecutivo/crearSeguimiento`,
+      data
+    );
+
+    if (response.status !== 200) {
+      throw new Error(`Error en la respuesta. Estado: ${response.status}`);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error en crearSeguimiento:", error);
+    if (error.response) {
+      const errorMessage = error.response.data?.mensaje || "Error al crear Seguimiento";
       throw new Error(errorMessage);
     }
     throw error;

@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import PropTypes from "prop-types";
 import { Table } from "react-bootstrap";
-import { userTimes } from "../services/gespawebServices";
+import { userTimes, userTimesPromedio } from "../services/gespawebServices";
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
 
@@ -30,6 +30,111 @@ const formatTime = (value) => {
     return `${hrs}:${mins}:${secs}`;
 };
 
+// Función para cargar datos totales
+const loadTotalTimes = async (idEjecutivo, formatOrDefault) => {
+    try {
+        const dataTotal = await userTimes(idEjecutivo);
+        console.log("Datos totales recibidos:", dataTotal);
+
+        const tiempos = dataTotal?.resultadosTiempos || {};
+        if (Object.keys(tiempos).length === 0) {
+            toast.warning("No hay datos totales disponibles");
+            console.warn("No se encontraron datos totales disponibles");
+            return {};
+        }
+
+        return {
+            cuentas: formatOrDefault(tiempos.tiempoCuentas),
+            negociacion: formatOrDefault(tiempos.tiempoNegociaciones),
+            titulares: formatOrDefault(tiempos.tiempoTitulares),
+            conocidos: formatOrDefault(tiempos.tiempoConocidos),
+            desconocidos: formatOrDefault(tiempos.tiempoDesconocidos),
+            sinContacto: formatOrDefault(tiempos.tiempoSinContacto),
+            Permiso: formatOrDefault(tiempos.tiempoPermiso),
+            Curso: formatOrDefault(tiempos.tiempoCurso),
+            Calidad: formatOrDefault(tiempos.tiempoCalidad),
+            Comida: formatOrDefault(tiempos.tiempoComida),
+            Baño: formatOrDefault(tiempos.tiempoBaño),
+        };
+    } catch (error) {
+        toast.error(`Error al cargar datos totales: ${error.message}`);
+        console.error("Error al cargar datos totales:", error);
+        return {};
+    }
+};
+
+// Función para normalizar claves de PascalCase a camelCase
+const normalizeKeys = (data) => {
+    const keyMap = {
+        TiempoCuentas: "tiempoCuentas",
+        TiempoNegociaciones: "tiempoNegociaciones",
+        TiempoTitulares: "tiempoTitulares",
+        TiempoConocidos: "tiempoConocidos",
+        TiempoDesconocidos: "tiempoDesconocidos",
+        TiempoSinContacto: "tiempoSinContacto",
+        TiempoPermiso: "tiempoPermiso",
+        TiempoCurso: "tiempoCurso",
+        TiempoCalidad: "tiempoCalidad",
+        TiempoComida: "tiempoComida",
+        TiempoBaño: "tiempoBaño",
+    };
+
+    // Si es un objeto vacío, devolver un objeto con todas las claves como null
+    if (!data || Object.keys(data).length === 0) {
+        return Object.fromEntries(Object.values(keyMap).map(key => [key, null]));
+    }
+
+    // Si es un objeto con datos, normalizar las claves
+    return Object.entries(data).reduce((acc, [key, value]) => {
+        const normalizedKey = keyMap[key] || key;
+        // Manejar objetos vacíos como valores
+        acc[normalizedKey] = (value && typeof value === 'object' && Object.keys(value).length === 0) ? null : value;
+        return acc;
+    }, {});
+};
+
+// Función para cargar datos de promedios
+const loadPromedioTimes = async (idEjecutivo, formatOrDefault) => {
+    try {
+        const dataPromedio = await userTimesPromedio(idEjecutivo);
+        console.log("Datos de promedio recibidos:", dataPromedio);
+
+        // Verificar si los datos vienen directamente en la respuesta o en resultadosTiempos
+        const promediosData = dataPromedio.resultadosTiempos || dataPromedio;
+        
+        const promedios = normalizeKeys(promediosData);
+        
+        // Verificar si realmente tenemos datos (no solo objetos vacíos)
+        const hasValidData = Object.values(promedios).some(
+            val => val !== null && val !== undefined && !(typeof val === 'object' && Object.keys(val).length === 0)
+        );
+        
+        if (!hasValidData) {
+            toast.warning("No hay datos de promedios disponibles");
+            console.warn("No se encontraron datos de promedios disponibles");
+            return {};
+        }
+
+        return {
+            cuentas: formatOrDefault(promedios.tiempoCuentas),
+            negociacion: formatOrDefault(promedios.tiempoNegociaciones),
+            titulares: formatOrDefault(promedios.tiempoTitulares),
+            conocidos: formatOrDefault(promedios.tiempoConocidos),
+            desconocidos: formatOrDefault(promedios.tiempoDesconocidos),
+            sinContacto: formatOrDefault(promedios.tiempoSinContacto),
+            Permiso: formatOrDefault(promedios.tiempoPermiso),
+            Curso: formatOrDefault(promedios.tiempoCurso),
+            Calidad: formatOrDefault(promedios.tiempoCalidad),
+            Comida: formatOrDefault(promedios.tiempoComida),
+            Baño: formatOrDefault(promedios.tiempoBaño),
+        };
+    } catch (error) {
+        toast.error(`Error al cargar datos de promedios: ${error.message}`);
+        console.error("Error al cargar datos de promedios:", error);
+        return {};
+    }
+};
+
 const TableTimes = ({ updatedTimes }) => {
     const { idEjecutivo } = useContext(AppContext);
 
@@ -43,47 +148,20 @@ const TableTimes = ({ updatedTimes }) => {
         if (!idEjecutivo) return;
 
         const loadInitialData = async () => {
-            try {
-                const data = await userTimes(idEjecutivo);
-                
-                if (!data?.resultadosTiempos) {
-                    toast.warning("No hay datos de tiempos disponibles");
-                    return;
-                }
+            toast.info("Cargando datos iniciales...");
+            console.log("Cargando datos iniciales para el ID de ejecutivo:", idEjecutivo);
 
-                const tiempos = data.resultadosTiempos;
-                
-                setTimesData({
-                    total: {
-                        cuentas: formatTime(tiempos.tiempoCuentas),
-                        negociacion: formatTime(tiempos.tiempoNegociaciones),
-                        titulares: formatTime(tiempos.tiempoTitulares),
-                        conocidos: formatTime(tiempos.tiempoConocidos),
-                        desconocidos: formatTime(tiempos.tiempoDesconocidos),
-                        sinContacto: formatTime(tiempos.tiempoSinContacto),
-                        Permiso: formatTime(tiempos.tiempoPermiso),
-                        Curso: formatTime(tiempos.tiempoCurso),
-                        Calidad: formatTime(tiempos.tiempoCalidad),
-                        Comida: formatTime(tiempos.tiempoComida),
-                        Baño: formatTime(tiempos.tiempoBaño),
-                    },
-                    promedio: {
-                        cuentas: formatTime(tiempos.promedioCuentas),
-                        negociacion: formatTime(tiempos.promedioNegociaciones),
-                        titulares: formatTime(tiempos.promedioTitulares),
-                        conocidos: formatTime(tiempos.promedioConocidos),
-                        desconocidos: formatTime(tiempos.promedioDesconocidos),
-                        sinContacto: formatTime(tiempos.promedioSinContacto),
-                        Permiso: formatTime(tiempos.promedioPermiso),
-                        Curso: formatTime(tiempos.promedioCurso),
-                        Calidad: formatTime(tiempos.promedioCalidad),
-                        Comida: formatTime(tiempos.promedioComida),
-                        Baño: formatTime(tiempos.promedioBaño),
-                    }
-                });
-            } catch (error) {
-                toast.error(`Error al cargar tiempos: ${error.message}`);
-            }
+            const formatOrDefault = (time) => time ? formatTime(time) : "--:--:--";
+
+            const totalTimes = await loadTotalTimes(idEjecutivo, formatOrDefault);
+            const promedioTimes = await loadPromedioTimes(idEjecutivo, formatOrDefault);
+
+            setTimesData({
+                total: totalTimes,
+                promedio: promedioTimes,
+            });
+
+            toast.success("Datos iniciales cargados correctamente");
         };
 
         loadInitialData();
@@ -93,6 +171,8 @@ const TableTimes = ({ updatedTimes }) => {
     useEffect(() => {
         if (!updatedTimes) return;
 
+        toast.info("Actualizando datos con tiempos nuevos...");
+        console.log("Actualizando datos con tiempos nuevos:", updatedTimes);
         setTimesData(prev => {
             const newTotal = { ...prev.total };
 
@@ -106,6 +186,8 @@ const TableTimes = ({ updatedTimes }) => {
                 }
             });
 
+            toast.success("Datos actualizados correctamente");
+            console.log("Datos actualizados:", newTotal);
             return {
                 ...prev,
                 total: newTotal
@@ -122,6 +204,8 @@ const TableTimes = ({ updatedTimes }) => {
     };
 
     if (!idEjecutivo) {
+        toast.warning("No se encontró un ID de ejecutivo válido");
+        console.warn("No se encontró un ID de ejecutivo válido");
         return (
             <div className="alert alert-warning text-center" role="alert">
                 ⚠️ No se encontró un ID de ejecutivo válido. Verifica tu sesión.
