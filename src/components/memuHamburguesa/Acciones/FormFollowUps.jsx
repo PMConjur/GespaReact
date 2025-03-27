@@ -1,20 +1,19 @@
-import { useState, useContext } from "react"; // Añadido useContext
-import { Form, Button, Row, Col } from "react-bootstrap";
-import { AppContext } from "../../../pages/Managment"; // Descomentado
-import { createFollows } from "../../../services/gespawebServices"; // Añadido
-import "../../../scss/styles.scss";
+import React, { useState, useEffect } from "react";
+import { Form, Button, Alert } from "react-bootstrap";
+import { createFollows } from "../../../services/gespawebServices";
 
-const FormFollowUps = ({ onSubmit }) => {
-    const { searchResults, responseData, selectedDateRange } = useContext(AppContext); // Añadidos responseData y selectedDateRange
+const FormFollowUps = ({ onSubmitSuccess, handleClose, searchResults, idEjecutivo }) => {
+    console.log('[FormFollowUps] Props recibidos:', {
+        idEjecutivo,
+        searchResults: searchResults?.[0]
+    });
 
-    const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
-    
-    // Corregido el useState (eliminado requestData y formData del array)
+    // Estado del formulario
     const [formData, setFormData] = useState({
         idCartera: 1,
-        idCuenta: searchResults?.[0]?.idCuenta?.trim() || "string", // Añadido ? después de idCuenta
-        idEjecutivo: idEjecutivo,
-        fecha: selectedDateRange?.startDate ? new Date(selectedDateRange.startDate).toISOString() : new Date().toISOString(), // Manejo de fecha por defecto
+        idCuenta: "",
+        idEjecutivo: idEjecutivo || "",
+        fecha: "",
         segundo: "",
         idAcercamiento: "",
         recordatorio: true,
@@ -23,86 +22,175 @@ const FormFollowUps = ({ onSubmit }) => {
         idMotivoS: ""
     });
 
-    const [loading, setLoading] = useState(false); // Nuevo estado para manejar la carga
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
 
+    // Inicializar datos del formulario
+    useEffect(() => {
+        console.log('[FormFollowUps] Inicializando formulario con searchResults:', searchResults?.[0]);
+
+        const initialData = {
+            ...formData,
+            idCuenta: searchResults?.[0]?.idCuenta?.trim() || "",
+            idEjecutivo: idEjecutivo || "",
+            fecha: new Date().toISOString()
+        };
+
+        console.log('[FormFollowUps] Datos iniciales:', initialData);
+        setFormData(initialData);
+    }, [searchResults, idEjecutivo]);
+
+    // Manejar cambios en los campos
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData({
-            ...formData,
-            [name]: type === "checkbox" ? checked : value,
-        });
+        const newValue = type === 'checkbox' ? checked : value;
+
+        console.log(`[FormFollowUps] Cambio en campo ${name}:`, newValue);
+
+        setFormData(prev => ({
+            ...prev,
+            [name]: newValue
+        }));
     };
 
+    // Validar formulario
+    const validateForm = () => {
+        console.log('[FormFollowUps] Validando formulario...');
+
+        if (!formData.idAcercamiento) {
+            setError('Seleccione un tipo de acercamiento');
+            return false;
+        }
+
+        if (!formData.numeroTelefonico) {
+            setError('Ingrese un número telefónico');
+            return false;
+        }
+
+        if (!formData.idMotivoS) {
+            setError('Seleccione una situación');
+            return false;
+        }
+
+        if (!formData.idEjecutivo) {
+            console.error('[FormFollowUps] Error: idEjecutivo no está definido');
+            setError('Error interno: No se identificó al ejecutivo');
+            return false;
+        }
+
+        setError(null);
+        return true;
+    };
+
+    // Manejar envío del formulario
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true); // Inicia el estado de carga
+        console.log('[FormFollowUps] Iniciando envío del formulario');
+
+        if (!validateForm()) {
+            console.log('[FormFollowUps] Validación fallida');
+            return;
+        }
+
+        setLoading(true);
+        setSuccess(false);
+        console.log('[FormFollowUps] Enviando datos:', formData);
+
         try {
-            const response = await createFollows(formData); // Llama a la función createFollows con los datos del formulario
-            console.log("Seguimiento creado:", response); // Manejo de la respuesta
-            onSubmit(formData); // Llama a la función onSubmit con los datos del formulario
-        } catch (error) {
-            console.error("Error al crear seguimiento:", error); // Manejo de errores
+            const response = await createFollows(formData);
+            console.log('[FormFollowUps] Respuesta del servidor:', response);
+
+            setSuccess(true);
+            if (onSubmitSuccess) onSubmitSuccess();
+
+            // Resetear el formulario después de 2 segundos
+            setTimeout(() => {
+                console.log('[FormFollowUps] Reseteando formulario');
+                setSuccess(false);
+                setFormData(prev => ({
+                    ...prev,
+                    idAcercamiento: "",
+                    numeroTelefonico: "",
+                    idMotivoS: "",
+                    datoContacto: "",
+                    segundo: ""
+                }));
+            }, 2000);
+
+        } catch (err) {
+            console.error('[FormFollowUps] Error al crear seguimiento:', err);
+            setError(err.message || 'Error al guardar el seguimiento');
         } finally {
-            setLoading(false); // Finaliza el estado de carga
+            setLoading(false);
         }
     };
 
     return (
         <Form onSubmit={handleSubmit}>
-            <Row className="mb-3">
-                <Col>
-                    <Form.Group controlId="idAcercamiento"> 
-                        <Form.Label>Acercamiento</Form.Label>
-                        <Form.Control
-                            as="select"
-                            name="idAcercamiento" // Cambiado para coincidir con el estado
-                            value={formData.idAcercamiento}
-                            onChange={handleChange}
-                        >
-                            <option value="">Seleccionar</option>
-                            <option value="opcion1">Opción 1</option>
-                            <option value="opcion2">Opción 2</option>
-                        </Form.Control>
-                    </Form.Group>
-                </Col>
-                <Col>
-                    <Form.Group controlId="numeroTelefonico">
-                        <Form.Label>Teléfono</Form.Label>
-                        <Form.Control
-                            type="text"
-                            name="numeroTelefonico" // Cambiado para coincidir con el estado
-                            value={formData.numeroTelefonico}
-                            onChange={handleChange}
-                            placeholder="xxx-xxx-xxxx"
-                        />
-                    </Form.Group>
-                </Col>
-            </Row>
-            <Row className="mb-3">
-                <Col>
-                    <Form.Group controlId="fecha">
-                        <Form.Label>Fecha</Form.Label>
-                        <Form.Control
-                            type="date"
-                            name="fecha"
-                            value={formData.fecha.split('T')[0]} // Formatear para input date
-                            onChange={handleChange}
-                        />
-                    </Form.Group>
-                </Col>
-                <Col>
-                    <Form.Group controlId="segundo"> 
-                        <Form.Label>Hora</Form.Label>
-                        <Form.Control
-                            type="time"
-                            name="segundo" // Cambiado para coincidir con el estado
-                            value={formData.segundo}
-                            onChange={handleChange}
-                        />
-                    </Form.Group>
-                </Col>
-            </Row>
-            <Form.Group controlId="recordatorio" className="mb-3">
+            {error && (
+                <Alert variant="danger" onClose={() => setError(null)} dismissible>
+                    {error}
+                </Alert>
+            )}
+
+            {success && (
+                <Alert variant="success" onClose={() => setSuccess(false)} dismissible>
+                    Seguimiento guardado exitosamente!
+                </Alert>
+            )}
+
+            <Form.Group className="mb-3">
+                <Form.Label>Acercamiento</Form.Label>
+                <Form.Control
+                    as="select"
+                    name="idAcercamiento"
+                    value={formData.idAcercamiento}
+                    onChange={handleChange}
+                    required
+                >
+                    <option value="">Seleccionar</option>
+                    <option value="1">Llamada telefónica</option>
+                    <option value="2">Correo electrónico</option>
+                    <option value="3">Visita presencial</option>
+                </Form.Control>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+                <Form.Label>Teléfono</Form.Label>
+                <Form.Control
+                    type="text"
+                    name="numeroTelefonico"
+                    value={formData.numeroTelefonico}
+                    onChange={handleChange}
+                    placeholder="xxx-xxx-xxxx"
+                    required
+                />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+                <Form.Label>Fecha</Form.Label>
+                <Form.Control
+                    type="date"
+                    name="fecha"
+                    value={formData.fecha.split('T')[0]}
+                    onChange={handleChange}
+                    required
+                />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+                <Form.Label>Hora</Form.Label>
+                <Form.Control
+                    type="time"
+                    name="segundo"
+                    value={formData.segundo}
+                    onChange={handleChange}
+                    required
+                />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
                 <Form.Check
                     type="checkbox"
                     name="recordatorio"
@@ -111,22 +199,30 @@ const FormFollowUps = ({ onSubmit }) => {
                     onChange={handleChange}
                 />
             </Form.Group>
-            <Form.Group controlId="idMotivoS" className="mb-3"> 
+
+            <Form.Group className="mb-3">
                 <Form.Label>Situación</Form.Label>
                 <Form.Control
                     as="select"
-                    name="idMotivoS" // Cambiado para coincidir con el estado
+                    name="idMotivoS"
                     value={formData.idMotivoS}
                     onChange={handleChange}
+                    required
                 >
                     <option value="">Seleccionar</option>
-                    <option value="situacion1">Se corta llamada</option>
-                    <option value="situacion2">Otra situación</option>
+                    <option value="1">Se corta llamada</option>
+                    <option value="2">Otra situación</option>
                 </Form.Control>
             </Form.Group>
-            <Button variant="primary" type="submit" disabled={loading}>
-                {loading ? "Guardando..." : "Guardar"} {/* Cambia el texto del botón según el estado de carga */}
-            </Button>
+
+            <div className="d-flex justify-content-between">
+                <Button variant="secondary" onClick={handleClose} disabled={loading}>
+                    Cancelar
+                </Button>
+                <Button variant="primary" type="submit" disabled={loading}>
+                    {loading ? 'Guardando...' : 'Guardar'}
+                </Button>
+            </div>
         </Form>
     );
 };
