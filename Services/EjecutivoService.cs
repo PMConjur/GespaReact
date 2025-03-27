@@ -127,6 +127,7 @@ namespace NoriAPI.Services
         Task<DataTable> GetDropDOrigenQuejasAsync();
         Task<DataTable> GetViewQuejasAsync(int idCartera, string idCuenta);
         Task<string> CreaSeguimientoAsync(SeguimientoCompletoModel seguimiento, DataRow _drInfo, int idEjecutivo);
+        Task ObtenerUsoHorario(DataRow drDatos, DataSet dsTablas);
 
 
         #endregion
@@ -4660,6 +4661,60 @@ namespace NoriAPI.Services
         //        return $"Error inesperado al guardar ofrecimiento: {ex.Message}";
         //    }
         //}
+        #endregion
+
+        #region Usos Horarios
+        public async Task<DataTable> GetUsosHorariosAsync(string Telefono, string idCuenta,int idCartera,int idEjecutivo)
+        {
+            DataTable estado = new DataTable();
+            string query = "exec [dbCollection].dbo.[ValidarHorarioMarcacion] @Telefono,@idCuenta,@idCartera,@idEjecutivo";
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.Add("@Telefono", SqlDbType.VarChar).Value = Telefono;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(estado);
+                    }
+                }
+            }
+            return estado;
+        }
+
+        public async Task ObtenerUsoHorario(DataRow drDatos, DataSet dsTablas)
+        {
+            if (drDatos == null)
+                return;
+
+            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
+                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
+
+            var idCartera = Convert.ToInt32(drDatos["idCartera"]);
+            var idCuenta = Convert.ToString(drDatos["idCuenta"]);
+            var Telefono = Convert.ToString(drDatos["Telefono"]);
+            var idEjecutivo = Convert.ToInt32(drDatos["idEjecutivo"]);
+
+            DataTable estadoGet = await GetUsosHorariosAsync(Telefono, idCuenta, idCartera,idEjecutivo);
+
+            if (estadoGet == null || estadoGet.Rows.Count == 0)
+                return;
+
+
+            if (dsTablas.Tables.Contains("EstadoDeCuenta"))
+            {
+                dsTablas.Tables.Remove("EstadoDeCuenta");
+            }
+
+            estadoGet.TableName = "EstadoDeCuenta";
+            dsTablas.Tables.Add(estadoGet);
+        }
         #endregion
 
         public static void AgregarYTraducirColumna(DataTable table, string columnaBase, string nuevaColumna, Hashtable valoresCatalogo)

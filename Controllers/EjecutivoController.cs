@@ -539,8 +539,12 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+        //ObtenerUsoHorario
+
+
+
         [HttpGet("estadoDeCuentaCorreo/{idCartera}/{idCuenta}")]
-        [AllowAnonymous]
+
         public async Task<IActionResult> GetEstadoDeCuentaCorreo(int idCartera, string idCuenta)
         {
             try
@@ -572,7 +576,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost("SaveEstadoDeCuenta")]
-        [AllowAnonymous]
+
         public async Task<IActionResult> SaveCargoEstadoDeCuenta([FromBody] EstadoDeCuentaRe newEstadoCuenta)
         {
             if (newEstadoCuenta == null)
@@ -1199,6 +1203,44 @@ namespace NoriAPI.Controllers
 
 
 
+        #endregion
+
+        #region Usos Horarios
+        [HttpGet("UsosHorarios/{idCartera}/{idCuenta}/{Telefono}/{idEjecutivo}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetUsosHorarios(int idCartera, string idCuenta,string Telefono, int idEjecutivo)
+        {
+            try
+            {
+                DataSet dsTablas = new();
+                DataTable EstadoTable = dsTablas.Tables.Add("EstadoDeCuenta");
+                EstadoTable.Columns.Add("idCartera", typeof(int));
+                EstadoTable.Columns.Add("idCuenta", typeof(string));
+                EstadoTable.Columns.Add("Telefono", typeof(string));
+                EstadoTable.Columns.Add("idEjecutivo", typeof(int));
+                DataRow drDatos = EstadoTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
+                drDatos["Telefono"] = Telefono;
+                drDatos["idEjecutivo"] = idEjecutivo;
+
+                await _ejecutivoService.ObtenerUsoHorario(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("EstadoDeCuenta") || dsTablas.Tables["EstadoDeCuenta"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Estados De Cuenta para este ejecutivo.");
+                }
+
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["EstadoDeCuenta"]);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
         #endregion
 
         #region Correos
