@@ -3,6 +3,7 @@ import Dropdown from "react-bootstrap/Dropdown"; // Importar el componente Dropd
 import { AppContext } from "../../../pages/Managment"; // Importar el contexto de la aplicación
 import "../../../scss/styles.scss";
 import Addresses from "./Addresses"; // Importar el componente Addresses
+import Mail from "./Mail"; // Importar el componente Mail
 import Payments from "./Payments"; // Importar el componente Payments
 import Aditionals from "./Aditionals"; // Importar el componente Aditionals
 import { InfoCircleFill } from "react-bootstrap-icons"; // Importar el ícono de Info de Bootstrap
@@ -11,6 +12,7 @@ function DropdownInfo() {
   // Estados para controlar la visibilidad de los modales y la carga de datos
   const [showAddresses, setShowAddresses] = useState(false); // Estado para el modal de Addresses
   const [showMultideudores, setShowMultideudores] = useState(false); // Estado para el modal de Multideudores
+  const [showMail, setShowMail] = useState(false); // Estado para el modal de Mail
 
   //payments
   const [showPayments, setShowPayments] = useState(false); // Estado para el modal de Payments
@@ -47,7 +49,8 @@ function DropdownInfo() {
   const handleCloseMultideudores = () => setShowMultideudores(false);
 
   // Función para manejar la apertura del modal de Aditionals
-
+  const handleShowMail = () => setShowMail(true);
+  const handleCloseMail = () => setShowMail(false);
   return (
     <>
       {/* Dropdown para mostrar las opciones de información */}
@@ -83,7 +86,10 @@ function DropdownInfo() {
           >
             Adicionales
           </Dropdown.Item>
-          <Dropdown.Item href="/maintenance" className="custom-dropdown-item">
+          <Dropdown.Item
+            onClick={handleShowMail}
+            className="custom-dropdown-item"
+          >
             Correos
           </Dropdown.Item>
           <Dropdown.Item
@@ -119,6 +125,8 @@ function DropdownInfo() {
         handleClose={handleCloseMultideudores}
         searchResults={searchResults} // Pasar searchResults como prop
       />
+      {/* Renderizar el modal de Mail */}
+      <Mail show={showMail} handleClose={handleCloseMail} />
     </>
   );
 }
