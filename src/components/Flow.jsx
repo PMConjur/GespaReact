@@ -12,6 +12,7 @@ import { getResponse, getValidateResponse } from "../utils/flowLogic"; // Import
 import Comment from "./flowComponents/Comment";
 import FollowUps from "./memuHamburguesa/Acciones/FollowUps"; // Importa el componente FollowUps
 import CommunicationPhone from "./flowComponents/CommunicationPhone"; // Importa el componente CommunicationPhone
+import Timmer from "./flowComponents/Timmer";
 const Flow = () => {
   const { selectedAnswer, setNegotiationActive, setFollowUpActive } =
     useContext(AppContext); // Agrega setFollowUpActive del contexto
@@ -27,6 +28,7 @@ const Flow = () => {
     useState(false); // Estado para controlar cuándo ejecutar las acciones
   const [isNegotiationActive, setIsNegotiationActive] = useState(false); // Variable para controlar la acción de negociación
   const [isFollowUpActive, setIsFollowUpActive] = useState(false); // Variable para controlar la acción de seguimiento
+  const [startTimer, setStartTimer] = useState(false); // Estado para iniciar el timer
 
   const handleSaveComment = (comment) => {
     setSavedComment(comment); // Actualiza el comentario guardado
@@ -74,10 +76,26 @@ const Flow = () => {
 
   //No modificar
   useEffect(() => {
+    // Limpiar estados antes de comenzar nuevamente
+    setUserFlowData([]);
+    setCurrentQuestionId(null);
+    setSelectedAnswers({});
+    setSelectedValues({});
+    setAnswerHistory([]);
+    setIsFlowFinished(false);
+    setSavedComment("");
+    setShowFollowUps(false);
+    setTriggerLastAnswerActions(false);
+    setIsNegotiationActive(false);
+    setIsFollowUpActive(false);
+    setStartTimer(false);
+
     userFlow()
       .then((response) => {
         if (response && response.length > 0) {
           setUserFlowData(response);
+
+          setStartTimer(true); // Inicia el timer cuando se recibe el flujo por defecto
           if (selectedAnswer && selectedAnswer.value !== null) {
             if (selectedAnswer.value === 2 || selectedAnswer.value === 10) {
               const firstQuestions = response.filter(
@@ -164,8 +182,14 @@ const Flow = () => {
       (item) => item.idValor === 1102 || item.idPregunta === 7
     );
     const idDijo = answerHistory.some((item) => item.idPregunta === 7);
-
-    console.log("Comunico =" + idComunico, "Dijo =" + idDijo);
+    const idQuienContesto = answerHistory.some(
+      (item) => item.idValor === "1109" || item.idValor === "1129"
+    );
+    console.log(
+      "Comunico =" + idComunico,
+      "Dijo =" + idDijo,
+      "Quien contesto =" + idQuienContesto
+    );
     const handleAnswerChange = async (
       idPregunta,
       idRespuesta,
@@ -310,6 +334,8 @@ const Flow = () => {
 
         <Card.Body className="scroll-flow">
           <Form>
+            <Timmer start={startTimer} stop={false} />{" "}
+            {/* Implementación del timer */}
             {isFlowFinished ? (
               selectedAnswer.value === 10 ? (
                 idComunico ? (
@@ -323,15 +349,48 @@ const Flow = () => {
                         onSave={handleSaveComment}
                       />
                     </>
+                  ) : shouldShowComment ? (
+                    <>
+                      <h6>
+                        Aqui cuando que dijo es false pero comentario va activo
+                        porque es un quien contesto
+                      </h6>
+                      <CommunicationPhone idComunico={idComunico} />
+                      <Comment
+                        comentario=""
+                        isValid={true}
+                        onSave={handleSaveComment}
+                      />
+                    </>
                   ) : (
                     <>
                       <h5>Flujo finalizado.</h5>
                       <CommunicationPhone idComunico={idComunico} />
                     </>
                   )
+                ) : idComunico ? (
+                  <>
+                    <h1>Aqui cuando no comunico</h1>
+                    <CommunicationPhone idComunico={idComunico} />
+                    <Comment
+                      comentario=""
+                      isValid={true}
+                      onSave={handleSaveComment}
+                    />
+                  </>
+                ) : idQuienContesto ? (
+                  <>
+                    <h5>Flujo finalizado aqui quien no contesto.</h5>
+                    <CommunicationPhone idComunico={idComunico} />
+                    <Comment
+                      comentario=""
+                      isValid={true}
+                      onSave={handleSaveComment}
+                    />
+                  </>
                 ) : (
                   <>
-                    <h1>Aqui cuando comunico</h1>
+                    <h5>Flujo finalizado aqui quien contesto.</h5>
                     <CommunicationPhone idComunico={idComunico} />
                   </>
                 )
