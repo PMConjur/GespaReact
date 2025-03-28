@@ -965,7 +965,33 @@ namespace NoriAPI.Controllers
             }
         }
 
+        [HttpGet("validadores")]
+        public async Task<IActionResult> GetValidadores(int idProducto)
+        {
+            DataSet dsTablas = new DataSet();
+            try
+            {
+                DataTable Validador = new DataTable();
 
+                Validador = await _ejecutivoService.GetValidadoresAsync(idProducto);
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var Validadores = ConvertDataTableToList(Validador);
+
+                // Serializamos la lista a JSON
+                string jsonValidadores = JsonSerializer.Serialize(Validadores, new JsonSerializerOptions { WriteIndented = true });
+
+                //dsTablas.Tables.Add(Negociaciones);
+
+                return Ok(jsonValidadores);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+
+        }
 
         [HttpPost("accionesComentarios")]
         public async Task<ActionResult> NewComentario(AccionesComentarioRequest request)

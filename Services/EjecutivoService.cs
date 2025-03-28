@@ -117,8 +117,6 @@ namespace NoriAPI.Services
         Task ObtieneNegociacionesEjecutivosAsync(DataRow drDatos, DataSet dsTablas);
         Task<DataTable> GetAdiccionalesAsync(int idCartera, string idCuenta);
 
-
-
         Task<DataTable> GetValidadoresAsync(int idProducto);
 
         //Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
