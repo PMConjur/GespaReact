@@ -1,12 +1,17 @@
 import React from "react";
 import { Table } from "react-bootstrap";
+import {
+  reemplazarValores,
+  reemplazarValoresProducto,
+  reemplazarValoresCartera,
+} from "./ValoresCatalogos"; // Importa el método
 
 const TableMultiDeptor = ({ tableData }) => {
   const renderCell = (value) => {
     if (typeof value === "object" && value !== null) {
       return JSON.stringify(value);
     }
-    return value ?? "N/A";
+    return value ?? "";
   };
 
   return (
@@ -35,18 +40,18 @@ const TableMultiDeptor = ({ tableData }) => {
         <tbody>
           {tableData.map((item, index) => (
             <tr key={index}>
-              <td>{item.idCuenta ?? "N/A"}</td>
-              <td>{item.idCartera ?? "N/A"}</td>
-              <td>{item.idProducto ?? "N/A"}</td>
-              <td>{item["idSituación"] ?? "N/A"}</td>
-              <td>{item.NombreDeudor ?? "N/A"}</td>
-              <td>{item.RFC ?? "N/A"}</td>
-              <td>{item.NumeroCliente ?? "N/A"}</td>
-              <td>{item.Saldo ?? "N/A"}</td>
+              <td>{item.idCuenta ?? ""}</td>
+              <td>{reemplazarValoresProducto(item.idCartera) ?? ""}</td>
+              <td>{reemplazarValoresCartera(item.idProducto) ?? ""}</td>
+              <td>{reemplazarValores(item["idSituación"])}</td>
+              <td>{item.NombreDeudor ?? ""}</td>
+              <td>{item.RFC ?? ""}</td>
+              <td>{item.NumeroCliente ?? ""}</td>
+              <td>{item.Saldo ?? ""}</td>
               <td>
                 {item["Activación"]
                   ? new Date(item["Activación"]).toLocaleDateString()
-                  : "N/A"}
+                  : ""}
               </td>
               <td>{item.Bloqueo ? "Sí" : "No"}</td>
             </tr>

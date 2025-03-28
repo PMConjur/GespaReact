@@ -12,6 +12,7 @@ import servicio from "../../../services/axiosServices";
 import { toast } from "sonner";
 import Conversation from "./conversation";
 import { AppContext } from "../../../pages/Managment"; // Asegúrate de que la ruta sea correcta
+import { reemplazarValores } from "../../ValoresCatalogos"; // Importa el método de reemplazo de valores
 
 const Mail = ({ show, handleClose }) => {
   const { searchResults } = useContext(AppContext); // Obtén el contexto
@@ -106,7 +107,7 @@ const Mail = ({ show, handleClose }) => {
       idCuenta: idCuentaLimpio,
       idEjecutivo: idEjecutivo,
       idOrigen: 1805,
-      idInformacion: 0,
+      idInformacion: 1901,
     };
 
     // Define la URL con parámetros de consulta
@@ -120,16 +121,24 @@ const Mail = ({ show, handleClose }) => {
       });
 
       if (response.status === 200 || response.status === 201) {
-        setCorreos([
-          ...correos,
-          {
-            email: nuevoCorreoCompleto,
-            origen: "Gestión",
-            info: "Sin verificar",
-          },
-        ]);
+        const nuevoCorreoObj = {
+          email: nuevoCorreoCompleto,
+          origen: "Gestión",
+          info: 1901, // Asignamos explícitamente el estado "Sin verificar"
+        };
+
+        setCorreos([...correos, nuevoCorreoObj]);
         setNuevoCorreo("");
-        toast.success("Correo electrónico agregado con éxito."); // Muestra el mensaje de éxito
+
+        // Validar si el estado es 1901
+        if (nuevoCorreoObj.info === "1901") {
+          setEstado("1901"); // Actualiza el estado a "Sin verificar"
+          toast.success(
+            "Correo electrónico agregado con estado 'Sin verificar'."
+          );
+        } else {
+          toast.success("Correo electrónico agregado con éxito.");
+        }
       } else {
         console.error("Error al agregar el correo:", response.data);
       }
@@ -198,7 +207,7 @@ const Mail = ({ show, handleClose }) => {
   };
 
   const renderCell = (value) => {
-    return value ?? "N/A"; // Asegura que si el valor es undefined, muestre "N/A"
+    return value ?? ""; // Asegura que si el valor es undefined, muestre "N/A"
   };
 
   return (
@@ -233,8 +242,8 @@ const Mail = ({ show, handleClose }) => {
                     onClick={() => seleccionarCorreo(correo)} // Seleccionar el correo completo
                   >
                     <td>{correo.email}</td>
-                    <td>{correo.origen}</td>
-                    <td>{correo.info}</td>
+                    <td>{reemplazarValores(correo.origen)}</td>
+                    <td>{reemplazarValores(correo.info)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -252,6 +261,7 @@ const Mail = ({ show, handleClose }) => {
                     value={estado}
                     onChange={(e) => setEstado(e.target.value)}
                   >
+                    <option value="">Selecciona un estado</option>
                     <option value="1901">Sin verificar</option>
                     <option value="1902">Incompleta</option>
                     <option value="1903">No corresponde</option>
@@ -287,6 +297,7 @@ const Mail = ({ show, handleClose }) => {
                     value={dominio}
                     onChange={(e) => setDominio(e.target.value)}
                   >
+                    <option value="">Selecciona un @</option>
                     <option value="@gmail.com">@gmail.com</option>
                     <option value="@hotmail.com">@hotmail.com</option>
                     <option value="@hotmail.es">@hotmail.es</option>
@@ -348,7 +359,7 @@ const Mail = ({ show, handleClose }) => {
                   <tr key={index} onClick={() => setSelectedEnviados(item)}>
                     <td>{renderCell(item.Fecha_Insert)}</td>
                     <td>{renderCell(item.Segundo_Insert)}</td>
-                    <td>{renderCell(item.idEtapa)}</td>
+                    <td>{renderCell(reemplazarValores(item.idEtapa))}</td>
                     <td>{renderCell(item.Asunto)}</td>
                     <td>{renderCell(item.Ejecutivo)}</td>
                   </tr>

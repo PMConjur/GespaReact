@@ -278,7 +278,7 @@ const Addresses = ({ show, handleClose }) => {
 
   const renderCell = (value) => {
     if (value === null || value === undefined || typeof value === "object") {
-      return "N/A"; // Valor predeterminado
+      return ""; // Valor predeterminado
     }
     return value;
   };
