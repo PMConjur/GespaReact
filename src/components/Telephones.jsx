@@ -372,9 +372,9 @@ const Telephones = () => {
                         {"XXXXXX" + row.númeroTelefónico.slice(6)}
                       </a>
                     </td>
-                    <td>{row.idTelefonía || "--"}</td>
-                    <td>{row.idOrigen || "--"}</td>
-                    <td>{row.idClase || "--"}</td>
+                    <td>{row.telefonia || "--"}</td> {/* Muestra el valor de telefonia */}
+                    <td>{row.origen || "--"}</td> {/* Muestra el valor de origen */}
+                    <td>{row.clase || "--"}</td> {/* Muestra el valor de clase */}
                     <td>{row.estado || "--"}</td>
                     <td>{row.municipio || "--"}</td>
                     <td>{row.husoHorario || "--"}</td>

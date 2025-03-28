@@ -1596,3 +1596,14 @@ $pagination-disabled-border-color: #ffffff;
 .text-end {
   text-align: right;
 }
+
+.table-auto-width {
+  table-layout: auto; // Permite que las celdas se ajusten al contenido
+  word-wrap: break-word; // Evita que el contenido se desborde
+  white-space: nowrap; // Evita que el texto se divida en varias líneas
+  td, th {
+    text-align: center; // Centra el contenido
+    vertical-align: middle; // Alinea verticalmente el contenido
+    padding: .7rem;
+  }
+}

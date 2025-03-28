@@ -9,9 +9,9 @@ const Search = ({ show, handleClose }) => {
   const { searchResults } = useContext(AppContext);
 
   const [searchData, setSearchData] = useState({
-    dato: '2601', // Valor inicial del dropdown "Dato"
-    fuente: '', // Valor inicial del dropdown "Fuente"
-    encontrado: false, // Estado inicial del checkbox
+    dato: '',
+    fuente: '',
+    encontrado: false,
     nombre: '',
     puesto: '',
     telefonos: '',
@@ -19,15 +19,14 @@ const Search = ({ show, handleClose }) => {
     link: ''
   });
 
-  const [phoneNumbers, setPhoneNumbers] = useState([]); // Estado para la lista de números de teléfono
+  const [phoneNumbers, setPhoneNumbers] = useState([]);
   const [tableData, setTableData] = useState([]);
-  const [loading, setLoading] = useState(false); // Estado de carga
-  const [showForm, setShowForm] = useState(false); // Estado para mostrar/ocultar el formulario
-  const [valorOptions, setValorOptions] = useState([]); // Estado para las opciones del dropdown "Valor"
-  const [fuenteOptions, setFuenteOptions] = useState([]); // Estado para las opciones del dropdown "Fuente"
-  const [isFormValid, setIsFormValid] = useState(false); // Estado para la validez del formulario
+  const [loading, setLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [valorOptions, setValorOptions] = useState([]);
+  const [fuenteOptions, setFuenteOptions] = useState([]);
+  const [isFormValid, setIsFormValid] = useState(false);
 
-  // Extraer valores únicos de la columna "Dato" para el dropdown
   const datosUnicos = [...new Set(tableData.map((item) => item.Dato))];
 
   useEffect(() => {
@@ -37,8 +36,9 @@ const Search = ({ show, handleClose }) => {
   }, [show, searchResults]);
 
   useEffect(() => {
-    // Verificar si todos los campos requeridos están llenos
-    const isValid = searchData.dato && searchData.fuente && searchData.nombre && searchData.puesto && phoneNumbers.length > 0 && searchData.lugar && searchData.link;
+    const isValid = searchData.dato && searchData.fuente && searchData.nombre && 
+                    searchData.puesto && phoneNumbers.length > 0 && 
+                    searchData.lugar && searchData.link;
     setIsFormValid(isValid);
   }, [searchData, phoneNumbers]);
 
@@ -46,13 +46,11 @@ const Search = ({ show, handleClose }) => {
     setLoading(true);
     try {
       const response = await fetchActionsSearch(idCuenta);
-      console.log("Respuesta de la API:", response); // Verifica la respuesta de la API
       const mappedData = mapResponseToTableData(response);
       setTableData(mappedData);
-      console.log("Datos cargados:", mappedData); // Verifica que los datos se carguen correctamente
     } catch (error) {
       console.error('Error al obtener los datos:', error);
-      alert("Hubo un error al cargar los datos.");
+      toast.error("Hubo un error al cargar los datos.");
     } finally {
       setLoading(false);
     }
@@ -63,9 +61,9 @@ const Search = ({ show, handleClose }) => {
       Fecha: item.Fecha_Insert,
       Hora: item.Segundo_Insert,
       Ejecutivo: item.Ejecutivo,
-      Dato: item.idDato, // Asegúrate de que este campo coincida con la respuesta de la API
-      DatoBuscado: item.DatoBuscado, // Asegúrate de que este campo coincida con la respuesta de la API
-      idFuente: item.idFuente,
+      Dato: item.Dato,
+      DatoBuscado: item.DatoBuscado,
+      idFuente: item.Fuente,
       Encontrado: item._Encontrado,
       Telefonos: item.Teléfonos,
       Persona: Object.keys(item.Persona).length ? JSON.stringify(item.Persona) : '--',
@@ -78,9 +76,17 @@ const Search = ({ show, handleClose }) => {
     }));
   };
 
+  const handleCheckboxChange = (e) => {
+    const { checked } = e.target;
+    setSearchData(prev => ({
+      ...prev,
+      encontrado: checked
+    }));
+    setShowForm(checked);
+  };
+
   const handleChange = (name, value) => {
     if (name === 'telefonos') {
-      // Validar que solo acepte números y un máximo de 10 dígitos
       const regex = /^[0-9\b]+$/;
       if (value === '' || (regex.test(value) && value.length <= 10)) {
         setSearchData((prev) => ({
@@ -88,20 +94,18 @@ const Search = ({ show, handleClose }) => {
           [name]: value,
         }));
   
-        // Agregar número de teléfono a la lista cuando se ingresen 10 dígitos
         if (value.length === 10) {
           setPhoneNumbers((prev) => [...prev, value]);
           setSearchData((prev) => ({
             ...prev,
-            telefonos: '', // Limpiar el campo de entrada
+            telefonos: '',
           }));
         }
       }
     } else if (name === 'nombre' || name === 'puesto' || name === 'lugar') {
-      // Permitir letras, números, espacios y otros caracteres comunes
       setSearchData((prev) => ({
         ...prev,
-        [name]: value, // Actualizar el estado directamente
+        [name]: value,
       }));
     } else {
       setSearchData((prev) => ({
@@ -109,12 +113,6 @@ const Search = ({ show, handleClose }) => {
         [name]: value,
       }));
   
-      // Mostrar/ocultar el formulario cuando se marca/desmarca el checkbox
-      if (name === 'encontrado') {
-        setShowForm(value);
-      }
-  
-      // Filtrar los valores de "DatoBuscado" y "idFuente" cuando se cambia el dropdown "Dato"
       if (name === 'dato') {
         const selectedValue = Number(value);
         const filteredValues = tableData
@@ -140,36 +138,50 @@ const Search = ({ show, handleClose }) => {
 
     try {
       const idCuenta = searchResults[0].idCuenta.trim();
-      const idEjecutivo = searchResults[0].idEjecutivo; // Ajusta según sea necesario
+      const idEjecutivo = searchResults[0].idEjecutivo;
       const requestData = {
-        idCartera: 1, // Ajusta según sea necesario
+        idCartera: 1,
         idCuenta: idCuenta,
         idEjecutivo: idEjecutivo,
         idDato: Number(searchData.dato),
         idFuente: Number(searchData.fuente),
         dato: searchData.dato,
         encontrado: searchData.encontrado,
-        teléfonos: phoneNumbers.map((numeroTelefónico) => ({ númeroTelefónico: numeroTelefónico })), // Usar la lista de números de teléfono
+        teléfonos: phoneNumbers.map((númeroTelefónico) => ({ númeroTelefónico })),
         persona: searchData.nombre,
         puesto: searchData.puesto,
         lugar: searchData.lugar,
         link: searchData.link,
-        validador: 0, // Ajusta según sea necesario
+        validador: 0,
         fecha_Insert: currentDate,
         segundo_Insert: currentTime
       };
-      console.log("Datos a enviar:", requestData);
+      
       const response = await fetchSaveExecutive(requestData);
-      console.log("Respuesta del servidor:", response);
-      toast.success("Datos guardados correctamente."); // Mostrar notificación de éxito
+      toast.success("Datos guardados correctamente.");
+
+      // Limpia el formulario y actualiza la tabla
+      setSearchData({
+        dato: '2601',
+        fuente: '',
+        encontrado: false,
+        nombre: '',
+        puesto: '',
+        telefonos: '',
+        lugar: '',
+        link: ''
+      });
+      setPhoneNumbers([]);
+      setShowForm(false);
+      fetchData(idCuenta); // Vuelve a cargar los datos de la tabla
     } catch (error) {
       console.error('Error al guardar los datos:', error);
-      toast.error("Hubo un error al guardar los datos."); // Mostrar notificación de error
+      toast.error("Hubo un error al guardar los datos.");
     }
   };
 
   return (
-    <Modal show={show} onHide={handleClose} size="xl" >
+    <Modal show={show} onHide={handleClose} size="xl">
       <Modal.Header closeButton>
         <Modal.Title>Búsquedas</Modal.Title>
       </Modal.Header>
@@ -184,7 +196,6 @@ const Search = ({ show, handleClose }) => {
                     {searchData.dato || "Seleccionar"}
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
-                    {/* Opciones dinámicas basadas en la columna "Dato" */}
                     {datosUnicos.map((dato, index) => (
                       <Dropdown.Item key={index} eventKey={dato}>
                         {dato}
@@ -200,7 +211,6 @@ const Search = ({ show, handleClose }) => {
                     {searchData.valor || "Seleccionar"}
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
-                    {/* Opciones dinámicas basadas en los valores filtrados de "DatoBuscado" */}
                     {valorOptions.map((valor, index) => (
                       <Dropdown.Item key={index} eventKey={valor}>
                         {valor}
@@ -218,7 +228,6 @@ const Search = ({ show, handleClose }) => {
                     {searchData.fuente || "Seleccionar"}
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
-                    {/* Opciones dinámicas basadas en los valores filtrados de "idFuente" */}
                     {fuenteOptions.map((fuente, index) => (
                       <Dropdown.Item key={index} eventKey={fuente}>
                         {fuente}
@@ -227,17 +236,17 @@ const Search = ({ show, handleClose }) => {
                   </Dropdown.Menu>
                 </Dropdown>
               </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Check
-                  type="checkbox"
-                  label="Encontrado"
-                  name="encontrado"
-                  checked={searchData.encontrado}
-                  onChange={(e) => handleChange('encontrado', e.target.checked)}
-                />
-              </Form.Group>
+              <Form.Check
+  type="checkbox"
+  label="Encontrado"
+  checked={searchData.encontrado}
+  onChange={(e) => {
+    const isChecked = e.target.checked;
+    setSearchData(prev => ({ ...prev, encontrado: isChecked }));
+    setShowForm(isChecked);
+  }}
+/>
             </div>
-            {/* Mostrar el formulario si showForm es true */}
             {showForm && (
               <Form.Group className="mb-3 me-3">
                 <Form.Label>Nombre</Form.Label>
@@ -292,14 +301,14 @@ const Search = ({ show, handleClose }) => {
               type="button"
               onClick={handleGuardarClick}
               style={{ marginBottom: '10px' }}
-              disabled={!isFormValid} // Deshabilitar el botón si el formulario no es válido
+              disabled={!isFormValid}
             >
               Guardar
             </Button>
           </div>
         </div>
         {loading ? (
-          <div className="text-center ">
+          <div className="text-center">
             <Spinner animation="border" role="status">
               <span className="visually-hidden">Cargando...</span>
             </Spinner>
@@ -314,7 +323,7 @@ const Search = ({ show, handleClose }) => {
                   <th>Ejecutivo</th>
                   <th>Dato</th>
                   <th>Dato Buscado</th>
-                  <th>idFuente</th>
+                  <th>Fuente</th>
                   <th>Encontrado</th>
                   <th>Teléfonos</th>
                   <th>Persona</th>
@@ -335,14 +344,14 @@ const Search = ({ show, handleClose }) => {
                     <td>{item.Dato}</td>
                     <td>{item.DatoBuscado}</td>
                     <td>{item.idFuente}</td>
-                    <td>{item.Encontrado}</td>
+                    <td>{item.Encontrado ? 'Sí' : 'No'}</td>
                     <td>{item.Telefonos}</td>
                     <td>{item.Persona}</td>
                     <td>{item.Puesto}</td>
                     <td>{item.Lugar}</td>
                     <td>{item.idEjecutivo}</td>
                     <td>{item.InfoEncontrada}</td>
-                    <td>{item.Confirmado}</td>
+                    <td>{item.Confirmado ? 'Sí' : 'No'}</td>
                     <td>{item.Link}</td>
                   </tr>
                 ))}
