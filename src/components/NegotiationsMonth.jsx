@@ -3,6 +3,7 @@ import { Table, Card } from "react-bootstrap";
 import { userNegotiations, searchCustomer } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast, Toaster } from "sonner";
+import { reemplazarValores } from "./ValoresCatalogos"; // Importa el método de reemplazo de valores
 
 const NegotiationsMonth = () => {
   const responseData = JSON.parse(localStorage.getItem("responseData"));
@@ -25,7 +26,7 @@ const NegotiationsMonth = () => {
       console.log("Detalles de la cuenta:", response);
       setSearchResults(response.listaResultados || []);
       toast.success(`Cuenta ${idCuenta} seleccionada`, {
-        description: "Puede cerrar la ventana para gestionar esta cuenta"
+        description: "Puede cerrar la ventana para gestionar esta cuenta",
       });
     } catch (error) {
       console.error("Error al buscar detalles de la cuenta:", error);
@@ -66,7 +67,7 @@ const NegotiationsMonth = () => {
                         {negotiation.idCuenta}
                       </td>
                       <td>{negotiation.herramienta}</td>
-                      <td>{negotiation.idEstado}</td>
+                      <td>{reemplazarValores(negotiation.idEstado)}</td>
                       <td>{negotiation.fechaCreacion}</td>
                       <td>{negotiation.fechaTermino}</td>
                       <td>{negotiation.montoNegociado}</td>

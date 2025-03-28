@@ -1,5 +1,6 @@
 import React from "react";
 import { Table, Row } from "react-bootstrap";
+import { reemplazarValores } from "./ValoresCatalogos"; // Importa el método
 
 const TableNegotiationsMonth = ({ tableData }) => {
   return (
@@ -9,7 +10,7 @@ const TableNegotiationsMonth = ({ tableData }) => {
           <tr>
             <th>Cuenta</th>
             <th>Herramienta</th>
-            <th>Estado</th>
+            <th>status</th>
             <th>FechaCreacion</th>
             <th>FechaTermino</th>
             <th>Negociado</th>
@@ -21,14 +22,14 @@ const TableNegotiationsMonth = ({ tableData }) => {
         <tbody>
           {tableData.map((item, index) => (
             <tr key={index}>
-              <td>{item.idCuenta ?? "N/A"}</td>
-              <td>{item.Herramienta ?? "N/A"}</td>
-              <td>{item.idEstado ?? "N/A"}</td>
-              <td>{item.FechaCreación ?? "N/A"}</td>
-              <td>{item.FechaTérmino ?? "N/A"}</td>
-              <td>{item.MontoNegociado ?? "N/A"}</td>
-              <td>{item.MontoPagado ?? "N/A"}</td>
-              <td>{item.Pagos ?? "N/A"}</td>
+              <td>{item.idCuenta ?? ""}</td>
+              <td>{item.Herramienta ?? ""}</td>
+              <td>{reemplazarValores(item.idEstado) ?? ""}</td>
+              <td>{item.FechaCreación ?? ""}</td>
+              <td>{item.FechaTérmino ?? ""}</td>
+              <td>{item.MontoNegociado ?? ""}</td>
+              <td>{item.MontoPagado ?? ""}</td>
+              <td>{item.Pagos ?? ""}</td>
               <td>{item._CartaConvenio ? "Sí" : "No"}</td>
             </tr>
           ))}

@@ -9,7 +9,7 @@ const Recovery = ({ show, handleClose }) => {
     negociaciones: 0,
     montoParcial: 0,
     montoCumplido: 0,
-    metaCumplimiento: 0
+    metaCumplimiento: 0,
   });
   const [loading, setLoading] = useState(true);
   const [negotiations, setNegotiations] = useState([]);
@@ -26,7 +26,7 @@ const Recovery = ({ show, handleClose }) => {
         negociaciones: response.negociaciones,
         montoParcial: response.montoParcial,
         montoCumplido: response.montoCumplido,
-        metaCumplimiento: response.metaCumplimiento
+        metaCumplimiento: response.metaCumplimiento,
       });
       if (actual === 1) {
         const negotiationsResponse = await userNegotiations(idEjecutivo);
@@ -52,7 +52,7 @@ const Recovery = ({ show, handleClose }) => {
       negociaciones: 0,
       montoParcial: 0,
       montoCumplido: 0,
-      metaCumplimiento: 0
+      metaCumplimiento: 0,
     });
     fetchData(selectedMes);
   };
@@ -62,7 +62,7 @@ const Recovery = ({ show, handleClose }) => {
       "$" +
       number.toLocaleString("en-US", {
         minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+        maximumFractionDigits: 2,
       })
     );
   };
@@ -298,12 +298,6 @@ const Recovery = ({ show, handleClose }) => {
 
         <hr />
       </Modal.Body>
-
-      <Modal.Footer className="bg-dark text-white">
-        <Button variant="primary" onClick={handleClose}>
-          Cerrar
-        </Button>
-      </Modal.Footer>
     </Modal>
   );
 };

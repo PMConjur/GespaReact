@@ -1,6 +1,8 @@
 import React from "react";
 import { Table, Row, Container } from "react-bootstrap";
 import { Modal } from "react-bootstrap";
+import { reemplazarValores } from "./ValoresCatalogos"; // Importa el método
+
 const Tableefforts = ({ gestionesData, handleRowClick, selectedGestion }) => {
   const renderCell = (value) => {
     if (typeof value === "object" && value !== null) {
@@ -36,13 +38,15 @@ const Tableefforts = ({ gestionesData, handleRowClick, selectedGestion }) => {
                 <td>{renderCell(item.Fecha_Insert)}</td>
                 <td>{renderCell(item.Segundo_Insert)}</td>
                 <td>{renderCell(item.NúmeroTelefónico)}</td>
-                <td>{renderCell(item.idContacto)}</td>
-                <td>{renderCell(item.idSituaciónGestión)}</td>
-                <td>{renderCell(item.idCausaNoPago)}</td>
-                <td>{renderCell(item.idParentesco)}</td>
+                <td>{renderCell(reemplazarValores(item.idContacto))}</td>
+                <td>
+                  {renderCell(reemplazarValores(item.idSituaciónGestión))}
+                </td>
+                <td>{renderCell(reemplazarValores(item.idCausaNoPago))}</td>
+                <td>{renderCell(reemplazarValores(item.idParentesco))}</td>
                 <td>{renderCell(item.NombreContacto)}</td>
-                <td>{renderCell(item.idModo)}</td>
-                <td>{renderCell(item.idAcercamiento)}</td>
+                <td>{renderCell(reemplazarValores(item.idModo))}</td>
+                <td>{renderCell(reemplazarValores(item.idAcercamiento))}</td>
                 <td>{renderCell(item.Duración)}</td>
               </tr>
             ))}
