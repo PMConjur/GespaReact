@@ -377,7 +377,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
               <Card className="rounded-lg mb-0">
                 <Card.Body className="d-flex p-0 pb-1 w-100">
                   <Form
-                    className="d-flex w-100 gap-5"
+                    className="d-block d-lg-flex w-100 gap-5"
                     style={{ alignItems: "center" }}
                   >
                     <Col>
@@ -394,8 +394,9 @@ const CalculatorSimulator = ({show, handleClose}) => {
                           ))}
                         </Form.Select>
                       </Form.Group>
-                      <div>
+                      <div className="text-end"> 
                         <Button
+                        className="mb-3"
                           variant="primary"
                           onClick={handleSetFormValues}
                           disabled={!isCalculateButtonEnabled} // Deshabilita el botón si no es válido
@@ -500,8 +501,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
                             <Form.Label>Máximo 15 días</Form.Label>
                           </Form.Group>
                         </div>
-                        <div className=" gap-3 d-flex">
-                          <div>
+                          <div className="text-end">
                             <Button
                               variant="primary"
                               onClick={handleAgregarPago} // Llama a la función para agregar el pago
@@ -510,7 +510,6 @@ const CalculatorSimulator = ({show, handleClose}) => {
                               Agregar
                             </Button>
                           </div>
-                        </div>
                       </Form>
                     </Card.Body>
                   </Card>
@@ -654,7 +653,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
                   onChange={handleInputChange} // Actualiza el estado formInputs
                 />
               </Form.Group>
-              <div className="mt-4">
+              <div className="text-end mt-4">
                 <Button
                   variant="primary"
                   onClick={handleCalculateSecondPart}
@@ -668,6 +667,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
       </Card>
     </>
   )}
+            
 </Col>
               <Row>
   {showDetails && ( // Muestra el contenido solo si showDetails es true
@@ -713,8 +713,8 @@ const CalculatorSimulator = ({show, handleClose}) => {
         {/* Pagos */}
         <Card className="mt-0">
           <Card.Body>
-            <div style={{ justifyContent: "space-evenly", paddingLeft: "0" }} className="d-flex gap-3 mb-3">
-              <h6 style={{ color: "white" }}>Pagos</h6>
+            <div style={{ justifyContent: 'space-between', paddingLeft: "0" }} className="d-flex gap-3 mb-3">
+              <h5 style={{ color: "white" }}>Pagos</h5>
               <Form.Check
                 type="checkbox"
                 label="Pago Inicial"
@@ -768,7 +768,6 @@ const CalculatorSimulator = ({show, handleClose}) => {
           </Card.Body>
         </Card>
       </Col>
-
       <Col className=" ">
         {/* Plazos */}
         <Card className="mb-0">

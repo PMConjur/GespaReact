@@ -1,5 +1,5 @@
 import DataCard from "../components/DataCard";
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 import Flow from "../components/Flow";
 import Telephones from "../components/Telephones";
 import InformationClient from "../components/InformationClient";
@@ -16,8 +16,7 @@ import CustomToast from "../components/CustomToast";
 import Managments from "../components/Managments";
 import NotesWidget from "../components/NotesWidget";
 import { searchCustomer } from "../services/gespawebServices";
-import { Calendar } from "react-bootstrap-icons";
-// Crear el contexto
+
 export const AppContext = createContext();
 
 const Managment = () => {
@@ -30,17 +29,16 @@ const Managment = () => {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const responseData =
-    location.state || JSON.parse(localStorage.getItem("responseData")); // Retrieve responseData from localStorage if not in location state
+    location.state || JSON.parse(localStorage.getItem("responseData"));
   const [showToast, setShowToast] = useState(false);
   const [numeroTelefonico, setNumeroTelefonico] = useState("");
-  const [flowMessage, setFlowMessage] = useState(""); // Estado para el mensaje del flujo
-  const [selectedAnswer, setSelectedAnswer] = useState(null); // Estado para la respuesta seleccionada
-  const [isNegotiationActive, setNegotiationActive] = useState(false); // Agrega el estado para negociación
-  const [isFollowUpActive, setFollowUpActive] = useState(false); // Agrega el estado para seguimiento
+  const [flowMessage, setFlowMessage] = useState("");
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [isNegotiationActive, setNegotiationActive] = useState(false);
+  const [isFollowUpActive, setFollowUpActive] = useState(false);
+  const [lastPhoneNumberFromToast, setLastPhoneNumberFromToast] = useState("");
   const token = responseData?.ejecutivo?.token;
-  console.log("Token recibido:", token);
-  const nombreEjecutivo =
-    responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
+  const nombreEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
 
   const handleSearch = async () => {
@@ -103,9 +101,6 @@ const Managment = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      console.log("Respuesta completa de la API:", responseEjecutivo.data);
-
-      // Validar si idCuenta está presente en la respuesta
       const idCuenta = responseEjecutivo.data.idCuenta?.trim();
       const numeroTelefonico = responseEjecutivo.data.numeroTelefonico;
 
@@ -116,7 +111,6 @@ const Managment = () => {
       }
 
       setNumeroTelefonico(numeroTelefonico);
-      // Mostrar el toast
       setShowToast(true);
 
       const responseCuenta = await axios.get(
@@ -127,9 +121,6 @@ const Managment = () => {
         }
       );
 
-      console.log("Respuesta de la búsqueda de cuenta:", responseCuenta.data);
-
-      // Validar que la respuesta contenga listaResultados con al menos un elemento
       const listaResultados = responseCuenta.data.listaResultados;
       if (Array.isArray(listaResultados) && listaResultados.length > 0) {
         setSearchResults(listaResultados);
@@ -138,10 +129,7 @@ const Managment = () => {
         setSearchResults([]);
       }
     } catch (error) {
-      console.error(
-        "Error en la búsqueda automática:",
-        error.response?.data || error.message
-      );
+      console.error("Error en la búsqueda automática:", error.response?.data || error.message);
       toast.error(`Error: ${error.response?.data?.errors || error.message}`);
     }
   };
@@ -151,7 +139,17 @@ const Managment = () => {
     toast.success("Número copiado al portapapeles");
   };
 
-  // Valores que se compartirán a través del contexto
+  const handleToastClosed = () => {
+    setShowToast(false);
+    if (numeroTelefonico) {
+      setLastPhoneNumberFromToast(numeroTelefonico);
+    }
+  };
+
+  const notifyPhoneNumber = (phoneNumber) => {
+    setLastPhoneNumberFromToast(phoneNumber);
+  };
+
   const contextValue = {
     nombreEjecutivo,
     idEjecutivo,
@@ -176,94 +174,84 @@ const Managment = () => {
     handleInputChange,
     handleSuggestionClick,
     handleAutomaticSearch,
-    flowMessage, // Añadir flowMessage al contexto
-    setFlowMessage, // Añadir setFlowMessage al contexto
-    selectedAnswer, // Añadir selectedAnswer al contexto
-    setSelectedAnswer, // Añadir setSelectedAnswer al contexto
-    isNegotiationActive, // Añadir isNegotiationActive al contexto
-    setNegotiationActive, // Añadir setNegotiationActive al contexto
-    isFollowUpActive, // Añadir isFollowUpActive al contexto
-    setFollowUpActive // Añadir setFollowUpActive al contexto
+    flowMessage,
+    setFlowMessage,
+    selectedAnswer,
+    setSelectedAnswer,
+    isNegotiationActive,
+    setNegotiationActive,
+    isFollowUpActive,
+    setFollowUpActive,
+    lastPhoneNumberFromToast,
+    setLastPhoneNumberFromToast,
   };
 
   return (
     <>
-      {/* Proveedor de contexto para compartir datos con los componentes hijos */}
       <AppContext.Provider value={contextValue}>
         <section>
-          {/* Componente de la barra de navegación */}
           <NavbarComponent />
 
-          {/* Componente de Toast personalizado para mostrar mensajes emergentes */}
           <CustomToast
-            show={showToast} // Controla si el Toast debe mostrarse
-            onClose={() => setShowToast(false)} // Cierra el Toast al invocar esta función
-            numeroTelefonico={numeroTelefonico} // Pasa el número telefónico al Toast
-            copyToClipboard={copyToClipboard} // Función para copiar al portapapeles
+            show={showToast}
+            onClose={handleToastClosed} // Usamos la función renombrada
+            numeroTelefonico={numeroTelefonico}
+            copyToClipboard ={() => {
+              navigator.clipboard.writeText(numeroTelefonico);
+              toast.success("Número copiado al portapapeles");
+            }}
           />
-
-          {/* Componente Toaster para mostrar notificaciones emergentes */}
           <Toaster richColors position="top-center" style={{ top: "60px" }} />
 
           <Container fluid className="responsive mt-5">
             <Row>
-              {/* Columna para mostrar información del deudor */}
               <Col xs={12} md={12} lg={6}>
                 <br />
-                <DebtorInformation />{" "}
-                {/* Componente con información del deudor */}
+                <DebtorInformation />
               </Col>
 
-              {/* Columna para mostrar el formulario de búsqueda */}
               <Col xs={12} md={12} lg={6} className="mx-auto">
                 <br />
-                <SearchForm /> {/* Componente del formulario de búsqueda */}
+                <SearchForm />
               </Col>
 
-              {/* Componente de búsqueda de clientes */}
               <Col xs={12} md={12}>
                 <SearchCustomer />
               </Col>
 
-              {/* Componente de tarjeta de datos */}
               <Col xs={12} md={12}>
                 <DataCard />
               </Col>
 
               <Row className="d-flex" xs={12} md={12}>
                 <Col xs={12} md={6} lg={8}>
-                  {/* Sección para mostrar información adicional */}
                   <Row className="recent-sales">
                     <Col xs={12}>
-                      <InformationClient />{" "}
-                      {/* Componente con la información del cliente */}
+                      <InformationClient />
                     </Col>
                   </Row>
                   <Row>
                     <Col xs={12}>
-                      <Telephones />{" "}
-                      {/* Componente con los números telefónicos */}
+                      <Telephones />
                     </Col>
                   </Row>
                   <Col xs={12}>
-                    <Managments /> Componente de gestiones
+                    <Managments />
                   </Col>
                 </Col>
                 <Col xs={12} md={6} lg={4}>
                   <Row>
                     <Col xs={12} md={12}>
-                      <Flow /> {/* Componente con el flujo de información */}
+                      <Flow />
                     </Col>
                     <Col xs={6} md={6}>
-                      <Calculator /> {/* Componente con la calculadora */}
+                      <Calculator />
                     </Col>
                     <Col xs={6} md={6}>
-                      <DatePickerComponent />{" "}
-                      {/* Componente con el calendario */}
+                      <DatePickerComponent />
                     </Col>
-                    {/* Componente de gestiones */}
                     <Col xs={12} md={12}>
-                      <NotesWidget /> {/* Componente de recordatorios */}
+                      <NotesWidget />
                     </Col>
                   </Row>
                 </Col>
