@@ -115,7 +115,7 @@ const FormFollowUps = ({ handleClose }) => {
                                 </option>
                             ))
                         ) : (
-                            [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(h => (
+                            [12, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(h => (
                                 <option key={h} value={h}>
                                     {h.toString().padStart(2, '0')}
                                 </option>
@@ -266,6 +266,20 @@ const FormFollowUps = ({ handleClose }) => {
 
             const response = await createFollows(dataToSend);
             toast.success(response.mensaje || "Seguimiento guardado exitosamente.");
+
+            // Limpiar los campos del formulario
+            setFormData({
+                idCartera: 1,
+                idCuenta: idCuenta[0].trim(),
+                idEjecutivo: idEjecutivo,
+                fecha: new Date().toISOString().split("T")[0],
+                segundo: "10:00:00",
+                idAcercamiento: "1601",
+                recordatorio: false,
+                numeroTelefonico: "",
+                datoContacto: "",
+                idMotivoS: "0",
+            });
             
         } catch (error) {
             console.error("Error al guardar el seguimiento:", error);

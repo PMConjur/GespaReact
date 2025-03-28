@@ -1,4 +1,3 @@
-
 import { Modal, Button } from "react-bootstrap";
 import TableOnlineCharge from "../../TableOnlineCharge";
 
@@ -14,9 +13,7 @@ const OnlineCharge = ({ show, handleClose }) => {
                 <TableOnlineCharge/>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
-                    Cerrar
-                </Button>
+              {/* Espacio del footer vacío */}
             </Modal.Footer>
         </Modal>
     );

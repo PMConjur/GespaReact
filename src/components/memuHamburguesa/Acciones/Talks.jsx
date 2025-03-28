@@ -1,4 +1,3 @@
-
 import { Modal, Button } from "react-bootstrap";
 import TableTalks from "../../TableTalks";
 // import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -17,9 +16,7 @@ const Talks = ({ show, handleClose }) => {
                 <TableTalks/>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
-                    Cerrar
-                </Button>
+                {/* Espacio del footer vacío */}
             </Modal.Footer>
         </Modal>
     );

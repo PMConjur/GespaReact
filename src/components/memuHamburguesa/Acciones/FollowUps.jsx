@@ -12,6 +12,7 @@ const FollowUps = ({
       show={show} 
       onHide={handleClose} 
       size="xl"
+      style={{ maxHeight: "850px" }} // Cambiar la altura máxima del modal
       backdrop={isFollowUpActive ? "static" : true}
       keyboard={!isFollowUpActive}
     >
@@ -33,6 +34,9 @@ const FollowUps = ({
           )}
         </Row>
       </Modal.Body>
+      <Modal.Footer>
+        {/* Espacio del footer vacío */}
+      </Modal.Footer>
     </Modal>
   );
 };

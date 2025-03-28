@@ -1,4 +1,3 @@
-
 import { Modal, Button, Spinner } from "react-bootstrap";
 import TDropdownScripts from "../../TDropdownScripts"; // Ajusta la ruta según tu estructura de archivos
 
@@ -18,9 +17,7 @@ const Scripts = ({ show, handleCloseScripts, data, loadingScripts }) => {
                 )}
             </Modal.Body>
             <Modal.Footer style={{ padding: '1rem 2rem' }}>
-                <Button variant="secondary" onClick={handleCloseScripts}>
-                    Cerrar
-                </Button>
+                {/* Espacio del footer vacío */}
             </Modal.Footer>
         </Modal>
     );

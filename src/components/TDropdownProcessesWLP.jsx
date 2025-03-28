@@ -1,4 +1,3 @@
-// TDropdownProcessesWLP.js
 import React, { useState, useEffect, useContext } from "react";
 import { Dropdown, Form, Table, Spinner, Alert } from "react-bootstrap";
 import { fetchProcessesWLP } from '../services/gespawebServices';
@@ -27,24 +26,13 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
     const { searchResults = [] } = useContext(AppContext) || {};
 
     useEffect(() => {
-        console.log('Initial props data:', data);
-        if (data && data.length > 0) {
-            setProductData(data);
-        } else {
-            setProductData([]);
-        }
-    }, [data]);
-
-    useEffect(() => {
         const fetchData = async () => {
             try {
-                // Validación más robusta de searchResults
                 if (!Array.isArray(searchResults)) {
                     console.error('searchResults no es un array:', searchResults);
                     return;
                 }
 
-                // Buscar cualquier objeto que tenga idCuenta
                 const account = searchResults.find(item => item?.idCuenta);
                 if (!account) {
                     console.warn('No se encontró idCuenta en searchResults');
@@ -60,13 +48,10 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
                     return;
                 }
 
-                console.log(`Fetching ${producto} data for account:`, idCuenta);
-                
                 setLoading(true);
                 setError(null);
                 
                 const result = await fetchProcessesWLP(producto, idCuenta);
-                console.log('Data received:', result);
                 
                 if (!result || result.length === 0) {
                     toast.info(`No se encontraron datos para ${producto}`, { position: "top-right" });
@@ -82,7 +67,6 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
             }
         };
 
-        // Solo hacer fetch si hay un producto seleccionado
         if (producto) {
             fetchData();
         }
@@ -90,12 +74,11 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
 
     const handleProductoChange = (eventKey) => {
         if (producto !== eventKey) {
-            console.log('Product changed to:', eventKey);
             setProducto(eventKey);
         }
     };
 
-    const renderTable = () => {
+    const renderTableContent = () => {
         if (loading) {
             return (
                 <div className="d-flex justify-content-center my-5">
@@ -115,23 +98,22 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
 
         if (!productData || productData.length === 0) {
             return (
-                <Alert variant="info" className="mt-3">
-                    No se encontraron datos para {producto}
+                <div className="mt-3">
+                    <p className="text-info">No se encontraron datos para {producto}</p>
                     {searchResults.length === 0 && (
                         <div className="mt-2">
                             <small>No hay resultados de búsqueda disponibles</small>
                         </div>
                     )}
-                </Alert>
+                </div>
             );
         }
 
-        // Renderizado dinámico basado en los datos recibidos
         const columns = productData.length > 0 ? Object.keys(productData[0]) : [];
 
         return (
-            <div className="mt-3 table-responsive">
-                <Table striped bordered hover variant="dark">
+            <div className="table-responsive">
+                <Table striped bordered hover variant="dark" style={{ padding: ".7rem" }}>
                     <thead>
                         <tr>
                             {columns.map(key => (
@@ -187,8 +169,9 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
                     </Form.Text>
                 )}
             </Form.Group>
-
-            {renderTable()}
+            <div className="mt-3">
+                {renderTableContent()}
+            </div>
         </div>
     );
 };

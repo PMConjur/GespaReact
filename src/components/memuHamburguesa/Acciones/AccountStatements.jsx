@@ -146,7 +146,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                     bordered
                     hover
                     variant="dark"
-                    className="custom-table-account"
+                    className="sticky-header-table"
                   >
                     <thead>
                       <tr>
@@ -252,6 +252,9 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
           </Col>
         </div>
       </Modal.Body>
+      <Modal.Footer>
+        {/* Espacio del footer vacío */}
+      </Modal.Footer>
     </Modal>
   );
 };

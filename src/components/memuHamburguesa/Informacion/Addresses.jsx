@@ -102,7 +102,7 @@ const Addresses = ({ show, handleClose }) => {
         </Col>
         <div className='scroll-container' style={{ maxHeight: '400px', overflowY: 'auto', maxWidth: '800px'}}>
         <h5 className="mt-4">Visitas</h5>
-        <Table striped bordered hover variant="dark">
+        <Table striped bordered hover variant="dark" className="sticky-header-table">
           <thead>
             <tr>
               <th>Fecha</th>
@@ -134,6 +134,9 @@ const Addresses = ({ show, handleClose }) => {
         </Table>
         </div>
       </Modal.Body>
+      <Modal.Footer>
+        {/* Espacio del footer vacío */}
+      </Modal.Footer>
     </Modal>
   );
 };

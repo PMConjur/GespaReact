@@ -325,7 +325,7 @@ const Complaints = ({ show, handleClose }) => {
           }}
         >
           <h5 className="">Quejas</h5>
-          <Table striped bordered hover variant="dark">
+          <Table striped bordered hover variant="dark" className="sticky-header-table">
             <thead>
               <tr>
                 <th>Fecha</th>
@@ -393,6 +393,9 @@ const Complaints = ({ show, handleClose }) => {
           </Table>
         </div>
       </Modal.Body>
+      <Modal.Footer>
+        {/* Espacio del footer vacío */}
+      </Modal.Footer>
     </Modal>
   );
 };

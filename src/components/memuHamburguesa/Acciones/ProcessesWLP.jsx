@@ -8,7 +8,7 @@ const ProcessesWLP = ({ show, handleCloseProcessesWLP, data, loadingProcessesWLP
       <Modal.Header closeButton>
         <Modal.Title>Procesos WLP</Modal.Title>
       </Modal.Header>
-      <Modal.Body style={{ maxHeight: "600px", overflow: "auto", height: "500px" }}>
+      <Modal.Body style={{ maxHeight: "700px", overflow: "auto", height: "600px" }}>
         {loadingProcessesWLP ? (
           <div className="d-flex justify-content-center">
             <Spinner animation="border" />
@@ -20,9 +20,7 @@ const ProcessesWLP = ({ show, handleCloseProcessesWLP, data, loadingProcessesWLP
         )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleCloseProcessesWLP}>
-          Cerrar
-        </Button>
+        {/* Espacio del footer vacío */}
       </Modal.Footer>
     </Modal>
   );

@@ -167,7 +167,9 @@ const ActivityDay = ({ show, handleClose }) => {
           </Row>
         </Container>
       </Modal.Body>
-      <Modal.Footer></Modal.Footer>
+      <Modal.Footer>
+        {/* Espacio del footer vacío */}
+      </Modal.Footer>
     </Modal>
   );
 };

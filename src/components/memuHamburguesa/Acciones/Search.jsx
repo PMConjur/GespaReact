@@ -306,7 +306,7 @@ const Search = ({ show, handleClose }) => {
           </div>
         ) : (
           <div className="scroll-container" style={{ overflow: 'auto', maxHeight: '70vh', maxWidth: '800px', minWidth: '250px'}}>
-            <Table striped bordered hover variant="dark" className="mt-3">
+            <Table striped bordered hover variant="dark" className="sticky-header-table">
               <thead>
                 <tr>
                   <th>Fecha</th>
@@ -351,6 +351,9 @@ const Search = ({ show, handleClose }) => {
           </div>
         )}
       </Modal.Body>
+      <Modal.Footer>
+        {/* Espacio del footer vacío */}
+      </Modal.Footer>
     </Modal>
   );
 };

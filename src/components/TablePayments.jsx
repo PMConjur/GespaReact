@@ -105,7 +105,7 @@ const TablePayments = ({ customColumnNames = {} }) => {
                 overflowX: "auto",   // Scroll horizontal si es necesario
                 width: "100%",       // Que la tabla use el ancho disponible
             }}>
-                <Table striped bordered hover responsive variant="dark">
+                <Table striped bordered hover responsive variant="dark" style={{ padding: ".7rem" }}>
                     <thead>
                         <tr>
                             {headers.map((header) => (

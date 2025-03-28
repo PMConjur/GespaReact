@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Modal, Button, Table } from 'react-bootstrap';
 import { fetchDrives } from '../../../services/gespawebServices';
 import { AppContext } from '../../../pages/Managment';
@@ -8,7 +8,7 @@ import "../../../scss/styles.scss";
 const AccionamientosTable = ({ data }) => {
   return (
     <div className='scroll-container' style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-      <Table striped bordered hover className="custom-table" variant='dark'>
+      <Table striped bordered hover className="custom-table sticky-header-table" variant='dark'>
         <thead>
           <tr>
             <th>Fecha</th>
@@ -41,6 +41,9 @@ const AccionamientosModal = ({ show, handleClose, data }) => {
       <Modal.Body>
         <AccionamientosTable data={data} />
       </Modal.Body>
+      <Modal.Footer>
+        {/* Espacio del footer vacío */}
+      </Modal.Footer>
     </Modal>
   );
 };

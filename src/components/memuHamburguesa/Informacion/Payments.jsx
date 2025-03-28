@@ -1,4 +1,3 @@
-
 import { Modal, Button } from "react-bootstrap";
 import TablePayments from "../../TablePayments";
 
@@ -12,9 +11,7 @@ const Payments = ({ show, handleClose }) => {
                 <TablePayments/>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
-                    Cerrar
-                </Button>
+              {/* Espacio del footer vacío */}
             </Modal.Footer>
         </Modal>
     );

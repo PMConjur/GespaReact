@@ -1,5 +1,4 @@
-
-import { Modal, Button } from "react-bootstrap";
+import { Modal } from "react-bootstrap";
 import TableAditionals from "../../TableAditionals";
 
 const Aditionals = ({ show, handleClose}) => {
@@ -12,9 +11,7 @@ const Aditionals = ({ show, handleClose}) => {
                 <TableAditionals/>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
-                    Cerrar
-                </Button>
+                {/* Espacio del footer vacío */}
             </Modal.Footer>
         </Modal>
     );
