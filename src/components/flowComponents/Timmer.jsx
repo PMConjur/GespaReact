@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const Timmer = ({ start, stop }) => {
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
-  const [timerInterval, setTimerInterval] = useState(null);
+  const timerIntervalRef = useRef(null); // Usar useRef para almacenar el intervalo
 
   useEffect(() => {
-    if (start && !timerInterval) {
-      const interval = setInterval(() => {
+    if (start && !timerIntervalRef.current) {
+      timerIntervalRef.current = setInterval(() => {
         setTime((prevTime) => {
           const { hours, minutes, seconds } = prevTime;
           if (seconds < 59) {
@@ -18,20 +18,20 @@ const Timmer = ({ start, stop }) => {
           }
         });
       }, 1000);
-      setTimerInterval(interval);
     }
 
-    if (stop && timerInterval) {
-      clearInterval(timerInterval);
-      setTimerInterval(null);
+    if (stop && timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
     }
 
     return () => {
-      if (timerInterval) {
-        clearInterval(timerInterval);
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null; // Asegura que el intervalo se limpie correctamente
       }
     };
-  }, [start, stop, timerInterval]);
+  }, [start, stop]); // Mantener solo `start` y `stop` como dependencias
 
   const formatTime = (value) => (value < 10 ? `0${value}` : value);
 
