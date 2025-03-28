@@ -23,7 +23,6 @@ using System.Net.Mail;
 using NoriAPI.Models.Acciones;
 using static NoriAPI.Services.EjecutivoService;
 
-using NoriAPI.Models.Acciones;
 using NoriAPI.Models.Flujo;
 using static NoriAPI.Models.Ejecutivo.NegociacionClass;
 using NoriAPI.Models.CargaGestionamiento;
@@ -31,6 +30,7 @@ using NoriAPI.Models.Ofrecimiento;
 using Microsoft.IdentityModel.Tokens;
 using System.Text.RegularExpressions;
 using System.Text;
+
 
 
 namespace NoriAPI.Services
@@ -64,6 +64,8 @@ namespace NoriAPI.Services
         Task<ResultadoCalculadora> ValidateInfoCalculadora1(int Cartera, string NoCuenta, int idHerr);
         Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int IdCartera, double MontoRequerido, int Descuento, int iMeses, string dtpFecha, int periodos, int modificar, double montoMod, string fechaPagoMod, int agregarPagos, int filaMod);
         Task<dynamic> GuardarOfrecimiento(SaveOfrecimientoRequest ofrecimientoInfo);
+        Task<string> GuardaEliminaPlazos(EliminaGuardaPlazos PlazosInfo);
+        Task<dynamic> GuardaNegoaciacionPlazos_(GuardaNegociacionPlazos negociacionInfo);
 
         #endregion
         Task ObtenerBusquedaEJE(DataRow drDatos, DataSet dsTablas);
@@ -2541,6 +2543,83 @@ namespace NoriAPI.Services
         }
         #endregion
 
+        #region GuardaEliminaPlazos
+
+
+        public async Task<string> GuardaEliminaPlazos(EliminaGuardaPlazos PlazosInfo)
+        {          
+            //--------------------------------Todas las herramientas------------------------------//
+            DataTable dtHerramientas = await _ejecutivoRepository.ObtieneHerramientasCompletas();
+            dtHerramientas.PrimaryKey = new DataColumn[] { dtHerramientas.Columns["idHerramienta"] };
+           
+            //----------------------------------------------------------------------------------------------------//
+            int idBuscado = PlazosInfo.IdHerramienta;
+            
+            int iMargen = Convert.ToInt32(dtHerramientas.Rows.Find(idBuscado)["Margen"]);
+            int iDiasEntrePagos = Convert.ToInt32(dtHerramientas.Rows.Find(idBuscado)["DíasEntrePagos"]);
+
+            int iNúmPago = 0;
+            DateTime dtFin = new DateTime(), dtInicio = new DateTime();
+
+            foreach (Pago_ PagoNeg in PlazosInfo.Plazos)
+            {
+
+                /*InicioPlazoMargen*/
+                if (iNúmPago == 0) //Primer pago inicia cuando se inserta.
+                    dtInicio = DateTime.Now;
+
+                // Si la diferencia de días entre plazos es mayor 
+                else if ((PlazosInfo.Plazos[iNúmPago].Fecha - PlazosInfo.Plazos[iNúmPago - 1].Fecha).TotalDays > iDiasEntrePagos && PlazosInfo.IdHerramienta.ToString() != "509"
+                    && PlazosInfo.IdHerramienta.ToString() != "1010")
+                {
+                    if ((PlazosInfo.Plazos[iNúmPago].Fecha - PlazosInfo.Plazos[iNúmPago - 1].Fecha).TotalDays > iDiasEntrePagos && PlazosInfo.IdHerramienta.ToString() != "510")
+                        return "Existe una diferencia mayor a " + iDiasEntrePagos + " días entre el plazo " + iNúmPago + " y el " + (iNúmPago + 1) + ".";
+                }
+
+                // Si plazo anterior + margen alcanza este plazo. -> Misma fecha Pago (no se recorre).
+                else if (PlazosInfo.Plazos[iNúmPago].Fecha.AddDays(-iMargen) <= PlazosInfo.Plazos[iNúmPago - 1].Fecha)
+                    dtInicio = PlazosInfo.Plazos[iNúmPago].Fecha;
+                else
+                    dtInicio = PlazosInfo.Plazos[iNúmPago - 1].Fecha.AddDays(iMargen + 1);
+
+                /*FinPlazoMargen*/
+                // Si rebasa el siguiente plazo -> Siguiente plazo menos un día.
+                if (iNúmPago < PlazosInfo.Plazos.Length - 1 && PlazosInfo.Plazos[iNúmPago].Fecha.AddDays(iMargen) >= PlazosInfo.Plazos[iNúmPago + 1].Fecha)
+                    dtFin = PlazosInfo.Plazos[iNúmPago + 1].Fecha.AddDays(-1);
+                else // Plazo más margen
+                {
+                    if (PlazosInfo.IdHerramienta.ToString() == "510" && iNúmPago >= 1)
+                    {
+                        dtFin = PlazosInfo.Plazos[iNúmPago].Fecha.AddDays(iMargen);
+                        dtInicio = PlazosInfo.Plazos[iNúmPago - 1].Fecha.AddDays(iMargen + 1);
+                    }
+                    else
+                    {
+                        dtFin = PlazosInfo.Plazos[iNúmPago].Fecha.AddDays(iMargen);
+                    }
+                }
+                if(iNúmPago == 0)
+                {
+                    var borrarPlazos = _ejecutivoRepository.Elimina_Plazos(PlazosInfo);
+                }                    
+                var GuardaPlazos = _ejecutivoRepository.Guarda_Plazos(PlazosInfo, PagoNeg, dtInicio, dtFin, iNúmPago);
+
+                iNúmPago++;
+                               
+            }
+
+            return "Correcto.";
+        }
+
+        public async Task<dynamic> GuardaNegoaciacionPlazos_(GuardaNegociacionPlazos negociacionInfo)
+        {
+            var guardaNeg = await _ejecutivoRepository.Guarda_Negociacion_Plazos(negociacionInfo);
+
+            return guardaNeg;
+        }
+
+
+        #endregion
         #region Recuperacion
         public async Task<Recuperacion?> GetRecuperacion(int idEjecutivo, int actual)
         {

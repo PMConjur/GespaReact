@@ -367,6 +367,24 @@ namespace NoriAPI.Controllers
             return Ok(result);
         }
 
+        [HttpPost("guarda-Elimina-Plazos")]
+        public async Task<IActionResult> GuardaEliminaPlazos([FromBody] EliminaGuardaPlazos PlazosInfo)
+        {
+            var result = await _ejecutivoService.GuardaEliminaPlazos(PlazosInfo);
+            //return Ok(result);            
+            return Ok(new { Mensaje = result });
+
+        }
+
+        [HttpPost ("GuardaNegociacionPlazos")]
+        public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] GuardaNegociacionPlazos negociacionInfo)
+        {
+            var result = await _ejecutivoService.GuardaNegoaciacionPlazos_(negociacionInfo);
+
+            return Ok(result);
+
+        }
+
 
         #endregion
 
