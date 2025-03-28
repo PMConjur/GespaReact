@@ -363,12 +363,12 @@ const Managments = () => {
                         <td>{validateField(gestion.Fecha_Insert)}</td>
                         <td>{validateField(gestion.Segundo_Insert)}</td>
                         <td>{validateField(gestion.NúmeroTelefónico)}</td>
-                        <td>{validateField(gestion.idContacto)}</td>
-                        <td>{validateField(gestion.idSituación)}</td>
+                        <td>{validateField(gestion.Contacto)}</td> {/* Muestra Contacto */}
+                        <td>{validateField(gestion.Situación)}</td> {/* Muestra Situación */}
                         <td>{validateField(gestion.NombreContacto)}</td>
-                        <td>{validateField(gestion.idParentesco)}</td>
-                        <td>{validateField(gestion.idCausaNoPago)}</td>
-                        <td>{validateField(gestion.idModo)}</td>
+                        <td>{validateField(gestion.Parentesco)}</td>
+                        <td>{validateField(gestion.CausaNoPago)}</td> {/* Muestra CausaNoPago */}
+                        <td>{validateField(gestion.Modo)}</td> {/* Muestra Modo */}
                         <td>{validateField(gestion.idAcercamiento)}</td>
                         <td>{validateField(gestion.idEtapa)}</td>
                         <td>{validateField(gestion.Seguimiento)}</td>

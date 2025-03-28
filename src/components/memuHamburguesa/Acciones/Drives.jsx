@@ -21,7 +21,7 @@ const AccionamientosTable = ({ data }) => {
           {data.map((item, index) => (
             <tr key={index}>
               <td>{item.Fecha_Insert}</td>
-              <td>{item.idAcercamiento}</td>
+              <td>{item.Acercamiento}</td>
               <td>{item._Entregado ? 'Sí' : 'No'}</td>
               <td>{item.Mensaje}</td>
             </tr>

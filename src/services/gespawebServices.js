@@ -397,7 +397,7 @@ export const fetchActionsSearch = async (idCuenta) => {
     }
 
     const data = response.data;
-
+    console.log("Datos obtenidos de la busqueda:", data); // Agrega este console.log para mostrar los datos obtenidos
     return data;
   } catch (error) {
     console.error("Error en fetchActionsSearch:", error);
@@ -552,12 +552,12 @@ export const getGestionTeData = async (idCartera, idCuenta) => {
 
     const response = await servicio.get(url);
     const message = getErrorStatus(response.status);
-
+    console.log("Respuesta de gestiones. Estado:", response.status);
     if (response.status !== 200) {
       toast.error(message, { position: "top-right" });
       throw new Error(message);
     }
-
+console.log("Datos obtenidos de la API:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error en getGestionTeData:", error);
@@ -1116,6 +1116,29 @@ export const createFollows = async (data) => {
         error.response.data?.mensaje || "Error al crear Seguimiento";
       throw new Error(errorMessage);
     }
+    throw error;
+  }
+};
+export const fetchValidators = async (idProducto, idEjecutivo, Contraseña) => {
+  try {
+    console.log("Llamando al endpoint /ejecutivo/validador");
+    const response = await servicio.get(`/ejecutivo/validador`, {
+      params: { idProducto, idEjecutivo, Contraseña },
+    });
+
+    console.log("Respuesta recibida:", response);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Validación recibida Validators:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchValidators:", error);
     throw error;
   }
 };
