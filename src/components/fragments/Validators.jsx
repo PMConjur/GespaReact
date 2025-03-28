@@ -1,23 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Button, Form, InputGroup } from "react-bootstrap";
 import { ShieldFill, KeyFill } from "react-bootstrap-icons";
-import { fetchValidators } from "../../services/gespawebServices"; // Importa el servicio
+import { fetchListValidators, fetchValidators} from "../../services/gespawebServices"; // Importa el servicio
 import { toast } from "sonner"; // Importa Sonner para los toasts
 
+
 const Validators = ({ show, handleClose, handleValidate }) => {
-  const [validator, setValidator] = useState("");
-  const [password, setPassword] = useState("");
+  const [validators, setValidators] = useState([]); // Estado para almacenar la lista de validadores
+  const [validator, setValidator] = useState(""); // Estado para el validador seleccionado
+  const [password, setPassword] = useState(""); // Estado para la contraseña
   const [loading, setLoading] = useState(false);
 
-  const idEjecutivo = 18967; // Valor fijo para idEjecutivo
+  useEffect(() => {
+    const fetchValidators = async () => {
+      try {
+        const idProducto = 1; // Cambia este valor según sea necesario
+        const response = await fetchListValidators(idProducto);
+        setValidators(response); // Almacena la lista de validadores
+      } catch (error) {
+        console.error("Error al obtener la lista de validadores:", error);
+      }
+    };
+
+    fetchValidators();
+  }, []);
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const idProducto = 1; // Valor fijo para idProducto
+      const idEjecutivo = validator; // idEjecutivo seleccionado por el usuario
       const Contraseña = password; // Contraseña ingresada por el usuario
 
-      const response = await fetchValidators(idProducto, idEjecutivo, Contraseña);
+      const response = await fetchValidators(idEjecutivo, Contraseña);
       console.log("Respuesta del endpoint:", response);
 
       // Muestra un toast de éxito si la validación es correcta
@@ -63,7 +77,11 @@ const Validators = ({ show, handleClose, handleValidate }) => {
                 <option value="" disabled>
                   Seleccione Validador
                 </option>
-                <option value={idEjecutivo}>Admin 1</option>
+                {validators.map((val) => (
+                  <option key={val.idEjecutivo} value={val.idEjecutivo}>
+                    {val.Nombre}
+                  </option>
+                ))}
               </Form.Select>
             </InputGroup>
           </Form.Group>
