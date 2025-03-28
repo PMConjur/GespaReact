@@ -121,7 +121,7 @@ export const fetchPhones = async (idCuenta) => {
 
     const message = getErrorStatus(response.status);
 
-    //console.log("Respuesta de la API recibida. Estado:", response.status);
+    console.log("Respuesta de la API recibida. Estado:", response.status);
 
     if (response.status !== 200) {
       toast.error(message, { position: "top-right" });
@@ -129,7 +129,7 @@ export const fetchPhones = async (idCuenta) => {
     }
 
     const data = response.data;
-
+    console.log('estos trae telefonos', response.data)
     return data;
   } catch (error) {
     console.error("Error en fetchPhones:", error);
