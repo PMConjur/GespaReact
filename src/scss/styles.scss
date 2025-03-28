@@ -1148,24 +1148,33 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
 }
 /*------------------Calculadora--------------------*/
 /* Estilo para los botones */
+.calculator {
+  border-radius: 10px;
+  border-width: thin;
+  border-style: solid;
+  border-color: #2a2627;
+  background-color: #1d1f20;
+}
 .calculator-keys {
   display: grid;
   grid-template-columns: repeat(4, 1fr); /* 4 columnas */
-  gap: 5px; /* Espacio entre botones */
-  padding: 5px;
+  gap: 2px; /* Espacio entre botones */
+  padding: 2px;
 }
 
 .calculator button {
-  height: 45px;
+  height: 37px;
   font-size: 1.2rem; /* Tamaño de texto ajustado */
   border-radius: 5px;
-  background-color: #646262;
-  border: 1px solid #646262;
+  background-color: #000000;
+  border: 0.5px solid #171717;
   transition: background-color 0.3s ease;
+  color: #ffffff;
 }
 
 .calculator button:hover {
-  background-color: #ddd;
+  background-color: #2c2c2c;
+  color: #ffffff;
 }
 
 .operator {
@@ -1183,7 +1192,16 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
   background-color: #ff6666;
   color: white;
 }
+.calculator-screen {
+  font-size: 1.5rem; /* Tamaño de texto ajustado */
 
+  padding: 10px;
+  background-color: #000000;
+  color: #ffffff;
+  border-radius: 10px;
+  border-width: thin;
+  border-style: none;
+}
 /* Respuesta a pantallas más pequeñas */
 @media (max-width: 600px) {
   .calculator-screen {
@@ -1377,65 +1395,145 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
     text-align: center;
     font-size: 0.85rem;
     color: #cccccc;
+    font-size: 1rem; /* Ajuste del tamaño de los botones */
   }
 }
 
 .calendar {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  max-width: 300px; /* Ajustar al tamaño de la calculadora */
+  border-color: #2a2627;
+  max-width: 300px;
+  width: 100%;
   margin: 0 auto;
-  padding: 10px;
+  border-width: thin;
+  border-style: solid;
   background-color: #000000;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   color: #ffffff;
+  border-radius: 10px;
+  box-sizing: border-box;
+  padding: 6px; /* Añadido para contener el contenido */
+  overflow: hidden; /* Previene desbordamiento */
+
+  .rdp {
+    --rdp-cell-size: 32px; /* Ajustado de 35px a 32px */
+    --rdp-accent-color: #00ff00;
+    --rdp-background-color: #89949e;
+    margin: 0;
+    padding: 0;
+  }
+
+  .rdp-nav {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 2px 4px; /* Ajustado para mejor ajuste */
+    border-bottom: 1px solid #444444;
+    margin-bottom: 2px; /* Reducido */
+  }
+
+  .rdp-button_previous,
+  .rdp-button_next {
+    padding: 2px 6px; /* Añadido padding a los botones */
+
+    svg {
+      width: 18px; /* Reducido de 20px */
+      height: 18px; /* Reducido de 20px */
+      background-color: #007bff;
+      border-radius: 10px;
+    }
+  }
 
   .calendar-keys {
     display: grid;
-    grid-template-columns: repeat(7, 1fr); /* 7 columnas para los días */
-    gap: 5px;
-    padding: 5px;
- 
-    .rdp-day {
-      width: 35px;
-      height: 35px;
-      
-      text-align: center;
-      margin: 1px;
-      border-radius: 5px;
-      font-size: 10px;
-      background-color: #1d1f20;
-      color: #ffffff;
-      transition: background-color 0.3s ease, color 0.3s ease;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px; /* Reducido de 4px */
+    padding: 2px; /* Reducido de 4px */
 
-      &:hover:not(.rdp-day_disabled):not(.selected-day) {
-        background-color: #343a40;
-        color: #ffffff;
+    .rdp-weekday {
+      grid-template-columns: repeat(7, 1fr);
+      margin-bottom: 4px;
+      border-bottom: 1px solid #444444;
+      padding-bottom: 4px;
+      text-align: center; // Cambiado de right a center
+      font-size: 11px;
+      color: #ffffff;
+      text-transform: uppercase; // Añadido para consistencia
+      letter-spacing: 0.5px; // Mejor legibilidad
+      font-weight: 500; // Semi-negrita
+      padding: 2px 0; // Ajuste de espaciado
+
+      &:first-child,
+      &:last-child {
+        color: #89949e; // Color diferente para sábado y domingo
       }
     }
+    .rdp-day {
+      width: var(--rdp-cell-size);
+      height: var(--rdp-cell-size);
+      margin: 0 auto;
+      font-size: 10px;
+      background-color: #000000;
+      color: #ffffff;
 
-    .selected-day {
-      background-color: #007bff !important;
-      color: #ffffff !important;
-    }
+      .rdp-day_button {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px; /* Reducido de 10px */
+        border: none;
+        background-color: #000000 !important;
+        color: inherit;
+        cursor: pointer;
+        transition: background-color 0.3s ease, color 0.3s ease;
 
-    .today-day {
-      border: 2px solid #007bff;
-      color: #007bff;
-    }
+        &:hover:not(:disabled):not(.rdp-day_selected) {
+          background-color: var(--rdp-background-color) !important;
+        }
 
-    .rdp-day_disabled {
-      color: #555555;
-      cursor: not-allowed;
+        &:disabled {
+          color: #989898;
+          cursor: not-allowed;
+        }
+      }
+
+      &[aria-selected="true"],
+      &.rdp-day_selected {
+        .rdp-day_button {
+          background-color: var(--rdp-accent-color) !important;
+          color: #39fc8d !important;
+          font-weight: bold;
+          box-shadow: 0 0 0 1px #b5abab;
+        }
+      }
+
+      &.today-day .rdp-day_button {
+        background-color: #007bff !important;
+        color: #ffffff !important;
+        border-radius: 8px; /* Reducido de 10px */
+        position: relative;
+
+        &::after {
+          content: "";
+          position: absolute;
+          bottom: 2px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 3px; /* Reducido de 4px */
+          height: 3px; /* Reducido de 4px */
+          background-color: #95ff00;
+          border-radius: 50%;
+        }
+      }
     }
   }
 
   .calendar-screen {
-    margin-top: 10px;
+    margin-top: 8px; /* Reducido de 10px */
     text-align: center;
-    font-size: 0.85rem;
+    font-size: 0.8rem; /* Reducido de 0.85rem */
     color: #cccccc;
   }
 }

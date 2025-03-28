@@ -245,11 +245,16 @@ const Managment = () => {
                       <Flow />
                     </Col>
                     <Col xs={6} md={6}>
-                      <Calculator />
+                      <Calculator /> {/* Componente con la calculadora */}
+                      <br />
                     </Col>
                     <Col xs={6} md={6}>
-                      <DatePickerComponent />
+                      <DatePickerComponent />{" "}
+                      {/* Componente con el calendario */}
+                      <br />
                     </Col>
+
+                    {/* Componente de gestiones */}
                     <Col xs={12} md={12}>
                       <NotesWidget />
                     </Col>

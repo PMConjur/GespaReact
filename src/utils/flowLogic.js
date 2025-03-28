@@ -115,8 +115,10 @@ export const getValidateResponse = async (
     pregunta,
     idClase
   }, // Añadir idClase a los parámetros
-  userFlowData //Datos seleccionados por el usuario
+  selectedAnswer //Datos seleccionados por el usuario
 ) => {
+  const { value } = selectedAnswer;
+
   console.log(
     "idSiguientePregunta que ingresa a la logica:",
     idSiguientePregunta
@@ -159,8 +161,12 @@ export const getValidateResponse = async (
   console.log("valor:", valor);
   console.log("pregunta:", pregunta);
   console.log("idClase:", idClase);
+  console.log("valor:", value);
   // Buscar idClase en Relations y traer los datos a un objeto solo si idSiguientePregunta es 12 o 13
-  if (idSiguientePregunta == "12" || idSiguientePregunta == "13") {
+  if (
+    value === 2 &&
+    (idSiguientePregunta == "12" || idSiguientePregunta == "13")
+  ) {
     const relations = await Relations();
     const relation = relations.find(
       (rel) => rel.idValor2 === idClase || rel.idValor1 === idClase
@@ -222,6 +228,39 @@ export const getValidateResponse = async (
     } else {
       console.log("No se encontró una relación para el idClase proporcionado.");
       return { idPregunta: idPregunta, idSiguientePregunta: nextIdPregunta }; // Devolver idSiguientePregunta con su valor inicial
+    }
+  }
+  if (
+    value === 10 &&
+    (idSiguientePregunta == "12" || idSiguientePregunta == "13")
+  ) {
+    // Lógica adicional para manejar idClase cuando value sea 10
+    try {
+      const userFlowResponse = await userFlow();
+
+      let nextQuestion = userFlowResponse.find(
+        (item) => item.idPregunta === idSiguientePregunta
+      );
+
+      if (!nextQuestion) {
+        console.log(
+          "No se encontró la siguiente pregunta, usando predeterminada."
+        );
+        nextQuestion = userFlowResponse.find((item) => item.idPregunta === 9); // Valor predeterminado
+      }
+
+      if (nextQuestion) {
+        idValor = 0; // Fijar idValor en 0 por defecto
+        console.log("Siguiente pregunta encontrada:", nextQuestion.idPregunta);
+        return {
+          idPregunta: nextQuestion.idPregunta,
+          idSiguientePregunta: nextQuestion.idSiguientePregunta
+        }; // Devolver idPregunta e idSiguientePregunta del resultado
+      } else {
+        console.log("No se encontró ninguna pregunta válida.");
+      }
+    } catch (error) {
+      console.error("Error al obtener la siguiente pregunta:", error);
     }
   }
   return { idPregunta: idPregunta, idSiguientePregunta: nextIdPregunta }; // Devolver idSiguientePregunta si no se cumple ninguna condición

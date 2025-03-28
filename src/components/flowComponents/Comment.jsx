@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { FloatingLabel, Form, Button } from "react-bootstrap";
+import { FloatingLabel, Form } from "react-bootstrap";
 import { toast } from "sonner"; // Importa toast para mostrar mensajes
 
-const Comment = ({ comentario, isValid, onSave }) => {
+const Comment = ({ comentario, isValid, onCommentChange }) => {
   const [comment, setComment] = useState(comentario || ""); // Estado para el comentario
   const [valid, setValid] = useState(isValid); // Estado para la validez del comentario
 
@@ -13,22 +13,11 @@ const Comment = ({ comentario, isValid, onSave }) => {
     if (regex.test(value)) {
       setComment(value); // Actualiza el comentario si es válido
       setValid(true); // Marca como válido
+      onCommentChange(value, true); // Notifica al componente padre con validez true
     } else {
       toast.warning("Los números no son válidos en el comentario."); // Muestra un mensaje de error
       setValid(false); // Marca como no válido
-    }
-  };
-
-  const handleSave = () => {
-    if (valid) {
-      if (comment === "") {
-        toast.warning("El comentario no puede estar vacío."); // Muestra un mensaje de error
-        setValid(false); // Marca como no válido
-      } else {
-        onSave(comment); // Envía el comentario al componente padre
-        toast.success("Comentario guardado correctamente.");
-        setComment(""); // Limpia el campo de comentario
-      }
+      onCommentChange(value, false); // Notifica al componente padre con validez false
     }
   };
 
@@ -46,14 +35,6 @@ const Comment = ({ comentario, isValid, onSave }) => {
           />
         </FloatingLabel>
       </Form.Group>
-      <Button
-        variant="primary"
-        className="mt-3"
-        disabled={!valid}
-        onClick={handleSave}
-      >
-        Guardar Comentario
-      </Button>
     </>
   );
 };

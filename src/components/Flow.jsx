@@ -11,7 +11,9 @@ import { AppContext } from "../pages/Managment"; // Import AppContext
 import { getResponse, getValidateResponse } from "../utils/flowLogic"; // Import Response function, para la logica del funcionamiento del flujo
 import Comment from "./flowComponents/Comment";
 import FollowUps from "./memuHamburguesa/Acciones/FollowUps"; // Importa el componente FollowUps
-import CalculatorSimulator from "./CalculatorSimulator"; // Importa el componente CalculatorSimulator
+import CommunicationPhone from "./flowComponents/CommunicationPhone"; // Importa el componente CommunicationPhone
+import Timmer from "./flowComponents/Timmer";
+import SaveButton from "./flowComponents/SaveButton"; // Importa el nuevo componente SaveButton
 
 const Flow = () => {
   const { selectedAnswer, setNegotiationActive, setFollowUpActive } =
@@ -28,6 +30,10 @@ const Flow = () => {
     useState(false); // Estado para controlar cuándo ejecutar las acciones
   const [isNegotiationActive, setIsNegotiationActive] = useState(false); // Variable para controlar la acción de negociación
   const [isFollowUpActive, setIsFollowUpActive] = useState(false); // Variable para controlar la acción de seguimiento
+  const [startTimer, setStartTimer] = useState(false); // Estado para iniciar el timer
+  const [commentData, setCommentData] = useState(""); // Estado para el comentario
+  const [isCommentValid, setIsCommentValid] = useState(false); // Estado para la validez del comentario
+  const [stoppedTime, setStoppedTime] = useState(null); // Estado para el tiempo detenido
 
   const handleSaveComment = (comment) => {
     setSavedComment(comment); // Actualiza el comentario guardado
@@ -36,6 +42,12 @@ const Flow = () => {
 
   const handleCloseFollowUps = () => {
     setShowFollowUps(false); // Cierra el modal de seguimiento
+  };
+
+  const handleStopTimer = () => {
+    setStartTimer(false); // Detiene el temporizador
+    console.log("Temporizador detenido en:", stoppedTime);
+    return stoppedTime; // Devuelve el tiempo detenido
   };
 
   useEffect(() => {
@@ -53,6 +65,21 @@ const Flow = () => {
     setFollowUpActive(isFollowUpActive); // Envía isFollowUpActive al contexto
   }, [isFollowUpActive, setFollowUpActive]);
 
+  const clearStates = () => {
+    setUserFlowData([]);
+    setCurrentQuestionId(null);
+    setSelectedAnswers({});
+    setSelectedValues({});
+    setAnswerHistory([]);
+    setIsFlowFinished(false);
+    setSavedComment("");
+    setShowFollowUps(false);
+    setTriggerLastAnswerActions(false);
+    setIsNegotiationActive(false);
+    setIsFollowUpActive(false);
+    setStartTimer(false);
+  };
+
   const handleLastAnswerActions = () => {
     if (answerHistory.length > 0) {
       const lastAnswer = answerHistory[answerHistory.length - 1]; // Obtiene el último elemento del historial
@@ -62,23 +89,54 @@ const Flow = () => {
         setIsNegotiationActive(true); // Activa la variable de negociación
 
         toast.info("Flujo preparado para negociación.");
-      }
-
-      if (lastAnswer.seguimiento === 1) {
+      } else if (lastAnswer.seguimiento === 1) {
         console.log("Entró a seguimiento.");
         setIsFollowUpActive(true); // Activa la variable de seguimiento
         setShowFollowUps(true); // Muestra el modal de FollowUps
         toast.info("Flujo preparado para seguimiento.");
+      } else {
+        toast.success(
+          "Flujo finalizado aqui renderiza cuando no hay negociacion ni seguimiento."
+        );
+        clearStates(); // Limpia los estados
+        // Renderiza nuevamente el flujo
+        return (
+          <>
+            <Row xs="auto" md="auto" className="g-2">
+              <Col md={12}>
+                {currentQuestionId ? (
+                  renderQuestions(currentQuestionId)
+                ) : (
+                  <Card className="flow-size" border="primary">
+                    <Card.Header className="text-white">
+                      <i className="h5">
+                        <NodePlusFill></NodePlusFill> Flujo
+                      </i>
+                    </Card.Header>
+                    <Card.Body className="scroll-flow">
+                      <h5>Selecciona una cuenta para trabajar en el flujo</h5>
+                    </Card.Body>
+                  </Card>
+                )}
+              </Col>
+            </Row>
+          </>
+        );
       }
     }
   };
 
   //No modificar
   useEffect(() => {
+    // Limpiar estados antes de comenzar nuevamente
+    clearStates();
+
     userFlow()
       .then((response) => {
         if (response && response.length > 0) {
           setUserFlowData(response);
+
+          setStartTimer(true); // Inicia el timer cuando se recibe el flujo por defecto
           if (selectedAnswer && selectedAnswer.value !== null) {
             if (selectedAnswer.value === 2 || selectedAnswer.value === 10) {
               const firstQuestions = response.filter(
@@ -160,6 +218,19 @@ const Flow = () => {
       (item) => item.idValor === 1101 || item.idValor === 1102
     );
 
+    // Calcular idComunico e idDijo basado en answerHistory
+    const idComunico = answerHistory.some(
+      (item) => item.idValor === 1102 || item.idPregunta === 7
+    );
+    const idDijo = answerHistory.some((item) => item.idPregunta === 7);
+    const idQuienContesto = answerHistory.some(
+      (item) => item.idValor === 1109 || item.idValor === 1129
+    );
+    console.log(
+      "Comunico =" + idComunico,
+      "Dijo =" + idDijo,
+      "Quien contesto =" + idQuienContesto
+    );
     const handleAnswerChange = async (
       idPregunta,
       idRespuesta,
@@ -195,7 +266,7 @@ const Flow = () => {
           updatedHistory
         );
 
-        toast.info("El flujo ha terminado.");
+        toast.info("Continua para finalizar el flujo.");
         setIsFlowFinished(true); // Marca el flujo como terminado
         return;
       }
@@ -243,7 +314,7 @@ const Flow = () => {
           negociacion: negociacion,
           identificador: identificador
         },
-        userFlowData
+        selectedAnswer
       );
 
       const nextQuestionId = validatedNextQuestion.idSiguientePregunta;
@@ -281,6 +352,71 @@ const Flow = () => {
       }
     };
 
+    const handleCommentChange = (value, isValid) => {
+      setCommentData(value); // Actualiza el comentario
+      setIsCommentValid(isValid); // Actualiza la validez del comentario
+    };
+
+    const handleSave = (data) => {
+      console.log("Guardando flujo con tiempo detenido en:", stoppedTime);
+      handleLastAnswerActions(); // Llama a handleLastAnswerActions directamente
+      toast.success("Flujo guardado correctamente.");
+    };
+
+    const renderContent = () => {
+      if (idComunico) {
+        if (idDijo) {
+          return (
+            <>
+              <h1>Aqui cuando que dijo</h1>
+              <CommunicationPhone idComunico={idComunico} />
+              <Comment
+                comentario=""
+                isValid={true}
+                onCommentChange={handleCommentChange}
+              />
+            </>
+          );
+        } else if (shouldShowComment) {
+          return (
+            <>
+              <h6>
+                Aqui cuando que dijo es false pero comentario va activo porque
+                es un quien contesto
+              </h6>
+              <CommunicationPhone idComunico={idComunico} />
+              <Comment
+                comentario=""
+                isValid={true}
+                onCommentChange={handleCommentChange}
+              />
+            </>
+          );
+        } else {
+          return (
+            <>
+              <h5>Flujo finalizado.</h5>
+              <CommunicationPhone idComunico={idComunico} />
+            </>
+          );
+        }
+      } else if (idQuienContesto) {
+        return <CommunicationPhone idComunico={idComunico} />;
+      } else {
+        return (
+          <>
+            <h5>Flujo finalizado aqui quien no contesto.</h5>
+            <CommunicationPhone idComunico={idComunico} />
+            <Comment
+              comentario=""
+              isValid={true}
+              onCommentChange={handleCommentChange}
+            />
+          </>
+        );
+      }
+    };
+
     return (
       <Card className="flow-size" border="primary">
         <Card.Header className="text-white">
@@ -304,20 +440,34 @@ const Flow = () => {
 
         <Card.Body className="scroll-flow">
           <Form>
+            <Timmer
+              start={startTimer}
+              stop={!startTimer} // Detiene el temporizador si startTimer es false
+              onStop={(time) => setStoppedTime(time)} // Maneja el tiempo detenido
+            />{" "}
+            {/* Implementación del timer */}
             {isFlowFinished ? (
-              shouldShowComment ? (
-                <>
-                  <Comment
-                    comentario=""
-                    isValid={true}
-                    onSave={handleSaveComment}
-                  />
-                  {savedComment && (
-                    <p className="mt-3 text-success">
-                      Comentario guardado: {savedComment}
-                    </p>
-                  )}
-                </>
+              selectedAnswer.value === 10 ? (
+                renderContent()
+              ) : selectedAnswer.value === 2 ? (
+                shouldShowComment ? (
+                  <>
+                    <Comment
+                      comentario=""
+                      isValid={true}
+                      onCommentChange={handleCommentChange}
+                    />
+                    {savedComment && (
+                      <p className="mt-3 text-success">
+                        Comentario guardado: {savedComment}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <h5>
+                    Flujo para guardar gestión cuando no se muestra comentario
+                  </h5>
+                )
               ) : (
                 <h5>
                   Flujo para guardar gestión cuando no se muestra comentario
@@ -364,6 +514,14 @@ const Flow = () => {
               <Button variant="primary" className="mt-3 " onClick={handleBack}>
                 <ArrowLeftCircleFill></ArrowLeftCircleFill> Regresar
               </Button>
+            </Col>
+            <Col>
+              <SaveButton
+                onSave={handleSave} // Llama a handleSave
+                isValid={isCommentValid} // Validez del comentario
+                data={commentData} // Datos del comentario
+                onStopTimer={handleStopTimer} // Detiene el temporizador y obtiene el tiempo
+              />
             </Col>
           </Row>
         </Card.Footer>
