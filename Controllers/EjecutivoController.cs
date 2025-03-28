@@ -373,7 +373,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost ("GuardaNegociacionPlazos")]
-
         public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] GuardaNegociacionPlazos negociacionInfo)
         {
             var result = await _ejecutivoService.GuardaNegoaciacionPlazos_(negociacionInfo);

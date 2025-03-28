@@ -5,7 +5,7 @@ namespace NoriAPI.Models.Ejecutivo
     public class GuardaNegociacionPlazos
     {
         public int idCartera {  get; set; }
-        public int idCuenta { get; set; }
+        public string idCuenta { get; set; }
         public int idEjecutivo { get; set; }
         public int idHerramienta { get; set; }
         public double MontoNegociado { get; set; }
