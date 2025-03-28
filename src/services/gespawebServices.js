@@ -1006,7 +1006,6 @@ export const userTimesUpdate = async (data) => {
   }
 };
 
-<<<<<<< HEAD
 //End point Fernando
 
 //EndPoint - ActivitiesDay
@@ -1120,7 +1119,6 @@ export const createFollows = async (data) => {
     throw error;
   }
 };
-=======
 export const fetchValidators = async (idProducto, idEjecutivo, Contraseña) => {
   try {
     console.log("Llamando al endpoint /ejecutivo/validador");
@@ -1144,4 +1142,3 @@ export const fetchValidators = async (idProducto, idEjecutivo, Contraseña) => {
     throw error;
   }
 };
->>>>>>> origin/HU31-Produc
