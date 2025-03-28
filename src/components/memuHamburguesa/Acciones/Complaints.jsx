@@ -353,8 +353,8 @@ const Complaints = ({ show, handleClose }) => {
                       ? "--"
                       : complaint.Folio || "--"}
                   </td>
-                  <td>{complaint.idQueja || "--"}</td>
-                  <td>{complaint.idInstitución || "--"}</td>
+                  <td>{complaint.Queja || "--"}</td> {/* Muestra el valor de Queja */}
+                  <td>{complaint.Institución || "--"}</td> {/* Muestra el valor de Institución */}
                   <td>{complaint.Solicitante || "--"}</td>
                   <td>
                     {typeof complaint.NúmeroTelefónico === "object" &&
