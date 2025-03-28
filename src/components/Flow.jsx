@@ -393,7 +393,7 @@ const Flow = () => {
       </Row>
 
       {/* Modal de FollowUps */}
-      <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps} />
+      <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps}isFollowUpActive={isFollowUpActive} />
     </>
   );
 };

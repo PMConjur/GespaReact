@@ -1,43 +1,48 @@
 import { Modal, Button, Row, Col } from "react-bootstrap";
 import TableFollowUps from "../../TableFollowUps";
 import FormFollowUps from "./FormFollowUps";
-import { useContext } from "react";
-import { AppContext } from "../../../pages/Managment";
 
-const FollowUps = ({ show, handleClose }) => {
-  const { searchResults, idEjecutivo } = useContext(AppContext);
-  
-  console.log('[FollowUps] Render - idEjecutivo:', idEjecutivo, 'searchResults:', searchResults);
-
-  const handleRefreshData = () => {
-    console.log('[FollowUps] Refrescando datos después de guardar seguimiento');
-    // Aquí puedes agregar lógica para refrescar la tabla si es necesario
+const FollowUps = ({ 
+  show, 
+  handleClose,
+  isFollowUpActive = false // Nueva prop para controlar el modo
+}) => {
+  const handleFormSubmit = (formData) => {
+    console.log("Datos del formulario:", formData);
+    // Aquí puedes manejar el envío de datos
   };
 
   return (
     <Modal show={show} onHide={handleClose} size="xl">
       <Modal.Header closeButton>
-        <Modal.Title>Seguimiento</Modal.Title>
+        <Modal.Title>
+          {isFollowUpActive ? "Seguimiento Activo" : "Registros de Seguimiento"}
+        </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Row>
-          <Col md={6}>
+          {/* Mostrar siempre la tabla */}
+          <Col md={isFollowUpActive ? 6 : 12}>
             <TableFollowUps />
           </Col>
-          <Col md={6}>
-            <FormFollowUps 
-              onSubmitSuccess={handleRefreshData}
-              handleClose={handleClose}
-              searchResults={searchResults}
-              idEjecutivo={idEjecutivo}
-            />
-          </Col>
+          
+          {/* Mostrar el formulario solo cuando isFollowUpActive es true */}
+          {isFollowUpActive && (
+            <Col md={6}>
+              <FormFollowUps />
+            </Col>
+          )}
         </Row>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={handleClose}>
           Cerrar
         </Button>
+        {isFollowUpActive && (
+          <Button variant="primary" onClick={handleClose}>
+            Guardar
+          </Button>
+        )}
       </Modal.Footer>
     </Modal>
   );

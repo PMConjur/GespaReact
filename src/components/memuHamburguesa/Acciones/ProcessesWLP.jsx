@@ -1,7 +1,8 @@
+import React from "react";
 import { Modal, Button, Spinner } from "react-bootstrap";
 import TDropdownProcessesWLP from "../../TDropdownProcessesWLP";
 
-const ProcessesWLP = ({ show, handleCloseProcessesWLP, loadingProcessesWLP }) => {
+const ProcessesWLP = ({ show, handleCloseProcessesWLP, data, loadingProcessesWLP, errorProcessesWLP }) => {
   return (
     <Modal show={show} onHide={handleCloseProcessesWLP} size="xl" centered>
       <Modal.Header closeButton>
@@ -12,8 +13,10 @@ const ProcessesWLP = ({ show, handleCloseProcessesWLP, loadingProcessesWLP }) =>
           <div className="d-flex justify-content-center">
             <Spinner animation="border" />
           </div>
+        ) : errorProcessesWLP ? (
+            <p>Error al cargar los datos. Intente nuevamente.</p>
         ) : (
-          <TDropdownProcessesWLP />
+          <TDropdownProcessesWLP data={data} />
         )}
       </Modal.Body>
       <Modal.Footer>

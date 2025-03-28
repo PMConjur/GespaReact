@@ -734,34 +734,116 @@ export const getAditionalsData = async (idCartera, idCuenta) => {
   }
 };
 
+// // Nueva función para obtener datos de ProcessesWLP
+// export async function fetchProcessesWLP(producto, searchResults) {
+//   try {
+//     console.log('Iniciando llamada a la API para obtener datos de ProcesosWLP...');
+//     console.log('Producto:', producto);
 
-// Nueva función para obtener datos de ProcessesWLP
+//     if (!Array.isArray(searchResults)) {
+//       console.error('searchResults no es un array en fetchProcessesWLP.');
+//       return []; // o lanzar un error, dependiendo de tu manejo de errores
+//     }
+
+//     const processesWLP = await Promise.all(
+//       searchResults.map(async (result) => {
+//         const idCuenta = result.idCuenta.trim();
+//         console.log('Buscando Procesos WLP para idCuenta:', idCuenta);
+
+//         try {
+//           const response = await axios.get(
+//             `${apiUrl}/ejecutivo/ProcesosWLP`,
+//             {
+//               params: {
+//                 Proceso: producto,
+//                 idCuenta: idCuenta
+//               },
+//               headers: {
+//                 Authorization: `Bearer ${token}`,
+//                 'accept': '*/*'
+//               }
+//             }
+//           );
+
+//           if (response.status === 200) {
+//             console.log(`✅ Respuesta recibida para idCuenta ${idCuenta}:`, response.data);
+            
+//             return response.data;
+//           } else {
+//             console.warn(`⚠️ Advertencia: Respuesta no exitosa para idCuenta ${idCuenta}, Proceso ${producto}.`);
+//             toast.warning(`Respuesta no exitosa para idCuenta ${idCuenta}, Proceso ${producto}.`);
+//             return null;
+//           }
+//         } catch (error) {
+//           console.error(` Error al obtener datos de ProcesosWLP para idCuenta ${idCuenta}:`, error);
+//           toast.error(`Error al obtener datos de ProcesosWLP para idCuenta ${idCuenta}, Proceso ${producto}.`);
+//           return null;
+//         }
+//       })
+//     );
+
+//     console.log('Datos obtenidos de la API:', processesWLP);
+//     return processesWLP.filter(Boolean).flat(); // Elimina nulls y aplana arrays anidados
+//   } catch (error) {
+//     console.error('Error en fetchProcessesWLP:', error);
+//     toast.error('Ocurrió un error al obtener los datos. Inténtalo de nuevo.', {
+//       position: 'top-right',
+//     });
+//     throw error;
+//   }
+// }
+
+
+
+// gespawebServices.js (actualización de fetchProcessesWLP)
 export const fetchProcessesWLP = async (proceso, idCuenta) => {
   try {
     if (!proceso || !idCuenta) {
-      throw new Error("proceso o idCuenta no son válidos.");
+      console.error('Parámetros inválidos:', { proceso, idCuenta });
+      throw new Error("Se requieren ambos parámetros: proceso e idCuenta");
     }
 
     const url = `/ejecutivo/ProcesosWLP`;
-    console.log("Solicitando datos de Procesos WLP a:", url); // Depurar URL
+    const params = {
+      proceso,
+      idCuenta: idCuenta.toString().trim()
+    };
 
-    const response = await servicio.get(url);
-    const message = getErrorStatus(response.status);
+    console.log("Realizando solicitud a:", url, "con parámetros:", params);
+
+    const response = await servicio.get(url, { params });
+    console.log("Respuesta recibida:", response);
+
+    if (!response) {
+      throw new Error("No se recibió respuesta del servidor");
+    }
 
     if (response.status !== 200) {
-      toast.error(message, { position: "top-right" });
+      const message = getErrorStatus(response.status) || `Error ${response.status}`;
       throw new Error(message);
     }
 
-    return response.data;
+    if (!response.data) {
+      console.warn("La respuesta no contiene data");
+      return [];
+    }
+
+    // Asegurarnos de que siempre devolvemos un array
+    return Array.isArray(response.data) ? response.data : [response.data];
   } catch (error) {
-    console.error("Error en fetchProcessesWLP:", error);
-    toast.error("No se pudo obtener los datos de Procesos WLP. Verifica la conexión o los parámetros.");
+    console.error("Error en fetchProcessesWLP:", {
+      error: error.message,
+      stack: error.stack
+    });
+    
+    toast.error(`Error al obtener procesos WLP: ${error.message}`, { 
+      position: "top-right",
+      duration: 5000
+    });
+    
     throw error;
   }
 };
-
-
 // endpoint calculadora primera parte
 export const fetchCalFirtsPart = async (Cartera, NoCuenta, idHerr) => {
   try {

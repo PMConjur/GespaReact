@@ -70,7 +70,6 @@ const DropExecutive = () => {
         />
         {/* Opción del menú del dropdown */}
         <Dropdown.Item
-          href="/maintenance"
           className="text-center" // Cambiado a text-center para centrar
           style={{
             fontSize: "14px",
