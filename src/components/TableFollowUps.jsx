@@ -35,26 +35,30 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
         fetchData();
     }, [searchResults]);
 
-    // Hook 6: useCallback para manejar el ordenamiento
+    // Hook para manejar el ordenamiento
     const handleSortChange = useCallback(() => {
         if (!toastShown) {
-            setSortByOldest(prev => !prev);
-            setSortedData(prevData => {
+            setSortByOldest((prev) => !prev);
+            setSortedData((prevData) => {
                 const sorted = !sortByOldest
-                    ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
-                    : [...sortedData]; // Restaurar datos originales si se desmarca el checkbox
+                    ? [...prevData].sort(
+                        (a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert)
+                    )
+                    : [...prevData].sort(
+                        (a, b) => new Date(b.Fecha_Insert) - new Date(a.Fecha_Insert)
+                    );
 
                 toast.success(
                     !sortByOldest
                         ? "Datos ordenados por fecha más antigua."
-                        : "Orden original restaurado."
+                        : "Datos ordenados por fecha más reciente."
                 );
                 setToastShown(true);
                 setTimeout(() => setToastShown(false), 2000);
                 return sorted;
             });
         }
-    }, [sortByOldest, sortedData, toastShown]);
+    }, [sortByOldest, toastShown]);
 
     if (!sortedData || sortedData.length === 0) {
         return <p>No hay datos disponibles.</p>;
@@ -104,13 +108,13 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
                 onChange={handleSortChange}
             />
 
-            <div 
-                className="scroll-container" 
-                style={{ 
-                    width: '100%', 
-                    maxHeight: '500px', 
-                    overflowY: 'auto', 
-                    display: 'flex', 
+            <div
+                className="scroll-container"
+                style={{
+                    width: '100%',
+                    maxHeight: '650px',
+                    overflowY: 'auto',
+                    display: 'flex',
                     backgroundColor: '#343a40', // Fondo oscuro
                     color: '#ffffff',          // Texto claro
                     scrollbarColor: '#6c757d #343a40', // Colores del scroll
@@ -163,12 +167,13 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
                                     }
 
                                     return (
-                                        <td key={header} 
-                                            style={{ 
-                                                padding: "20px", 
-                                                minHeight: "20px", 
-                                                textAlign: "center", 
-                                                lineHeight: "1.5", 
+                                        <td key={header}
+                                            style={{
+                                                padding: ".7rem",
+                                                minHeight: "20px",
+                                                textAlign: "center",
+                                                lineHeight: "1",
+                                                ...(header === "Fecha_Insert" && { whiteSpace: "nowrap", width: "15%" }) // Ajuste para extender la fecha
                                             }}>
                                             {value}
                                         </td>

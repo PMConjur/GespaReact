@@ -206,7 +206,7 @@ const TableTalks = ({ customColumnNames = {} }) => {
                                     return (
                                         <td key={header} 
                                             style={{ 
-                                                padding: "20px", 
+                                                padding: "7.rem", 
                                                 minHeight: "20px", 
                                                 textAlign: "center", 
                                                 lineHeight: "1.5", 
