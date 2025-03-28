@@ -1,6 +1,14 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Card, Row, Col, Stack } from "react-bootstrap";
-import { PersonFill, Cash, ListOl } from "react-bootstrap-icons";
+import {
+  PersonFill,
+  Cash,
+  ListOl,
+  ChatLeftDotsFill,
+  EnvelopePaperFill,
+  TelephoneInboundFill,
+  EnvelopeAtFill
+} from "react-bootstrap-icons";
 import "../scss/styles.scss";
 import { useContext } from "react";
 import { AppContext } from "../pages/Managment";
@@ -82,10 +90,22 @@ const DataCard = () => {
               </div>
               <div className="ps-3">
                 <Stack direction="horizontal" gap={6}>
-                  <div className="p-2 action">SMS - 191</div>
-                  <div className="p-2 action">Carta - 1</div>
-                  <div className="p-2 action">Blaster - 33</div>
-                  <div className="p-2 action">Email - 25</div>
+                  <div className="p-2 action">
+                    <ChatLeftDotsFill />
+                    <span> SMS : 191</span>
+                  </div>
+                  <div className="p-2 action">
+                    <EnvelopePaperFill />
+                    <span> Carta : 1</span>
+                  </div>
+                  <div className="p-2 action">
+                    <TelephoneInboundFill />
+                    <span> Blaster : 33</span>
+                   </div>
+                  <div className="p-2 action">
+                    <EnvelopeAtFill />
+                    <span> Correo : 4</span>
+                  </div>
                 </Stack>
                 <span className="small pt-1 fw-bold">Conteo</span>
               </div>

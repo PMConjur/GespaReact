@@ -137,10 +137,10 @@ $hover-bg: #e9ecef; // Color de fondo al pasar el mouse
   flex-grow: 0;
   background-color: #000000;
 }
- .action {
-  color: #D3BBF8;
- font-weight: 600;
- font-size: 20px;
+.action {
+  color: #d3bbf8;
+  font-weight: 600;
+  font-size: 20px;
 }
 
 .card-title {
@@ -1760,10 +1760,14 @@ $color-green-secondary: #17ff1f;
   background-image: linear-gradient(
     92deg,
     $color-red,
-    lighten($color-red-secondary, 35%),
-    darken($color-red, 5%),
-    saturate($color-red, 55%),
-    desaturate($color-red-secondary, 35%)
+    color.adjust($color-red-secondary, $lightness: 35%),
+    // Reemplaza lighten
+    color.adjust($color-red, $lightness: -5%),
+    // Reemplaza darken
+    color.adjust($color-red, $saturation: 55%),
+    // Reemplaza saturate
+    color.adjust($color-red-secondary, $saturation: -35%)
+      // Reemplaza desaturate
   );
 }
 
@@ -1773,10 +1777,14 @@ $color-green-secondary: #17ff1f;
   background-image: linear-gradient(
     92deg,
     $color-green,
-    lighten($color-green-secondary, 10%),
-    darken($color-green, 20%),
-    saturate($color-green, 35%),
-    desaturate($color-green-secondary, 35%)
+    color.adjust($color-green-secondary, $lightness: 10%),
+    // Reemplaza lighten
+    color.adjust($color-green, $lightness: -20%),
+    // Reemplaza darken
+    color.adjust($color-green, $saturation: 35%),
+    // Reemplaza saturate
+    color.adjust($color-green-secondary, $saturation: -35%)
+      // Reemplaza desaturate
   );
 }
 
@@ -1786,10 +1794,14 @@ $color-green-secondary: #17ff1f;
   background-image: linear-gradient(
     82deg,
     $color-white,
-    darken($color-gray, 2%),
-    lighten($color-white, 35%),
-    lighten($color-white, 5%),
-    desaturate($color-white-secondary, 35%)
+    color.adjust($color-gray, $lightness: -2%),
+    // Reemplaza darken
+    color.adjust($color-white, $lightness: 35%),
+    // Reemplaza lighten
+    color.adjust($color-white, $lightness: 5%),
+    // Reemplaza lighten
+    color.adjust($color-white-secondary, $saturation: -35%)
+      // Reemplaza desaturate
   );
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
