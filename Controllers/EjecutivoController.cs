@@ -15,15 +15,15 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NoriAPI.Models.Flujo;
 using NoriAPI.Models.CargaGestionamiento;
+
+using System.ComponentModel.DataAnnotations;
 using NoriAPI.Models.Ofrecimiento;
-
-
 
 namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/ejecutivo")]
-    [Authorize]
+    //[Authorize]
     public class EjecutivoController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -75,6 +75,7 @@ namespace NoriAPI.Controllers
 
         #region Seguimientos
         [HttpGet("seguimientos/{idCartera}/{idCuenta}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetSeguimiento(int idCartera, string idCuenta)
         {
             try
@@ -104,17 +105,24 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
-        [HttpPost("CreaSeguimiento")]
+        [HttpPost("crearSeguimiento")]
         [AllowAnonymous]
-        public async Task<IActionResult> CreaSeguimiento([FromBody] Seguimiento SeguimientoCuenta, [FromQuery] int idEjecutivo, [FromQuery] string nombreEjecutivo, [FromQuery] DateTime? Fecha, [FromQuery] TimeSpan? Segundo, [FromQuery] bool Automático = false)
+        public async Task<IActionResult> CrearSeguimiento([FromBody] SeguimientoCompletoModel request)
         {
             try
             {
-                string resultado = await _ejecutivoService.CreaSeguimientoConModelosAsync(SeguimientoCuenta, idEjecutivo, nombreEjecutivo, Fecha, Segundo, Automático); // Llamada al método correcto
+                // Lógica para obtener DataRow _drInfo
+                var _drInfo = ObtenerDataRow(request.IdCartera, request.IdCuenta);
+
+                // Obtiene idEjecutivo del request
+                int idEjecutivo = request.IdEjecutivo;
+
+                // Llama al servicio para crear el seguimiento
+                string resultado = await _ejecutivoService.CreaSeguimientoAsync(request, _drInfo, idEjecutivo);
 
                 if (string.IsNullOrEmpty(resultado))
                 {
-                    return Ok("Seguimiento creado con éxito.");
+                    return Ok("Seguimiento creado exitosamente.");
                 }
                 else
                 {
@@ -123,16 +131,32 @@ namespace NoriAPI.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+        // Implementaciones de ObtenerDataRow y ObtenerIdEjecutivo (ejemplos)
+        private DataRow ObtenerDataRow(int idCartera, string idCuenta)
+        {
+            // Lógica para obtener el DataRow basado en idCartera e idCuenta
+            // Esto depende de cómo almacenas y accedes a tus datos
+            // Ejemplo ficticio:
+            DataTable dt = new DataTable();
+            dt.Columns.Add("idCartera", typeof(int));
+            dt.Columns.Add("idCuenta", typeof(string));
 
+            DataRow dr = dt.NewRow();
+            dr["idCartera"] = idCartera;
+            dr["idCuenta"] = idCuenta;
+            dt.Rows.Add(dr);
+
+            return dt.Rows[0];
+        }
+
+        
 
         #endregion
 
         #region Recordatorios
-
 
         [HttpGet("recordatorios/{idEjecutivo}")]
         public async Task<IActionResult> GetRecordatorios(int idEjecutivo)
@@ -339,6 +363,27 @@ namespace NoriAPI.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("guarda-Elimina-Plazos")]
+        public async Task<IActionResult> GuardaEliminaPlazos([FromBody] EliminaGuardaPlazos PlazosInfo)
+        {
+            var result = await _ejecutivoService.GuardaEliminaPlazos(PlazosInfo);
+            //return Ok(result);            
+            return Ok(new { Mensaje = result });
+
+        }
+
+        [HttpPost ("GuardaNegociacionPlazos")]
+
+        public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] GuardaNegociacionPlazos negociacionInfo)
+        {
+            var result = await _ejecutivoService.GuardaNegoaciacionPlazos_(negociacionInfo);
+
+            return Ok(result);
+
+        }
+
+
 
 
         #endregion

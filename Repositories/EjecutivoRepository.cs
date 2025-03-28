@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
 using System.Diagnostics;
 using NoriAPI.Models.Flujo;
 using NoriAPI.Models.Ofrecimiento;
+using NoriAPI.Models;
 
 namespace NoriAPI.Repositories
 {
@@ -72,6 +73,12 @@ namespace NoriAPI.Repositories
         Task<Recuperacion> RecuperacionAnterior(int idEjecutivo);
         Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo);
 
+        #endregion
+
+        #region GuardaNegociacion
+        Task<dynamic> Guarda_Plazos(EliminaGuardaPlazos PlazosInfo, Pago_ pago_, DateTime dtInicio, DateTime dtFin, int iNúmPago);
+        Task<dynamic> Elimina_Plazos(EliminaGuardaPlazos PlazosInfo);
+        Task<dynamic> Guarda_Negociacion_Plazos(GuardaNegociacionPlazos negociacionInfo);
         #endregion
 
         //Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
@@ -840,6 +847,125 @@ namespace NoriAPI.Repositories
                         DateTime.TryParseExact(Text, new string[] { "yyyyMMdd" }, null, System.Globalization.DateTimeStyles.None, out Date))
                 return true;
             return false;
+        }
+
+        #endregion
+
+        #region GuardaEliminaPlazos 
+
+        public async Task<dynamic> Elimina_Plazos(EliminaGuardaPlazos PlazosInfo)
+        {
+            using var connection = GetConnection("Piso2Amex");
+            string eliminaPlazosQuery = "DELETE Insert_Plazos WHERE idCartera = @idCartera AND idCuenta = @idCuenta AND Fecha_Insert = @Fecha_Insert AND Segundo_Insert = @Segundo_Insert";
+            var parameters = new
+            {
+                idCartera = PlazosInfo.IdCartera,
+                idCuenta = PlazosInfo.IdCuenta,
+                Fecha_Insert = PlazosInfo.FechaInsert,
+                Segundo_Insert = PlazosInfo.Segundo_Insert
+            };
+            var resultadoEliminaPlazos = await connection.ExecuteAsync(
+                eliminaPlazosQuery,
+                parameters,
+                commandType: CommandType.Text
+            );
+            return resultadoEliminaPlazos;
+        }
+
+        public async Task<dynamic> Guarda_Plazos(EliminaGuardaPlazos PlazosInfo, Pago_ pago_, DateTime dtInicio, DateTime dtFin, int iNúmPago)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string guardaPlazosQuery = "INSERT INTO Insert_Plazos ( idCartera, idCuenta, Fecha_Insert, Segundo_Insert, FechaPago, MontoPago, FechaInicioPlazo, FechaFinPlazo, Ordinal ) VALUES ( " +
+                        "@idCartera, " +
+                        "@idCuenta, " +
+                        "@Fecha_Insert, " +
+                        "@Segundo_Insert, " +
+
+                        "@FechaPago, " +
+                        "@MontoPago, " +
+
+                        "@FechaInicioPlazo, " +
+                        "@FechaFinPlazo, " +
+
+                        "@Ordinal )";
+            var parameters = new
+            {
+                idCartera = PlazosInfo.IdCartera,
+                idCuenta = PlazosInfo.IdCuenta,
+                Fecha_Insert = PlazosInfo.FechaInsert,
+                Segundo_Insert = PlazosInfo.Segundo_Insert,
+                FechaPago = pago_.Fecha,
+                MontoPago = pago_.Monto,
+                FechaInicioPlazo = dtInicio,
+                FechaFinPlazo = dtFin,
+                Ordinal = iNúmPago
+            };
+            var resultadoInsertaPlazos = await connection.ExecuteAsync(
+                guardaPlazosQuery,
+                parameters,
+                commandType: CommandType.Text
+            );
+
+            return resultadoInsertaPlazos;
+        }
+
+        public async Task<dynamic> Guarda_Negociacion_Plazos(GuardaNegociacionPlazos negociacionInfo)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string guardaNegociacionQuery = "EXEC [3.2.GuardaNegociaciónPlazos] " +
+                "@idCartera, " +
+                "@idCuenta, " +
+
+                "@idEjecutivo, " +
+
+                "@idHerramienta, " +
+                "@MontoNegociado, " +
+                "@Plazos, " +
+                "@CartaConvenio," +
+                "@Correo," +
+                "@FechaPago," +
+                "@FechaFinNegociación," +
+
+                "@idEjecutivoValidador," +
+                "@Contraseña," +
+
+               "@Fecha_Insert," +
+               "@Segundo_Insert," +
+               "@Reestructura," +
+               "@Condonacion," +
+               "@idGrabacion";
+
+            var parameters = new
+            {
+                idCartera = negociacionInfo.idCartera,
+                idCuenta = negociacionInfo.idCartera,
+                idEjecutivo = negociacionInfo.idEjecutivo,
+                idHerramienta = negociacionInfo.idHerramienta,
+                MontoNegociado = negociacionInfo.MontoNegociado,
+                Plazos = negociacionInfo.Plazos,
+                CartaConvenio = negociacionInfo.CartaConvenio,
+                Correo = negociacionInfo.Correo,
+                FechaPago = negociacionInfo.FechaPago,
+                FechaFinNegociación = negociacionInfo.FechaFinNegociación,
+                idEjecutivoValidador = negociacionInfo.idEjecutivoValidador,
+                Contraseña = negociacionInfo.Contraseña,
+                Fecha_Insert = negociacionInfo.Fecha_Insert,
+                Segundo_Insert = negociacionInfo.Segundo_Insert,
+                Reestructura = negociacionInfo.Reestructura,
+                Condonacion = negociacionInfo.Condonacion,
+                idGrabacion = negociacionInfo.idGrabacion
+
+            };
+            var resultadoGuardaNeg = await connection.ExecuteAsync(
+                guardaNegociacionQuery,
+                parameters,
+                commandType: CommandType.Text
+            );
+
+            return resultadoGuardaNeg;
+
         }
 
         #endregion
