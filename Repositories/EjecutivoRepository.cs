@@ -14,6 +14,8 @@ using System.Collections;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using NoriAPI.Models.Flujo;
+using NoriAPI.Models.Ofrecimiento;
+using NoriAPI.Models;
 
 namespace NoriAPI.Repositories
 {
@@ -53,6 +55,8 @@ namespace NoriAPI.Repositories
         List<OfrecimientosInfo> ConvertirDataTableALista(DataTable dt);
         List<HerramientasInfo> ConvertirDataTableALista_(DataTable dt);
         List<CalculosInfo> ConvertirDataTableAListaC(DataTable dt);
+        Task<IEnumerable<OfrecimientoValidadores>> GuardaOfrecimientoStored(SaveOfrecimientoRequest ofrecimientoInfo);
+
         #endregion
 
         #region Tiempos
@@ -71,9 +75,20 @@ namespace NoriAPI.Repositories
 
         #endregion
 
+        #region GuardaNegociacion
+        Task<dynamic> Guarda_Plazos(EliminaGuardaPlazos PlazosInfo, Pago_ pago_, DateTime dtInicio, DateTime dtFin, int iNúmPago);
+        Task<dynamic> Elimina_Plazos(EliminaGuardaPlazos PlazosInfo);
+        Task<dynamic> Guarda_Negociacion_Plazos(GuardaNegociacionPlazos negociacionInfo);
+        #endregion
+
         //Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
         //Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
         //Task<DataTable> GetValidadorAsync(int idProducto);
+        #region Scripts
+        Task<DataTable> ObtenerScriptsAsync(int idProducto);
+
+        #endregion
+
         #region Cargo En Linea
         Task<dynamic> RegisterNewCargo(CargoEnLinea newCargoEnLinea);
         Task<dynamic> RegisterNewEstado(EstadoDeCuenta newEstadoDeCuenta);
@@ -84,10 +99,13 @@ namespace NoriAPI.Repositories
 
         #endregion
 
+        #region Datos
         int ObtenerIdCartera();
         string ObtenerIdCuenta();
         int ObtenerIdEjecutivo();
         string ObtenerNombreEjecutivo();
+        Task<DataTable> ObtenerDatosEjecutivo(int idEjecutivo);
+        #endregion
     }
     public class EjecutivoRepository : IEjecutivoRepository
     {
@@ -561,6 +579,7 @@ namespace NoriAPI.Repositories
 
         */
         #endregion
+
         #endregion
 
         #region Preguntas_Respuestas
@@ -700,6 +719,7 @@ namespace NoriAPI.Repositories
             _htProducto = ConvertirDataTableAHashtable(ConvertToDataTable(producto, "Producto"));
             return ConvertToDataTable(producto, "Producto");
         }
+
         public async Task<DataTable> InfoCuenta(int Cartera, string NoCuenta)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -718,6 +738,42 @@ namespace NoriAPI.Repositories
              ));
             return ConvertToDataTable(InfoCuenta, "InfoCuenta");
         }
+
+        public async Task<IEnumerable<OfrecimientoValidadores>> GuardaOfrecimientoStored(SaveOfrecimientoRequest ofrecimientoInfo)
+        {
+            using var connection = GetConnection("Piso2Amex");
+            string queryOfrecimiento = "[dbo].[3.1.GuardaOfrecimiento]";
+
+            var parameters = new
+            {
+                idCartera = ofrecimientoInfo.IdCartera,
+                idCuenta = ofrecimientoInfo.IdCuenta,
+                idProducto = ofrecimientoInfo.IdProducto,
+                idEjecutivo = ofrecimientoInfo.IdEjecutivo,
+
+                idHerramienta = ofrecimientoInfo.IdHerramienta,
+                MontoRequerido = ofrecimientoInfo.MontoRequerido,
+                Descuento = ofrecimientoInfo.Descuento,
+                Saldo = ofrecimientoInfo.Saldo,
+                FechaCorte = ofrecimientoInfo.FechaCorte,
+
+                Fecha_Insert = ofrecimientoInfo.FechaInsert,
+                Segundo_Insert = ofrecimientoInfo.SegundoInsert,
+
+                MontoOfrecido = ofrecimientoInfo.MontoNegociado,
+                Plazos = ofrecimientoInfo.Plazos.Length,
+
+            };
+
+            var result = await connection.QueryAsync<OfrecimientoValidadores>(
+                queryOfrecimiento,
+                parameters,
+                commandType: CommandType.StoredProcedure
+            );
+
+            return result;
+        }
+
         public object CampoCalculado(string Expresión)
         {
 
@@ -730,10 +786,10 @@ namespace NoriAPI.Repositories
                     sResult = sResult.Replace("[" + sCampos[i] + "]", _htProducto[sCampos[i]].ToString().Trim());
             }
 
-            if (Expresión.StartsWith("#"))
+            if (Expresión.StartsWith('#'))
                 return EvaluateDate(sResult.Replace("#", ""));
 
-            else if (sCampos.Length > 1 && (Expresión.Contains("+") || Expresión.Contains("-") || Expresión.Contains("*") || Expresión.Contains("/") || Expresión.Contains("^")))
+            else if (sCampos.Length > 1 && (Expresión.Contains('+') || Expresión.Contains('-') || Expresión.Contains('*') || Expresión.Contains('/') || Expresión.Contains('^')))
                 return Evaluate(sResult);
 
             return sResult;
@@ -801,6 +857,125 @@ namespace NoriAPI.Repositories
                         DateTime.TryParseExact(Text, new string[] { "yyyyMMdd" }, null, System.Globalization.DateTimeStyles.None, out Date))
                 return true;
             return false;
+        }
+
+        #endregion
+
+        #region GuardaEliminaPlazos 
+
+        public async Task<dynamic> Elimina_Plazos(EliminaGuardaPlazos PlazosInfo)
+        {
+            using var connection = GetConnection("Piso2Amex");
+            string eliminaPlazosQuery = "DELETE Insert_Plazos WHERE idCartera = @idCartera AND idCuenta = @idCuenta AND Fecha_Insert = @Fecha_Insert AND Segundo_Insert = @Segundo_Insert";
+            var parameters = new
+            {
+                idCartera = PlazosInfo.IdCartera,
+                idCuenta = PlazosInfo.IdCuenta,
+                Fecha_Insert = PlazosInfo.FechaInsert,
+                Segundo_Insert = PlazosInfo.Segundo_Insert
+            };
+            var resultadoEliminaPlazos = await connection.ExecuteAsync(
+                eliminaPlazosQuery,
+                parameters,
+                commandType: CommandType.Text
+            );
+            return resultadoEliminaPlazos;
+        }
+
+        public async Task<dynamic> Guarda_Plazos(EliminaGuardaPlazos PlazosInfo, Pago_ pago_, DateTime dtInicio, DateTime dtFin, int iNúmPago)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string guardaPlazosQuery = "INSERT INTO Insert_Plazos ( idCartera, idCuenta, Fecha_Insert, Segundo_Insert, FechaPago, MontoPago, FechaInicioPlazo, FechaFinPlazo, Ordinal ) VALUES ( " +
+                        "@idCartera, " +
+                        "@idCuenta, " +
+                        "@Fecha_Insert, " +
+                        "@Segundo_Insert, " +
+
+                        "@FechaPago, " +
+                        "@MontoPago, " +
+
+                        "@FechaInicioPlazo, " +
+                        "@FechaFinPlazo, " +
+
+                        "@Ordinal )";
+            var parameters = new
+            {
+                idCartera = PlazosInfo.IdCartera,
+                idCuenta = PlazosInfo.IdCuenta,
+                Fecha_Insert = PlazosInfo.FechaInsert,
+                Segundo_Insert = PlazosInfo.Segundo_Insert,
+                FechaPago = pago_.Fecha,
+                MontoPago = pago_.Monto,
+                FechaInicioPlazo = dtInicio,
+                FechaFinPlazo = dtFin,
+                Ordinal = iNúmPago
+            };
+            var resultadoInsertaPlazos = await connection.ExecuteAsync(
+                guardaPlazosQuery,
+                parameters,
+                commandType: CommandType.Text
+            );
+
+            return resultadoInsertaPlazos;
+        }
+
+        public async Task<dynamic> Guarda_Negociacion_Plazos(GuardaNegociacionPlazos negociacionInfo)
+        {
+            using var connection = GetConnection("Piso2Amex");
+
+            string guardaNegociacionQuery = "EXEC [3.2.GuardaNegociaciónPlazos] " +
+                "@idCartera, " +
+                "@idCuenta, " +
+
+                "@idEjecutivo, " +
+
+                "@idHerramienta, " +
+                "@MontoNegociado, " +
+                "@Plazos, " +
+                "@CartaConvenio," +
+                "@Correo," +
+                "@FechaPago," +
+                "@FechaFinNegociación," +
+
+                "@idEjecutivoValidador," +
+                "@Contraseña," +
+
+               "@Fecha_Insert," +
+               "@Segundo_Insert," +
+               "@Reestructura," +
+               "@Condonacion," +
+               "@idGrabacion";
+
+            var parameters = new
+            {
+                idCartera = negociacionInfo.idCartera,
+                idCuenta = negociacionInfo.idCartera,
+                idEjecutivo = negociacionInfo.idEjecutivo,
+                idHerramienta = negociacionInfo.idHerramienta,
+                MontoNegociado = negociacionInfo.MontoNegociado,
+                Plazos = negociacionInfo.Plazos,
+                CartaConvenio = negociacionInfo.CartaConvenio,
+                Correo = negociacionInfo.Correo,
+                FechaPago = negociacionInfo.FechaPago,
+                FechaFinNegociación = negociacionInfo.FechaFinNegociación,
+                idEjecutivoValidador = negociacionInfo.idEjecutivoValidador,
+                Contraseña = negociacionInfo.Contraseña,
+                Fecha_Insert = negociacionInfo.Fecha_Insert,
+                Segundo_Insert = negociacionInfo.Segundo_Insert,
+                Reestructura = negociacionInfo.Reestructura,
+                Condonacion = negociacionInfo.Condonacion,
+                idGrabacion = negociacionInfo.idGrabacion
+
+            };
+            var resultadoGuardaNeg = await connection.ExecuteAsync(
+                guardaNegociacionQuery,
+                parameters,
+                commandType: CommandType.Text
+            );
+
+            return resultadoGuardaNeg;
+
         }
 
         #endregion
@@ -987,7 +1162,24 @@ namespace NoriAPI.Repositories
 
         #endregion
 
-        #region Acciones
+        #region Scripts
+
+        public async Task<DataTable> ObtenerScriptsAsync(int idProducto)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            string query = "SELECT * FROM Scripts (NOLOCK) WHERE idProducto = @idProducto";
+
+            var scripts = new DataTable();
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@idProducto", idProducto);
+
+            using var adapter = new SqlDataAdapter(command);
+            adapter.Fill(scripts);
+
+            return scripts;
+        }
 
 
 
@@ -1118,10 +1310,10 @@ namespace NoriAPI.Repositories
                 if (dict != null && dict.ContainsKey("Resultado"))
                 {
                     return new Dictionary<string, object>
-            {
-                { "Success", false },
-                { "Resultado", dict["Resultado"].ToString() }
-            };
+                    {
+                        { "Success", false },
+                        { "Resultado", dict["Resultado"].ToString() }
+                    };
                 }
 
                 return new Dictionary<string, object> { { "Success", true }, { "Data ", result } };
@@ -1138,6 +1330,9 @@ namespace NoriAPI.Repositories
         #region EnviarCorreo
 
         #endregion
+
+
+
 
         private static DataTable ConvertToDataTable(IEnumerable<dynamic> data, string tableName)
         {
@@ -1165,7 +1360,6 @@ namespace NoriAPI.Repositories
 
             return table;
         }
-
         public Hashtable ConvertirDataTableAHashtable(DataTable dt)
         {
             Hashtable ht = new Hashtable();
@@ -1339,6 +1533,41 @@ namespace NoriAPI.Repositories
                 return command.ExecuteScalar().ToString();
             }
         }
+
+        public async Task<DataTable> ObtenerDatosEjecutivo(int idEjecutivo)
+        {
+            string query = @"
+                SELECT TOP 1
+                E.idEjecutivo,
+                E.idEncargado,
+                E.Usuario,
+                E.idCartera,
+	            S.NombreEjecutivo Encargado,
+	            E.NombreEjecutivo NombreEjecutivo,
+	            E.idSucursal,
+	            E.Jerarquía,
+	            E.idÁrea,
+	            M.Segmento
+	            FROM dbCollection..Ejecutivos E
+				            LEFT JOIN dbCollection..Ejecutivos S ON S.idEjecutivo = E.idEncargado
+				            LEFT JOIN dbCollection..MetasEjecutivo M ON E.idEjecutivo = M.idEjecutivo
+	            WHERE E.idEjecutivo = @idEjecutivo";
+
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@idEjecutivo", idEjecutivo);
+
+            var table = new DataTable();
+            using var adapter = new SqlDataAdapter(command);
+            adapter.Fill(table);
+
+            return table;
+
+        }
+
+
         #endregion
 
         #region GestionTelefonica
@@ -1346,7 +1575,7 @@ namespace NoriAPI.Repositories
         {
             using var connection = GetConnection("Piso2Amex");
 
-            string storedGestion = "2.1.GuardaGestionTelefonica";
+            string storedGestion = "[dbo].[2.1.GuardaGestionTelefonica]";
             var gestionParameters = new
             {
                 idCartera = parametros.IdCartera,
@@ -1384,6 +1613,7 @@ namespace NoriAPI.Repositories
         }
 
         #endregion
+
 
         private SqlConnection GetConnection(string connection)
         {

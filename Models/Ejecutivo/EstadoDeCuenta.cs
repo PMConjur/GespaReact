@@ -4,8 +4,8 @@ namespace NoriAPI.Models.Ejecutivo
 {
     public class EstadoDeCuenta
     {
-        
-        
+
+
             public EstadoDeCuenta(int IdCartera, string IdCuenta, int IdEjecutivo, DateTime FechaInicial, DateTime FechaFinal, bool consulta, string correoElectronico)
             {
                 this.idCartera = IdCartera;
@@ -23,6 +23,6 @@ namespace NoriAPI.Models.Ejecutivo
             public DateTime FechaFinal { get; set; }
             public bool Consulta { get; set; }
             public string CorreoElectrónico { get; set; }
-        
+
     }
 }

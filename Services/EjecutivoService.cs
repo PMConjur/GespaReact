@@ -25,6 +25,12 @@ using static NoriAPI.Services.EjecutivoService;
 
 using NoriAPI.Models.Acciones;
 using NoriAPI.Models.Flujo;
+using static NoriAPI.Models.Ejecutivo.NegociacionClass;
+using NoriAPI.Models.CargaGestionamiento;
+using NoriAPI.Models.Ofrecimiento;
+using Microsoft.IdentityModel.Tokens;
+using System.Text.RegularExpressions;
+using System.Text;
 
 
 namespace NoriAPI.Services
@@ -56,14 +62,17 @@ namespace NoriAPI.Services
         #region Calculadora
         Task<ResultadoCalculadora> ValidateInfoCalculadora(int Cartera, string NoCuenta);
         Task<ResultadoCalculadora> ValidateInfoCalculadora1(int Cartera, string NoCuenta, int idHerr);
-        Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int IdCartera, double MontoRequerido, int Descuento, int iMeses, string dtpFecha, int periodos);
+        Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int IdCartera, double MontoRequerido, int Descuento, int iMeses, string dtpFecha, int periodos, int modificar, double montoMod, string fechaPagoMod, int agregarPagos, int filaMod);
+        Task<dynamic> GuardarOfrecimiento(SaveOfrecimientoRequest ofrecimientoInfo);
+        Task<string> GuardaEliminaPlazos(EliminaGuardaPlazos PlazosInfo);
+        Task<dynamic> GuardaNegoaciacionPlazos_(GuardaNegociacionPlazos negociacionInfo);
 
         #endregion
         Task ObtenerBusquedaEJE(DataRow drDatos, DataSet dsTablas);
 
         Task<bool> GuardarBusquedaAsync(BusquedaNueva busqueda);
         Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo);
-        Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas);
+
         Task<DataTable> GetCargosEnLineaAsync(int idCartera, string idCuenta);
         Task ObtenerCargosEnLinea(DataRow drDatos, DataSet dsTablas);
         Task<string> SaveCargoEnlinea(CargoEnLineaRe newCargoEn);
@@ -71,11 +80,15 @@ namespace NoriAPI.Services
         Task ObtenerMultideudores(DataRow drDatos, DataSet dsTablas, Hashtable htProducto, string sortMultideudores, string connectionString);
         Task ObtenerPagos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerPago(DataRow drDatos, DataSet dsTablas);
-        Task<DataTable> ObtieneGestionTeAsync(int idCartera, string idCuenta);
+        Task<DataTable> ObtieneGestionTeAsync(int idCartera, string idCuenta, int Top);
         Task ObtenerDomicilios(DataRow drDatos, DataSet dsTablas);
         DataTable ObtieneGestionesDelDia(int idEjecutivo);
-        DataTable BuscaScripts(int idProducto);
 
+        #region Scripts
+        DataTable BuscaScripts(int idProducto);
+        Task<DataTable> BuscaScriptsTranslated(int idEjecutivo, int idProducto, int idCartera, string cuenta);
+
+        #endregion
         DataTable CargaRelaciones();
         Task ObtenerCorreosEJE(DataRow drDatos, DataSet dsTablas);
         Task ObtenerEnviadosEJE(DataRow drDatos, DataSet dsTablas);
@@ -88,7 +101,11 @@ namespace NoriAPI.Services
         Task<string> AñadeAdicionalAsync(Adicional AdicionalCuenta, DataRow drInfo, Ejecutivo ejecutivo, DataTable Adicionales, Catalogos catalogos);
         Task<bool> GuardaGestionTelefonicaAsync(GestionTelefonica gestion);
         Task<GuardaGestionTelefonicaResult> GuardarGestionTelefonica(EndGestionRequest infoEndGestion);
+        Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas);
 
+        
+        
+        
         #region Acciones
         Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
         Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
@@ -101,6 +118,7 @@ namespace NoriAPI.Services
         Task<DataTable> GetWlpAsync(string Proceso, string idCuenta);
         Task ObtieneNegociacionesEjecutivosAsync(DataRow drDatos, DataSet dsTablas);
         Task<DataTable> GetAdiccionalesAsync(int idCartera, string idCuenta);
+        Task ObtenerEstadodeCuentaCorreos(DataRow drDatos, DataSet dsTablas);
 
 
 
@@ -110,6 +128,9 @@ namespace NoriAPI.Services
         Task<DataTable> GetDropDQuejasAsync();
         Task<DataTable> GetDropDOrigenQuejasAsync();
         Task<DataTable> GetViewQuejasAsync(int idCartera, string idCuenta);
+        Task<string> CreaSeguimientoAsync(SeguimientoCompletoModel seguimiento, DataRow _drInfo, int idEjecutivo);
+        Task ObtenerUsoHorario(DataRow drDatos, DataSet dsTablas);
+
 
         #endregion
     }
@@ -151,6 +172,7 @@ namespace NoriAPI.Services
             _catalogos = catalogos;
 
         }
+
         private DataTable CreaTablaEnviados()
         {
             DataTable enviados = new DataTable();
@@ -701,6 +723,46 @@ namespace NoriAPI.Services
                 }
             }
 
+            ClasesGespaNonStatic gespaQuejas = new();
+            gespaQuejas.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            gespaQuejas.CargaCatalogos();
+
+
+            // Agregar la columna "Queja" justo después de "idQueja"
+            if (viewQuejas.Columns.Contains("idQueja"))
+            {
+                // Crear e insertar la columna "Banco" después de "idBanco"
+                DataColumn quejasColumna = new DataColumn("Queja", typeof(string));
+                viewQuejas.Columns.Add(quejasColumna);
+                viewQuejas.Columns["Queja"].SetOrdinal(viewQuejas.Columns.IndexOf("idQueja") + 1);
+            }
+
+            // Agregar la columna "Queja" justo después de "idQueja"
+            if (viewQuejas.Columns.Contains("idInstitución"))
+            {
+                // Crear e insertar la columna "Banco" después de "idBanco"
+                DataColumn institucionColumna = new DataColumn("Institución", typeof(string));
+                viewQuejas.Columns.Add(institucionColumna);
+                viewQuejas.Columns["Institución"].SetOrdinal(viewQuejas.Columns.IndexOf("idInstitución") + 1);
+            }
+
+            // Llenar los valores de la nueva columna usando la lógica de "traducción"
+            foreach (DataRow row in viewQuejas.Rows)
+            {
+                if (viewQuejas.Columns.Contains("idQueja") && row["idQueja"] != DBNull.Value)
+                {
+                    row["Queja"] = BuscarEnValoresHashtable(gespaQuejas._htValoresCatálogo, Convert.ToString(row["idQueja"]));
+                }
+            }
+
+            foreach (DataRow row in viewQuejas.Rows)
+            {
+                if (viewQuejas.Columns.Contains("idInstitución") && row["idInstitución"] != DBNull.Value)
+                {
+                    row["Institución"] = BuscarEnValoresHashtable(gespaQuejas._htValoresCatálogo, Convert.ToString(row["idInstitución"]));
+                }
+            }
+
             return viewQuejas;
         }
 
@@ -947,8 +1009,6 @@ namespace NoriAPI.Services
             //----------------------------------------Saldo y producto----------------------------------------------//
 
             tblCuenta = await _ejecutivoRepository.InfoCuenta(Cartera, NoCuenta);
-
-
             //-----------------------------------------------------------------------------------------//
 
             dtDescuentos.Columns.Add("idHerramienta");
@@ -1001,10 +1061,18 @@ namespace NoriAPI.Services
                 dtDescuentos.PrimaryKey = new DataColumn[] { dtDescuentos.Columns["idHerramienta"] };
             }
             sHerramientas = sHerramientas.TrimEnd(',') + ")";
-
-
             // IDs que quieres filtrar para mostrar en el combox
-            int[] idsFiltrar = { 0, 136, 137, 138, 139, 1010, 142, 684 };// sHerramientas
+            string idsString = sHerramientas.Substring(sHerramientas.IndexOf("(") + 1, sHerramientas.IndexOf(")") - sHerramientas.IndexOf("(") - 1);
+            string[] idsArray = idsString.Split(',');
+            List<int> idsFiltrar = new List<int>();
+
+            foreach (string id in idsArray)
+            {
+                if (int.TryParse(id.Trim(), out int idInt))
+                {
+                    idsFiltrar.Add(idInt);
+                }
+            }
 
             dtHerrFiltradas.Columns.Add("idHerramienta", typeof(int));
             dtHerrFiltradas.Columns.Add("Nombre", typeof(string));
@@ -1151,7 +1219,7 @@ namespace NoriAPI.Services
 
         #region Calculadora-2daParte
 
-        public async Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int idcartera, double MontoRequerido, int Descuento, int iMeses_, string dtpFecha, int periodos)
+        public async Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int idcartera, double MontoRequerido, int Descuento, int iMeses_, string dtpFecha, int periodos, int modificar, double montoMod, string fechaPagoMod, int agregarPagos, int filaMod)
         {
             DataTable dtDescuentos = new DataTable();
             DataTable HerramientasC = new DataTable();
@@ -1162,16 +1230,14 @@ namespace NoriAPI.Services
             DataTable tblsaldo = new DataTable();
             DataTable dtPagosOriginal = new DataTable();
             DataTable dtPagos = new DataTable();
-            DataTable tblPlazos = new DataTable();
             DataTable dtHerrFiltradas = new DataTable();
+            DataTable tblPlazos = new DataTable();
             bool _bLendingPrimes;
-            int iAñadidos, iPeriodos = periodos;
-            double dMontoRequerido = 0, dMensualidad;
+            int iAñadidos = 0, iPeriodos = periodos;
+            string mensaje = "";
 
             //---------------------------------------Negociaciones--------------------------------//
             //con el Idestado se valida si la promesa esta vigente
-
-
             dtnegociaciones = await _ejecutivoRepository.ObtieneNegociaciones(idcartera, nocuenta);
 
             dtnegociaciones.PrimaryKey = new DataColumn[] {
@@ -1321,13 +1387,175 @@ namespace NoriAPI.Services
             }
             dtPagos.DefaultView.Sort = "FechaPago DESC";
 
-            /////////////////////////////////////////////////aqui se va a repetir el metodo Calcula pagos////////////////////////////////////////////////////////////////////
-
             DateTime dtFechaPago = DateTime.Now;//este siempre va a ser un dia despues de la fecha actual y la manda el omi
             dtFechaPago = dtFechaPago.AddDays(1);
 
-            double dMontoNegociado = 0, dPago, dCentavos, dMontoAjuste = 0, dSumaPagos = 0, dPago635 = 0;
+            (double dMontoRequerido, double dMontoNegociado, tblPlazos, double dPago, double tasamensual) = CalculaPagos(dtFechaPago, iMeses_, _bLendingPrimes, MontoRequerido, idherramienta, saldo, iAñadidos, iPeriodos, drHerramienta, tblCuenta, dtPagos, dtHerramientas, Descuento, dtpFecha);
+
+            if (modificar == 1)
+            {
+                //validar que los meses no vengan en 0
+
+                DateTime dtFechaPago_ = Convert.ToDateTime(fechaPagoMod);
+                DateTime dtFechaPagoAnt;
+                double dPago_ = montoMod, dMontoNegociado_, dPagoAnt;
+                //if (filaMod > 0)
+                //    filaMod = filaMod - 1;// Se resta 1 ya que el datarow inicia en 0
+                //else
+                //    filaMod = 0;
+
+                dPagoAnt = Math.Round(Convert.ToDouble(tblPlazos.Rows[filaMod]["Pago"].ToString()), 2);
+                dtFechaPagoAnt = Convert.ToDateTime(tblPlazos.Rows[filaMod]["Fecha"].ToString());
+
+                foreach (DataRow row in tblPlazos.Rows)
+                {
+                    if (Convert.ToDateTime(row["Fecha"]) == Convert.ToDateTime(tblPlazos.Rows[tblPlazos.Rows.Count - 1]["Fecha"]) && tblPlazos.Rows.IndexOf(row) != tblPlazos.Rows.Count - 1)
+                    {
+                        mensaje = "Ya existe un pago con dicha fecha.";
+                    }
+                }
+                if (dPago <= 0)
+                {
+                    mensaje = "No puede haber pagos de $0.00";
+                }
+                /*Añadir Pagos*/
+                if (agregarPagos == 1)
+                {
+                    filaMod = 0;
+                    (tblPlazos, double montoMod_, mensaje) = AgregaPagos(dtFechaPago, dPago, tblPlazos, _bLendingPrimes, montoMod, fechaPagoMod, dMontoRequerido, filaMod, dPagoAnt, dtFechaPago_);
+                    dPago = montoMod_;
+                }
+                else
+                {
+
+                    dMontoNegociado = Convert.ToDouble(tblPlazos.Rows[filaMod]["Saldo"]);
+                    if (_bLendingPrimes)
+                    {
+                        if (montoMod < dPagoAnt)
+                        {
+                            mensaje = "El monto no puede ser menor al pago calculado.";
+                        }
+                        if (dtFechaPagoAnt != dtFechaPago_)//&& dgvPlazos.CurrentCell.RowIndex == 0 Aqui solo cambia la fecha de los pagos
+                        {
+                            DateTime nuevaFecha = Convert.ToDateTime(fechaPagoMod);
+                            foreach (DataRow fila in tblPlazos.Rows)
+                            {
+                                fila["Fecha"] = nuevaFecha; // Actualizar la columna 'Fecha' con la nueva fecha
+                            }
+
+                        }
+                        if (montoMod != dPagoAnt)
+                        {
+                            //dMontoNegociado = Convert.ToDouble(tblPlazos.Rows[filaMod]["Saldo"]);
+                            (tblPlazos, double nuevoPago) = ModificaPagos(filaMod, dMontoNegociado, dtFechaPago_, tblPlazos, montoMod, _bLendingPrimes);
+                            dPago = nuevoPago;
+                        }
+                    }
+                    else
+                    {
+                        if (idherramienta == 635 && filaMod != 0 && dPago < dMontoNegociado * .04)
+                        {
+                            (tblPlazos, double nuevoPago) = ModificaPagos(filaMod, dMontoNegociado, dtFechaPago_, tblPlazos, montoMod, _bLendingPrimes);
+                            dPago = nuevoPago;
+                        }
+                        else
+                        {
+                            (tblPlazos, double nuevoPago) = ModificaPagos(filaMod, dMontoNegociado, dtFechaPago_, tblPlazos, montoMod, _bLendingPrimes);
+                            dPago = nuevoPago;
+                        }
+
+                    }
+
+                }
+
+            }
+            //Muestra cálculos
+            double MontoRequerido_ = Convert.ToDouble(dMontoRequerido.ToString());
+            double MontoNegociado_ = Convert.ToDouble(dMontoNegociado.ToString());
+            double Pago = Convert.ToDouble(tblPlazos.Rows[0]["Pago"].ToString());
+            string Plazos = tblPlazos.Rows.Count.ToString();
+            double Remanente = Math.Round(Convert.ToDouble(Math.Max(saldo - MontoNegociado_, 0).ToString()));
+            double Monto = Math.Round(Convert.ToDouble(dPago));
+            List<CalculosInfo> listaCalculos = _ejecutivoRepository.ConvertirDataTableAListaC(tblPlazos);
+
+            /////Regresa valores///////////////////////
+            var ResultadoCalculadora2 = new ResultadoCalculadora2
+            {
+                Calculos = listaCalculos,
+                MontoRequerido = MontoRequerido_,
+                MontoNegociado = MontoNegociado_,
+                Pago = Pago,
+                Plazos = Plazos,
+                Descuento = Descuento,
+                Monto = Monto,
+                TasaMensual = tasamensual,
+                mensaje = mensaje
+            };
+            return ResultadoCalculadora2;
+        }
+        static DateTime FechaCorte_(string CorteOfecha)
+        {
+            DateTime dtFechaCorte = new DateTime();
+
+            int iCorte;
+            if (int.TryParse(CorteOfecha, out iCorte))
+            {
+                dtFechaCorte = new DateTime(DateTime.Today.Year, DateTime.Today.Month, iCorte);
+                if (dtFechaCorte <= DateTime.Today)
+                    dtFechaCorte = dtFechaCorte.AddMonths(1);
+            }
+            else
+                DateTime.TryParse(CorteOfecha, out dtFechaCorte);
+
+            return dtFechaCorte;
+        }
+        private double TasaAnual(int iPeriodos, int iMeses, int idherramienta, DataTable Herramienta)
+        {
+
+            double dTasa = 0;
+
+            if (idherramienta != 1010)
+            {
+                if (!Herramienta.Columns.Contains("Tasa") ||
+                !double.TryParse(Herramienta.Rows[0]["Tasa"].ToString(), out dTasa) || dTasa == 0)
+                    dTasa = 0.0584;//dTasa = 0.06289956713257; se cambia por indicaciones rios entra en vigor 20241028
+            }
+
+            //if (!_Cuenta.HerramientasAmex.Columns.Contains("Tasa") ||
+            //    !double.TryParse(_Cuenta.HerramientasAmex.Rows[0]["Tasa"].ToString(), out dTasa) || dTasa == 0 )
+            //    dTasa = 0.06289956713257;
+
+            //tasa anterior dTasa = 0.061866667;
+            // 6.29000004666667 nueva tasa 0.0629000004666667
+            // lblTasaMensual.Text = "Tasa Mensual: " + (Math.Truncate((100 * dTasa) * 1000) / 1000).ToString() + "%";
+            return ((1 / dTasa) * (1 - Math.Pow(1 / (1 + dTasa), iMeses)) * iPeriodos);
+        }
+        private double TasaMensual(int iPeriodos, int iMeses, int idherramienta, DataTable Herramienta)
+        {
+
+            double dTasa = 0;
+
+            if (idherramienta != 1010)
+            {
+                if (!Herramienta.Columns.Contains("Tasa") ||
+                !double.TryParse(Herramienta.Rows[0]["Tasa"].ToString(), out dTasa) || dTasa == 0)
+                    dTasa = 0.0584;//dTasa = 0.06289956713257; se cambia por indicaciones rios entra en vigor 20241028
+            }
+
+            //if (!_Cuenta.HerramientasAmex.Columns.Contains("Tasa") ||
+            //    !double.TryParse(_Cuenta.HerramientasAmex.Rows[0]["Tasa"].ToString(), out dTasa) || dTasa == 0 )
+            //    dTasa = 0.06289956713257;
+
+            //tasa anterior dTasa = 0.061866667;
+            // 6.29000004666667 nueva tasa 0.0629000004666667
+            // lblTasaMensual.Text = "Tasa Mensual: " + (Math.Truncate((100 * dTasa) * 1000) / 1000).ToString() + "%";
+            return (Math.Truncate((100 * dTasa) * 1000) / 1000);
+        }
+        public (double dMontoRequerido, double dMontoNegociado, DataTable tblPlazos, double dPago, double tasamensual) CalculaPagos(DateTime dtFechaPago, int iMeses_, bool _bLendingPrimes, double MontoRequerido, int idherramienta, double saldo, int iAñadidos, int iPeriodos, DataRow drHerramienta, DataTable tblCuenta, DataTable dtPagos, DataTable dtHerramientas, int Descuento, string dtpFecha)
+        {
+            double dMontoNegociado = 0, dPago, dCentavos, dMontoAjuste = 0, dSumaPagos = 0, dPago635 = 0, dTasa = 0, tasamensual = 0, dMontoRequerido = 0, dMensualidad;
             int iMeses = iMeses_;//valor que me debe mandar el omi
+            DataTable tblPlazos = new DataTable();
 
             DateTime dtFechaCorte = new DateTime(),
                     dtActualización = new DateTime();
@@ -1418,13 +1646,17 @@ namespace NoriAPI.Services
                     else
                         dPago = (dMontoNegociado / TasaAnual(iPeriodos, iMeses, idherramienta, dtHerramientas));
 
+                    dTasa = TasaAnual(iPeriodos, iMeses, idherramienta, dtHerramientas);
+
+                    tasamensual = TasaMensual(iPeriodos, iMeses, idherramienta, dtHerramientas);
+
                     dPago = Math.Round(dPago, 2);
 
                     //Cálculo de Monto Requerido
                     dMontoNegociado = dPago * (iPeriodos * (iMeses));
                     dMontoNegociado = Math.Round(dMontoNegociado, 2);
 
-                    dMontoRequerido = dMontoNegociado;// necesito este
+                    dMontoRequerido = dMontoNegociado;
 
                     if (idherramienta == 143 && dMontoAjuste > 0 && _bLendingPrimes)
                     {
@@ -1471,65 +1703,7 @@ namespace NoriAPI.Services
                 }
 
             }
-            //Muestra cálculos
-            double MontoRequerido_ = Convert.ToDouble(dMontoRequerido.ToString());
-            double MontoNegociado_ = Convert.ToDouble(dMontoNegociado.ToString());
-            double Pago = Convert.ToDouble(tblPlazos.Rows[0]["Pago"].ToString());
-            string Plazos = tblPlazos.Rows.Count.ToString();
-            double Remanente = Convert.ToDouble(Math.Max(saldo - MontoNegociado_, 0).ToString());
-
-            /////Regresa valores///////////////////////
-            List<CalculosInfo> listaCalculos = _ejecutivoRepository.ConvertirDataTableAListaC(tblPlazos);
-            var ResultadoCalculadora2 = new ResultadoCalculadora2
-            {
-                Calculos = listaCalculos,
-                MontoRequerido = MontoRequerido_,
-                MontoNegociado = MontoNegociado_,
-                Pago = Pago,
-                Plazos = Plazos,
-                Descuento = Descuento
-            };
-            return ResultadoCalculadora2;
-
-        }
-
-        static DateTime FechaCorte_(string CorteOfecha)
-        {
-            DateTime dtFechaCorte = new DateTime();
-
-            int iCorte;
-            if (int.TryParse(CorteOfecha, out iCorte))
-            {
-                dtFechaCorte = new DateTime(DateTime.Today.Year, DateTime.Today.Month, iCorte);
-                if (dtFechaCorte <= DateTime.Today)
-                    dtFechaCorte = dtFechaCorte.AddMonths(1);
-            }
-            else
-                DateTime.TryParse(CorteOfecha, out dtFechaCorte);
-
-            return dtFechaCorte;
-        }
-        private double TasaAnual(int iPeriodos, int iMeses, int idherramienta, DataTable Herramienta)
-        {
-
-            double dTasa = 0;
-
-            if (idherramienta != 1010)
-            {
-                if (!Herramienta.Columns.Contains("Tasa") ||
-                !double.TryParse(Herramienta.Rows[0]["Tasa"].ToString(), out dTasa) || dTasa == 0)
-                    dTasa = 0.0584;//dTasa = 0.06289956713257; se cambia por indicaciones rios entra en vigor 20241028
-            }
-
-            //if (!_Cuenta.HerramientasAmex.Columns.Contains("Tasa") ||
-            //    !double.TryParse(_Cuenta.HerramientasAmex.Rows[0]["Tasa"].ToString(), out dTasa) || dTasa == 0 )
-            //    dTasa = 0.06289956713257;
-
-            //tasa anterior dTasa = 0.061866667;
-            // 6.29000004666667 nueva tasa 0.0629000004666667
-
-            //lblTasaMensual.Text = "Tasa Mensual: " + (Math.Truncate((100 * dTasa) * 1000) / 1000).ToString() + "%";
-            return ((1 / dTasa) * (1 - Math.Pow(1 / (1 + dTasa), iMeses)) * iPeriodos);
+            return (dMontoRequerido, dMontoNegociado, tblPlazos, dPago, tasamensual);
         }
         private DataTable EstablecePagos(double dMontoNegociado, double dPago, double dCentavos, int iMeses, DateTime dtFechaCorte, DateTime dtFechaPago, double dPago635, int iPeriodos, int idherramienta, string dtpFecha)
         {
@@ -1632,7 +1806,6 @@ namespace NoriAPI.Services
             if (tblPlazos.Rows.Count >= 2)//herramientaAmex != "0" &&
             {
                 //TerminaCálculo("Recuerde que el primer mes debe de pagar el Saldo minimo ( $" + (PrimerPagoAmex + 0.1) + ")");
-
                 pagoRequerido = Math.Round(Convert.ToDouble(tblPlazos.Rows[0]["Pago"]) + Convert.ToDouble(tblPlazos.Rows[1]["Pago"]), 2);
                 FechaPagoInicial = Convert.ToString(tblPlazos.Rows[0]["Fecha"]);
                 FechaPagoInicial = FechaPagoInicial.Substring(4, 1);
@@ -1658,10 +1831,277 @@ namespace NoriAPI.Services
                 //TerminaCálculo("Presione Terminado para continuar.");
             }
         }
+        private (DataTable tblPlazo, double montoMod, string mensaje) AgregaPagos(DateTime dtFechaPago, double dPago, DataTable tblPlazos, bool _bLendingPrimes, double montoMod, string fechaPagoMod, double dMontoRequerido, int filaMod, double dPagoAnt, DateTime dtFechaPago_)
+        {
+            int iAñadidos = 0;
+            string mensaje_ = "";
+            double dMensualidad = Convert.ToDouble(tblPlazos.Rows[0]["Pago"].ToString());
+            double dMontoNegociado = Convert.ToDouble(tblPlazos.Rows[0]["Saldo"]);
+            if (Convert.ToDateTime(fechaPagoMod) >= Convert.ToDateTime(tblPlazos.Rows[0]["Fecha"]))
+            {
+                mensaje_ = "Todos los pagos deben de ser antes de " + Convert.ToDateTime(tblPlazos.Rows[0]["Fecha"]).ToShortDateString();
+            }
+            if (_bLendingPrimes)
+                if (montoMod > dMensualidad)
+                {
+                    mensaje_ = "El pago no puede se mayor a " + dMensualidad.ToString();
+                }
+            for (int i = 0; i < tblPlazos.Rows.Count; i++)
+                if (Convert.ToDateTime(tblPlazos.Rows[i]["Fecha"]) == Convert.ToDateTime(fechaPagoMod))
+                {
+                    mensaje_ = "Ya existe un pago con dicha fecha";
+                }
+
+            //Pago añadido.
+            DataRow drPrimerPago = tblPlazos.NewRow();
+            drPrimerPago["Fecha"] = Convert.ToDateTime(fechaPagoMod);
+            drPrimerPago["Pago"] = montoMod;
+            drPrimerPago["Saldo"] = dMontoRequerido;
+            drPrimerPago["Saldo Final"] = Math.Max(0, dMontoRequerido - montoMod);
+            tblPlazos.Rows.Add(drPrimerPago);
+
+            DataView dvPlazos = tblPlazos.DefaultView;
+            dvPlazos.Sort = "Fecha asc";
+            tblPlazos = dvPlazos.ToTable();
+            iAñadidos++;
+
+            //Requerido en plazo agregado.
+            tblPlazos.Rows[0]["Saldo"] = dMontoRequerido;
+            tblPlazos.Rows[0]["Saldo Final"] = dMontoRequerido - Convert.ToDouble(tblPlazos.Rows[0]["Pago"]);
+
+            if (_bLendingPrimes)
+            {
+                tblPlazos.Rows[iAñadidos]["Pago"] = Convert.ToDouble(tblPlazos.Rows[iAñadidos]["Pago"]) - montoMod;
+                tblPlazos.Rows[iAñadidos]["Saldo"] = Convert.ToDouble(tblPlazos.Rows[iAñadidos - 1]["Saldo Final"]);
+
+            }
+            //Inicial
+            for (int i = 1; i <= iAñadidos; i++)
+            {
+                tblPlazos.Rows[i]["Saldo"] = tblPlazos.Rows[i - 1]["Saldo Final"];
+                tblPlazos.Rows[i]["Saldo Final"] = Convert.ToDouble(tblPlazos.Rows[i]["Saldo"]) - Convert.ToDouble(tblPlazos.Rows[i]["Pago"]);
+            }
+
+            //if (!_bLendingPrimes)
+            //    (DataTable tblPlazo, double nuevoPago) = ModificaPagos(filaMod, dMontoNegociado, dtFechaPago_, tblPlazos, montoMod, _bLendingPrimes);
+            //Conteo
+            for (int i = 0; i < tblPlazos.Rows.Count; i++)
+            {
+                tblPlazos.Rows[i]["No."] = i + 1;
+            }
+            dMensualidad = Convert.ToDouble(tblPlazos.Rows[iAñadidos]["Pago"]);
+
+            return (tblPlazos, montoMod, mensaje_);
+
+        }
+        private (DataTable tblPlazo, double nuevoPago) ModificaPagos(int iPlazo, double dMontoNegociado, DateTime dtFechaPago, DataTable tblPlazo, double montoMod, bool _bLendingPrimes)
+        {
+            float dCentavos = 0;            
+            // modificamos el pago de la fila seleccionada
+            int rowIndex = iPlazo; // Reemplaza con el índice de la fila que deseas modificar
+            double nuevoPago = montoMod; // Reemplaza con el nuevo valor de pago
+
+            if (rowIndex >= 0 && rowIndex < tblPlazo.Rows.Count)
+            {
+                tblPlazo.Rows[rowIndex]["Pago"] = nuevoPago; // Actualizar la columna 'Pago'
+            }
+            for (int i = iPlazo; i <= tblPlazo.Rows.Count - 1; i++)
+            {
+                nuevoPago = (tblPlazo.Rows.Count - 1 == i ? dCentavos + nuevoPago : nuevoPago);
+                tblPlazo.Rows[i]["Pago"] = Math.Round(Math.Max(0, nuevoPago), 2);
+                tblPlazo.Rows[i]["Saldo"] = Math.Round(Math.Max(0, dMontoNegociado), 2);
+                tblPlazo.Rows[i]["Saldo Final"] = Math.Round(Math.Max(0, dMontoNegociado - nuevoPago), 2);
+                dMontoNegociado -= nuevoPago;
+
+                if (i == tblPlazo.Rows.Count - 1 && dMontoNegociado > 0)
+                    tblPlazo.Rows[i]["Pago"] = nuevoPago + dMontoNegociado;
+
+                if (i == tblPlazo.Rows.Count - 1 && dMontoNegociado < 0)
+                    tblPlazo.Rows[i]["Pago"] = nuevoPago + Math.Round(dMontoNegociado, 2);
+
+                if (iPlazo == i)
+                {
+                    nuevoPago = (dMontoNegociado / (tblPlazo.Rows.Count - i - 1));
+                    if (!_bLendingPrimes)
+                    {
+                        dCentavos += Convert.ToSingle(Math.Round(((float)(nuevoPago - Math.Truncate(nuevoPago)) * (tblPlazo.Rows.Count - i - 1)) * 100) / 100);
+                        nuevoPago = Math.Truncate(nuevoPago);
+                    }
+                    else
+                        nuevoPago = Math.Round(nuevoPago, 2);
+                }
+            }
+            return (tblPlazo, montoMod);
+        }
 
 
         #endregion
 
+        #region GuardaOfrecimientos
+        public async Task<dynamic> GuardarOfrecimiento(SaveOfrecimientoRequest ofrecimientoInfo)
+        {
+            string verificaOfrecimiento = VerificaOfrecimientoNegociación(ofrecimientoInfo);
+            if (!verificaOfrecimiento.IsNullOrEmpty())
+            {
+                return new { Message = verificaOfrecimiento, Success = false };
+            }
+
+            if (ofrecimientoInfo.IdHerramienta == 0)
+            {
+                return new { Message = "Indique la herramienta que se va a ofrecer.", Success = false };
+            }
+
+            var validaPootis = await _ejecutivoRepository.GuardaOfrecimientoStored(ofrecimientoInfo);
+
+            // Si no hay resultados, devolvemos un mensaje de error
+            if (validaPootis == null || !validaPootis.Any())
+            {
+                return new { Message = "No se encontraron validadores para el producto.", Success = false };
+            }
+
+
+            return new { Validadores = validaPootis, Message = verificaOfrecimiento, Success = true };
+
+        }
+        public static string VerificaOfrecimientoNegociación(SaveOfrecimientoRequest ofrecimiento)
+        {
+            // Validación de Monto Negociado vs Monto Requerido
+            if (Math.Round(ofrecimiento.MontoNegociado, 2, MidpointRounding.ToEven) < ofrecimiento.MontoRequerido
+                && !(new[] { 501, 503, 92, 106, 101, 108, 578, 583, 137 }.Contains(ofrecimiento.IdHerramienta)))
+            {
+                return "El Monto Negociado debe ser MAYOR que el Monto Requerido.";
+            }
+
+            // Validación de saldo según cartera
+            if (ofrecimiento.MontoNegociado > ofrecimiento.Saldo + 1 &&
+                new[] { 5, 7 }.Contains(ofrecimiento.IdCartera))
+            {
+                return "El Monto Negociado debe ser menor o igual al Saldo.";
+            }
+
+            if (ofrecimiento.MontoNegociado > ofrecimiento.Saldo + 1 &&
+                ofrecimiento.IdCartera == 4 &&
+                new[] { 126, 127, 133 }.Contains(ofrecimiento.IdProducto))
+            {
+                return "El Monto Negociado debe ser menor o igual al Saldo.";
+            }
+
+            // Validación de plazos
+            if (ofrecimiento.Plazos == null || ofrecimiento.Plazos.Length == 0)
+                return "Se debe de indicar el primer pago y su fecha.";
+
+            if (ofrecimiento.Plazos.Length == 1 && ofrecimiento.Plazos[0].Monto != ofrecimiento.MontoNegociado)
+                return "Al elegir un solo pago, el primer pago debe ser IGUAL al monto megociado.";
+
+            if (DateTime.Today.AddDays(ofrecimiento.Dias1erPago) < ofrecimiento.Plazos[0].Fecha)
+                return $"El primer pago debe de ser antes de {ofrecimiento.Dias1erPago} días.";
+
+            // Herramientas con pagos en el mismo mes
+            if (new[] { 87, 89, 104, 99, 100, 107 }.Contains(ofrecimiento.IdHerramienta) &&
+                ofrecimiento.Plazos[0].Fecha.Month != ofrecimiento.Plazos.Last().Fecha.Month)
+            {
+                return "Todos los plazos para esta herramienta deben de ser en el mismo mes.";
+            }
+
+            // Cálculo del descuento si aplica
+            if (ofrecimiento.MontoRequerido + 1 < ofrecimiento.MontoNegociado &&
+                ofrecimiento.Descuento > 0 &&
+                ofrecimiento.MontoRequerido > 0 &&
+                ofrecimiento.IdEjecutivoValidador == 0 &&
+                ofrecimiento.IdCartera != 1)
+            {
+                ofrecimiento.Descuento = (int)Math.Round(
+                    (1 - ((1 - (ofrecimiento.Descuento / 100.0)) * ofrecimiento.MontoNegociado / ofrecimiento.MontoRequerido)) * 100, 0
+                );
+            }
+
+            if (ofrecimiento.Descuento < 0)
+                return $"El Monto Negociado es mayor al Saldo. Verifique el cálculo del descuento ({ofrecimiento.Descuento}).";
+
+            // Validación de correo para carta convenio
+            if (ofrecimiento.CartaConvenio == 1 && !Funciones.ValidaCorreo(ofrecimiento.Correo?.Trim() ?? ""))
+                return "Para el envío de la Carta Convenio es necesario un Correo válido.";
+
+            return "";
+        }
+
+        #endregion
+
+        #region GuardaEliminaPlazos
+        public async Task<string> GuardaEliminaPlazos(EliminaGuardaPlazos PlazosInfo)
+        {          
+            //--------------------------------Todas las herramientas------------------------------//
+            DataTable dtHerramientas = await _ejecutivoRepository.ObtieneHerramientasCompletas();
+            dtHerramientas.PrimaryKey = new DataColumn[] { dtHerramientas.Columns["idHerramienta"] };
+           
+            //----------------------------------------------------------------------------------------------------//
+            int idBuscado = PlazosInfo.IdHerramienta;
+            
+            int iMargen = Convert.ToInt32(dtHerramientas.Rows.Find(idBuscado)["Margen"]);
+            int iDiasEntrePagos = Convert.ToInt32(dtHerramientas.Rows.Find(idBuscado)["DíasEntrePagos"]);
+
+            int iNúmPago = 0;
+            DateTime dtFin = new DateTime(), dtInicio = new DateTime();
+
+            foreach (Pago_ PagoNeg in PlazosInfo.Plazos)
+            {
+
+                /*InicioPlazoMargen*/
+                if (iNúmPago == 0) //Primer pago inicia cuando se inserta.
+                    dtInicio = DateTime.Now;
+
+                // Si la diferencia de días entre plazos es mayor 
+                else if ((PlazosInfo.Plazos[iNúmPago].Fecha - PlazosInfo.Plazos[iNúmPago - 1].Fecha).TotalDays > iDiasEntrePagos && PlazosInfo.IdHerramienta.ToString() != "509"
+                    && PlazosInfo.IdHerramienta.ToString() != "1010")
+                {
+                    if ((PlazosInfo.Plazos[iNúmPago].Fecha - PlazosInfo.Plazos[iNúmPago - 1].Fecha).TotalDays > iDiasEntrePagos && PlazosInfo.IdHerramienta.ToString() != "510")
+                        return "Existe una diferencia mayor a " + iDiasEntrePagos + " días entre el plazo " + iNúmPago + " y el " + (iNúmPago + 1) + ".";
+                }
+
+                // Si plazo anterior + margen alcanza este plazo. -> Misma fecha Pago (no se recorre).
+                else if (PlazosInfo.Plazos[iNúmPago].Fecha.AddDays(-iMargen) <= PlazosInfo.Plazos[iNúmPago - 1].Fecha)
+                    dtInicio = PlazosInfo.Plazos[iNúmPago].Fecha;
+                else
+                    dtInicio = PlazosInfo.Plazos[iNúmPago - 1].Fecha.AddDays(iMargen + 1);
+
+                /*FinPlazoMargen*/
+                // Si rebasa el siguiente plazo -> Siguiente plazo menos un día.
+                if (iNúmPago < PlazosInfo.Plazos.Length - 1 && PlazosInfo.Plazos[iNúmPago].Fecha.AddDays(iMargen) >= PlazosInfo.Plazos[iNúmPago + 1].Fecha)
+                    dtFin = PlazosInfo.Plazos[iNúmPago + 1].Fecha.AddDays(-1);
+                else // Plazo más margen
+                {
+                    if (PlazosInfo.IdHerramienta.ToString() == "510" && iNúmPago >= 1)
+                    {
+                        dtFin = PlazosInfo.Plazos[iNúmPago].Fecha.AddDays(iMargen);
+                        dtInicio = PlazosInfo.Plazos[iNúmPago - 1].Fecha.AddDays(iMargen + 1);
+                    }
+                    else
+                    {
+                        dtFin = PlazosInfo.Plazos[iNúmPago].Fecha.AddDays(iMargen);
+                    }
+                }
+                if(iNúmPago == 0)
+                {
+                    var borrarPlazos = _ejecutivoRepository.Elimina_Plazos(PlazosInfo);
+                }                    
+                var GuardaPlazos = _ejecutivoRepository.Guarda_Plazos(PlazosInfo, PagoNeg, dtInicio, dtFin, iNúmPago);
+
+                iNúmPago++;
+                               
+            }
+
+            return "Correcto.";
+        }
+
+        public async Task<dynamic> GuardaNegoaciacionPlazos_(GuardaNegociacionPlazos negociacionInfo)
+        {
+            var guardaNeg = await _ejecutivoRepository.Guarda_Negociacion_Plazos(negociacionInfo);
+
+            return guardaNeg;
+        }
+
+
+        #endregion
 
         #region Tiempos
         public async Task<TiemposEjecutivo> ValidateTimes(int numEmpleado)
@@ -1811,6 +2251,218 @@ namespace NoriAPI.Services
             seguimientosGet.TableName = "Seguimiento";
             dsTablas.Tables.Add(seguimientosGet);
         }
+
+
+        private DrInfo ObtenerDrInfo()
+        {
+            string connectionString = _configuration.GetConnectionString("Piso2Amex");
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string query = "SELECT idCartera, idCuenta FROM dbCollection.dbo.Cuentas LIMIT 1";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new DrInfo
+                            {
+                                IdCartera = reader.GetInt32(0),
+                                IdCuenta = reader.GetString(1)
+                            };
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
+                }
+            }
+        }
+
+        private List<SeguimientoModel> ObtenerSeguimientos()
+        {
+            string connectionString = _configuration.GetConnectionString("Piso2Amex");
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string query = "SELECT FechaSeguimiento, IdEjecutivo FROM dbCollection.dbo.Seguimientos";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        List<SeguimientoModel> seguimientos = new List<SeguimientoModel>();
+                        while (reader.Read())
+                        {
+                            seguimientos.Add(new SeguimientoModel
+                            {
+                                FechaSeguimiento = reader.GetDateTime(0),
+                                IdEjecutivo = reader.GetInt32(1)
+                            });
+                        }
+                        return seguimientos;
+                    }
+                }
+            }
+        }
+
+        private UltimaGestionModel ObtenerUltimaGestion(string idCuenta)
+        {
+            string connectionString = _configuration.GetConnectionString("Piso2Amex");
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string query = "SELECT FechaUltimaGestion, IdEjecutivoUltimaGestion FROM dbCollection.dbo.Cuentas WHERE IdCuenta = @idCuenta";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@idCuenta", idCuenta);
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new UltimaGestionModel
+                            {
+                                FechaUltimaGestion = reader.GetDateTime(0),
+                                IdEjecutivoUltimaGestion = reader.GetInt32(1)
+                            };
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
+                }
+            }
+        }
+
+        private List<CatalogoModel> ObtenerCatalogos()
+        {
+            string connectionString = _configuration.GetConnectionString("Piso2Amex");
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string query = "SELECT IdCatalogo, Catalogo, NombreId, DescripcionCatalogo, FechaCatalogo FROM dbCollection.dbo.Catalogos";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        List<CatalogoModel> catalogos = new List<CatalogoModel>();
+                        while (reader.Read())
+                        {
+                            catalogos.Add(new CatalogoModel
+                            {
+                                IdCatalogo = reader.GetInt32(0),
+                                Catalogo = reader.GetString(1),
+                                NombreId = reader.GetString(2),
+                                DescripcionCatalogo = reader.GetString(3),
+                                FechaCatalogo = reader.GetDateTime(4)
+                            });
+                        }
+                        return catalogos;
+                    }
+                }
+            }
+        }
+        public async Task<string> CreaSeguimientoAsync(SeguimientoCompletoModel seguimiento, DataRow _drInfo, int idEjecutivo)
+        {
+            string connectionString = _configuration.GetConnectionString("Piso2Amex");
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (SqlCommand command = new SqlCommand("[dbo].[2.3.CreaSeguimiento]", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+
+                        // Imprime los parámetros para depuración
+                        Debug.WriteLine("Entrada a CreaSeguimientoAsync:");
+                        Debug.WriteLine($"idCartera: {_drInfo["idCartera"]}");
+                        Debug.WriteLine($"idCuenta: {_drInfo["idCuenta"]}");
+                        Debug.WriteLine($"idEjecutivo: {idEjecutivo}");
+                        Debug.WriteLine($"FechaSeguimiento: {seguimiento.Fecha}");
+                        Debug.WriteLine($"SegundoSeguimiento: {seguimiento.Segundo}");
+                        Debug.WriteLine($"idAcercamiento: {seguimiento.IdAcercamiento}");
+                        Debug.WriteLine($"Recordatorio: {seguimiento.Recordatorio}");
+                        Debug.WriteLine($"NúmeroTelefónico: {seguimiento.NumeroTelefonico}");
+                        Debug.WriteLine($"DatoContacto: {seguimiento.DatoContacto}");
+                        Debug.WriteLine($"idMotivoS: {seguimiento.IdMotivoS}");
+
+                        // Asigna los parámetros al comando
+                        command.Parameters.AddWithValue("@idCartera", _drInfo["idCartera"]);
+                        command.Parameters.AddWithValue("@idCuenta", _drInfo["idCuenta"]);
+                        command.Parameters.AddWithValue("@idEjecutivo", idEjecutivo);
+                        command.Parameters.AddWithValue("@FechaSeguimiento", seguimiento.Fecha);
+                        command.Parameters.AddWithValue("@SegundoSeguimiento", seguimiento.Segundo);
+                        command.Parameters.AddWithValue("@idAcercamiento", seguimiento.IdAcercamiento);
+                        command.Parameters.AddWithValue("@Recordatorio", seguimiento.Recordatorio);
+                        command.Parameters.AddWithValue("@NúmeroTelefónico", seguimiento.NumeroTelefonico.HasValue ? (object)seguimiento.NumeroTelefonico.Value : DBNull.Value);
+                        command.Parameters.AddWithValue("@DatoContacto", string.IsNullOrEmpty(seguimiento.DatoContacto) ? DBNull.Value : (object)seguimiento.DatoContacto);
+                        command.Parameters.AddWithValue("@IdMotivoS ", string.IsNullOrEmpty(seguimiento.IdMotivoS) ? DBNull.Value : (object)seguimiento.IdMotivoS);
+
+                        await command.ExecuteNonQueryAsync();
+
+                        return ""; // Indica éxito
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                Debug.WriteLine($"Error SQL: {ex.Message}");
+                // Analiza el código de error de SqlException para identificar la causa del problema
+                if (ex.Number == 2627) // Error de clave duplicada
+                {
+                    return "Error: Ya existe un seguimiento con la misma fecha y hora.";
+                }
+                else if (ex.Number == 547) // Error de restricción de clave externa
+                {
+                    return "Error: No se encontró el registro relacionado.";
+                }
+                else
+                {
+                    return $"Falló al crear el seguimiento en la base de datos: {ex.Message}";
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error inesperado: {ex.Message}");
+                return $"Error inesperado al crear el seguimiento: {ex.Message}";
+            }
+        }
+
+        public static class DateTimeExtensions // Usar una clase estática para métodos de extensión
+        {
+            public static DateTime CombineDateTimeWithTimeSpan(object oFecha, object oSegundo)
+            {
+                if (oFecha == null || oSegundo == null)
+                    return DateTime.MinValue; // Devuelve DateTime.MinValue en lugar de new DateTime()
+
+                if (oFecha is DateTime fecha && oSegundo is TimeSpan segundo) // Usar pattern matching para validar y convertir
+                {
+                    try
+                    {
+                        return fecha.AddTicks(segundo.Ticks);
+                    }
+                    catch (ArgumentOutOfRangeException ex)
+                    {
+                        // Log the exception or handle it appropriately
+                        Console.WriteLine($"Error adding TimeSpan ticks: {ex.Message}");
+                        return DateTime.MinValue; // O maneja el error de otra manera
+                    }
+                }
+                else
+                {
+                    // Log an error or handle the invalid types
+                    Console.WriteLine("Invalid types for CombineDateTimeWithTimeSpan");
+                    return DateTime.MinValue;
+                }
+            }
+        }
+
+
+
         #endregion
 
         #region Accionamiento
@@ -1994,23 +2646,31 @@ namespace NoriAPI.Services
         public async Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo)
         {
             DataTable recordatorios = new DataTable();
-            string query = "SELECT * FROM fn_SeguimientosEjecutivo(@idEjecutivo)"; // Evita inyección SQL
+            string query = "SELECT * FROM fn_SeguimientosEjecutivo(@idEjecutivo)";
 
-            using (var connection = new SqlConnection(_connectionString))
+            try
             {
-                await connection.OpenAsync();
-                using (var command = new SqlCommand(query, connection))
+                using (var connection = new SqlConnection(_connectionString))
                 {
-                    // Usar Add con tipo explícito para evitar problemas con tipos de datos
-                    command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
-
-                    using (var adapter = new SqlDataAdapter(command))
+                    await connection.OpenAsync();
+                    using (var command = new SqlCommand(query, connection))
                     {
-                        adapter.Fill(recordatorios);
+                        command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
+
+                        using (var adapter = new SqlDataAdapter(command))
+                        {
+                            await Task.Run(() => adapter.Fill(recordatorios)); // Usar Task.Run para Fill
+                        }
                     }
                 }
             }
-            //string jsonString = JsonSerializer.Serialize();
+            catch (SqlException ex)
+            {
+                // Log the exception or handle it appropriately
+                Console.WriteLine($"Error retrieving seguimientos: {ex.Message}");
+                return null; // Or throw the exception
+            }
+
             return recordatorios;
         }
         public async Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas)
@@ -2102,7 +2762,6 @@ namespace NoriAPI.Services
                 busquedaGet.Columns["Fuente"].SetOrdinal(busquedaGet.Columns.IndexOf("idFuente") + 1);
             }
 
-
             // Llenar los valores de las nuevas columnas sobre la Hashtable ValoresCatálogo.
             foreach (DataRow row in busquedaGet.Rows)
             {
@@ -2115,6 +2774,53 @@ namespace NoriAPI.Services
                 {
                     row["Fuente"] = BuscarEnValoresHashtable(gespaBusqueda._htValoresCatálogo, Convert.ToString(row["idFuente"]));
                 }
+            }
+
+            // Mapeo de "Encontrado" y "Confirmado" a "✓" y "X"
+            if (busquedaGet.Columns.Contains("_Encontrado"))
+            {
+                busquedaGet.Columns.Add("_EncontradoString", typeof(string));
+                foreach (DataRow row in busquedaGet.Rows)
+                {
+                    if (row["_Encontrado"] != DBNull.Value)
+                    {
+                        try
+                        {
+                            int valorEncontrado = Convert.ToInt32(row["_Encontrado"]);
+                            row["_EncontradoString"] = valorEncontrado == 1 ? "✓" : "X";
+                        }
+                        catch (InvalidCastException ex)
+                        {
+                            Console.WriteLine($"Error al convertir _Encontrado: {ex.Message}");
+                            row["_EncontradoString"] = "?";
+                        }
+                    }
+                }
+                busquedaGet.Columns.Remove("_Encontrado");
+                busquedaGet.Columns["_EncontradoString"].ColumnName = "_Encontrado";
+            }
+
+            if (busquedaGet.Columns.Contains("_Confirmado"))
+            {
+                busquedaGet.Columns.Add("_ConfirmadoString", typeof(string));
+                foreach (DataRow row in busquedaGet.Rows)
+                {
+                    if (row["_Confirmado"] != DBNull.Value)
+                    {
+                        try
+                        {
+                            int valorConfirmado = Convert.ToInt32(row["_Confirmado"]);
+                            row["_ConfirmadoString"] = valorConfirmado == 1 ? "✓" : "X";
+                        }
+                        catch (InvalidCastException ex)
+                        {
+                            Console.WriteLine($"Error al convertir _Confirmado: {ex.Message}");
+                            row["_ConfirmadoString"] = "?";
+                        }
+                    }
+                }
+                busquedaGet.Columns.Remove("_Confirmado");
+                busquedaGet.Columns["_ConfirmadoString"].ColumnName = "_Confirmado";
             }
 
             dsTablas.Tables.Add(busquedaGet);
@@ -2488,9 +3194,13 @@ namespace NoriAPI.Services
                     case "Expediente":     //El equipo Front debe validar que no tenga letras
 
                         queryBusqueda += " WHERE CuentaActiva = 1 AND CL.Abreviación = '";
-                        foreach (char Caracter in ValorBusqueda.Substring(0, 3))
-                            if (char.IsLetter(Caracter))
-                                queryBusqueda += Caracter;
+                        foreach (var Caracter in from char Caracter in ValorBusqueda.Substring(0, 3)
+                                                 where char.IsLetter(Caracter)
+                                                 select Caracter)
+                        {
+                            queryBusqueda += Caracter;
+                        }
+
                         queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
                         //quitar letras cuando se libere a todas las carteras
                         queryBusqueda += "' AND C.Expediente = " + ValorBusqueda.Replace("AMX", "").Replace("amx", "").Replace(" ", "");
@@ -2561,6 +3271,81 @@ namespace NoriAPI.Services
             if (estadoGet == null || estadoGet.Rows.Count == 0)
                 return;
 
+            // Crear una nueva columna de tipo string
+            if (estadoGet.Columns.Contains("_Consulta"))
+            {
+                estadoGet.Columns.Add("_ConsultaString", typeof(string));
+
+                // Copiar y mapear los datos a la nueva columna
+                foreach (DataRow row in estadoGet.Rows)
+                {
+                    if (row["_Consulta"] != DBNull.Value)
+                    {
+                        try
+                        {
+                            int valorConsulta = Convert.ToInt32(row["_Consulta"]);
+                            row["_ConsultaString"] = valorConsulta == 1 ? "✓" : "X";
+                        }
+                        catch (InvalidCastException ex)
+                        {
+                            Console.WriteLine($"Error al convertir _Consulta: {ex.Message}");
+                            row["_ConsultaString"] = "?"; // O un valor predeterminado
+                        }
+                    }
+                }
+
+                // Eliminar la columna original _Consulta
+                estadoGet.Columns.Remove("_Consulta");
+                // Cambiar el nombre de la nueva columna para reemplazar la original
+                estadoGet.Columns["_ConsultaString"].ColumnName = "_Consulta";
+            }
+
+            if (dsTablas.Tables.Contains("EstadoDeCuenta"))
+            {
+                dsTablas.Tables.Remove("EstadoDeCuenta");
+            }
+
+            estadoGet.TableName = "EstadoDeCuenta";
+            dsTablas.Tables.Add(estadoGet);
+        }
+        public async Task<DataTable> GetEstadoDeCuentaCorreoAsync(int idCartera, string idCuenta)
+        {
+            DataTable estado = new DataTable();
+            string query = "SELECT * FROM fn_Correos(@idCartera, @idCuenta) where idInformación in (1901,1906,1907)";
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(estado);
+                    }
+                }
+            }
+            return estado;
+        }
+
+        public async Task ObtenerEstadodeCuentaCorreos(DataRow drDatos, DataSet dsTablas)
+        {
+            if (drDatos == null)
+                return;
+
+            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
+                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
+
+            var idCartera = Convert.ToInt32(drDatos["idCartera"]);
+            var idCuenta = Convert.ToString(drDatos["idCuenta"]);
+
+            DataTable estadoGet = await GetEstadoDeCuentaCorreoAsync(idCartera, idCuenta);
+
+            if (estadoGet == null || estadoGet.Rows.Count == 0)
+                return;
+
             if (dsTablas.Tables.Contains("EstadoDeCuenta"))
             {
                 dsTablas.Tables.Remove("EstadoDeCuenta");
@@ -2613,7 +3398,6 @@ namespace NoriAPI.Services
             {
                 return $"Error al guardar la solicitud de estado de cuenta: {ex.Message}";
             }
-            return "Error desconocido al procesar la solicitud de estado de cuenta.";
         }
         private async Task<string> ValidateBusqueda(EstadoDeCuenta estadoCuenta)
         {
@@ -2783,12 +3567,20 @@ namespace NoriAPI.Services
             }
 
             pagosGet.TableName = "Pagos";
+
+            ClasesGespaNonStatic gespaPagos = new();
+            gespaPagos.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            gespaPagos.CargaCatalogos();
+
+            AgregarYTraducirColumna(pagosGet, "Sucursal", "SucursalValor", gespaPagos._htValoresCatálogo);
+            AgregarYTraducirColumna(pagosGet, "idEtapa", "Etapa", gespaPagos._htValoresCatálogo);
+
             dsTablas.Tables.Add(pagosGet);
         }
         #endregion
 
         #region Gestiones
-        public async Task<DataTable> ObtieneGestionTeAsync(int idCartera, string idCuenta)
+        public async Task<DataTable> ObtieneGestionTeAsync(int idCartera, string idCuenta, int Top)
         {
             DataTable gestiones = new DataTable();
 
@@ -2796,10 +3588,11 @@ namespace NoriAPI.Services
             {
                 await connection.OpenAsync();
 
+                // Construir la consulta SQL dinámicamente
+                string sql = $"SELECT TOP ({Top}) * FROM fn_GestionesTelefónicas(@IdCartera, @IdCuenta)";
+
                 var parameters = new { IdCartera = idCartera, IdCuenta = idCuenta };
-                var gestionesResult = await connection.QueryAsync<dynamic>(
-                    "SELECT * FROM fn_GestionesTelefónicas(@IdCartera, @IdCuenta)",
-                    parameters);
+                var gestionesResult = await connection.QueryAsync<dynamic>(sql, parameters);
 
                 if (gestionesResult.Any())
                 {
@@ -2826,6 +3619,20 @@ namespace NoriAPI.Services
                     }
                 }
             }
+
+            ClasesGespaNonStatic gespaGestiones = new();
+            gespaGestiones.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            gespaGestiones.CargaCatalogos();
+
+            AgregarYTraducirColumna(gestiones, "idContacto", "Contacto", gespaGestiones._htValoresCatálogo);
+            AgregarYTraducirColumna(gestiones, "idSituación", "Situación", gespaGestiones._htValoresCatálogo);
+            AgregarYTraducirColumna(gestiones, "idParentesco", "Parentesco", gespaGestiones._htValoresCatálogo);
+            AgregarYTraducirColumna(gestiones, "idCausaNoPago", "CausaNoPago", gespaGestiones._htValoresCatálogo);
+            AgregarYTraducirColumna(gestiones, "idModo", "Modo", gespaGestiones._htValoresCatálogo);
+            AgregarYTraducirColumna(gestiones, "idAcercamiento", "Acercamiento", gespaGestiones._htValoresCatálogo);
+            AgregarYTraducirColumna(gestiones, "idEtapa", "Etapa", gespaGestiones._htValoresCatálogo);
+            AgregarYTraducirColumna(gestiones, "idSucursal", "Sucursal", gespaGestiones._htValoresCatálogo);
+
 
             return gestiones;
         }
@@ -2941,24 +3748,20 @@ namespace NoriAPI.Services
         }
         #endregion
 
-        #region Scrips
+        #region Scripts
         public DataTable BuscaScripts(int idProducto)
         {
-            DataTable scripts = new DataTable();
+            DataTable scripts = new();
 
             try
             {
-                using (SqlConnection connection = new SqlConnection(_connectionString)) // Usar la cadena de conexión de tu servicio
+                using (SqlConnection connection = new(_connectionString)) // Usar la cadena de conexión de tu servicio
                 {
                     connection.Open();
 
-                    using (SqlCommand command = new SqlCommand($"SELECT * FROM Scripts (NOLOCK) WHERE idProducto = {idProducto}", connection))
-                    {
-                        using (SqlDataAdapter adapter = new SqlDataAdapter(command))
-                        {
-                            adapter.Fill(scripts);
-                        }
-                    }
+                    using SqlCommand command = new($"SELECT * FROM Scripts (NOLOCK) WHERE idProducto = {idProducto}", connection);
+                    using SqlDataAdapter adapter = new(command);
+                    adapter.Fill(scripts);
                 }
 
                 if (scripts.Rows.Count == 0)
@@ -2975,6 +3778,103 @@ namespace NoriAPI.Services
                 return new DataTable(); // or throw the exception
             }
         }
+
+        public async Task<DataTable> BuscaScriptsTranslated(int idEjecutivo, int idProducto, int idCartera, string cuenta)
+        {
+            var scripts = await _ejecutivoRepository.ObtenerScriptsAsync(idProducto);
+            var infoCuenta = await _ejecutivoRepository.InfoCuenta(idCartera, cuenta);
+            var producto = await _ejecutivoRepository.ObtieneProducto(cuenta);
+            var datosEjecutivo = await _ejecutivoRepository.ObtenerDatosEjecutivo(idEjecutivo);
+
+            // Convertimos info de producto en diccionario
+            var productoDictionary = new Dictionary<string, string>();
+            if (producto.Rows.Count > 0)
+            {
+                foreach (DataColumn column in producto.Columns)
+                {
+                    productoDictionary[column.ColumnName] = producto.Rows[0][column].ToString();
+                }
+            }
+
+
+            // InfoCuenta: se asume una sola fila
+            var drInfo = infoCuenta.Rows.Count > 0 ? infoCuenta.Rows[0] : null;
+            var drEjecutivo = datosEjecutivo.Rows.Count > 0 ? datosEjecutivo.Rows[0] : null;
+
+            // Recorremos cada fila del script y aplicamos reemplazo
+            foreach (DataRow row in scripts.Rows)
+            {
+                foreach (DataColumn column in scripts.Columns)
+                {
+                    if (column.DataType == typeof(string) && row[column] != DBNull.Value)
+                    {
+                        string original = row[column].ToString();
+                        string reemplazado = FormatoScript(original, drInfo, drEjecutivo, productoDictionary);
+                        row[column] = reemplazado;
+                    }
+                }
+            }
+
+            return scripts;
+        }
+
+        private static string FormatoScript(string texto, DataRow drInfo, DataRow drEjecutivo, Dictionary<string, string> productoDict)
+        {
+            if (string.IsNullOrEmpty(texto))
+                return texto;
+
+            var resultado = new StringBuilder();
+            int start = 0;
+
+            while (start < texto.Length)
+            {
+                int openBracket = texto.IndexOf('[', start);
+                if (openBracket == -1)
+                {
+                    resultado.Append(texto.Substring(start));
+                    break;
+                }
+
+                int closeBracket = texto.IndexOf(']', openBracket);
+                if (closeBracket == -1)
+                {
+                    resultado.Append(texto.Substring(start));
+                    break;
+                }
+
+                // Agrega el texto antes del token
+                resultado.Append(texto.Substring(start, openBracket - start));
+
+                // Extrae el contenido dentro de los corchetes
+                string key = texto.Substring(openBracket + 1, closeBracket - openBracket - 1);
+
+                // Realiza el reemplazo usando ReemplazaInfo
+                string reemplazo = ReemplazaInfo(key, drInfo, drEjecutivo, productoDict);
+                resultado.Append(reemplazo);
+
+                // Continúa después del cierre del corchete
+                start = closeBracket + 1;
+            }
+
+            return resultado.ToString();
+        }
+
+        private static string ReemplazaInfo(string key, DataRow drInfo, DataRow drEjecutivo, Dictionary<string, string> productoDict)
+        {
+            if (drInfo != null && drInfo.Table.Columns.Contains(key) && drInfo[key] != DBNull.Value)
+                return drInfo[key].ToString();
+
+            if (productoDict != null && productoDict.TryGetValue(key, out var valProducto))
+                return valProducto;
+
+            if (drEjecutivo != null && drEjecutivo.Table.Columns.Contains(key) && drEjecutivo[key] != DBNull.Value)
+                return drEjecutivo[key].ToString();
+
+            return string.Empty; // Si no se encuentra nada
+        }
+
+
+
         #endregion
 
         #region Relaciones
@@ -3630,6 +4530,24 @@ namespace NoriAPI.Services
                     Console.WriteLine($"Error en AddParametersToRow: {ex.Message}");
                 }
             }
+
+            /// <summary>
+            /// Valida la dirección de correo electrónico.
+            /// </summary>
+            /// <param name="DirecciónCorreo">Dirección de correo electrónico.</param>
+            /// <returns>True si es correcta, Falso si es incorrecta.</returns>
+            public static bool ValidaCorreo(string DirecciónCorreo)
+            {
+
+                string validEmailPattern =
+                    @"^(?!\.)(""([^""\r\\]|\\[""\r\\])*""|"
+                    + @"([-a-z0-9!#$%&'*+/=?^_`{|}~]|(?<!\.)\.)*)(?<!\.)"
+                    + @"@[-a-z0-9][\w\.-]*[a-z0-9]\.[a-z][a-z\.]*[a-z]$";
+
+                Regex ValidEmailRegex = new(validEmailPattern, RegexOptions.IgnoreCase);
+
+                return ValidEmailRegex.IsMatch(DirecciónCorreo);
+            }
         }
         #endregion
 
@@ -3677,6 +4595,239 @@ namespace NoriAPI.Services
         }
         #endregion
 
+        #region Guardar Ofrecimiento
+        //private string VerificaOfrecimientoNegociación(NegociacionClass Ofrecimiento, DataRow _drInfo)
+        //{
+        //    if (Math.Round(Ofrecimiento.MontoNegociado, 2, MidpointRounding.ToEven) < Ofrecimiento.MontoRequerido
+        //        && !(Ofrecimiento.idHerramienta == 501 || Ofrecimiento.idHerramienta == 503 || Ofrecimiento.idHerramienta == 92
+        //        || Ofrecimiento.idHerramienta == 106 || Ofrecimiento.idHerramienta == 101 || Ofrecimiento.idHerramienta == 108
+        //        || Ofrecimiento.idHerramienta == 578 || Ofrecimiento.idHerramienta == 583 || Ofrecimiento.idHerramienta == 137))
+        //    {
+        //        return "El Monto Negociado debe ser MAYOR que el Monto Requerido.";
+        //    }
+
+        //    if (Ofrecimiento.MontoNegociado > Ofrecimiento.Saldo + 1 && (_drInfo["idCartera"].ToString() == "7" || _drInfo["idCartera"].ToString() == "5"))
+        //    {
+        //        return "El Monto Negociado debe ser menor o igual al Saldo.";
+        //    }
+
+        //    if (Ofrecimiento.MontoNegociado > Ofrecimiento.Saldo + 1 && (_drInfo["idCartera"].ToString() == "4" && _drInfo["idProducto"].ToString() == "126" || _drInfo["idCartera"].ToString() == "4" && _drInfo["idProducto"].ToString() == "127" || _drInfo["idCartera"].ToString() == "4" && _drInfo["idProducto"].ToString() == "133"))
+        //    {
+        //        return "El Monto Negociado debe ser menor o igual al Saldo.";
+        //    }
+
+        //    if (Ofrecimiento.Plazos.Length == 0)
+        //    {
+        //        return "Se debe de indicar el primer pago y su fecha.";
+        //    }
+
+        //    if (Ofrecimiento.Plazos.Length == 1 && Ofrecimiento.Plazos[0].Monto != Ofrecimiento.MontoNegociado)
+        //    {
+        //        return "Al elegir un solo pago, el Primer Pago debe ser IGUAL al Monto Negociado.";
+        //    }
+
+        //    if (DateTime.Today.AddDays(Ofrecimiento.Días1erPago) < Ofrecimiento.Plazos[0].Fecha)
+        //    {
+        //        return "El primero pago debe de ser antes de " + Ofrecimiento.Días1erPago + " días.";
+        //    }
+
+        //    if ((Ofrecimiento.idHerramienta == 87 || Ofrecimiento.idHerramienta == 89 || Ofrecimiento.idHerramienta == 104 || Ofrecimiento.idHerramienta == 99 || Ofrecimiento.idHerramienta == 100 || Ofrecimiento.idHerramienta == 107) &&
+        //        Ofrecimiento.Plazos[0].Fecha.Month != Ofrecimiento.Plazos[Ofrecimiento.Plazos.Length - 1].Fecha.Month)
+        //    {
+        //        return "Todos los plazos para esta herramienta deben de ser en el mismo mes.";
+        //    }
+
+        //    if (Ofrecimiento.MontoRequerido + 1 < Ofrecimiento.MontoNegociado && Ofrecimiento.Descuento > 0 && Ofrecimiento.MontoRequerido > 0 && Ofrecimiento.idEjecutivoValidador == 0 && _drInfo["idCartera"].ToString() != "1")
+        //    {
+        //        Ofrecimiento.Descuento = (int)Math.Round((1 - ((1 - (Ofrecimiento.Descuento / 100.0)) * Ofrecimiento.MontoNegociado / Ofrecimiento.MontoRequerido)) * 100, 0);
+        //    }
+
+        //    if (Ofrecimiento.Descuento < 0)
+        //    {
+        //        return "El Monto Negociado es mayor al Saldo. Verifique el cálculo del descuento (" + Ofrecimiento.Descuento + ").";
+        //    }
+
+        //    if (Ofrecimiento.CartaConvenio == 1 && !Funciones.ValidaCorreo(Ofrecimiento.Correo.Trim()))
+        //    {
+        //        return "Para el envío de la Carta Convenio es necesario un Correo válido.";
+        //    }
+
+        //    return "";
+        //}
+        //public async Task<string> GuardaOfrecimientoAsync(NegociacionClass Ofrecimiento, DataRow _drInfo, DataRow InfoProducto, EjecutivoClass Ejecutivo, DataTable Negociaciones, DataTable Catálogos, DateTime _Fecha, TimeSpan _Segundo)
+        //{
+        //    string sMensaje = VerificaOfrecimientoNegociación(Ofrecimiento);
+        //    if (sMensaje != "")
+        //        return sMensaje;
+
+        //    if (Ofrecimiento.idHerramienta == 0)
+        //        return "Indique la herramienta que se va a ofrecer.";
+
+        //    string connectionString = _configuration.GetConnectionString("dbCollection"); // Ajusta el nombre de tu cadena de conexión
+
+        //    try
+        //    {
+        //        using (SqlConnection connection = new SqlConnection(connectionString))
+        //        {
+        //            await connection.OpenAsync();
+        //            using (SqlCommand command = new SqlCommand("[dbo].[3.1.GuardaOfrecimiento]", connection))
+        //            {
+        //                command.CommandType = CommandType.StoredProcedure;
+
+        //                // Parámetros del procedimiento almacenado
+        //                command.Parameters.AddWithValue("@idCartera", _drInfo["idCartera"]);
+        //                command.Parameters.AddWithValue("@idCuenta", _drInfo["idCuenta"]);
+        //                command.Parameters.AddWithValue("@idProducto", _drInfo["idProducto"]);
+        //                command.Parameters.AddWithValue("@idEjecutivo", Ejecutivo.Datos["idEjecutivo"]);
+        //                command.Parameters.AddWithValue("@idHerramienta", Ofrecimiento.idHerramienta);
+        //                command.Parameters.AddWithValue("@MontoRequerido", Ofrecimiento.MontoRequerido);
+        //                command.Parameters.AddWithValue("@MontoOfrecido", Ofrecimiento.MontoNegociado);
+        //                command.Parameters.AddWithValue("@Descuento", Ofrecimiento.Descuento);
+
+        //                if (Ofrecimiento.idHerramienta.ToString() == "509" || Ofrecimiento.idHerramienta.ToString() == "510")
+        //                {
+        //                    command.Parameters.AddWithValue("@Saldo", InfoProducto["TOTAL_DEUDOR_POSICION"].ToString());
+        //                }
+        //                else
+        //                {
+        //                    command.Parameters.AddWithValue("@Saldo", Ofrecimiento.Saldo);
+        //                }
+
+        //                command.Parameters.AddWithValue("@Plazos", Ofrecimiento.Plazos.Length);
+        //                command.Parameters.AddWithValue("@FechaCorte", Ofrecimiento.FechaCorte == new DateTime() ? DBNull.Value : (object)Ofrecimiento.FechaCorte);
+        //                command.Parameters.AddWithValue("@Fecha_Insert", _Fecha);
+        //                command.Parameters.AddWithValue("@Segundo_Insert", _Segundo);
+
+        //                using (SqlDataReader reader = await command.ExecuteReaderAsync())
+        //                {
+        //                    DataTable tblResultado = new DataTable();
+        //                    tblResultado.Load(reader);
+
+        //                    // ... (resto de la lógica para actualizar Negociaciones) ...
+        //                    DataRow drOfrecimiento = Negociaciones.Rows.Find(new object[] { _Fecha, _Segundo, Ofrecimiento.idHerramienta });
+
+        //                    if (drOfrecimiento == null)
+        //                    {
+        //                        drOfrecimiento = Negociaciones.NewRow();
+
+        //                        // Supongo que Funciones.AddParametersToRow es una función que tienes para agregar parámetros a una fila de DataTable.
+        //                        // Si esta función realiza operaciones de base de datos, deberías adaptarla para ser asíncrona también.
+        //                        Funciones.AddParametersToRow(command.Parameters, drOfrecimiento); // Ajusta esto si es necesario
+        //                        drOfrecimiento["Ofreció"] = Ejecutivo.Datos["NombreEjecutivo"];
+        //                        drOfrecimiento["Herramienta"] = Catálogos.Herramientas.Rows.Find(Ofrecimiento.idHerramienta)["Nombre"];
+
+        //                        Negociaciones.Rows.Add(drOfrecimiento);
+        //                    }
+        //                    else
+        //                    {
+        //                        Funciones.AddParametersToRow(command.Parameters, drOfrecimiento); // Ajusta esto si es necesario
+        //                    }
+
+        //                    return ""; // Éxito
+        //                }
+        //            }
+        //        }
+        //    }
+        //    catch (SqlException ex)
+        //    {
+        //        // Manejo de errores de SQL
+        //        return $"Falló al guardar ofrecimiento: {ex.Message}";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Manejo de otros errores
+        //        return $"Error inesperado al guardar ofrecimiento: {ex.Message}";
+        //    }
+        //}
+        #endregion
+
+        #region Usos Horarios
+        public async Task<DataTable> GetUsosHorariosAsync(string Telefono, string idCuenta,int idCartera,int idEjecutivo)
+        {
+            DataTable estado = new DataTable();
+            string query = "exec [dbCollection].dbo.[ValidarHorarioMarcacion] @Telefono,@idCuenta,@idCartera,@idEjecutivo";
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.Add("@Telefono", SqlDbType.VarChar).Value = Telefono;
+                    command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
+                    command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
+                    command.Parameters.Add("@idEjecutivo", SqlDbType.Int).Value = idEjecutivo;
+
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(estado);
+                    }
+                }
+            }
+            return estado;
+        }
+
+        public async Task ObtenerUsoHorario(DataRow drDatos, DataSet dsTablas)
+        {
+            if (drDatos == null)
+                return;
+
+            if (!drDatos.Table.Columns.Contains("idCartera") || !drDatos.Table.Columns.Contains("idCuenta"))
+                throw new ArgumentException("Las columnas 'idCartera' y/o 'idCuenta' no existen en el DataRow");
+
+            var idCartera = Convert.ToInt32(drDatos["idCartera"]);
+            var idCuenta = Convert.ToString(drDatos["idCuenta"]);
+            var Telefono = Convert.ToString(drDatos["Telefono"]);
+            var idEjecutivo = Convert.ToInt32(drDatos["idEjecutivo"]);
+
+            DataTable estadoGet = await GetUsosHorariosAsync(Telefono, idCuenta, idCartera,idEjecutivo);
+
+            if (estadoGet == null || estadoGet.Rows.Count == 0)
+                return;
+
+
+            if (dsTablas.Tables.Contains("EstadoDeCuenta"))
+            {
+                dsTablas.Tables.Remove("EstadoDeCuenta");
+            }
+
+            estadoGet.TableName = "EstadoDeCuenta";
+            dsTablas.Tables.Add(estadoGet);
+        }
+        #endregion
+
+        public static void AgregarYTraducirColumna(DataTable table, string columnaBase, string nuevaColumna, Hashtable valoresCatalogo)
+        {
+            // Verificar si la columna base existe en la DataTable
+            if (table.Columns.Contains(columnaBase))
+            {
+                // Crear e insertar la nueva columna después de la columna base
+                DataColumn nuevaCol = new DataColumn(nuevaColumna, typeof(string));
+                table.Columns.Add(nuevaCol);
+                table.Columns[nuevaColumna].SetOrdinal(table.Columns.IndexOf(columnaBase) + 1);
+
+                // Llenar los valores de la nueva columna usando la lógica de "traducción"
+                foreach (DataRow row in table.Rows)
+                {
+                    if (row[columnaBase] != DBNull.Value)
+                    {
+                        string valor = Convert.ToString(row[columnaBase]);
+
+                        // Validar si el valor es un número antes de traducirlo
+                        if (int.TryParse(valor, out _))
+                        {
+                            row[nuevaColumna] = BuscarEnValoresHashtable(valoresCatalogo, valor);
+                        }
+                        else
+                        {
+                            row[nuevaColumna] = DBNull.Value;
+                        }
+                    }
+                }
+            }
+        }
+
+
+
         /// <summary>
         /// Busca un valor en un Hashtable basado en una clave específica.
         /// </summary>
@@ -3698,9 +4849,76 @@ namespace NoriAPI.Services
             return null; // Retorna null si no se encuentra la clave en el Hashtable.
         }
 
+
     }
 
 
+    public static class DataExtensions
+    {
+        // ... (tu método AsDataTable para SeguimientoModel) ...
+        public static DataTable AsDataTable(this List<SeguimientoModel> seguimientos)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("FechaSeguimiento", typeof(DateTime));
+            dt.Columns.Add("IdEjecutivo", typeof(int));
 
+            foreach (var seguimiento in seguimientos)
+            {
+                DataRow dr = dt.NewRow();
+                dr["FechaSeguimiento"] = seguimiento.FechaSeguimiento;
+                dr["IdEjecutivo"] = seguimiento.IdEjecutivo;
+                dt.Rows.Add(dr);
+            }
+
+            return dt;
+        }
+        public static DataTable AsDataTable(this List<CatalogoModel> catalogos)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("IdCatalogo", typeof(int));
+            dt.Columns.Add("Catalogo", typeof(string));
+            dt.Columns.Add("NombreId", typeof(string));
+            dt.Columns.Add("DescripcionCatalogo", typeof(string));
+            dt.Columns.Add("FechaCatalogo", typeof(DateTime));
+
+            foreach (var catalogo in catalogos)
+            {
+                DataRow dr = dt.NewRow();
+                dr["IdCatalogo"] = catalogo.IdCatalogo;
+                dr["Catalogo"] = catalogo.Catalogo;
+                dr["NombreId"] = catalogo.NombreId;
+                dr["DescripcionCatalogo"] = catalogo.DescripcionCatalogo;
+                dr["FechaCatalogo"] = catalogo.FechaCatalogo;
+                dt.Rows.Add(dr);
+            }
+
+            return dt;
+        }
+        public static DataRow AsDataRow(this DrInfo drInfo)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("idCartera", typeof(int));
+            dt.Columns.Add("idCuenta", typeof(string));
+
+            DataRow dr = dt.NewRow();
+            dr["idCartera"] = drInfo.IdCartera;
+            dr["idCuenta"] = drInfo.IdCuenta;
+
+            return dr;
+        }
+        public static DataRow AsDataRow(this UltimaGestionModel ultimaGestion)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("FechaUltimaGestion", typeof(DateTime));
+            dt.Columns.Add("IdEjecutivoUltimaGestion", typeof(int));
+
+            DataRow dr = dt.NewRow();
+            dr["FechaUltimaGestion"] = ultimaGestion.FechaUltimaGestion;
+            dr["IdEjecutivoUltimaGestion"] = ultimaGestion.IdEjecutivoUltimaGestion;
+
+            return dr;
+        }
+
+    }
 
 }

@@ -25,24 +25,6 @@ namespace NoriAPI.Models
         public static DataTable tblDelDía = new DataTable();
         #endregion
 
-        #region Calculadora
-
-     
-
-
-
-        #endregion
-
-
-        #region Calculadora
-
-
-
-
-
-        #endregion
-
-        private readonly IEjecutivoRepository _ejecutivoRepository;
 
         #region Productividad
         public static void CargaCatalogos()
@@ -312,17 +294,12 @@ namespace NoriAPI.Models
 
             }
 
-            // Tiempos            
+            // Tiempos
             return sNombreColumna;
         }
 
         #endregion
 
-        #region Preguntas_Respuestas        
-
-
-
-        #endregion
 
     }
 
