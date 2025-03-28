@@ -18,6 +18,7 @@ using NoriAPI.Models.CargaGestionamiento;
 
 using System.ComponentModel.DataAnnotations;
 using NoriAPI.Models.Ofrecimiento;
+using NoriAPI.Models;
 
 namespace NoriAPI.Controllers
 {
@@ -75,7 +76,6 @@ namespace NoriAPI.Controllers
 
         #region Seguimientos
         [HttpGet("seguimientos/{idCartera}/{idCuenta}")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetSeguimiento(int idCartera, string idCuenta)
         {
             try
@@ -106,7 +106,6 @@ namespace NoriAPI.Controllers
             }
         }
         [HttpPost("crearSeguimiento")]
-        [AllowAnonymous]
         public async Task<IActionResult> CrearSeguimiento([FromBody] SeguimientoCompletoModel request)
         {
             try
@@ -152,7 +151,7 @@ namespace NoriAPI.Controllers
             return dt.Rows[0];
         }
 
-        
+
 
         #endregion
 
@@ -556,6 +555,40 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+        //ObtenerUsoHorario
+
+
+
+        [HttpGet("estadoDeCuentaCorreo/{idCartera}/{idCuenta}")]
+        public async Task<IActionResult> GetEstadoDeCuentaCorreo(int idCartera, string idCuenta)
+        {
+            try
+            {
+                DataSet dsTablas = new();
+                DataTable EstadoTable = dsTablas.Tables.Add("EstadoDeCuenta");
+                EstadoTable.Columns.Add("idCartera", typeof(int));
+                EstadoTable.Columns.Add("idCuenta", typeof(string));
+                DataRow drDatos = EstadoTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
+
+                await _ejecutivoService.ObtenerEstadodeCuentaCorreos(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("EstadoDeCuenta") || dsTablas.Tables["EstadoDeCuenta"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Estados De Cuenta para este ejecutivo.");
+                }
+
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["EstadoDeCuenta"]);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
 
         [HttpPost("SaveEstadoDeCuenta")]
         public async Task<IActionResult> SaveCargoEstadoDeCuenta([FromBody] EstadoDeCuentaRe newEstadoCuenta)
@@ -646,9 +679,8 @@ namespace NoriAPI.Controllers
                 }
 
                 var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Pagos"]);
-                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
-
-                return Ok(jsonString);
+                string jsonPagos = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+                return Content(jsonPagos, "application/json; charset=utf-8");
             }
             catch (Exception ex)
             {
@@ -680,9 +712,9 @@ namespace NoriAPI.Controllers
 
                 // Convertir DataTable a JSON
                 var listaSeguimientos = ConvertDataTableToList(gestiones);
-                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+                string jsonGestionTe = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
 
-                return Ok(jsonString);
+                return Content(jsonGestionTe, "application/json; charset=utf-8");
             }
             catch (Exception ex)
             {
@@ -811,6 +843,23 @@ namespace NoriAPI.Controllers
             {
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
+        }
+
+        [HttpGet("scripts-full/{idProducto}/{idCartera}/{cuenta}")]
+        public async Task<IActionResult> BuscaScripts(int idEjecutivo, int idProducto, int idCartera, string cuenta)
+        {
+            var resultado = await _ejecutivoService.BuscaScriptsTranslated(idEjecutivo, idProducto, idCartera, cuenta);
+
+            if (resultado.Rows.Count == 0)
+            {
+                return NotFound("No se encontraron scripts para el producto.");
+            }
+
+
+            var listaScripts = ConvertDataTableToList(resultado);
+            string jsonScripts = JsonSerializer.Serialize(listaScripts, new JsonSerializerOptions { WriteIndented = true });
+
+            return Content(jsonScripts, "application/json; charset=utf-8");
         }
         #endregion
 
@@ -1168,6 +1217,44 @@ namespace NoriAPI.Controllers
 
 
 
+        #endregion
+
+        #region Usos Horarios
+        [HttpGet("UsosHorarios/{idCartera}/{idCuenta}/{Telefono}/{idEjecutivo}")]
+
+        public async Task<IActionResult> GetUsosHorarios(int idCartera, string idCuenta, string Telefono, int idEjecutivo)
+        {
+            try
+            {
+                DataSet dsTablas = new();
+                DataTable EstadoTable = dsTablas.Tables.Add("EstadoDeCuenta");
+                EstadoTable.Columns.Add("idCartera", typeof(int));
+                EstadoTable.Columns.Add("idCuenta", typeof(string));
+                EstadoTable.Columns.Add("Telefono", typeof(string));
+                EstadoTable.Columns.Add("idEjecutivo", typeof(int));
+                DataRow drDatos = EstadoTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
+                drDatos["Telefono"] = Telefono;
+                drDatos["idEjecutivo"] = idEjecutivo;
+
+                await _ejecutivoService.ObtenerUsoHorario(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("EstadoDeCuenta") || dsTablas.Tables["EstadoDeCuenta"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Estados De Cuenta para este ejecutivo.");
+                }
+
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["EstadoDeCuenta"]);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Content(jsonString, "application/json; charset=utf-8");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
         #endregion
 
         #region Correos

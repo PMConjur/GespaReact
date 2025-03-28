@@ -9,6 +9,9 @@ namespace NoriAPI.Models.Ofrecimiento
         public string Referencia { get; set; }
         public string Sucursal { get; set; }
 
+        // Constructor sin parámetros (agregado)
+        public Pago() { }
+
         public Pago(double monto, DateTime fecha)
         {
             Monto = monto;
