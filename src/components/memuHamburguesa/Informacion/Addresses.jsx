@@ -11,6 +11,7 @@ import {
 import { toast } from "sonner";
 import servicio from "../../../services/axiosServices";
 import { AppContext } from "../../../pages/Managment"; // Asegúrate de que la ruta sea correcta
+
 const Addresses = ({ show, handleClose }) => {
   const { searchResults } = useContext(AppContext); // Obtén el contexto
   const [formData, setFormData] = useState({
@@ -37,7 +38,8 @@ const Addresses = ({ show, handleClose }) => {
   const [tableDomData, setTableDomData] = useState([]); // Asegúrate de que esta línea esté presente
   // Obtener el idCuenta del primer resultado de searchResults
   const idCuenta = searchResults.length > 0 ? searchResults[0].idCuenta : null;
-
+  const responseData = JSON.parse(localStorage.getItem("responseData"));
+  const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
   // Obtener dirección y visitas
   useEffect(() => {
     if (show) {
@@ -352,9 +354,28 @@ const Addresses = ({ show, handleClose }) => {
       setIsLoading(false);
     }
   };
-
+  const clearFormFields = () => {
+    setFormData({
+      calle: "",
+      numExt: "",
+      numInt: "",
+      codigoPostal: "",
+      colonia: "",
+      municipio: "",
+      estado: "",
+      origen: "Gestión",
+    });
+    setClase(""); // Limpia el campo "Clase"
+  };
   return (
-    <Modal show={show} onHide={handleClose} size="xl">
+    <Modal
+      show={show}
+      onHide={() => {
+        handleClose();
+        clearFormFields(); // Limpia los campos al cerrar el modal
+      }}
+      size="xl"
+    >
       <Modal.Header closeButton>
         <Modal.Title>Domicilios</Modal.Title>
       </Modal.Header>
@@ -408,13 +429,17 @@ const Addresses = ({ show, handleClose }) => {
                     <Form.Label>Código Postal</Form.Label>
                     <Form.Control
                       type="text"
-                      value={formData.codigoPostal}
-                      onChange={(e) =>
+                      value={formData.codigoPostal || ""}
+                      onChange={(e) => {
+                        const inputValue = e.target.value;
                         setFormData({
                           ...formData,
-                          codigoPostal: e.target.value,
-                        })
-                      }
+                          codigoPostal: inputValue, // Permite ingresar texto directamente
+                        });
+                      }}
+                      placeholder={
+                        formData.codigoPostal || "Ingrese el código postal"
+                      } // Muestra el valor actual como placeholder
                     />
                   </Form.Group>
                 </Col>
@@ -529,6 +554,9 @@ const Addresses = ({ show, handleClose }) => {
                         );
                         toast.success("Dirección guardada exitosamente.");
                         console.log("Respuesta del servidor:", response.data);
+
+                        // Actualizar la tabla de domicilios después de guardar
+                        await fetchTableDomicilioData();
                       } catch (error) {
                         if (error.response) {
                           console.error(
@@ -561,6 +589,7 @@ const Addresses = ({ show, handleClose }) => {
                         }
                       } finally {
                         setIsLoading(false);
+                        clearFormFields();
                       }
                     }}
                   >
