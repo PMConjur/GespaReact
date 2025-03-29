@@ -3,11 +3,11 @@ import { Table, Card } from "react-bootstrap";
 import { userNegotiations, searchCustomer } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast, Toaster } from "sonner";
-import { reemplazarValores } from "./ValoresCatalogos"; // Importa el método de reemplazo de valores
+import { reemplazarValores } from "./ValoresCatalogos"; 
+
 
 const NegotiationsMonth = () => {
-  const responseData = JSON.parse(localStorage.getItem("responseData"));
-  const idEjecutivo = 14126; //responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+  const { idEjecutivo } = useContext(AppContext);
   const [negotiations, setNegotiations] = useState([]);
   const { setSearchResults } = useContext(AppContext);
 

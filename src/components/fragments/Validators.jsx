@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Modal, Button, Form, InputGroup } from "react-bootstrap";
 import { ShieldFill, KeyFill } from "react-bootstrap-icons";
-import { fetchListValidators, fetchValidators} from "../../services/gespawebServices"; // Importa el servicio
+import { fetchListValidators, fetchValidators } from "../../services/gespawebServices"; // Importa el servicio
 import { toast } from "sonner"; // Importa Sonner para los toasts
-
 
 const Validators = ({ show, handleClose, handleValidate }) => {
   const [validators, setValidators] = useState([]); // Estado para almacenar la lista de validadores
@@ -12,7 +11,7 @@ const Validators = ({ show, handleClose, handleValidate }) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchValidators = async () => {
+    const fetchValidatorsList = async () => {
       try {
         const idProducto = 1; // Cambia este valor según sea necesario
         const response = await fetchListValidators(idProducto);
@@ -22,16 +21,17 @@ const Validators = ({ show, handleClose, handleValidate }) => {
       }
     };
 
-    fetchValidators();
+    fetchValidatorsList();
   }, []);
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
+      const idProducto = 1; // Cambia este valor según sea necesario
       const idEjecutivo = validator; // idEjecutivo seleccionado por el usuario
       const Contraseña = password; // Contraseña ingresada por el usuario
 
-      const response = await fetchValidators(idEjecutivo, Contraseña);
+      const response = await fetchValidators(idProducto, idEjecutivo, Contraseña);
       console.log("Respuesta del endpoint:", response);
 
       // Muestra un toast de éxito si la validación es correcta
@@ -58,9 +58,7 @@ const Validators = ({ show, handleClose, handleValidate }) => {
   return (
     <Modal show={show} onHide={handleClose} size="md">
       <Modal.Header closeButton className="bg-dark text-light">
-        <Modal.Title>
-          Validación
-        </Modal.Title>
+        <Modal.Title>Validación</Modal.Title>
       </Modal.Header>
       <Modal.Body className="bg-dark text-light">
         <Form>
@@ -103,9 +101,7 @@ const Validators = ({ show, handleClose, handleValidate }) => {
       </Modal.Body>
       <Modal.Footer className="p-3 bg-dark text-light">
         <div>
-          <span>
-            ¿Desea registrar un cargo en línea?
-          </span>
+          <span>¿Desea registrar un cargo en línea?</span>
           <Button variant="danger" onClick={handleClose} disabled={loading}>
             Cancelar
           </Button>

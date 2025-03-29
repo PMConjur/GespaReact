@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { Modal, Button, Form, Table, Card, Row, Col } from "react-bootstrap";
 import "../scss/styles.scss";
-import { fetchCalFirtsPart, fetchCalSecondPart, fetchCalSecondPartModify } from "../services/gespawebServices";
+import { fetchCalFirtsPart, fetchCalSecondPart, fetchCalSecondPartModify, fetchSaveDeleteDeadlines } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 import Validators from "./fragments/Validators"; // Importa el modal de Validators
@@ -52,6 +52,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
   const [showDetails, setShowDetails] = useState(false); // Estado para controlar la visibilidad del Row
   const [showCalculator, setShowCalculator] = useState(false); // Estado para controlar la visibilidad del Col
   const [showValidators, setShowValidators] = useState(false); // Estado para controlar el modal
+  const [isValidated, setIsValidated] = useState(false); // Estado para controlar la validación
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -309,10 +310,47 @@ const CalculatorSimulator = ({show, handleClose}) => {
 
   const handleOpenValidators = () => {
     setShowValidators(true); // Abre el modal
+    setIsValidated(false); // Reinicia el estado de validación
   };
 
   const handleCloseValidators = () => {
     setShowValidators(false); // Cierra el modal
+  };
+
+  const handleSaveDeadlines = async () => {
+    if (!calculosData.calculos || calculosData.calculos.length === 0) {
+      toast.error("No hay plazos disponibles para guardar.");
+      return;
+    }
+  
+    const plazos = calculosData.calculos.map((calculo) => ({
+      monto: calculo.pago,
+      fecha: calculo.fecha,
+    }));
+  
+    const requestData = {
+      idCartera: 1,
+      idCuenta: searchResults?.[0]?.idCuenta?.trim(),
+      idHerramienta: selectedHerramienta,
+      plazos,
+      fechaInsert: new Date().toISOString(),
+      segundo_Insert: "00:00:01",
+    };
+  
+    try {
+      console.log("Enviando datos al endpoint:", requestData);
+      const response = await fetchSaveDeleteDeadlines(requestData);
+      toast.success("Datos enviados correctamente.");
+      console.log("Respuesta del endpoint:", response);
+    } catch (error) {
+      console.error("Error al enviar los datos:", error);
+      toast.error("Error al enviar los datos al endpoint.");
+    }
+  };
+
+  const handleValidateSuccess = () => {
+    setIsValidated(true); // Cambia el estado a validado
+    setShowValidators(false); // Cierra el modal de validación
   };
 
   return (
@@ -353,11 +391,11 @@ const CalculatorSimulator = ({show, handleClose}) => {
                           <th>Saldo</th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody> 
                         {Array.isArray(tableData) && tableData.length > 0 ? (
                           tableData.map((row, index) => {
                             const fechaSinHora = row.fecha_Insert?.split(" ")[0] || "--"; // Muestra "--" si no hay valor
-                            const fechaConHora = row.fecha_Insert ? `${fechaSinHora} ${row.segundo_Insert || "--"}` : "--"; // Combina fecha y hora o muestra "--"
+                            const fechaConHora = row.fecha_Insert ? `${fechaSinHora} - ${row.segundo_Insert || "--"}` : "--"; // Combina fecha y hora o muestra "--"
                             return (
                               <tr key={index}>
                                 <td>{fechaConHora}</td>
@@ -785,6 +823,23 @@ const CalculatorSimulator = ({show, handleClose}) => {
                 </Button>
               </div>
             </Form>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "15px" }}>
+              {!isValidated && ( // Oculta el botón "Validar" si está validado
+                <Button
+                  variant="primary"
+                  onClick={handleOpenValidators} // Abre el modal
+                >
+                  Validación
+                </Button>
+              )}
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "15px" }}>
+              {isValidated && ( // Muestra el botón "Guardar Plazos" solo si está validado
+                <Button variant="primary" onClick={handleSaveDeadlines}>
+                  Guardar Plazos
+                </Button>
+              )}
+            </div>
           </Card.Body>
         </Card>
       </Col>
@@ -794,43 +849,45 @@ const CalculatorSimulator = ({show, handleClose}) => {
         <Card className="mb-0">
           <Card.Body className="">
             <h6>Plazos</h6>
-            <Table bordered hover className="custom-calculation-table">
-              <thead className="table-header-custom">
-                <tr>
-                  <th>No.</th>
-                  <th>Fecha</th>
-                  <th>Saldo</th>
-                  <th>Pago</th>
-                  <th>Saldo Final</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Array.isArray(calculosData.calculos) && calculosData.calculos.length > 0 ? (
-                  calculosData.calculos.map((calculo, index) => (
-                    <tr
-                      key={index}
-                      onClick={() => !modifyForm.agregarPagos && handleRowClick(index)}
-                      className={`table-row-custom ${selectedRow === index ? "selected-row" : ""}`}
-                      style={{
-                        cursor: modifyForm.agregarPagos ? "not-allowed" : "pointer",
-                      }}
-                    >
-                      <td>{calculo.no}</td>
-                      <td>{new Date(calculo.fecha).toLocaleDateString()}</td>
-                      <td className="amount-cell">${(calculo.saldo || 0).toFixed(2)}</td>
-                      <td className="amount-cell">${(calculo.pago || 0).toFixed(2)}</td>
-                      <td className="amount-cell">${(calculo.saldoFinal || 0).toFixed(2)}</td>
-                    </tr>
-                  ))
-                ) : (
+            <div className="custom-scrollbar" style={{ maxHeight: "320px", overflowY: "auto" }}>
+              <Table bordered hover className="custom-calculation-table">
+                <thead className="table-header-custom">
                   <tr>
-                    <td colSpan={5} className="no-data-message">
-                      No hay datos disponibles
-                    </td>
+                    <th>No.</th>
+                    <th>Fecha</th>
+                    <th>Saldo</th>
+                    <th>Pago</th>
+                    <th>Saldo Final</th>
                   </tr>
-                )}
-              </tbody>
-            </Table>
+                </thead>
+                <tbody>
+                  {Array.isArray(calculosData.calculos) && calculosData.calculos.length > 0 ? (
+                    calculosData.calculos.map((calculo, index) => (
+                      <tr
+                        key={index}
+                        onClick={() => !modifyForm.agregarPagos && handleRowClick(index)}
+                        className={`table-row-custom ${selectedRow === index ? "selected-row" : ""}`}
+                        style={{
+                          cursor: modifyForm.agregarPagos ? "not-allowed" : "pointer",
+                        }}
+                      >
+                        <td>{calculo.no}</td>
+                        <td>{new Date(calculo.fecha).toLocaleDateString()}</td>
+                        <td className="amount-cell">${(calculo.saldo || 0).toFixed(2)}</td>
+                        <td className="amount-cell">${(calculo.pago || 0).toFixed(2)}</td>
+                        <td className="amount-cell">${(calculo.saldoFinal || 0).toFixed(2)}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="no-data-message">
+                        No hay datos disponibles
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </Table>
+            </div>
           </Card.Body>
         </Card>
       </Col>
@@ -848,6 +905,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
       handleClose={handleCloseValidators}
       handleValidate={(validator, password) => {
         console.log("Validación exitosa:", validator, password);
+        handleValidateSuccess(); // Llama a la función de éxito al validar
       }}
     />
   </>

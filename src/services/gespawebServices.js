@@ -1169,3 +1169,22 @@ export const fetchListValidators = async (idProducto) => {
     throw error;
   }
 };
+
+// endpoint guardar-Elimina-Plazos
+export const fetchSaveDeleteDeadlines = async (requestData) => {
+  try {
+    console.log("Enviando datos al endpoint:", requestData);
+    const response = await servicio.post(`/ejecutivo/guarda-Elimina-Plazos`, requestData);
+
+    if (response.status !== 200) {
+      throw new Error(`Error en la respuesta de la API. Estado: ${response.status}`);
+    }
+
+    const result = response.data;
+    console.log("Respuesta del endpoint:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchSaveDeleteDeadlines:", error);
+    throw error;
+  }
+};
