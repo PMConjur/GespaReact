@@ -11,6 +11,7 @@ import {
 import { toast } from "sonner";
 import servicio from "../../../services/axiosServices";
 import { AppContext } from "../../../pages/Managment"; // Asegúrate de que la ruta sea correcta
+import { formatearFecha } from "../../ValoresCatalogos";
 
 const Addresses = ({ show, handleClose }) => {
   const { searchResults } = useContext(AppContext); // Obtén el contexto
@@ -169,10 +170,10 @@ const Addresses = ({ show, handleClose }) => {
       );
       const sanitizedData = (response.data || []).map((item) => ({
         ...item,
-        Fecha: item.Fecha || "N/A",
-        Hora: item.Hora || "N/A",
-        idContacto: item.idContacto || "N/A",
-        idSituación: item.idSituación || "N/A",
+        Fecha: item.Fecha || "",
+        Hora: item.Hora || "",
+        idContacto: item.idContacto || "",
+        idSituación: item.idSituación || "",
         // Agrega más campos según sea necesario
       }));
       setTableDomData(sanitizedData);
@@ -233,17 +234,17 @@ const Addresses = ({ show, handleClose }) => {
 
       // Normaliza los datos
       const sanitizedData = (response.data.domicilios || []).map((item) => ({
-        calle: item.calle || "N/A",
-        númeroExterior: item.númeroExterior || "N/A",
-        númeroInterior: item.númeroInterior || "N/A",
-        códigoPostal: item.códigoPostal || "N/A",
-        coloniaLocalidad: item.coloniaLocalidad || "N/A",
-        delegaciónMunicipio: item.delegaciónMunicipio || "N/A",
-        estado: item.estado || "N/A",
-        clase: item.clase || "N/A",
-        orígen: item.orígen || "N/A",
-        información: item.información || "N/A",
-        idDomicilio: item.idDomicilio || "N/A",
+        calle: item.calle || "",
+        númeroExterior: item.númeroExterior || "",
+        númeroInterior: item.númeroInterior || "",
+        códigoPostal: item.códigoPostal || "",
+        coloniaLocalidad: item.coloniaLocalidad || "",
+        delegaciónMunicipio: item.delegaciónMunicipio || "",
+        estado: item.estado || "",
+        clase: item.clase || "",
+        orígen: item.orígen || "",
+        información: item.información || "",
+        idDomicilio: item.idDomicilio || "",
       }));
 
       setTableDomicilioData(sanitizedData);
@@ -784,7 +785,7 @@ const Addresses = ({ show, handleClose }) => {
               <tbody>
                 {tableDomData.map((item, index) => (
                   <tr key={index} onClick={() => handleRowClick(item)}>
-                    <td>{renderCell(item.Fecha)}</td>
+                    <td>{renderCell(formatearFecha(item.Fecha))}</td>
                     <td>{renderCell(item.Hora)}</td>
                     <td>{renderCell(item.idContacto)}</td>
                     <td>{renderCell(item.idSituación)}</td>

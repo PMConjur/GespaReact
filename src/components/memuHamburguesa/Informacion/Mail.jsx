@@ -12,7 +12,7 @@ import servicio from "../../../services/axiosServices";
 import { toast } from "sonner";
 import Conversation from "./conversation";
 import { AppContext } from "../../../pages/Managment"; // Asegúrate de que la ruta sea correcta
-import { reemplazarValores } from "../../ValoresCatalogos"; // Importa el método de reemplazo de valores
+import { reemplazarValores, formatearFecha } from "../../ValoresCatalogos"; // Importa el método de reemplazo de valores
 
 const Mail = ({ show, handleClose }) => {
   const { searchResults } = useContext(AppContext); // Obtén el contexto
@@ -262,13 +262,12 @@ const Mail = ({ show, handleClose }) => {
                     onChange={(e) => setEstado(e.target.value)}
                   >
                     <option value="">Selecciona un estado</option>
-                    <option value="1901">Sin verificar</option>
+
                     <option value="1902">Incompleta</option>
                     <option value="1903">No corresponde</option>
                     <option value="1904">Errónea</option>
                     <option value="1905">Inexistente</option>
                     <option value="1906">Correcta</option>
-                    <option value="1907">Verificada</option>
                   </Form.Select>
                 </Form.Group>
               </Col>
@@ -357,7 +356,7 @@ const Mail = ({ show, handleClose }) => {
               <tbody>
                 {correosEnviados.map((item, index) => (
                   <tr key={index} onClick={() => setSelectedEnviados(item)}>
-                    <td>{renderCell(item.Fecha_Insert)}</td>
+                    <td>{renderCell(formatearFecha(item.Fecha_Insert))}</td>
                     <td>{renderCell(item.Segundo_Insert)}</td>
                     <td>{renderCell(reemplazarValores(item.idEtapa))}</td>
                     <td>{renderCell(item.Asunto)}</td>

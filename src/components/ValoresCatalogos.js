@@ -1,4 +1,3 @@
-// Mapeo de equivalencias
 const equivalencias = {
   1901: "Sin verificar",
   1902: "Incompleta",
@@ -481,4 +480,13 @@ export const reemplazarValoresCartera = (valor) => {
  */
 export const reemplazarValoresProducto = (valor) => {
   return equivalenciasProducto[valor] || valor;
+};
+
+/**
+ * Formatea una fecha para que solo muestre el formato "YYYY-MM-DD".
+ * @param {string} fecha - Fecha en formato ISO (e.g., "2025-03-26T00:00:00").
+ * @returns {string} - Fecha formateada como "YYYY-MM-DD".
+ */
+export const formatearFecha = (fecha) => {
+  return fecha.split("T")[0];
 };

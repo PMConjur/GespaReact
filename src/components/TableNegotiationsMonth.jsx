@@ -1,6 +1,6 @@
 import React from "react";
 import { Table, Row } from "react-bootstrap";
-import { reemplazarValores } from "./ValoresCatalogos"; // Importa el método
+import { reemplazarValores, formatearFecha } from "./ValoresCatalogos"; // Importa el método
 
 const TableNegotiationsMonth = ({ tableData }) => {
   return (
@@ -25,8 +25,8 @@ const TableNegotiationsMonth = ({ tableData }) => {
               <td>{item.idCuenta ?? ""}</td>
               <td>{item.Herramienta ?? ""}</td>
               <td>{reemplazarValores(item.idEstado) ?? ""}</td>
-              <td>{item.FechaCreación ?? ""}</td>
-              <td>{item.FechaTérmino ?? ""}</td>
+              <td>{formatearFecha(item.FechaCreación) ?? ""}</td>
+              <td>{formatearFecha(item.FechaTérmino) ?? ""}</td>
               <td>{item.MontoNegociado ?? ""}</td>
               <td>{item.MontoPagado ?? ""}</td>
               <td>{item.Pagos ?? ""}</td>

@@ -60,7 +60,7 @@ const Negotiations = ({ show, handleClose }) => {
           {isLoading ? (
             <p>Cargando datos...</p>
           ) : (
-            <TableNegotiationsMonth tableData={tableData} />
+            <TablenpNegoti ationsMonth tableData={tableData} />
           )}
         </Container>
       </Modal.Body>

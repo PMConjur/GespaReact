@@ -1,13 +1,19 @@
 import React from "react";
 import { Table, Row, Container } from "react-bootstrap";
-import { reemplazarValores } from "./ValoresCatalogos"; // Importa el método
+import { reemplazarValores, formatearFecha } from "./ValoresCatalogos"; // Importa el método
 
 const Tabledailymanagement = ({ cuentasData }) => {
   const renderCell = (value) => {
-    if (typeof value === "object" && value !== null) {
+    if (
+      !value ||
+      (typeof value === "object" && Object.keys(value).length === 0)
+    ) {
+      return ""; // Valor predeterminado para valores vacíos
+    }
+    if (typeof value === "object") {
       return JSON.stringify(value);
     }
-    return value ?? "";
+    return value;
   };
 
   return (
@@ -31,7 +37,7 @@ const Tabledailymanagement = ({ cuentasData }) => {
           <tbody>
             {cuentasData.map((item, index) => (
               <tr key={index}>
-                <td>{renderCell(item.Fecha_Insert)}</td>
+                <td>{renderCell(formatearFecha(item.Fecha_Insert))}</td>
                 <td>{renderCell(item.Segundo_Insert)}</td>
                 <td>{renderCell(item.idCuenta)}</td>
                 <td>{renderCell(reemplazarValores(item.idProducto))}</td>

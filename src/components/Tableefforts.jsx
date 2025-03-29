@@ -1,14 +1,20 @@
 import React from "react";
 import { Table, Row, Container } from "react-bootstrap";
 import { Modal } from "react-bootstrap";
-import { reemplazarValores } from "./ValoresCatalogos"; // Importa el método
+import { reemplazarValores, formatearFecha } from "./ValoresCatalogos"; // Importa el método
 
 const Tableefforts = ({ gestionesData, handleRowClick, selectedGestion }) => {
   const renderCell = (value) => {
-    if (typeof value === "object" && value !== null) {
+    if (
+      !value ||
+      (typeof value === "object" && Object.keys(value).length === 0)
+    ) {
+      return ""; // Valor predeterminado para valores vacíos
+    }
+    if (typeof value === "object") {
       return JSON.stringify(value);
     }
-    return value ?? "N/A";
+    return value;
   };
 
   return (
@@ -35,7 +41,7 @@ const Tableefforts = ({ gestionesData, handleRowClick, selectedGestion }) => {
           <tbody>
             {gestionesData.map((item, index) => (
               <tr key={index} onClick={() => handleRowClick(item)}>
-                <td>{renderCell(item.Fecha_Insert)}</td>
+                <td>{renderCell(formatearFecha(item.Fecha_Insert))}</td>
                 <td>{renderCell(item.Segundo_Insert)}</td>
                 <td>{renderCell(item.NúmeroTelefónico)}</td>
                 <td>{renderCell(reemplazarValores(item.idContacto))}</td>
