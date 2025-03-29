@@ -154,6 +154,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("search-postal-code")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<CodigosPostales>>> FindPostalCode([FromQuery] int codigoPostal)
         {
             var postalCode = await _searchService.FindPostalCodeInfo(codigoPostal);

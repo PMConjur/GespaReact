@@ -14,6 +14,7 @@ using NoriAPI.Models;
 using System.Collections;
 using System.Reflection;
 using System.Numerics;
+using Microsoft.Data.SqlClient;
 
 
 namespace NoriAPI.Services
@@ -27,6 +28,7 @@ namespace NoriAPI.Services
         Task<bool> ValidatePhone(string telefono, string idCuenta);
         Task<string> SaveNewPhone(NewPhoneRequest newPhoneData);
         Task<string> SaveNewPhoneRe(NewPhoneRe newPhoneData);
+
 
 
         #region Domicilios
@@ -48,12 +50,14 @@ namespace NoriAPI.Services
         private readonly IConfiguration _configuration;
         private readonly ISearchRepository _searchRepository;
         private readonly IEjecutivoRepository _ejecutivoRepository;
+        private readonly string _connectionString;
 
         public SearchService(IConfiguration configuration, ISearchRepository searchRepository, IEjecutivoRepository ejecutivoRepository)
         {
             _configuration = configuration;
             _searchRepository = searchRepository;
             _ejecutivoRepository = ejecutivoRepository;
+            _connectionString = _configuration.GetConnectionString("Piso2Amex");
         }
 
         public async Task<ResultadoBusqueda> ValidateBusqueda(string filtro, string ValorBusqueda)
@@ -1058,8 +1062,6 @@ namespace NoriAPI.Services
             // Si la lista no está vacía, se retorna; de lo contrario, se devuelve null.
             return (codigosPostales != null && codigosPostales.Count > 0) ? codigosPostales : null;
         }
-
-
 
 
         #endregion

@@ -24,7 +24,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/ejecutivo")]
-    //[Authorize]
+    [Authorize]
     public class EjecutivoController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -268,7 +268,7 @@ namespace NoriAPI.Controllers
 
         #region Recuperacion
         [HttpGet("get-recuperacion-Actual")]
-        [AllowAnonymous]
+      
         public async Task<IActionResult> GetRecuperacion(int idEjecutivo)
         {
             
@@ -282,7 +282,7 @@ namespace NoriAPI.Controllers
             return Ok(recuperacion);
         }
         [HttpGet("get-recuperacion-Anterior")]
-        [AllowAnonymous]
+      
         public async Task<IActionResult> GetRecuperacionAnterior(int idEjecutivo)
         {
 
@@ -1022,7 +1022,33 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+        [HttpGet("validadores")]
 
+        public async Task<IActionResult> GetValidadores(int idProducto)
+        {
+            DataSet dsTablas = new DataSet();
+            try
+            {
+                DataTable Validador = new DataTable();
+
+                Validador = await _ejecutivoService.GetValidadoresAsync(idProducto);
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var Validadores = ConvertDataTableToList(Validador);
+
+                // Serializamos la lista a JSON
+                string jsonValidadores = JsonSerializer.Serialize(Validadores, new JsonSerializerOptions { WriteIndented = true });
+
+                //dsTablas.Tables.Add(Negociaciones);
+
+                return Ok(jsonValidadores);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
 
 
         [HttpPost("accionesComentarios")]
