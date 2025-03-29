@@ -62,6 +62,9 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
     }
     // Campos que NO se mostrarán en la tabla
     const hiddenFields = [
+        "idBanco",
+        
+        
         
         
         
@@ -74,7 +77,7 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
         "Nombre": "Nombre",
         "Tarjeta": "Tarjeta",
         "Vencimiento": "Vencimiento",
-        "idBanco" : "Banco",
+        "Banco" : "Banco",
         "MontoCargo": "Cargo",
         "_Autorizado" :"Autorizado",
         "Autorizaci\u00F3n": "Autorización",
