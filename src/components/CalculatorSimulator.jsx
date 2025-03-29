@@ -386,7 +386,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
                         <tr>
                           <th>FechaHora</th>
                           <th>Herramienta</th>
-                          <th>Estado</th>
+                          <th>Status</th>
                           <th>Vencimiento</th>
                           <th>Saldo</th>
                         </tr>
