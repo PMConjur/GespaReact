@@ -98,44 +98,70 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
                 type="switch"
                 id="sortByOldest"
                 label="Más antiguo"
-                className="mb-3"
+                className="mb-2"
                 checked={sortByOldest}
                 onChange={handleSortChange}
             />
-            <div style={{
-                maxHeight: "400px",
-                width: "100%",
-            }}>
-                {headers.length > 0 ? (
-                    <Table striped bordered hover responsive variant="dark">
-                        <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#343a40" }}>
-                            <tr>
-                                {headers.map((header) => (
-                                    <th key={header}>
-                                        {columnNames[header] || header.replace(/_/g, " ")}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {sortedData.map((item, index) => (
-                                <tr key={index}>
-                                    {headers.map((header) => (
-                                        <td key={header}>
-                                            {header === "Fecha_Insert"
-                                                ? item[header]?.split("T")[0]
-                                                : typeof item[header] === "object" && (!item[header] || Object.keys(item[header]).length === 0)
-                                                    ? "--"
-                                                    : item[header] ?? "--"}
-                                        </td>
-                                    ))}
-                                </tr>
+
+            <div 
+                className="scroll-container" 
+                style={{ 
+                    width: '100%', 
+                    maxHeight: '500px', 
+                    overflowY: 'auto', 
+                    display: 'flex', 
+                    backgroundColor: '#343a40', // Fondo oscuro
+                    color: '#ffffff',          // Texto claro
+                    scrollbarColor: '#6c757d #343a40', // Colores del scroll
+                    scrollbarWidth: 'thin'    // Scroll más delgado
+                }}
+            >
+                <Table striped bordered hover responsive variant="dark" style={{ fontSize: "13px" }}>
+                    <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#343a40" }}> {/* Encabezado fijo */}
+                        <tr style={{ height: "55px" }}> {/* Reducimos la altura de los encabezados */}
+                            {headers.map((header) => (
+                                <th key={header} style={{ padding: "4px", minHeight: "20px", textAlign: "center" }}>
+                                    {columnNames[header] || header.replace(/_/g, " ")}
+                                </th>
                             ))}
-                        </tbody>
-                    </Table>
-                ) : (
-                    <p>No hay datos disponibles para mostrar.</p>
-                )}
+                        </tr>
+                    </thead>
+                    <tbody style={{
+                        width: "100%" // 🔹 Evita que la tabla se desconfigure
+                    }}>
+                        {sortedData.map((item, index) => (
+                            <tr key={index} style={{ height: "24px" }}> {/* Reducimos la altura de cada fila */}
+                                {headers.map((header) => {
+                                    let value = item[header];
+
+                                    // 🔹 Formatear Fecha_Insert en una sola línea
+                                    if (header === "Fecha_Insert" && typeof value === "string" && value.includes("T")) {
+                                        value = value.split("T")[0];
+                                    }
+
+                                    // 🔹 Manejo de valores nulos o no definidos
+                                    if (value === null || value === undefined || (typeof value === "object" && Object.keys(value).length === 0)) {
+                                        value = "--";
+                                    }
+
+                                    return (
+                                        <td key={header} 
+                                            style={{ 
+                                                padding: ".7rem", 
+                                                minHeight: "20px", 
+                                                textAlign: "center", 
+                                                whiteSpace: "nowrap", // 🔹 Evita saltos de línea
+                                                overflow: "hidden",  // 🔹 Oculta contenido desbordado
+                                                textOverflow: "ellipsis" // 🔹 Agrega puntos suspensivos si el texto es muy largo
+                                            }}>
+                                            {value}
+                                        </td>
+                                    );
+                                })}
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
             </div>
         </>
     );

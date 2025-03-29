@@ -1,13 +1,26 @@
-import { useState, useEffect } from "react";
-import { Dropdown, Form, Table, Spinner } from "react-bootstrap";
+import React, { useState, useEffect, useContext } from "react";
+import { Dropdown, Form, Table, Spinner, Alert } from "react-bootstrap";
 import { fetchProcessesWLP } from '../services/gespawebServices';
+import { AppContext } from '../pages/Managment';
 import { toast } from 'sonner';
 
-const TDropdownProcessesWLP = ({ idCuenta }) => {
+const TDropdownProcessesWLP = ({ data = [] }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [proceso, setProceso] = useState("Arrangement");
-    const procesos = [
+    const [producto, setProducto] = useState("Arrangement");
+    const [productData, setProductData] = useState([]);
+    
+
+    const hiddenFields = [
+        "idProceso", 
+        "idCuenta", 
+        "FechaCreacion", 
+        "UsuarioCreacion",
+        "RecordType", // Campo oculto
+        "CM15"        // Campo oculto
+    ];
+    
+    const productos = [
         "Arrangement",
         "ArrangementDetails",
         "Dispute",
@@ -19,419 +32,171 @@ const TDropdownProcessesWLP = ({ idCuenta }) => {
         "SmsSent",
         "SpecialCircumstances",
     ];
-    const [processData, setProcessData] = useState([]);
+
+    const { searchResults = [] } = useContext(AppContext) || {};
+
 
     useEffect(() => {
-        if (proceso && idCuenta) {
-            fetchData(idCuenta);
-        }
-    }, [proceso, idCuenta]);
+        const fetchData = async () => {
+            try {
+                if (!Array.isArray(searchResults)) {
+                    console.error('searchResults no es un array:', searchResults);
+                    return;
+                }
 
-    const fetchData = async (idCuenta) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const fetchedData = await fetchProcessesWLP(proceso, idCuenta);
-            setProcessData(fetchedData);
-        } catch (err) {
-            setError(err);
-            toast.error("Error al obtener datos.", { position: "top-right" });
-        } finally {
-            setLoading(false);
+                const account = searchResults.find(item => item?.idCuenta);
+                if (!account) {
+                    console.warn('No se encontró idCuenta en searchResults');
+                    toast.info('No hay datos de cuenta disponibles', { position: "top-right" });
+                    setProductData([]);
+                    return;
+                }
+
+                const idCuenta = account.idCuenta?.toString()?.trim();
+                if (!idCuenta) {
+                    console.warn('idCuenta vacío o inválido');
+                    toast.warning('ID de cuenta inválido', { position: "top-right" });
+                    return;
+                }
+
+                setLoading(true);
+                setError(null);
+                
+                const result = await fetchProcessesWLP(producto, idCuenta);
+                
+                if (!result || result.length === 0) {
+                    toast.info(`No se encontraron datos para ${producto}`, { position: "top-right" });
+                }
+                setProductData(result || []);
+            } catch (err) {
+                console.error('Fetch error:', err);
+                setError(err);
+                toast.error(`Error al obtener ${producto}: ${err.message}`, { position: "top-right" });
+                setProductData([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (producto) {
+            fetchData();
+        }
+    }, [producto, searchResults]);
+
+    const handleProductoChange = (eventKey) => {
+        if (producto !== eventKey) {
+            setProducto(eventKey);
         }
     };
 
-    const handleProcesoChange = (eventKey) => {
-        if (proceso !== eventKey) {
-            setProceso(eventKey);
-            setProcessData([]); // Limpiar datos al cambiar el proceso
-        }
-    };
-
-    const renderTable = () => {
+    const renderTableContent = () => {
         if (loading) {
             return (
-                <div className="d-flex justify-content-center">
-                    <Spinner animation="border" />
+                <div className="d-flex justify-content-center my-5">
+                    <Spinner animation="border" variant="primary" />
+                    <span className="ms-2">Cargando datos...</span>
                 </div>
             );
         }
 
         if (error) {
-            return <p className="text-danger">Error: {error.message}</p>;
+            return (
+                <Alert variant="danger" className="mt-3">
+                    Error al cargar los datos: {error.message || 'Error desconocido'}
+                </Alert>
+            );
         }
 
-        if (!processData || processData.length === 0) {
-            return <p>No hay datos para mostrar.</p>;
+        if (!productData || productData.length === 0) {
+            return (
+                <div className="mt-3">
+                    <p className="text-info">No se encontraron datos para {producto}</p>
+                    {searchResults.length === 0 && (
+                        <div className="mt-2">
+                            <small>No hay resultados de búsqueda disponibles</small>
+                        </div>
+                    )}
+                </div>
+            );
         }
 
-        switch (proceso) {
-            case "Arrangement":
-                return (
-                    <Table striped bordered hover responsive variant="dark">
-                        <thead>
-                            <tr>
-                                <th>RecordType</th>
-                                <th>CM15</th>
-                                <th>AgencyID</th>
-                                <th>AgencyAccountNumber</th>
-                                <th>ArrangmentId</th>
-                                <th>UpdateTime</th>
-                                <th>ArrangmentType</th>
-                                <th>TotalAmount</th>
-                                <th>Status</th>
-                                <th>FundingAcctLast4</th>
-                                <th>FechaInsercion</th>
-                                <th>IdArchivo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {processData.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{item.RecordType}</td>
-                                    <td>{item.CM15}</td>
-                                    <td>{item.AgencyID}</td>
-                                    <td>{item.AgencyAccountNumber}</td>
-                                    <td>{item.ArrangmentId}</td>
-                                    <td>{item.UpdateTime}</td>
-                                    <td>{item.ArrangmentType}</td>
-                                    <td>{item.TotalAmount}</td>
-                                    <td>{item.Status}</td>
-                                    <td>{item.FundingAcctLast4}</td>
-                                    <td>{item.FechaInsercion}</td>
-                                    <td>{item.IdArchivo}</td>
-                                </tr>
+        const columns = productData.length > 0 
+            ? Object.keys(productData[0]).filter(key => !hiddenFields.includes(key)) 
+            : [];
+
+        return (
+            <div className="table-responsive">
+                <Table striped bordered hover variant="dark" style={{ padding: ".7rem" }}>
+                    <thead>
+                        <tr>
+                            {columns.map(key => (
+                                <th key={key} style={{ textAlign: "center" }}>
+                                    {key}
+                                </th>
                             ))}
-                        </tbody>
-                    </Table>
-                );
-            case "ArrangementDetails":
-                return (
-                    <Table striped bordered hover responsive variant="dark">
-                        <thead>
-                            <tr>
-                                <th>RecordType</th>
-                                <th>CM15</th>
-                                <th>AgencyID</th>
-                                <th>AgencyAccountNumber</th>
-                                <th>ArrangmentId</th>
-                                <th>PaymentId</th>
-                                <th>UpdateTime</th>
-                                <th>PaymentDate</th>
-                                <th>PaymentAmount</th>
-                                <th>Status</th>
-                                <th>FechaInsercion</th>
-                                <th>IdArchivo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {productData.map((item, index) => (
+                            <tr key={index}>
+                                {columns.map(key => (
+                                    <td key={`${index}-${key}`} style={{ textAlign: "justify" }}>
+                                        {key === "Details" && item[key] ? (
+                                            <div style={{
+                                                width: "300px",
+                                                whiteSpace: "pre-wrap",
+                                                wordWrap: "break-word"
+                                            }}>
+                                                {item[key].toString()}
+                                            </div>
+                                        ) : (
+                                            item[key] !== null && item[key] !== undefined 
+                                                ? item[key].toString() 
+                                                : 'N/A'
+                                        )}
+                                    </td>
+                                ))}
                             </tr>
-                        </thead>
-                        <tbody>
-                            {processData.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{item.RecordType}</td>
-                                    <td>{item.CM15}</td>
-                                    <td>{item.AgencyID}</td>
-                                    <td>{item.AgencyAccountNumber}</td>
-                                    <td>{item.ArrangmentId}</td>
-                                    <td>{item.PaymentId}</td>
-                                    <td>{item.UpdateTime}</td>
-                                    <td>{item.PaymentDate}</td>
-                                    <td>{item.PaymentAmount}</td>
-                                    <td>{item.Status}</td>
-                                    <td>{item.FechaInsercion}</td>
-                                    <td>{item.IdArchivo}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                );
-            case "Dispute":
-                return (
-                    <Table striped bordered hover responsive variant="dark">
-                        <thead>
-                            <tr>
-                                <th>RecordType</th>
-                                <th>CM15</th>
-                                <th>AgencyID</th>
-                                <th>AgencyAccountNumber</th>
-                                <th>SubmitTime</th>
-                                <th>DisputeType</th>
-                                <th>DisputeAmount</th>
-                                <th>Details</th>
-                                <th>FechaInsercion</th>
-                                <th>IdArchivo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {processData.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{item.RecordType}</td>
-                                    <td>{item.CM15}</td>
-                                    <td>{item.AgencyID}</td>
-                                    <td>{item.AgencyAccountNumber}</td>
-                                    <td>{item.SubmitTime}</td>
-                                    <td>{item.DisputeType}</td>
-                                    <td>{item.DisputeAmount}</td>
-                                    <td>{item.Details}</td>
-                                    <td>{item.FechaInsercion}</td>
-                                    <td>{item.IdArchivo}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                );
-            case "EmailAddress":
-                return (
-                    <Table striped bordered hover responsive variant="dark">
-                        <thead>
-                            <tr>
-                                <th>RecordType</th>
-                                <th>CM15</th>
-                                <th>AgencyID</th>
-                                <th>AgencyAccountNumber</th>
-                                <th>UpdateTime</th>
-                                <th>NewEmail</th>
-                                <th>FechaInsercion</th>
-                                <th>IdArchivo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {processData.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{item.RecordType}</td>
-                                    <td>{item.CM15}</td>
-                                    <td>{item.AgencyID}</td>
-                                    <td>{item.AgencyAccountNumber}</td>
-                                    <td>{item.UpdateTime}</td>
-                                    <td>{item.NewEmail}</td>
-                                    <td>{item.FechaInsercion}</td>
-                                    <td>{item.IdArchivo}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                );
-            case "EmailEvent":
-                return (
-                    <Table striped bordered hover responsive variant="dark">
-                        <thead>
-                            <tr>
-                                <th>RecordType</th>
-                                <th>CM15</th>
-                                <th>AgencyID</th>
-                                <th>AgencyAccountNumber</th>
-                                <th>EventTime</th>
-                                <th>EventType</th>
-                                <th>TransmisionId</th>
-                                <th>EmailToAddress</th>
-                                <th>FechaInsercion</th>
-                                <th>IdArchivo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {processData.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{item.RecordType}</td>
-                                    <td>{item.CM15}</td>
-                                    <td>{item.AgencyID}</td>
-                                    <td>{item.AgencyAccountNumber}</td>
-                                    <td>{item.EventTime}</td>
-                                    <td>{item.EventType}</td>
-                                    <td>{item.TransmisionId}</td>
-                                    <td>{item.EmailToAddress}</td>
-                                    <td>{item.FechaInsercion}</td>
-                                    <td>{item.IdArchivo}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                );
-            case "EmailSent":
-                return (
-                    <Table striped bordered hover responsive variant="dark">
-                        <thead>
-                            <tr>
-                                <th>RecordType</th>
-                                <th>CM15</th>
-                                <th>AgencyID</th>
-                                <th>AgencyAccountNumber</th>
-                                <th>MailPushedDate</th>
-                                <th>EmailTemplateId</th>
-                                <th>TransmissionId</th>
-                                <th>EmailToAddress</th>
-                                <th>FechaInsercion</th>
-                                <th>IdArchivo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {processData.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{item.RecordType}</td>
-                                    <td>{item.CM15}</td>
-                                    <td>{item.AgencyID}</td>
-                                    <td>{item.AgencyAccountNumber}</td>
-                                    <td>{item.MailPushedDate}</td>
-                                    <td>{item.EmailTemplateId}</td>
-                                    <td>{item.TransmissionId}</td>
-                                    <td>{item.EmailToAddress}</td>
-                                    <td>{item.FechaInsercion}</td>
-                                    <td>{item.IdArchivo}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                );
-            case "EmailUnsubscribe":
-                return (
-                    <Table striped bordered hover responsive variant="dark">
-                        <thead>
-                            <tr>
-                                <th>RecordType</th>
-                                <th>CM15</th>
-                                <th>AgencyID</th>
-                                <th>AgencyAccountNumber</th>
-                                <th>UnsubscribeTime</th>
-                                <th>EmailAddress</th>
-                                <th>FechaInsercion</th>
-                                <th>IdArchivo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {processData.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{item.RecordType}</td>
-                                    <td>{item.CM15}</td>
-                                    <td>{item.AgencyID}</td>
-                                    <td>{item.AgencyAccountNumber}</td>
-                                    <td>{item.UnsubscribeTime}</td>
-                                    <td>{item.EmailAddress}</td>
-                                    <td>{item.FechaInsercion}</td>
-                                    <td>{item.IdArchivo}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                );
-            case "SmsOptOut":
-                return (
-                    <Table striped bordered hover responsive variant="dark">
-                        <thead>
-                            <tr>
-                                <th>RecordType</th>
-                                <th>CM15</th>
-                                <th>AgencyID</th>
-                                <th>AgencyAccountNumber</th>
-                                <th>OptOutReceived</th>
-                                <th>PhoneNumber</th>
-                                <th>FechaInsercion</th>
-                                <th>IdArchivo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {processData.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{item.RecordType}</td>
-                                    <td>{item.CM15}</td>
-                                    <td>{item.AgencyID}</td>
-                                    <td>{item.AgencyAccountNumber}</td>
-                                    <td>{item.OptOutReceived}</td>
-                                    <td>{item.PhoneNumber}</td>
-                                    <td>{item.FechaInsercion}</td>
-                                    <td>{item.IdArchivo}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                );
-            case "SmsSent":
-                return (
-                    <Table striped bordered hover responsive variant="dark">
-                        <thead>
-                            <tr>
-                                <th>RecordType</th>
-                                <th>CM15</th>
-                                <th>AgencyID</th>
-                                <th>AgencyAccountNumber</th>
-                                <th>SentTime</th>
-                                <th>TemplateId</th>
-                                <th>PhoneNumber</th>
-                                <th>FechaInsercion</th>
-                                <th>IdArchivo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {processData.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{item.RecordType}</td>
-                                    <td>{item.CM15}</td>
-                                    <td>{item.AgencyID}</td>
-                                    <td>{item.AgencyAccountNumber}</td>
-                                    <td>{item.SentTime}</td>
-                                    <td>{item.TemplateId}</td>
-                                    <td>{item.PhoneNumber}</td>
-                                    <td>{item.FechaInsercion}</td>
-                                    <td>{item.IdArchivo}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                );
-            case "SpecialCircumstances":
-                return (
-                    <Table striped bordered hover responsive variant="dark">
-                        <thead>
-                            <tr>
-                                <th>RecordType</th>
-                                <th>CM15</th>
-                                <th>AgencyID</th>
-                                <th>AgencyAccountNumber</th>
-                                <th>SubmitTime</th>
-                                <th>FormType</th>
-                                <th>Details</th>
-                                <th>FechaInsercion</th>
-                                <th>IdArchivo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {processData.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{item.RecordType}</td>
-                                    <td>{item.CM15}</td>
-                                    <td>{item.AgencyID}</td>
-                                    <td>{item.AgencyAccountNumber}</td>
-                                    <td>{item.SubmitTime}</td>
-                                    <td>{item.FormType}</td>
-                                    <td>{item.Details}</td>
-                                    <td>{item.FechaInsercion}</td>
-                                    <td>{item.IdArchivo}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                );
-            // ... otros casos para cada proceso
-            default:
-                return <p>No hay datos para mostrar.</p>;
-        }
+                        ))}
+                    </tbody>
+                </Table>
+            </div>
+        );
     };
 
     return (
-        <div className="text-center">
-            <Form.Group className="mb-3">
-                <Form.Label>Selecciona un proceso:</Form.Label>
-                <Dropdown onSelect={handleProcesoChange}>
-                    <Dropdown.Toggle variant="primary" id="dropdown-proceso">
-                        {proceso}
+        <div className="p-3">
+            <Form.Group className="mb-4">
+                <Form.Label className="fw-bold">Seleccione un proceso:</Form.Label>
+                <Dropdown onSelect={handleProductoChange}>
+                    <Dropdown.Toggle 
+                        variant="primary" 
+                        id="dropdown-processes"
+                        disabled={searchResults.length === 0}
+                    >
+                        {producto}
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
-                        {procesos.map((proc) => (
-                            <Dropdown.Item key={proc} eventKey={proc}>
-                                {proc}
+                        {productos.map((prod) => (
+                            <Dropdown.Item 
+                                key={prod} 
+                                eventKey={prod}
+                                active={producto === prod}
+                            >
+                                {prod}
                             </Dropdown.Item>
                         ))}
                     </Dropdown.Menu>
                 </Dropdown>
+                {searchResults.length === 0 && (
+                    <Form.Text className="text-warning">
+                        Realice una búsqueda primero para habilitar la selección
+                    </Form.Text>
+                )}
             </Form.Group>
-            {renderTable()}
+            <div className="mt-3">
+                {renderTableContent()}
+            </div>
         </div>
     );
 };

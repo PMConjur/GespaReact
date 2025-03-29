@@ -63,7 +63,10 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
     return <p>No hay datos disponibles.</p>;
   }
   // Campos que NO se mostrarán en la tabla
-  const hiddenFields = [];
+  const hiddenFields = [
+    "idBanco",
+    "_Autorizado",
+  ];
 
   // Nombres de columnas por defecto (se pueden sobrescribir con `customColumnNames`)
   const defaultColumnNames = {
@@ -72,9 +75,8 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
     Nombre: "Nombre",
     Tarjeta: "Tarjeta",
     Vencimiento: "Vencimiento",
-    idBanco: "Banco",
+    Banco: "Banco",
     MontoCargo: "Cargo",
-    _Autorizado: "Autorizado",
     "Autorizaci\u00F3n": "Autorización",
     Ejecutivo: "Ejecutivo",
     Usuario: "Usuario",
@@ -105,44 +107,105 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
         type="switch"
         id="sortByOldest"
         label="Más antiguo"
-        className="mb-3"
+        className="mb-2"
         checked={sortByOldest}
         onChange={handleSortChange}
       />
+
       <div
+        className="scroll-container"
         style={{
-          maxHeight: "400px", // Altura máxima del contenedor
-          overflowY: "auto", // Scroll vertical si es necesario
-          overflowX: "auto", // Scroll horizontal si es necesario
-          width: "100%", // Que la tabla use el ancho disponible
+          width: "100%",
+          maxHeight: "500px",
+          overflowY: "auto",
+          display: "flex",
+          backgroundColor: "#343a40", // Fondo oscuro
+          color: "#ffffff", // Texto claro
+          scrollbarColor: "#6c757d #343a40", // Colores del scroll
+          scrollbarWidth: "thin", // Scroll más delgado
         }}
       >
-        <Table striped bordered hover responsive variant="dark">
-          <thead>
-            <tr>
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          variant="dark"
+          style={{ fontSize: "13px" }}
+        >
+          <thead
+            style={{
+              position: "sticky",
+              top: 0,
+              zIndex: 1,
+              backgroundColor: "#343a40",
+            }}
+          >
+            {/* Encabezado fijo */}
+            <tr style={{ height: "55px" }}>
+              {/* Reducimos la altura de los encabezados */}
               {headers.map((header) => (
-                <th key={header}>
+                <th
+                  key={header}
+                  style={{
+                    padding: "4px",
+                    minHeight: "20px",
+                    textAlign: "center",
+                  }}
+                >
                   {columnNames[header] || header.replace(/_/g, " ")}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody
+            style={{
+              width: "100%", // 🔹 Evita que la tabla se desconfigure
+            }}
+          >
             {sortedData.map((item, index) => (
-              <tr key={index}>
+              <tr key={index} style={{ height: "24px" }}>
+                {/* Reducimos la altura de cada fila */}
                 {headers.map((header) => {
                   let value = item[header];
-                  if (header === "idBanco") {
-                    value = reemplazarValores(value); // Aplica reemplazarValores para idBanco
+
+                  // 🔹 Formatear Fecha_Insert en una sola línea
+                  if (
+                    header === "Fecha_Insert" &&
+                    typeof value === "string" &&
+                    value.includes("T")
+                  ) {
+                    value = value.split("T")[0];
                   }
+
+                  // 🔹 Aplicar reemplazarValores para idBanco
+                  if (header === "idBanco") {
+                    value = reemplazarValores(value);
+                  }
+
+                  // 🔹 Manejo de valores nulos o no definidos
+                  if (
+                    value === null ||
+                    value === undefined ||
+                    (typeof value === "object" &&
+                      Object.keys(value).length === 0)
+                  ) {
+                    value = "--";
+                  }
+
                   return (
-                    <td key={header}>
-                      {header === "Fecha_Insert"
-                        ? value.split("T")[0] // Extrae solo la fecha
-                        : typeof value === "object" &&
-                          Object.keys(value).length === 0
-                        ? "--" // Si el valor es un objeto vacío, mostrar "--"
-                        : value ?? "--"}
+                    <td
+                      key={header}
+                      style={{
+                        padding: ".7rem",
+                        minHeight: "20px",
+                        textAlign: "center",
+                        whiteSpace: "nowrap", // 🔹 Evita saltos de línea
+                        overflow: "hidden", // 🔹 Oculta contenido desbordado
+                        textOverflow: "ellipsis", // 🔹 Agrega puntos suspensivos si el texto es muy largo
+                      }}
+                    >
+                      {value}
                     </td>
                   );
                 })}
