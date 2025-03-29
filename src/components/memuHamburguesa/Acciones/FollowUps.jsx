@@ -1,43 +1,65 @@
-import { Modal, Button, Row, Col } from "react-bootstrap";
+import { Modal, Row, Col } from "react-bootstrap";
 import TableFollowUps from "../../TableFollowUps";
 import FormFollowUps from "./FormFollowUps";
-import { useContext } from "react";
-import { AppContext } from "../../../pages/Managment";
 
-const FollowUps = ({ show, handleClose }) => {
-  const { searchResults, idEjecutivo } = useContext(AppContext);
-  
-  console.log('[FollowUps] Render - idEjecutivo:', idEjecutivo, 'searchResults:', searchResults);
-
-  const handleRefreshData = () => {
-    console.log('[FollowUps] Refrescando datos después de guardar seguimiento');
-    // Aquí puedes agregar lógica para refrescar la tabla si es necesario
-  };
-
+const FollowUps = ({ 
+  show, 
+  handleClose,
+  isFollowUpActive = false
+}) => {
   return (
-    <Modal show={show} onHide={handleClose} size="xl">
-      <Modal.Header closeButton>
-        <Modal.Title>Seguimiento</Modal.Title>
+    <Modal 
+      show={show} 
+      onHide={handleClose} 
+      size="xl" // Puedes cambiarlo a "lg" o eliminar para personalizar el ancho
+      style={{
+
+        maxHeight: "880px",
+      }}
+      backdrop={isFollowUpActive ? "static" : true}
+      keyboard={!isFollowUpActive}
+      contentClassName="d-flex flex-column"
+      dialogClassName="my-custom-modal" // Clase para personalizar el contenedor del modal
+    >
+      <Modal.Header closeButton={!isFollowUpActive}>
+        <Modal.Title>
+          {isFollowUpActive ? "Nuevo Seguimiento" : "Registros de Seguimiento"}
+        </Modal.Title>
       </Modal.Header>
-      <Modal.Body>
-        <Row>
-          <Col md={6}>
+      <Modal.Body 
+        className="flex-grow-1 p-0 d-flex flex-column"
+        style={{
+          overflow: "hidden", // Evita desbordamiento del contenido
+        }}
+      >
+        <Row className="flex-grow-1 g-0" style={{ height: "100%" }}>
+          <Col 
+            md={isFollowUpActive ? 6 : 12} 
+            className="h-100 d-flex flex-column" 
+            style={{ 
+              maxHeight: "700px",
+              overflowY: "auto", // Scroll interno si el contenido excede
+            }}
+          >
             <TableFollowUps />
           </Col>
-          <Col md={6}>
-            <FormFollowUps 
-              onSubmitSuccess={handleRefreshData}
-              handleClose={handleClose}
-              searchResults={searchResults}
-              idEjecutivo={idEjecutivo}
-            />
-          </Col>
+          
+          {isFollowUpActive && (
+            <Col 
+              md={6} 
+              className="h-100 d-flex flex-column"
+              style={{ 
+                maxHeight: "680px",
+                overflowY: "auto", // Scroll interno para el formulario
+              }}
+            >
+              <FormFollowUps handleClose={handleClose} />
+            </Col>
+          )}
         </Row>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
-          Cerrar
-        </Button>
+        {/* Espacio del footer vacío */}
       </Modal.Footer>
     </Modal>
   );
