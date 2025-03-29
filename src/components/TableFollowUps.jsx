@@ -135,7 +135,7 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
                     backgroundColor: '#343a40', // Fondo oscuro
                     color: '#ffffff',          // Texto claro
                     scrollbarColor: '#6c757d #343a40', // Colores del scroll
-                    scrollbarWidth: 'thin'    // Scroll más delgado
+                        // Scroll más delgado
                 }}
             >
                 <Table striped bordered hover responsive variant="dark" style={{ fontSize: "13px", margin: 0 }}>

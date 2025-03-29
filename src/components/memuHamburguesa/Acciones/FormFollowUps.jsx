@@ -365,7 +365,7 @@ const FormFollowUps = ({ handleClose }) => {
                     </div>
                 </Form.Group>
 
-                <div className="d-flex justify-content-between mt-4">
+                <div className="d-flex justify-content-between">
                     <Button 
                         variant="danger" 
                         onClick={handleClose} 

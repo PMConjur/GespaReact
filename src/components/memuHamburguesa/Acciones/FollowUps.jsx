@@ -37,7 +37,7 @@ const FollowUps = ({
             md={isFollowUpActive ? 6 : 12} 
             className="h-100 d-flex flex-column" 
             style={{ 
-              maxHeight: "680px",
+              maxHeight: "700px",
               overflowY: "auto", // Scroll interno si el contenido excede
             }}
           >
