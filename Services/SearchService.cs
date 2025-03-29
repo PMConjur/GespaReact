@@ -410,7 +410,7 @@ namespace NoriAPI.Services
                 string aliasCampo = campo.AliasCampo;
 
                 // Asegurar que el resultado de CampoCalculado se espere correctamente
-                object valorCampo = await CampoCalculado(producto, nombreCampo, idCuenta);
+                object valorCampo = await CampoCalculado(producto, nombreCampo);
                 object valorFormateado = Formato(valorCampo, campo.IdFormatoCampo);
 
                 resultado[aliasCampo] = valorFormateado;
@@ -419,26 +419,23 @@ namespace NoriAPI.Services
             return resultado;
         }
 
-        public async Task<object> CampoCalculado(dynamic producto, string expresion, string idCuenta)
+        public async Task<object> CampoCalculado(dynamic producto, string expresion)
         {
-            // Obtener los valores del producto desde la base de datos
-            //var producto = await _searchRepository.GetProducto(idCuenta);
             if (producto == null)
                 return "";
 
-            // Convertir el resultado en un diccionario (clave: nombre del campo, valor: contenido del campo)
+            // Convertir el resultado en un diccionario y eliminar espacios en blanco de las claves
             var valoresProducto = ((IDictionary<string, object>)producto)
-                .ToDictionary(k => k.Key, v => v.Value ?? "");
+                .ToDictionary(k => k.Key.Trim(), v => v.Value ?? ""); // Agregar Trim() a la clave
 
-            string[] campos = expresion.Split(new char[] { '[', ']' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] campos = expresion.Split(['[', ']'], StringSplitOptions.RemoveEmptyEntries);
             string resultado = expresion;
 
-            foreach (var campo in campos)
+            foreach (var campo in from campo in campos
+                                  where valoresProducto.ContainsKey(campo)
+                                  select campo)
             {
-                if (valoresProducto.ContainsKey(campo))
-                {
-                    resultado = resultado.Replace("[" + campo + "]", valoresProducto[campo].ToString().Trim());
-                }
+                resultado = resultado.Replace("[" + campo + "]", valoresProducto[campo].ToString().Trim());
             }
 
             if (expresion.StartsWith('#'))

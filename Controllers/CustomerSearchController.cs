@@ -18,7 +18,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/search-customer")]
-   // [Authorize]
+    [Authorize]
     public class CustomerSearchController : ControllerBase
 
     {
@@ -71,6 +71,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("products-info")]
+        
         public async Task<IActionResult> GetProductData([FromQuery] string idCuenta)
         {
             var datos = await _searchService.CalculateProductData(idCuenta);

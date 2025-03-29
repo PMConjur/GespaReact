@@ -18,15 +18,13 @@ using NoriAPI.Models.CargaGestionamiento;
 
 using System.ComponentModel.DataAnnotations;
 using NoriAPI.Models.Ofrecimiento;
-
-
-
+using NoriAPI.Models;
 
 namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/ejecutivo")]
-    [Authorize]
+    //[Authorize]
     public class EjecutivoController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -78,7 +76,6 @@ namespace NoriAPI.Controllers
 
         #region Seguimientos
         [HttpGet("seguimientos/{idCartera}/{idCuenta}")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetSeguimiento(int idCartera, string idCuenta)
         {
             try
@@ -109,7 +106,6 @@ namespace NoriAPI.Controllers
             }
         }
         [HttpPost("crearSeguimiento")]
-        [AllowAnonymous]
         public async Task<IActionResult> CrearSeguimiento([FromBody] SeguimientoCompletoModel request)
         {
             try
@@ -155,12 +151,11 @@ namespace NoriAPI.Controllers
             return dt.Rows[0];
         }
 
-        
+
 
         #endregion
 
         #region Recordatorios
-
 
         [HttpGet("recordatorios/{idEjecutivo}")]
         public async Task<IActionResult> GetRecordatorios(int idEjecutivo)
@@ -272,20 +267,12 @@ namespace NoriAPI.Controllers
         #endregion
 
         #region Recuperacion
-        [HttpGet("get-recuperacion")]
-        public async Task<IActionResult> GetRecuperacion([FromQuery] int idEjecutivo, [FromQuery] int actual)
+        [HttpGet("get-recuperacion-Actual")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetRecuperacion(int idEjecutivo)
         {
-            if (idEjecutivo <= 0)
-            {
-                return BadRequest(new { Mensaje = "El ID del ejecutivo debe ser un número positivo." });
-            }
-
-            if (actual != 0 && actual != 1)
-            {
-                return BadRequest(new { Mensaje = "El parámetro 'actual' debe ser 0 (anterior) o 1 (actual)." });
-            }
-
-            var recuperacion = await _ejecutivoService.GetRecuperacion(idEjecutivo, actual);
+            
+            var recuperacion = await _ejecutivoService.RecuperacionActual(idEjecutivo);
 
             if (recuperacion == null)
             {
@@ -294,6 +281,22 @@ namespace NoriAPI.Controllers
 
             return Ok(recuperacion);
         }
+        [HttpGet("get-recuperacion-Anterior")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetRecuperacionAnterior(int idEjecutivo)
+        {
+
+            var recuperacion = await _ejecutivoService.RecuperacionAnterior(idEjecutivo);
+
+            if (recuperacion == null)
+            {
+                return BadRequest(new { Mensaje = "Parámetros inválidos o no se encontró información de recuperación del ejecutivo." });
+            }
+
+            return Ok(recuperacion);
+        }
+
+
         #endregion
 
         #region Flujo Preguntas Respuestas
@@ -367,6 +370,26 @@ namespace NoriAPI.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("guarda-Elimina-Plazos")]
+        public async Task<IActionResult> GuardaEliminaPlazos([FromBody] EliminaGuardaPlazos PlazosInfo)
+        {
+            var result = await _ejecutivoService.GuardaEliminaPlazos(PlazosInfo);
+            //return Ok(result);            
+            return Ok(new { Mensaje = result });
+
+        }
+
+        [HttpPost ("GuardaNegociacionPlazos")]
+        public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] GuardaNegociacionPlazos negociacionInfo)
+        {
+            var result = await _ejecutivoService.GuardaNegoaciacionPlazos_(negociacionInfo);
+
+            return Ok(result);
+
+        }
+
+
 
 
         #endregion
@@ -539,6 +562,40 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+        //ObtenerUsoHorario
+
+
+
+        [HttpGet("estadoDeCuentaCorreo/{idCartera}/{idCuenta}")]
+        public async Task<IActionResult> GetEstadoDeCuentaCorreo(int idCartera, string idCuenta)
+        {
+            try
+            {
+                DataSet dsTablas = new();
+                DataTable EstadoTable = dsTablas.Tables.Add("EstadoDeCuenta");
+                EstadoTable.Columns.Add("idCartera", typeof(int));
+                EstadoTable.Columns.Add("idCuenta", typeof(string));
+                DataRow drDatos = EstadoTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
+
+                await _ejecutivoService.ObtenerEstadodeCuentaCorreos(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("EstadoDeCuenta") || dsTablas.Tables["EstadoDeCuenta"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Estados De Cuenta para este ejecutivo.");
+                }
+
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["EstadoDeCuenta"]);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
 
         [HttpPost("SaveEstadoDeCuenta")]
         public async Task<IActionResult> SaveCargoEstadoDeCuenta([FromBody] EstadoDeCuentaRe newEstadoCuenta)
@@ -629,9 +686,8 @@ namespace NoriAPI.Controllers
                 }
 
                 var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Pagos"]);
-                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
-
-                return Ok(jsonString);
+                string jsonPagos = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+                return Content(jsonPagos, "application/json; charset=utf-8");
             }
             catch (Exception ex)
             {
@@ -663,9 +719,9 @@ namespace NoriAPI.Controllers
 
                 // Convertir DataTable a JSON
                 var listaSeguimientos = ConvertDataTableToList(gestiones);
-                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+                string jsonGestionTe = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
 
-                return Ok(jsonString);
+                return Content(jsonGestionTe, "application/json; charset=utf-8");
             }
             catch (Exception ex)
             {
@@ -794,6 +850,23 @@ namespace NoriAPI.Controllers
             {
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
+        }
+
+        [HttpGet("scripts-full/{idProducto}/{idCartera}/{cuenta}")]
+        public async Task<IActionResult> BuscaScripts(int idEjecutivo, int idProducto, int idCartera, string cuenta)
+        {
+            var resultado = await _ejecutivoService.BuscaScriptsTranslated(idEjecutivo, idProducto, idCartera, cuenta);
+
+            if (resultado.Rows.Count == 0)
+            {
+                return NotFound("No se encontraron scripts para el producto.");
+            }
+
+
+            var listaScripts = ConvertDataTableToList(resultado);
+            string jsonScripts = JsonSerializer.Serialize(listaScripts, new JsonSerializerOptions { WriteIndented = true });
+
+            return Content(jsonScripts, "application/json; charset=utf-8");
         }
         #endregion
 
@@ -1151,6 +1224,44 @@ namespace NoriAPI.Controllers
 
 
 
+        #endregion
+
+        #region Usos Horarios
+        [HttpGet("UsosHorarios/{idCartera}/{idCuenta}/{Telefono}/{idEjecutivo}")]
+
+        public async Task<IActionResult> GetUsosHorarios(int idCartera, string idCuenta, string Telefono, int idEjecutivo)
+        {
+            try
+            {
+                DataSet dsTablas = new();
+                DataTable EstadoTable = dsTablas.Tables.Add("EstadoDeCuenta");
+                EstadoTable.Columns.Add("idCartera", typeof(int));
+                EstadoTable.Columns.Add("idCuenta", typeof(string));
+                EstadoTable.Columns.Add("Telefono", typeof(string));
+                EstadoTable.Columns.Add("idEjecutivo", typeof(int));
+                DataRow drDatos = EstadoTable.NewRow();
+                drDatos["idCartera"] = idCartera;
+                drDatos["idCuenta"] = idCuenta;
+                drDatos["Telefono"] = Telefono;
+                drDatos["idEjecutivo"] = idEjecutivo;
+
+                await _ejecutivoService.ObtenerUsoHorario(drDatos, dsTablas);
+
+                if (!dsTablas.Tables.Contains("EstadoDeCuenta") || dsTablas.Tables["EstadoDeCuenta"].Rows.Count == 0)
+                {
+                    return NotFound("No se encontraron Estados De Cuenta para este ejecutivo.");
+                }
+
+                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["EstadoDeCuenta"]);
+                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+
+                return Content(jsonString, "application/json; charset=utf-8");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
         #endregion
 
         #region Correos
