@@ -162,6 +162,8 @@ namespace NoriAPI.Repositories
             var parametersT = new
             {
                 idEjecutivo = numEmpleado
+
+
             };
             var tiempos = (await connection.QueryAsync<dynamic>(
                 queryTiempos,
