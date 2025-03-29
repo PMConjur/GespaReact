@@ -91,6 +91,23 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
     // 🔹 Combina los nombres personalizados con los predeterminados
     const columnNames = { ...defaultColumnNames, ...customColumnNames };
 
+    // 🔹 Función para renombrar los campos
+    const renameField = (field) => {
+        const fieldMappings = {
+            "Fecha_Insert": "Fecha",
+            "Segundo_Insert": "Hora",
+            "NúmeroTelefónico": "Teléfono",
+            "idContacto": "Contacto",
+            "idSituación": "Situación",
+            "NombreContacto": "Nombre",
+            "Herramienta": "Acercamiento",
+            "idAcercamiento": "Acercamiento",
+            "Ofreció": "Ejecutivo",
+            "_Realizado": "Realizado"
+        };
+        return fieldMappings[field] || field;
+    };
+
     // 🔹 Filtrar claves de los datos, excluyendo los campos ocultos
     const headers = Array.isArray(sortedData) && sortedData.length > 0 && sortedData[0] && typeof sortedData[0] === "object"
         ? Object.keys(sortedData[0]).filter(header => !hiddenFields.includes(header))
@@ -126,7 +143,7 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
                         <tr style={{ height: "55px" }}> {/* Reducimos la altura de los encabezados */}
                             {headers.map((header) => (
                                 <th key={header} style={{ padding: "4px", minHeight: "20px", textAlign: "center" }}>
-                                    {columnNames[header] || header.replace(/_/g, " ")}
+                                    {renameField(header)}
                                 </th>
                             ))}
                         </tr>
@@ -171,7 +188,7 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
                                             style={{
                                                 padding: ".7rem",
                                                 minHeight: "20px",
-                                                textAlign: "center",
+                                                textAlign: "justify",
                                                 lineHeight: "1",
                                                 ...(header === "Fecha_Insert" && { whiteSpace: "nowrap", width: "15%" }) // Ajuste para extender la fecha
                                             }}>

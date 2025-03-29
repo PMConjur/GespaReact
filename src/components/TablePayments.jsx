@@ -63,7 +63,9 @@ const TablePayments = ({ customColumnNames = {} }) => {
     // 🔹 Campos que NO se mostrarán en la tabla
     const hiddenFields = [
         "idCartera",
-        "idCuenta"
+        "idCuenta",
+        "Sucursal",
+        "idEtapa"
     ];
 
     // 🔹 Nombres de columnas por defecto (se pueden sobrescribir con `customColumnNames`)
@@ -71,9 +73,9 @@ const TablePayments = ({ customColumnNames = {} }) => {
         "FechaPago": "Fecha",
         "MontoPago": "Monto",
         "Referencia": "Referencia",
-        "Sucursal": "Sucursal",
+        "SucursalValor": "Sucursal",
         "Reportado": "Reportado",
-        "idEtapa": "Etapa",
+        "Etapa": "Etapa",
         "AcornPostDate": "Acorn Post Date",
         "Guardado": "Guardado"
     };
@@ -88,6 +90,20 @@ const TablePayments = ({ customColumnNames = {} }) => {
     const headers = Array.isArray(sortedData) && sortedData.length > 0 && sortedData[0] && typeof sortedData[0] === "object"
     ? Object.keys(sortedData[0]).filter(header => !hiddenFields.includes(header))
     : [];
+
+    const renameField = (field) => {
+        const fieldMappings = {
+            "FechaPago": "Fecha",
+            "MontoPago": "Monto",
+            "Referencia": "Referencia",
+            "SucursalValor": "Sucursal",
+            "Reportado": "Reportado",
+            "Etapa": "Etapa",
+            "AcornPostDate": "Acorn Post Date",
+            "Guardado": "Guardado"
+        };
+        return fieldMappings[field] || field;
+    };
         
     return (
         <>
@@ -103,14 +119,19 @@ const TablePayments = ({ customColumnNames = {} }) => {
                 maxHeight: "400px",  // Altura máxima del contenedor
                 overflowY: "auto",   // Scroll vertical si es necesario
                 overflowX: "auto",   // Scroll horizontal si es necesario
-                width: "100%",       // Que la tabla use el ancho disponible
+                     // Que la tabla use el ancho disponible
             }}>
                 <Table striped bordered hover responsive variant="dark" style={{ padding: ".7rem" }}>
                     <thead>
                         <tr>
                             {headers.map((header) => (
-                                <th key={header}>
-                                    {columnNames[header] || header.replace(/_/g, " ")}
+                                <th key={header} style={{
+                                    textAlign: "center",
+                                    whiteSpace: "nowrap", // Evitar que el texto se divida en varias líneas
+                                    wordWrap: "break-word",
+                                    width: header === "FechaPago" || header === "Ejecutivo" || header === "Autorizó" ? "200px" : "auto" // Extender campos específicos
+                                }}>
+                                    {renameField(header)}
                                 </th>
                             ))}
                         </tr>
@@ -132,7 +153,12 @@ const TablePayments = ({ customColumnNames = {} }) => {
                                     }
 
                                     return (
-                                        <td key={header}>
+                                        <td key={header} style={{
+                                            textAlign: "justify", // Justificar el contenido
+                                            whiteSpace: "nowrap", // Evitar saltos de línea
+                                            overflow: "hidden",   // Ocultar contenido adicional si es necesario
+                                            textOverflow: "ellipsis" // Agregar puntos suspensivos si el texto es muy largo
+                                        }}>
                                             {header === "Fecha_Insert"
                                                 ? item[header].split("T")[0] // Extrae solo la fecha
                                                 : typeof item[header] === "object" && Object.keys(item[header]).length === 0

@@ -120,7 +120,7 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
                     <thead>
                         <tr>
                             {headers.map((header) => (
-                                <th key={header}>
+                                <th key={header} style={{ whiteSpace: "nowrap", padding: ".7rem", textAlign: "center" }}>
                                     {columnNames[header] || header.replace(/_/g, " ")}
                                 </th>
                             ))}
@@ -130,7 +130,7 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
                         {sortedData.map((item, index) => (
                             <tr key={index}>
                                 {headers.map((header) => (
-                                    <td key={header}>
+                                    <td key={header} style={{ whiteSpace: "nowrap", padding: ".7rem", textAlign: "justify" }}>
                                         {header === "Fecha_Insert"
                                             ? item[header].split("T")[0] // Extrae solo la fecha
                                             : typeof item[header] === "object" && Object.keys(item[header]).length === 0

@@ -10,6 +10,16 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
     const [producto, setProducto] = useState("Arrangement");
     const [productData, setProductData] = useState([]);
     
+
+    const hiddenFields = [
+        "idProceso", 
+        "idCuenta", 
+        "FechaCreacion", 
+        "UsuarioCreacion",
+        "RecordType", // Campo oculto
+        "CM15"        // Campo oculto
+    ];
+    
     const productos = [
         "Arrangement",
         "ArrangementDetails",
@@ -24,6 +34,7 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
     ];
 
     const { searchResults = [] } = useContext(AppContext) || {};
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -109,7 +120,9 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
             );
         }
 
-        const columns = productData.length > 0 ? Object.keys(productData[0]) : [];
+        const columns = productData.length > 0 
+            ? Object.keys(productData[0]).filter(key => !hiddenFields.includes(key)) 
+            : [];
 
         return (
             <div className="table-responsive">
@@ -117,7 +130,9 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
                     <thead>
                         <tr>
                             {columns.map(key => (
-                                <th key={key}>{key}</th>
+                                <th key={key} style={{ textAlign: "center" }}>
+                                    {key}
+                                </th>
                             ))}
                         </tr>
                     </thead>
@@ -125,10 +140,20 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
                         {productData.map((item, index) => (
                             <tr key={index}>
                                 {columns.map(key => (
-                                    <td key={`${index}-${key}`}>
-                                        {item[key] !== null && item[key] !== undefined 
-                                            ? item[key].toString() 
-                                            : 'N/A'}
+                                    <td key={`${index}-${key}`} style={{ textAlign: "justify" }}>
+                                        {key === "Details" && item[key] ? (
+                                            <div style={{
+                                                width: "300px",
+                                                whiteSpace: "pre-wrap",
+                                                wordWrap: "break-word"
+                                            }}>
+                                                {item[key].toString()}
+                                            </div>
+                                        ) : (
+                                            item[key] !== null && item[key] !== undefined 
+                                                ? item[key].toString() 
+                                                : 'N/A'
+                                        )}
                                     </td>
                                 ))}
                             </tr>

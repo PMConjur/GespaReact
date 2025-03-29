@@ -86,6 +86,18 @@ const TableAditionals = ({ customColumnNames = {} }) => {
     ? Object.keys(sortedData[0]).filter(header => !hiddenFields.includes(header))
     : [];
 
+    const renameField = (field) => {
+        const fieldMappings = {
+            "NombreAdicional": "Nombre",
+            "idParentesco": "Parentesco",
+            "N\u00FAmeroTelef\u00F3nico": "Teléfono",
+            "CorreoAdicional": "Correo",
+            "RFCAdicional": "RFC",
+            "Domiclio": "Domicilio"
+        };
+        return fieldMappings[field] || field;
+    };
+
     return (
         <>
             <Form.Check
@@ -106,8 +118,8 @@ const TableAditionals = ({ customColumnNames = {} }) => {
                     <thead>
                         <tr>
                             {headers.map((header) => (
-                                <th key={header}>
-                                    {columnNames[header] || header.replace(/_/g, " ")}
+                                <th key={header} style={{ textAlign: "center" }}>
+                                    {renameField(header)}
                                 </th>
                             ))}
                         </tr>
@@ -124,7 +136,7 @@ const TableAditionals = ({ customColumnNames = {} }) => {
                                     }
 
                                     return (
-                                        <td key={header}>
+                                        <td key={header} style={{ textAlign: "justify" }}>
                                             {header === "Fecha_Insert"
                                                 ? item[header].split("T")[0] // Extrae solo la fecha
                                                 : typeof item[header] === "object" && Object.keys(item[header]).length === 0

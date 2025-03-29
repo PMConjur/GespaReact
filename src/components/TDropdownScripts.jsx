@@ -17,7 +17,7 @@ const TDropdownScripts = ({ data }) => {
                 <Dropdown.Toggle variant="success" id="dropdown-basic">
                     {selectedLabel}
                 </Dropdown.Toggle>
-                <Dropdown.Menu style={{ maxHeight: '400px', overflowY: 'auto', margin: '0 auto' }}>
+                <Dropdown.Menu style={{ maxHeight: '400px', overflowY: 'auto', margin: '0 auto', fontFamily: 'Arial' }}>
                     {data.map(script => (
                         <Dropdown.Item key={script.idScript} eventKey={script.idScript} className="text-center">
                             {script.Nombre}
@@ -26,14 +26,15 @@ const TDropdownScripts = ({ data }) => {
                 </Dropdown.Menu>
             </Dropdown>
             {selectedScript && (
-                <div className="mt-3 text-center">
-                    <h5>{selectedScript.Nombre}</h5>
+                <div className="mt-3 text-center" style={{ fontFamily: 'Arial' }}>
+                    {/* <h5>{selectedScript.Nombre}</h5> */}
                     <p>{selectedScript.Descripción}</p>
-                    <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', textAlign: 'justify' }}>
+                    <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', textAlign: 'justify', fontFamily: 'Arial' }}>
                         {selectedScript.Script.replace(/[*&]/g, '')}
                     </pre>
                 </div>
             )}
+            
         </div>
     );
 };

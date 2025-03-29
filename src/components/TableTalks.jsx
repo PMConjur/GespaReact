@@ -93,6 +93,27 @@ const TableTalks = ({ customColumnNames = {} }) => {
     // 🔹 Lista de campos a los que se les agregará el signo "$" con formato de miles
     const currencyFields = ["Saldo", "MontoRequerido", "MontoNegociado", "MontoPagado", "SaldoInterés", "Remanente"];
 
+    // 🔹 Función para renombrar los campos
+    const renameField = (field) => {
+        const fieldMappings = {
+            "FechaHora": "Fecha y Hora",
+            "Herramienta": "Herramienta",
+            "idEstado": "Estado",
+            "Vencimiento": "Vencimiento",
+            "Saldo": "Saldo",
+            "Descuento": "(%) Descuento",
+            "MontoRequerido": "Requerido",
+            "MontoNegociado": "Negociado",
+            "MontoPagado": "Pagado",
+            "Plazos": "Plazos",
+            "Ofreció": "Ofertante",
+            "Validó": "Validador",
+            "_CartaConvenio": "Carta Convenio",
+            "SaldoInterés": "Saldo con Interés",
+            "Remanente": "Remanente"
+        };
+        return fieldMappings[field] || field;
+    };
 
     // 🔹 Filtrar claves de los datos, excluyendo los campos ocultos
     const headers = Array.isArray(sortedData) && sortedData.length > 0 && sortedData[0] && typeof sortedData[0] === "object"
@@ -130,96 +151,51 @@ const TableTalks = ({ customColumnNames = {} }) => {
                         <tr style={{ height: "55px" }}> {/* Reducimos la altura de los encabezados */}
                             {headers.map((header) => (
                                 <th key={header} style={{ padding: "4px", minHeight: "20px", textAlign: "center" }}>
-                                    {columnNames[header] || header.replace(/_/g, " ")}
+                                    {renameField(header)}
                                 </th>
                             ))}
                         </tr>
                     </thead>
-                    <tbody style={{
-                        width: "100%"          // 🔹 Evita que la tabla se desconfigure
-                    }}>
-                    
+                    <tbody style={{ width: "100%" }}>
                         {sortedData.map((item, index) => (
-                            <tr key={index} style={{ height: "24px" }}> {/* Reducimos la altura de cada fila */}
+                            <tr key={index} style={{ height: "24px" }}>
                                 {headers.map((header) => {
                                     let value = item[header];
 
-                                    // 🔹 Formatear FechaHora en dos filas con estilos compactos
+                                    // Formatear campos según sea necesario
                                     if (header === "FechaHora" && typeof value === "string" && value.includes("T")) {
                                         const date = new Date(value);
                                         if (!isNaN(date.getTime())) {
-                                            const formattedDate = date.toISOString().split("T")[0]; // YYYY-MM-DD
+                                            const formattedDate = date.toISOString().split("T")[0];
                                             const hours = date.getHours().toString().padStart(2, "0");
                                             const minutes = date.getMinutes().toString().padStart(2, "0");
-                                            value = (
-                                                <div style={{ 
-                                                    whiteSpace: "nowrap", 
-                                                    textAlign: "center", 
-                                                    minWidth: "100px", 
-                                                    maxWidth: "120px",
-                                                    padding: "2px", 
-                                                    lineHeight: "1.1"
-                                                }}>
-                                                    {formattedDate} <br /> {hours}:{minutes} hrs
-                                                </div>
-                                            );
+                                            value = `${formattedDate} ${hours}:${minutes} hrs`;
                                         }
                                     }
 
-                                    // 🔹 Formatear Ofertante y Validador en máximo 2 filas
-                                    if ((header === "Ofreció" || header === "Validó") && typeof value === "string") {
-                                        value = (
-                                            <div style={{
-                                                maxHeight: "35px",
-                                            
-                                                textAlign: "center",
-                                                whiteSpace: "nowrap",
-                                                display: "-webkit-box",
-                                                WebkitLineClamp: 2,
-                                                WebkitBoxOrient: "vertical"
-                                            }}>
-                                                {value}
-                                            </div>
-                                        );
-                                    }
-
-                                    // 🔹 Formatear Vencimiento -> Solo YYYY-MM-DD
-                                    if (header === "Vencimiento" && typeof value === "string" && value.includes("T")) {
-                                        value = value.split("T")[0];
-                                    }
-
-                                    // 🔹 Formatear campos de moneda con "$" y separadores de miles
                                     if (currencyFields.includes(header) && typeof value === "number") {
                                         value = `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                                     }
 
-                                    // 🔹 Agregar "%" al campo de Descuento
                                     if (header === "Descuento" && typeof value === "number") {
                                         value = `${value.toFixed(2)}%`;
                                     }
 
-                                    // 🔹 Manejo de valores nulos o no definidos
                                     if (value === null || value === undefined || (typeof value === "object" && Object.keys(value).length === 0)) {
                                         value = "--";
                                     }
 
                                     return (
-                                        <td key={header} 
-                                            style={{ 
-                                                padding: "7.rem", 
-                                                minHeight: "20px", 
-                                                textAlign: "center", 
-                                                lineHeight: "1.5", 
-                                            }}>
-                                        {value}
-                                    </td>
-                                );
-                            })}
-                        </tr>
-                    ))}
-                </tbody>
-            </Table>
-        </div>
+                                        <td key={header} style={{ whiteSpace: "nowrap", textAlign: "left" }}>
+                                            {value}
+                                        </td>
+                                    );
+                                })}
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            </div>
         </>
     );
 };
