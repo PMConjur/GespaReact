@@ -112,16 +112,16 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
                 className="scroll-container"
                 style={{
                     width: '100%',
-                    maxHeight: '850px',
+                    height: '100%', // Asegurar que ocupe todo el espacio del contenedor
+                    maxHeight: '680px', // Ajustar la altura máxima para que coincida con FormFollowUps
                     overflowY: 'auto',
-                    display: 'flex',
                     backgroundColor: '#343a40', // Fondo oscuro
                     color: '#ffffff',          // Texto claro
                     scrollbarColor: '#6c757d #343a40', // Colores del scroll
                     scrollbarWidth: 'thin'    // Scroll más delgado
                 }}
             >
-                <Table striped bordered hover responsive variant="dark" style={{ fontSize: "13px" }}>
+                <Table striped bordered hover responsive variant="dark" style={{ fontSize: "13px", margin: 0 }}>
                     <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#343a40" }}> {/* Encabezado fijo */}
                         <tr style={{ height: "55px" }}> {/* Reducimos la altura de los encabezados */}
                             {headers.map((header) => (
