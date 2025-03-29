@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Modal, Button, Table } from 'react-bootstrap';
 import { fetchDrives } from '../../../services/gespawebServices';
 import { AppContext } from '../../../pages/Managment';
@@ -11,19 +11,19 @@ const AccionamientosTable = ({ data }) => {
       <Table striped bordered hover className="custom-table" variant='dark'>
         <thead>
           <tr>
-            <th>Fecha</th>
-            <th>Acercamiento</th>
-            <th>Entregado</th>
-            <th>Mensaje</th>
+            <th style={{ textAlign: "center" }}>Fecha</th>
+            <th style={{ textAlign: "center" }}>Acercamiento</th>
+            <th style={{ textAlign: "center" }}>Entregado</th>
+            <th style={{ textAlign: "center" }}>Mensaje</th>
           </tr>
         </thead>
         <tbody>
           {data.map((item, index) => (
             <tr key={index}>
-              <td>{item.Fecha_Insert}</td>
+              <td>{item.Fecha_Insert.split("T")[0]}</td> {/* Solo muestra la fecha antes de la "T" */}
               <td>{item.Acercamiento}</td>
-              <td>{item._Entregado ? 'Sí' : 'No'}</td>
-              <td>{item.Mensaje}</td>
+              <td>{typeof item._Entregado === "boolean" ? (item._Entregado ? "Sí" : "No") : ""}</td> {/* Maneja booleanos y valores no válidos */}
+              <td>{item.Mensaje || ""}</td> {/* Muestra "--" si no hay mensaje */}
             </tr>
           ))}
         </tbody>
