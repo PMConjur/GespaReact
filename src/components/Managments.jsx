@@ -140,7 +140,7 @@ const Managments = () => {
                 style={{
                   maxHeight: "300px", // Ajuste de altura a 300px
                   overflowY: "auto", // Habilitar scroll vertical dentro de la tabla
-                  display: "block", // Necesario para que funcione el scroll en tablas
+                  display: "block",  // Necesario para que funcione el scroll en tablas
                 }}
               >
                 <thead>
