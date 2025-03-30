@@ -272,14 +272,15 @@ namespace NoriAPI.Controllers
 
         #region Recuperacion
         [HttpGet("get-recuperacion")]
-        public async Task<IActionResult> GetRecuperacion([FromQuery] int idEjecutivo, [FromQuery] int actual)
+        [AllowAnonymous]
+        public async Task<IActionResult> GetRecuperacion([FromQuery] int idEjecutivo, [FromQuery] bool actual)
         {
             if (idEjecutivo <= 0)
             {
                 return BadRequest(new { Mensaje = "El ID del ejecutivo debe ser un número positivo." });
             }
 
-            if (actual != 0 && actual != 1)
+            if (actual != false && actual != true)
             {
                 return BadRequest(new { Mensaje = "El parámetro 'actual' debe ser 0 (anterior) o 1 (actual)." });
             }
@@ -306,7 +307,7 @@ namespace NoriAPI.Controllers
         #endregion
 
         #region Directorio
-        private List<Dictionary<string, object>> ConvertDataTableToList(DataTable dataTable)
+        private static List<Dictionary<string, object>> ConvertDataTableToList(DataTable dataTable)
         {
             var list = new List<Dictionary<string, object>>();
 
@@ -339,7 +340,7 @@ namespace NoriAPI.Controllers
         {
             var InfoCalculadora = await _ejecutivoService.ValidateInfoCalculadora1(Cartera, NoCuenta, idHerr);
 
-            return Ok(InfoCalculadora); ;
+            return Ok(InfoCalculadora);
 
         }
 
@@ -371,12 +372,11 @@ namespace NoriAPI.Controllers
         public async Task<IActionResult> GuardaEliminaPlazos([FromBody] EliminaGuardaPlazos PlazosInfo)
         {
             var result = await _ejecutivoService.GuardaEliminaPlazos(PlazosInfo);
-            //return Ok(result);            
             return Ok(new { Mensaje = result });
 
         }
 
-        [HttpPost ("GuardaNegociacionPlazos")]
+        [HttpPost("GuardaNegociacionPlazos")]
         public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] GuardaNegociacionPlazos negociacionInfo)
         {
             var result = await _ejecutivoService.GuardaNegoaciacionPlazos_(negociacionInfo);
@@ -721,7 +721,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("gestionesDelDia/{idEjecutivo}")]
-        public IActionResult ObtieneGestionesDelDia(int idEjecutivo)
+        public async Task <IActionResult> ObtieneGestionesDelDia(int idEjecutivo)
         {
             try
             {
@@ -812,7 +812,7 @@ namespace NoriAPI.Controllers
             }
         }
 
-        [HttpGet("scripts-full/{idProducto}/{idCartera}/{cuenta}")]
+        [HttpGet("scripts-full/{idEjecutivo}/{idProducto}/{idCartera}/{cuenta}")]
         public async Task<IActionResult> BuscaScripts(int idEjecutivo, int idProducto, int idCartera, string cuenta)
         {
             var resultado = await _ejecutivoService.BuscaScriptsTranslated(idEjecutivo, idProducto, idCartera, cuenta);
@@ -1132,19 +1132,16 @@ namespace NoriAPI.Controllers
         {
             try
             {
-                DataTable DDQuejas = new DataTable();
+                DataTable ddQuejas = new();
 
-                DDQuejas = await _ejecutivoService.GetDropDQuejasAsync();
+                ddQuejas = await _ejecutivoService.GetDropDQuejasAsync();
 
                 // Convertimos el DataTable a una lista de diccionarios
-                var QuejasDD = ConvertDataTableToList(DDQuejas);
+                var quejasDD = ConvertDataTableToList(ddQuejas);
 
                 // Serializamos la lista a JSON
-                string jsonDDQuejas = JsonSerializer.Serialize(QuejasDD, new JsonSerializerOptions { WriteIndented = true });
+                string jsonDDQuejas = JsonSerializer.Serialize(quejasDD, new JsonSerializerOptions { WriteIndented = true });
 
-                //dsTablas.Tables.Add(Negociaciones);
-
-                //return Ok(jsonDDQuejas);
                 return Content(jsonDDQuejas, "application/json; charset=utf-8");
 
 
@@ -1161,17 +1158,16 @@ namespace NoriAPI.Controllers
         {
             try
             {
-                DataTable DDOrigenQuejas = new DataTable();
+                DataTable ddOrigenQuejas = new();
 
-                DDOrigenQuejas = await _ejecutivoService.GetDropDOrigenQuejasAsync();
+                ddOrigenQuejas = await _ejecutivoService.GetDropDOrigenQuejasAsync();
 
                 // Convertimos el DataTable a una lista de diccionarios
-                var OrigenQuejasDD = ConvertDataTableToList(DDOrigenQuejas);
+                var origenQuejasDD = ConvertDataTableToList(ddOrigenQuejas);
 
                 // Serializamos la lista a JSON
-                string jsonDDOrigenQuejas = JsonSerializer.Serialize(OrigenQuejasDD, new JsonSerializerOptions { WriteIndented = true });
+                string jsonDDOrigenQuejas = JsonSerializer.Serialize(origenQuejasDD, new JsonSerializerOptions { WriteIndented = true });
 
-                //return Ok(jsonDDOrigenQuejas);
                 return Content(jsonDDOrigenQuejas, "application/json; charset=utf-8");
 
             }
@@ -1187,7 +1183,7 @@ namespace NoriAPI.Controllers
         {
             try
             {
-                DataTable viewQuejas = new DataTable();
+                DataTable viewQuejas;
 
                 viewQuejas = await _ejecutivoService.GetViewQuejasAsync(idCartera, idCuenta);
 
@@ -1197,7 +1193,6 @@ namespace NoriAPI.Controllers
                 // Serializamos la lista a JSON
                 string jsonViewQuejas = JsonSerializer.Serialize(QuejasView, new JsonSerializerOptions { WriteIndented = true });
 
-                //return Ok(jsonViewQuejas);
                 return Content(jsonViewQuejas, "application/json; charset=utf-8");
 
             }
@@ -1214,13 +1209,10 @@ namespace NoriAPI.Controllers
 
         #region Correos
         [HttpGet("CorreosObtiene/{idCartera}/{idCuenta}")]
-
-
-
         public async Task<IActionResult> GetCorreos(int idCartera, string idCuenta)
         {
 
-            DataSet dsTablas = new DataSet();
+            DataSet dsTablas = new();
             DataTable correosTable = dsTablas.Tables.Add("Correos");
             correosTable.Columns.Add("idCartera", typeof(int));
             correosTable.Columns.Add("idCuenta", typeof(string));
@@ -1244,13 +1236,10 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("CorreosEnviados/{idCartera}/{idCuenta}")]
-
-
-
         public async Task<IActionResult> GetCorreosEnviados(int idCartera, string idCuenta)
         {
 
-            DataSet dsTablas = new DataSet();
+            DataSet dsTablas = new();
             DataTable correosTable = dsTablas.Tables.Add("Correos");
             correosTable.Columns.Add("idCartera", typeof(int));
             correosTable.Columns.Add("idCuenta", typeof(string));
@@ -1443,7 +1432,7 @@ namespace NoriAPI.Controllers
 
         #region Adicionales
         [HttpGet("Adicionales{idCartera}/{idCuenta}")]
-
+        [AllowAnonymous]
         public async Task<IActionResult> GetAdicionales(int idCartera, string idCuenta)
         {
             try
@@ -1459,9 +1448,10 @@ namespace NoriAPI.Controllers
                 var listaAdicionales = ConvertDataTableToList(adicionales);
 
                 // Serializar la lista a JSON
-                string jsonString = JsonSerializer.Serialize(listaAdicionales, new JsonSerializerOptions { WriteIndented = true });
+                string jsonAdicionales = JsonSerializer.Serialize(listaAdicionales, new JsonSerializerOptions { WriteIndented = true });
 
-                return Ok(jsonString);
+                return Content(jsonAdicionales, "application/json; charset=utf-8");
+
             }
             catch (Exception ex)
             {
@@ -1478,7 +1468,7 @@ namespace NoriAPI.Controllers
                     return BadRequest(ModelState);
                 }
 
-                NoriAPI.Models.Ejecutivo.Adicional adicional = new NoriAPI.Models.Ejecutivo.Adicional
+                Adicional adicional = new()
                 {
                     Nombre = request.Nombre,
                     IdParentesco = request.IdParentesco,
@@ -1486,8 +1476,8 @@ namespace NoriAPI.Controllers
                 };
 
                 DataTable drInfoTable = ConvertJObjectToDataTable(request.DrInfo);
-                NoriAPI.Models.Ejecutivo.Ejecutivo ejecutivo = ConvertJObjectToEjecutivo(request.Ejecutivo);
-                NoriAPI.Models.Catalogos catalogos = ConvertJObjectToCatalogos(request.Catalogos);
+                Ejecutivo ejecutivo = ConvertJObjectToEjecutivo(request.Ejecutivo);
+                Catalogos catalogos = ConvertJObjectToCatalogos(request.Catalogos);
 
                 DataRow drInfoRow = drInfoTable.Rows.Count > 0 ? drInfoTable.Rows[0] : null;
 
@@ -1510,7 +1500,7 @@ namespace NoriAPI.Controllers
             }
         }
 
-        private DataTable ConvertJObjectToDataTable(JObject jObject)
+        private static DataTable ConvertJObjectToDataTable(JObject jObject)
         {
             DataTable dataTable = new DataTable();
 
@@ -1523,7 +1513,7 @@ namespace NoriAPI.Controllers
                         dataTable.Columns.Add(property.Name, typeof(string));
                     }
 
-                    foreach (JObject row in itemArray)
+                    foreach (JToken row in itemArray)
                     {
                         DataRow dataRow = dataTable.NewRow();
                         foreach (DataColumn column in dataTable.Columns)
@@ -1537,7 +1527,7 @@ namespace NoriAPI.Controllers
             return dataTable;
         }
 
-        private NoriAPI.Models.Ejecutivo.Ejecutivo ConvertJObjectToEjecutivo(JObject jObject)
+        private static Ejecutivo ConvertJObjectToEjecutivo(JObject jObject)
         {
             if (jObject != null && jObject["datos"] is JObject datos)
             {
@@ -1552,14 +1542,14 @@ namespace NoriAPI.Controllers
                     dr[property.Name] = property.Value;
                 }
                 dt.Rows.Add(dr);
-                return new NoriAPI.Models.Ejecutivo.Ejecutivo(dt.Rows[0]);
+                return new Ejecutivo(dt.Rows[0]);
             }
             return null;
         }
 
-        private NoriAPI.Models.Catalogos ConvertJObjectToCatalogos(JObject jObject)
+        private static Catalogos ConvertJObjectToCatalogos(JObject jObject)
         {
-            NoriAPI.Models.Catalogos catalogos = new NoriAPI.Models.Catalogos();
+            Catalogos catalogos = new();
             if (jObject != null && jObject["respuestasFlujo"] is JObject respuestasFlujo)
             {
                 catalogos.respuesta = respuestasFlujo["respuesta"]?.ToString();

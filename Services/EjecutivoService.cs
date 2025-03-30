@@ -56,7 +56,7 @@ namespace NoriAPI.Services
         #endregion
 
         Task<NegociacionesResponse> GetNegociaciones(int idEjecutivo, bool? mesActual);
-        Task<Recuperacion> GetRecuperacion(int idEjecutivo, int actual);
+        Task<Recuperacion> GetRecuperacion(int idEjecutivo, bool actual);
         Task<List<PreguntasRespuestasInfo>> ValidatePreguntas_Respuestas();
 
         #region Calculadora
@@ -2547,14 +2547,14 @@ namespace NoriAPI.Services
 
 
         public async Task<string> GuardaEliminaPlazos(EliminaGuardaPlazos PlazosInfo)
-        {          
+        {
             //--------------------------------Todas las herramientas------------------------------//
             DataTable dtHerramientas = await _ejecutivoRepository.ObtieneHerramientasCompletas();
             dtHerramientas.PrimaryKey = new DataColumn[] { dtHerramientas.Columns["idHerramienta"] };
-           
+
             //----------------------------------------------------------------------------------------------------//
             int idBuscado = PlazosInfo.IdHerramienta;
-            
+
             int iMargen = Convert.ToInt32(dtHerramientas.Rows.Find(idBuscado)["Margen"]);
             int iDiasEntrePagos = Convert.ToInt32(dtHerramientas.Rows.Find(idBuscado)["DíasEntrePagos"]);
 
@@ -2568,7 +2568,7 @@ namespace NoriAPI.Services
                 if (iNúmPago == 0) //Primer pago inicia cuando se inserta.
                     dtInicio = DateTime.Now;
 
-                // Si la diferencia de días entre plazos es mayor 
+                // Si la diferencia de días entre plazos es mayor
                 else if ((PlazosInfo.Plazos[iNúmPago].Fecha - PlazosInfo.Plazos[iNúmPago - 1].Fecha).TotalDays > iDiasEntrePagos && PlazosInfo.IdHerramienta.ToString() != "509"
                     && PlazosInfo.IdHerramienta.ToString() != "1010")
                 {
@@ -2601,11 +2601,11 @@ namespace NoriAPI.Services
                 if(iNúmPago == 0)
                 {
                     var borrarPlazos = _ejecutivoRepository.Elimina_Plazos(PlazosInfo);
-                }                    
+                }
                 var GuardaPlazos = _ejecutivoRepository.Guarda_Plazos(PlazosInfo, PagoNeg, dtInicio, dtFin, iNúmPago);
 
                 iNúmPago++;
-                               
+
             }
 
             return "Correcto.";
@@ -2621,14 +2621,14 @@ namespace NoriAPI.Services
 
         #endregion
         #region Recuperacion
-        public async Task<Recuperacion?> GetRecuperacion(int idEjecutivo, int actual)
+        public async Task<Recuperacion?> GetRecuperacion(int idEjecutivo, bool actual)
         {
-            if (idEjecutivo <= 0 || (actual != 0 && actual != 1))
+            if (idEjecutivo <= 0 || (actual != false && actual != true))
             {
                 return null;
             }
 
-            return actual == 1
+            return actual == true
                 ? await _ejecutivoRepository.RecuperacionActual(idEjecutivo)
                 : await _ejecutivoRepository.RecuperacionAnterior(idEjecutivo);
 
