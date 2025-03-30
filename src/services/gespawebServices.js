@@ -1119,6 +1119,8 @@ export const createFollows = async (data) => {
     throw error;
   }
 };
+
+//EndPoint - Validadores
 export const fetchValidators = async (idProducto, idEjecutivo, Contraseña) => {
   try {
     console.log("Llamando al endpoint /ejecutivo/validador");
@@ -1139,6 +1141,50 @@ export const fetchValidators = async (idProducto, idEjecutivo, Contraseña) => {
     return result;
   } catch (error) {
     console.error("Error en fetchValidators:", error);
+    throw error;
+  }
+};
+
+//EndPoint - lista Validadores
+export const fetchListValidators = async (idProducto) => {
+  try {
+    console.log("Llamando al endpoint /ejecutivo/validadores");
+    const response = await servicio.get(`/ejecutivo/validadores`, {
+      params: { idProducto},
+    });
+
+    console.log("Respuesta recibida:", response);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Validación recibida Validators:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchValidators:", error);
+    throw error;
+  }
+};
+
+// endpoint guardar-Elimina-Plazos
+export const fetchSaveDeleteDeadlines = async (requestData) => {
+  try {
+    console.log("Enviando datos al endpoint:", requestData);
+    const response = await servicio.post(`/ejecutivo/guarda-Elimina-Plazos`, requestData);
+
+    if (response.status !== 200) {
+      throw new Error(`Error en la respuesta de la API. Estado: ${response.status}`);
+    }
+
+    const result = response.data;
+    console.log("Respuesta del endpoint:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchSaveDeleteDeadlines:", error);
     throw error;
   }
 };

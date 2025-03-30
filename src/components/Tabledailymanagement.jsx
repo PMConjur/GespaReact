@@ -1,12 +1,13 @@
 import React from "react";
 import { Table, Row, Container } from "react-bootstrap";
+import { reemplazarValores } from "./ValoresCatalogos"; // Importa el método
 
 const Tabledailymanagement = ({ cuentasData }) => {
   const renderCell = (value) => {
     if (typeof value === "object" && value !== null) {
       return JSON.stringify(value);
     }
-    return value ?? "N/A";
+    return value ?? "";
   };
 
   return (
@@ -33,8 +34,8 @@ const Tabledailymanagement = ({ cuentasData }) => {
                 <td>{renderCell(item.Fecha_Insert)}</td>
                 <td>{renderCell(item.Segundo_Insert)}</td>
                 <td>{renderCell(item.idCuenta)}</td>
-                <td>{renderCell(item.idProducto)}</td>
-                <td>{renderCell(item.idSituación)}</td>
+                <td>{renderCell(reemplazarValores(item.idProducto))}</td>
+                <td>{renderCell(reemplazarValores(item.idSituación))}</td>
                 <td>{renderCell(item.NombreDeudor)}</td>
                 <td>{renderCell(item.RFC)}</td>
                 <td>{renderCell(item.NúmeroCliente)}</td>

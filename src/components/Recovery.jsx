@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext} from "react";
 import { Modal, Button, Form, ListGroup, Placeholder } from "react-bootstrap";
 import { userRecovery, userNegotiations } from "../services/gespawebServices";
 import NegotiationsMonth from "./NegotiationsMonth.jsx";
+import { AppContext } from "../pages/Managment.jsx";
+
 const Recovery = ({ show, handleClose }) => {
   const [mes, setMes] = useState("actual");
   const [data, setData] = useState({
@@ -9,12 +11,11 @@ const Recovery = ({ show, handleClose }) => {
     negociaciones: 0,
     montoParcial: 0,
     montoCumplido: 0,
-    metaCumplimiento: 0
+    metaCumplimiento: 0,
   });
   const [loading, setLoading] = useState(true);
   const [negotiations, setNegotiations] = useState([]);
-  const responseData = JSON.parse(localStorage.getItem("responseData"));
-  const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo; // Get idEjecutivo from respo
+  const { idEjecutivo } = useContext(AppContext);
   const fetchData = async (selectedMes) => {
     try {
       setLoading(true);
@@ -26,7 +27,7 @@ const Recovery = ({ show, handleClose }) => {
         negociaciones: response.negociaciones,
         montoParcial: response.montoParcial,
         montoCumplido: response.montoCumplido,
-        metaCumplimiento: response.metaCumplimiento
+        metaCumplimiento: response.metaCumplimiento,
       });
       if (actual === 1) {
         const negotiationsResponse = await userNegotiations(idEjecutivo);
@@ -52,7 +53,7 @@ const Recovery = ({ show, handleClose }) => {
       negociaciones: 0,
       montoParcial: 0,
       montoCumplido: 0,
-      metaCumplimiento: 0
+      metaCumplimiento: 0,
     });
     fetchData(selectedMes);
   };
@@ -62,7 +63,7 @@ const Recovery = ({ show, handleClose }) => {
       "$" +
       number.toLocaleString("en-US", {
         minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+        maximumFractionDigits: 2,
       })
     );
   };
@@ -298,12 +299,6 @@ const Recovery = ({ show, handleClose }) => {
 
         <hr />
       </Modal.Body>
-
-      <Modal.Footer className="bg-dark text-white">
-        <Button variant="primary" onClick={handleClose}>
-          Cerrar
-        </Button>
-      </Modal.Footer>
     </Modal>
   );
 };
