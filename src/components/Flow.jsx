@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { Row, Col, Card, Form, Button } from "react-bootstrap";
-import { userFlow } from "../services/gespawebServices";
+import { userFlow, saveManagment } from "../services/gespawebServices";
 import {
   NodePlusFill,
   Check2Circle,
@@ -16,8 +16,13 @@ import Timmer from "./flowComponents/Timmer";
 import SaveButton from "./flowComponents/SaveButton"; // Importa el nuevo componente SaveButton
 
 const Flow = () => {
-  const { selectedAnswer, setNegotiationActive, setFollowUpActive } =
-    useContext(AppContext); // Agrega setFollowUpActive del contexto
+  const {
+    selectedAnswer,
+    setNegotiationActive,
+    setFollowUpActive,
+    stoppedTime,
+    communicationData
+  } = useContext(AppContext); // Agrega stoppedTime y communicationData del contexto
   const [userFlowData, setUserFlowData] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
   const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -33,7 +38,6 @@ const Flow = () => {
   const [startTimer, setStartTimer] = useState(false); // Estado para iniciar el timer
   const [commentData, setCommentData] = useState(""); // Estado para el comentario
   const [isCommentValid, setIsCommentValid] = useState(false); // Estado para la validez del comentario
-  const [stoppedTime, setStoppedTime] = useState(null); // Estado para el tiempo detenido
 
   const handleSaveComment = (comment) => {
     setSavedComment(comment); // Actualiza el comentario guardado
@@ -45,8 +49,11 @@ const Flow = () => {
   };
 
   const handleStopTimer = () => {
-    setStartTimer(false); // Detiene el temporizador
-    console.log("Temporizador detenido en:", stoppedTime);
+    if (stoppedTime) {
+      console.log("Tiempo detenido desde AppContext:", stoppedTime); // Imprime el tiempo detenido
+    } else {
+      console.warn("El tiempo detenido aún es null.");
+    }
     return stoppedTime; // Devuelve el tiempo detenido
   };
 
@@ -123,6 +130,27 @@ const Flow = () => {
           </>
         );
       }
+    }
+  };
+
+  const handleSave = async (comment) => {
+    const dataManagment = {
+      time: stoppedTime,
+      communication: communicationData,
+      comment: comment
+    };
+
+    try {
+      const response = await saveManagment(dataManagment); // Llama al servicio saveManagment
+      if (response.success) {
+        toast.success("Gestión guardada correctamente.");
+        handleLastAnswerActions(); // Ejecuta las acciones según las condiciones
+      } else {
+        toast.error("Error al guardar la gestión.");
+      }
+    } catch (error) {
+      console.error("Error al guardar la gestión:", error);
+      toast.error("Ocurrió un error al guardar la gestión.");
     }
   };
 
@@ -357,18 +385,12 @@ const Flow = () => {
       setIsCommentValid(isValid); // Actualiza la validez del comentario
     };
 
-    const handleSave = (data) => {
-      console.log("Guardando flujo con tiempo detenido en:", stoppedTime);
-      handleLastAnswerActions(); // Llama a handleLastAnswerActions directamente
-      toast.success("Flujo guardado correctamente.");
-    };
-
     const renderContent = () => {
       if (idComunico) {
         if (idDijo) {
           return (
             <>
-              <h1>Aqui cuando que dijo</h1>
+              {/***Aqui cuando que dijo */}
               <CommunicationPhone idComunico={idComunico} />
               <Comment
                 comentario=""
@@ -380,10 +402,9 @@ const Flow = () => {
         } else if (shouldShowComment) {
           return (
             <>
-              <h6>
-                Aqui cuando que dijo es false pero comentario va activo porque
-                es un quien contesto
-              </h6>
+              {/***Aqui cuando que dijo es false pero comentario va activo porque
+                es un quien contesto */}
+
               <CommunicationPhone idComunico={idComunico} />
               <Comment
                 comentario=""
@@ -395,7 +416,7 @@ const Flow = () => {
         } else {
           return (
             <>
-              <h5>Flujo finalizado.</h5>
+              {/***Flujo finalizado */}
               <CommunicationPhone idComunico={idComunico} />
             </>
           );
@@ -405,7 +426,8 @@ const Flow = () => {
       } else {
         return (
           <>
-            <h5>Flujo finalizado aqui quien no contesto.</h5>
+            {/***Flujo finalizado */}
+            <h5></h5>
             <CommunicationPhone idComunico={idComunico} />
             <Comment
               comentario=""

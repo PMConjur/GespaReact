@@ -98,7 +98,7 @@ export async function userNegotiations(idEjecutivo) {
 export async function searchCustomer(filter, value) {
   try {
     const response = await servicio.get("/search-customer/busqueda-cuenta", {
-      params: { filtro: filter, ValorBusqueda: value },
+      params: { filtro: filter, ValorBusqueda: value }
     });
     return response.data;
   } catch (error) {
@@ -129,7 +129,7 @@ export const fetchPhones = async (idCuenta) => {
     }
 
     const data = response.data;
-    console.log('estos trae telefonos', response.data)
+    console.log("estos trae telefonos", response.data);
     return data;
   } catch (error) {
     console.error("Error en fetchPhones:", error);
@@ -557,7 +557,7 @@ export const getGestionTeData = async (idCartera, idCuenta) => {
       toast.error(message, { position: "top-right" });
       throw new Error(message);
     }
-console.log("Datos obtenidos de la API:", response.data);
+    console.log("Datos obtenidos de la API:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error en getGestionTeData:", error);
@@ -578,8 +578,8 @@ export const fetchNotes = async (numEmpleado, token) => {
       `http://192.168.7.33/api/ejecutivo/recordatorios/${numEmpleado}`,
       {
         headers: {
-          Authorization: `Bearer ${token}`,
-        },
+          Authorization: `Bearer ${token}`
+        }
       }
     );
 
@@ -589,7 +589,7 @@ export const fetchNotes = async (numEmpleado, token) => {
       id: item.idCuenta,
       title: item.Nombre,
       content: `Saldo: ${item.Saldo}\nTeléfono: ${item.NúmeroTelefónico}\nSituación: ${item.idSituación}\nFecha Seguimiento: ${item.FechaSeguimiento}\nHora Seguimiento: ${item.SegundoSeguimiento}`,
-      date: item.FechaHoraSeguimiento,
+      date: item.FechaHoraSeguimiento
     }));
 
     return formattedNotes;
@@ -625,14 +625,14 @@ export const fetchViewComplaints = async ({ idCartera, idCuenta }) => {
   try {
     console.log("Enviando solicitud a /ejecutivo/viewQuejas con:", {
       idCartera,
-      idCuenta,
+      idCuenta
     });
 
     const response = await servicio.get(`/ejecutivo/viewQuejas`, {
       params: {
         idCartera,
-        idCuenta,
-      },
+        idCuenta
+      }
     });
 
     console.log("Respuesta recibida:", response);
@@ -759,7 +759,7 @@ export const fetchCalFirtsPart = async (Cartera, NoCuenta, idHerr) => {
   try {
     console.log("Llamando al endpoint /ejecutivo/Calculadora-1erParte");
     const response = await servicio.get(`/ejecutivo/Calculadora-1erParte`, {
-      params: { Cartera, NoCuenta, idHerr },
+      params: { Cartera, NoCuenta, idHerr }
     });
 
     console.log("Respuesta recibida:", response);
@@ -818,7 +818,7 @@ export const fetchCalSecondPart = async (
       Descuento,
       iMeses,
       dtpFecha,
-      periodos,
+      periodos
     });
 
     const response = await servicio.get(`/ejecutivo/Calculadora-2daParte`, {
@@ -830,8 +830,8 @@ export const fetchCalSecondPart = async (
         Descuento,
         iMeses,
         dtpFecha,
-        periodos,
-      },
+        periodos
+      }
     });
 
     console.log("Respuesta recibida:", response);
@@ -905,7 +905,7 @@ export const fetchCalSecondPartModify = async (
       montoMod,
       fechaPagoMod,
       agregarPagos,
-      filaMod,
+      filaMod
     });
 
     const response = await servicio.get(`/ejecutivo/Calculadora-2daParte`, {
@@ -922,8 +922,8 @@ export const fetchCalSecondPartModify = async (
         montoMod,
         fechaPagoMod,
         agregarPagos,
-        filaMod,
-      },
+        filaMod
+      }
     });
 
     console.log("Respuesta recibida:", response);
@@ -945,7 +945,7 @@ export const fetchCalSecondPartModify = async (
 export async function userTimes(numEmpleado) {
   try {
     const response = await servicio.get(`/ejecutivo/tiempos-ejecutivo`, {
-      params: { numEmpleado },
+      params: { numEmpleado }
     });
 
     if (!response.data) {
@@ -967,7 +967,7 @@ export async function userTimes(numEmpleado) {
 export async function userTimesPromedio(numEmpleado) {
   try {
     const response = await servicio.get(`/ejecutivo/promedios-ejecutivo`, {
-      params: { numEmpleado },
+      params: { numEmpleado }
     });
 
     if (!response.data) {
@@ -1125,7 +1125,7 @@ export const fetchValidators = async (idProducto, idEjecutivo, Contraseña) => {
   try {
     console.log("Llamando al endpoint /ejecutivo/validador");
     const response = await servicio.get(`/ejecutivo/validador`, {
-      params: { idProducto, idEjecutivo, Contraseña },
+      params: { idProducto, idEjecutivo, Contraseña }
     });
 
     console.log("Respuesta recibida:", response);
@@ -1150,7 +1150,7 @@ export const fetchListValidators = async (idProducto) => {
   try {
     console.log("Llamando al endpoint /ejecutivo/validadores");
     const response = await servicio.get(`/ejecutivo/validadores`, {
-      params: { idProducto},
+      params: { idProducto }
     });
 
     console.log("Respuesta recibida:", response);
@@ -1174,10 +1174,15 @@ export const fetchListValidators = async (idProducto) => {
 export const fetchSaveDeleteDeadlines = async (requestData) => {
   try {
     console.log("Enviando datos al endpoint:", requestData);
-    const response = await servicio.post(`/ejecutivo/guarda-Elimina-Plazos`, requestData);
+    const response = await servicio.post(
+      `/ejecutivo/guarda-Elimina-Plazos`,
+      requestData
+    );
 
     if (response.status !== 200) {
-      throw new Error(`Error en la respuesta de la API. Estado: ${response.status}`);
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
     }
 
     const result = response.data;
@@ -1185,6 +1190,29 @@ export const fetchSaveDeleteDeadlines = async (requestData) => {
     return result;
   } catch (error) {
     console.error("Error en fetchSaveDeleteDeadlines:", error);
+    throw error;
+  }
+};
+
+// endpoint guardar-Gestion-Telefonica
+export const saveManagment = async (dataManagment) => {
+  try {
+    const response = await servicio.post(
+      `/api/ejecutivo/GuardarGestionTe`,
+      dataManagment
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Gestion Guardada correctamente:", result);
+    return result;
+  } catch (error) {
+    console.error("Error al guardar la gestión", error);
     throw error;
   }
 };

@@ -37,8 +37,11 @@ const Managment = () => {
   const [isNegotiationActive, setNegotiationActive] = useState(false);
   const [isFollowUpActive, setFollowUpActive] = useState(false);
   const [lastPhoneNumberFromToast, setLastPhoneNumberFromToast] = useState("");
+  const [communicationData, setCommunicationData] = useState(null); // Estado para los datos de CommunicationPhone
+  const [stoppedTime, setStoppedTime] = useState(null); // Estado para el tiempo detenido
   const token = responseData?.ejecutivo?.token;
-  const nombreEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
+  const nombreEjecutivo =
+    responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
 
   const handleSearch = async () => {
@@ -129,7 +132,10 @@ const Managment = () => {
         setSearchResults([]);
       }
     } catch (error) {
-      console.error("Error en la búsqueda automática:", error.response?.data || error.message);
+      console.error(
+        "Error en la búsqueda automática:",
+        error.response?.data || error.message
+      );
       toast.error(`Error: ${error.response?.data?.errors || error.message}`);
     }
   };
@@ -184,6 +190,10 @@ const Managment = () => {
     setFollowUpActive,
     lastPhoneNumberFromToast,
     setLastPhoneNumberFromToast,
+    communicationData,
+    setCommunicationData,
+    stoppedTime,
+    setStoppedTime
   };
 
   return (
@@ -196,7 +206,7 @@ const Managment = () => {
             show={showToast}
             onClose={handleToastClosed} // Usamos la función renombrada
             numeroTelefonico={numeroTelefonico}
-            copyToClipboard ={() => {
+            copyToClipboard={() => {
               navigator.clipboard.writeText(numeroTelefonico);
               toast.success("Número copiado al portapapeles");
             }}

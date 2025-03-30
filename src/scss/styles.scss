@@ -1817,14 +1817,14 @@ $color-green-secondary: #17ff1f;
   background-image: linear-gradient(
     82deg,
     $color-white,
-    color.adjust($color-gray, $lightness: -2%),
-    // Reemplaza darken
+    color.adjust($color-white-secondary, $lightness: -1%),
+  
     color.adjust($color-white, $lightness: 35%),
-    // Reemplaza lighten
+  
     color.adjust($color-white, $lightness: 5%),
-    // Reemplaza lighten
+   
     color.adjust($color-white-secondary, $saturation: -35%)
-      // Reemplaza desaturate
+ 
   );
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
