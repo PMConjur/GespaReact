@@ -72,7 +72,7 @@ const SearchCustomer = () => {
             >
               {situacion || "N/A"} {/* Mostrar "N/A" si no hay situación */}
             </h6>
-            <span className="small pt-1 fw-bold">Situación</span>
+            <h5 className=" pt-1">Situación</h5>
           </div>
         </div>
       </Card.Body>

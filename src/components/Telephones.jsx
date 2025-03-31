@@ -24,12 +24,9 @@ const Telephones = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isPhoneNew, setIsPhoneNew] = useState(false);
-  const { 
-    searchResults, 
-    setSelectedAnswer,
-    lastPhoneNumberFromToast
-  } = useContext(AppContext);
-  
+  const { searchResults, setSelectedAnswer, lastPhoneNumberFromToast } =
+    useContext(AppContext);
+
   const [toastShown, setToastShown] = useState(false);
   const [selectedClaseTelefono, setSelectedClaseTelefono] = useState("");
   const [horarioContacto, setHorarioContacto] = useState("00:00:00");
@@ -157,8 +154,8 @@ const Telephones = () => {
   };
 
   const processPhoneCall = (phoneNumber) => {
-    const foundRow = data.find(row => row.númeroTelefónico === phoneNumber);
-    
+    const foundRow = data.find((row) => row.númeroTelefónico === phoneNumber);
+
     if (foundRow) {
       setSelectedAnswer({
         value: 2,
@@ -181,15 +178,15 @@ const Telephones = () => {
           _Confirmado: foundRow._Confirmado,
           fecha_Insert: foundRow.fecha_Insert,
           calificacion: foundRow.calificacion,
-          activo: foundRow.activo,
-        },
+          activo: foundRow.activo
+        }
       });
       toast.success(`Número encontrado: ${phoneNumber}`, {
-        position: "top-right",
+        position: "top-right"
       });
     } else {
       toast.error(`Número no encontrado: ${phoneNumber}`, {
-        position: "top-right",
+        position: "top-right"
       });
     }
   };
@@ -207,7 +204,7 @@ const Telephones = () => {
         searchResults.map(async (result) => {
           return await fetchPhones(result.idCuenta);
         })
-      ); 
+      );
       const flatPhones = phones.flat();
       setData(flatPhones);
       if (flatPhones.length === 0 && !toastShown) {
@@ -224,7 +221,6 @@ const Telephones = () => {
       }, 500);
     }
   };
-
 
   useEffect(() => {
     if (searchResults.length > 0) {
@@ -269,14 +265,15 @@ const Telephones = () => {
                           _Confirmado: 0,
                           fecha_Insert: 0,
                           calificacion: 0,
-                          activo: 0
+                          activo: 0,
+                          idModo: 2201
                         }
                       }); // Enviar valor 10 al Form.Check en Flow.jsx
                     }}
                   >
                     Llamada de entrada
                   </Button>
-                  
+
                   {isPhoneNew && (
                     <>
                       <input
@@ -285,24 +282,39 @@ const Telephones = () => {
                         value={horarioContacto}
                         onChange={(e) => {
                           const [h, m, s] = e.target.value.split(":");
-                          setHorarioContacto(`${h.padStart(2, "0")}:${m.padStart(2, "0")}:${s || "00"}`);
+                          setHorarioContacto(
+                            `${h.padStart(2, "0")}:${m.padStart(2, "0")}:${
+                              s || "00"
+                            }`
+                          );
                         }}
                         className="time-input"
                       />
-                      
+
                       <DropdownButton
                         id="dropdown-basic-button"
                         title={selectedClaseTelefono || "Clase de telefono"}
                         onSelect={setSelectedClaseTelefono}
                         className="custom-dropdown-menu"
                       >
-                        {["Hogar", "Tercero", "Familiar", "Empresa Trabajo", "Celular", "Recados", "Oficina", "Baja"].map(item => (
-                          <Dropdown.Item key={item} eventKey={item}>{item}</Dropdown.Item>
+                        {[
+                          "Hogar",
+                          "Tercero",
+                          "Familiar",
+                          "Empresa Trabajo",
+                          "Celular",
+                          "Recados",
+                          "Oficina",
+                          "Baja"
+                        ].map((item) => (
+                          <Dropdown.Item key={item} eventKey={item}>
+                            {item}
+                          </Dropdown.Item>
                         ))}
                       </DropdownButton>
                     </>
                   )}
-                  
+
                   <InputGroup style={{ width: "35%" }} className="input-phone">
                     <FormControl
                       placeholder="Número de teléfono"
@@ -312,7 +324,9 @@ const Telephones = () => {
                     />
                     <Button
                       variant="secondary"
-                      onClick={isPhoneNew ? handleSaveNewPhone : handleValidatePhone}
+                      onClick={
+                        isPhoneNew ? handleSaveNewPhone : handleValidatePhone
+                      }
                     >
                       {isPhoneNew ? "Nuevo" : "Validar"}
                     </Button>
@@ -322,7 +336,7 @@ const Telephones = () => {
             </tr>
           </thead>
         </Table>
-        
+
         <div style={{ maxHeight: "300px", overflowY: "auto" }}>
           <Table striped bordered hover variant="dark">
             <thead>
@@ -347,74 +361,79 @@ const Telephones = () => {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? (
-                [...Array(4)].map((_, i) => (
-                  <tr key={i}>
-                    {[...Array(18)].map((_, j) => (
-                      <td key={j}>
-                        <Placeholder as="span" animation="glow">
-                          <Placeholder xs={12} />
-                        </Placeholder>
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              ) : (
-                data.map((row, index) => (
-                  <tr key={index}>
-                    <td>{row.titulares || "--"}</td>
-                    <td>{row.conocidos || "--"}</td>
-                    <td>{row.desconocidos || "--"}</td>
-                    <td>{row.sinContacto || "--"}</td>
-                    <td>
-                      <a
-                        href="#"
-                        className="text-info"
-                        onClick={() => setSelectedAnswer({
-                          value: 2,
-                          dataPhone: {
-                            idClase: row.idClase,
-                            titulares: row.titulares,
-                            conocidos: row.conocidos,
-                            desconocidos: row.desconocidos,
-                            sinContacto: row.sinContacto,
-                            intentosViciDial: row.intentosViciDial,
-                            id: row.id,
-                            númeroTelefónico: row.númeroTelefónico,
-                            idTelefonía: row.idTelefonía,
-                            idOrigen: row.idOrigen,
-                            estado: row.estado,
-                            municipio: row.municipio,
-                            husoHorario: row.husoHorario,
-                            segHorarioContacto: row.segHorarioContacto,
-                            extensión: row.extensión,
-                            _Confirmado: row._Confirmado,
-                            fecha_Insert: row.fecha_Insert,
-                            calificacion: row.calificacion,
-                            activo: row.activo
+              {isLoading
+                ? [...Array(4)].map((_, i) => (
+                    <tr key={i}>
+                      {[...Array(18)].map((_, j) => (
+                        <td key={j}>
+                          <Placeholder as="span" animation="glow">
+                            <Placeholder xs={12} />
+                          </Placeholder>
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                : data.map((row, index) => (
+                    <tr key={index}>
+                      <td>{row.titulares || "--"}</td>
+                      <td>{row.conocidos || "--"}</td>
+                      <td>{row.desconocidos || "--"}</td>
+                      <td>{row.sinContacto || "--"}</td>
+                      <td>
+                        <a
+                          href="#"
+                          className="text-info"
+                          onClick={() =>
+                            setSelectedAnswer({
+                              value: 2,
+                              dataPhone: {
+                                idClase: row.idClase,
+                                titulares: row.titulares,
+                                conocidos: row.conocidos,
+                                desconocidos: row.desconocidos,
+                                sinContacto: row.sinContacto,
+                                intentosViciDial: row.intentosViciDial,
+                                id: row.id,
+                                númeroTelefónico: row.númeroTelefónico,
+                                idTelefonía: row.idTelefonía,
+                                idOrigen: row.idOrigen,
+                                estado: row.estado,
+                                municipio: row.municipio,
+                                husoHorario: row.husoHorario,
+                                segHorarioContacto: row.segHorarioContacto,
+                                extensión: row.extensión,
+                                _Confirmado: row._Confirmado,
+                                fecha_Insert: row.fecha_Insert,
+                                calificacion: row.calificacion,
+                                activo: row.activo,
+                                idModo: 2202
+                              }
+                            })
                           }
-                        })}
-                      >
-                        {"XXXXXX" + row.númeroTelefónico.slice(6)}
-                      </a>
-                    </td>
-                    <td>{row.telefonia || "--"}</td> {/* Muestra el valor de telefonia */}
-                    <td>{row.origen || "--"}</td> {/* Muestra el valor de origen */}
-                    <td>{row.clase || "--"}</td> {/* Muestra el valor de clase */}
-                    <td>{row.estado || "--"}</td>
-                    <td>{row.municipio || "--"}</td>
-                    <td>{row.husoHorario || "--"}</td>
-                    <td>{row.segHorarioContacto || "--"}</td>
-                    <td>{row.extensión || "--"}</td>
-                    <td>{row._Confirmado ? "Sí" : "No" || "--"}</td>
-                    <td>
-                      {new Date(row.fecha_Insert).toLocaleDateString() || "--"}
-                    </td>
-                    <td>{row.calificacion || "--"}</td>
-                    <td>{row.activo ? "Activo" : "Inactivo" || "--"}</td>
-                  </tr>
-                ))
-              )}
+                        >
+                          {"XXXXXX" + row.númeroTelefónico.slice(6)}
+                        </a>
+                      </td>
+                      <td>{row.telefonia || "--"}</td>{" "}
+                      {/* Muestra el valor de telefonia */}
+                      <td>{row.origen || "--"}</td>{" "}
+                      {/* Muestra el valor de origen */}
+                      <td>{row.clase || "--"}</td>{" "}
+                      {/* Muestra el valor de clase */}
+                      <td>{row.estado || "--"}</td>
+                      <td>{row.municipio || "--"}</td>
+                      <td>{row.husoHorario || "--"}</td>
+                      <td>{row.segHorarioContacto || "--"}</td>
+                      <td>{row.extensión || "--"}</td>
+                      <td>{row._Confirmado ? "Sí" : "No" || "--"}</td>
+                      <td>
+                        {new Date(row.fecha_Insert).toLocaleDateString() ||
+                          "--"}
+                      </td>
+                      <td>{row.calificacion || "--"}</td>
+                      <td>{row.activo ? "Activo" : "Inactivo" || "--"}</td>
+                    </tr>
+                  ))}
             </tbody>
           </Table>
         </div>
