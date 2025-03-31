@@ -24,7 +24,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/ejecutivo")]
-    [Authorize]
+    //[Authorize]
     public class EjecutivoController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -371,6 +371,20 @@ namespace NoriAPI.Controllers
             return Ok(result);
         }
 
+        
+        [HttpPost ("GuardaNegociacionPlazos")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] NegociacionPlazosInput input)
+        {
+            var result = await _ejecutivoService.GuardaNegociacionPlazos(input);
+
+            if (!string.IsNullOrEmpty(result.Mensaje))
+            {
+                return BadRequest(result); // Devuelve BadRequest con el mensaje de error
+            }
+
+            return Ok(result); // Devuelve el resultado si no hay error
+        }
         [HttpPost("guarda-Elimina-Plazos")]
         public async Task<IActionResult> GuardaEliminaPlazos([FromBody] EliminaGuardaPlazos PlazosInfo)
         {
@@ -380,12 +394,21 @@ namespace NoriAPI.Controllers
 
         }
 
-        [HttpPost ("GuardaNegociacionPlazos")]
-        public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] GuardaNegociacionPlazos negociacionInfo)
-        {
-            var result = await _ejecutivoService.GuardaNegoaciacionPlazos_(negociacionInfo);
+        [HttpPost ("IncrementaNegociacion")]
 
-            return Ok(result);
+        public async Task<IActionResult> IncrementaNegociacion([FromBody] IncrementoNegociacion incrementaNegInfo)
+        {
+            var result = await _ejecutivoService.IncrementaNegociacion(incrementaNegInfo);
+            if(result == "")
+            {
+                return Ok("Correcto");
+            }
+            else
+            {
+                return Ok(result);
+            }
+
+            
 
         }
 
@@ -1022,8 +1045,8 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
-        [HttpGet("validadores")]
 
+        [HttpGet("validadores")]
         public async Task<IActionResult> GetValidadores(int idProducto)
         {
             DataSet dsTablas = new DataSet();
@@ -1048,8 +1071,8 @@ namespace NoriAPI.Controllers
             {
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
-        }
 
+        }
 
         [HttpPost("accionesComentarios")]
         public async Task<ActionResult> NewComentario(AccionesComentarioRequest request)

@@ -75,15 +75,14 @@ namespace NoriAPI.Repositories
 
         #endregion
 
+
         #region GuardaNegociacion
         Task<dynamic> Guarda_Plazos(EliminaGuardaPlazos PlazosInfo, Pago_ pago_, DateTime dtInicio, DateTime dtFin, int iNúmPago);
         Task<dynamic> Elimina_Plazos(EliminaGuardaPlazos PlazosInfo);
-        Task<dynamic> Guarda_Negociacion_Plazos(GuardaNegociacionPlazos negociacionInfo);
+       // Task<dynamic> Guarda_Negociacion_Plazos(GuardaNegociacionPlazos negociacionInfo);
+        Task<dynamic> IncrementaNegociacion(IncrementoNegociacion incrementaNegInfo);
         #endregion
 
-        //Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
-        //Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
-        //Task<DataTable> GetValidadorAsync(int idProducto);
         #region Scripts
         Task<DataTable> ObtenerScriptsAsync(int idProducto);
 
@@ -177,8 +176,6 @@ namespace NoriAPI.Repositories
             var parametersT = new
             {
                 idEjecutivo = numEmpleado
-
-
             };
             var tiempos = (await connection.QueryAsync<dynamic>(
                 queryTiempos,
@@ -922,63 +919,87 @@ namespace NoriAPI.Repositories
             return resultadoInsertaPlazos;
         }
 
-        public async Task<dynamic> Guarda_Negociacion_Plazos(GuardaNegociacionPlazos negociacionInfo)
+        //public async Task<dynamic> Guarda_Negociacion_Plazos(GuardaNegociacionPlazos negociacionInfo)
+        //{
+        //    using var connection = GetConnection("Piso2Amex");
+
+        //    string guardaNegociacionQuery = "[3.2.GuardaNegociaciónPlazos] " +
+        //        "@idCartera, " +
+        //        "@idCuenta, " +
+
+        //        "@idEjecutivo, " +
+
+        //        "@idHerramienta, " +
+        //        "@MontoNegociado, " +
+        //        "@Plazos, " +
+        //        "@CartaConvenio," +
+        //        "@Correo," +
+        //        "@FechaPago," +
+        //        "@FechaFinNegociación," +
+
+        //        "@idEjecutivoValidador," +
+        //        "@Contraseña," +
+
+        //       "@Fecha_Insert," +
+        //       "@Segundo_Insert," +
+        //       "@Reestructura," +
+        //       "@Condonacion," +
+        //       "@idGrabacion";
+
+        //    var parameters = new
+        //    {
+        //        idCartera = negociacionInfo.idCartera,
+        //        idCuenta = negociacionInfo.idCuenta,
+        //        idEjecutivo = negociacionInfo.idEjecutivo,
+        //        idHerramienta = negociacionInfo.idHerramienta,
+        //        MontoNegociado = negociacionInfo.MontoNegociado,
+        //        Plazos = negociacionInfo.Plazos,
+        //        CartaConvenio = negociacionInfo.CartaConvenio,
+        //        Correo = negociacionInfo.Correo,
+        //        FechaPago = negociacionInfo.FechaPago,
+        //        FechaFinNegociación = negociacionInfo.FechaFinNegociación,
+        //        idEjecutivoValidador = negociacionInfo.idEjecutivoValidador,
+        //        Contraseña = negociacionInfo.Contrasena,
+        //        Fecha_Insert = negociacionInfo.Fecha_Insert,
+        //        Segundo_Insert = negociacionInfo.Segundo_Insert,
+        //        Reestructura = negociacionInfo.Reestructura,
+        //        Condonacion = negociacionInfo.Condonacion,
+        //        idGrabacion = negociacionInfo.idGrabacion
+
+        //    };
+        //    var resultadoGuardaNeg = await connection.QueryFirstOrDefaultAsync<dynamic>(
+        //        guardaNegociacionQuery,
+        //        parameters,
+        //        commandType: CommandType.StoredProcedure
+        //    );
+
+        //    return resultadoGuardaNeg;
+
+        //}
+
+        public async Task<dynamic> IncrementaNegociacion(IncrementoNegociacion incrementaNegInfo)
         {
             using var connection = GetConnection("Piso2Amex");
 
-            string guardaNegociacionQuery = "EXEC [3.2.GuardaNegociaciónPlazos] " +
-                "@idCartera, " +
-                "@idCuenta, " +
+            string incrementaNegQuery = "[dbMemory].PS.IncrementaNegociación";
 
-                "@idEjecutivo, " +
-
-                "@idHerramienta, " +
-                "@MontoNegociado, " +
-                "@Plazos, " +
-                "@CartaConvenio," +
-                "@Correo," +
-                "@FechaPago," +
-                "@FechaFinNegociación," +
-
-                "@idEjecutivoValidador," +
-                "@Contraseña," +
-
-               "@Fecha_Insert," +
-               "@Segundo_Insert," +
-               "@Reestructura," +
-               "@Condonacion," +
-               "@idGrabacion";
-
-            var parameters = new
+            var parameters = new 
             {
-                idCartera = negociacionInfo.idCartera,
-                idCuenta = negociacionInfo.idCartera,
-                idEjecutivo = negociacionInfo.idEjecutivo,
-                idHerramienta = negociacionInfo.idHerramienta,
-                MontoNegociado = negociacionInfo.MontoNegociado,
-                Plazos = negociacionInfo.Plazos,
-                CartaConvenio = negociacionInfo.CartaConvenio,
-                Correo = negociacionInfo.Correo,
-                FechaPago = negociacionInfo.FechaPago,
-                FechaFinNegociación = negociacionInfo.FechaFinNegociación,
-                idEjecutivoValidador = negociacionInfo.idEjecutivoValidador,
-                Contraseña = negociacionInfo.Contraseña,
-                Fecha_Insert = negociacionInfo.Fecha_Insert,
-                Segundo_Insert = negociacionInfo.Segundo_Insert,
-                Reestructura = negociacionInfo.Reestructura,
-                Condonacion = negociacionInfo.Condonacion,
-                idGrabacion = negociacionInfo.idGrabacion
-
+                idEjecutivo = incrementaNegInfo.idEjecutivo,
+                Monto = incrementaNegInfo.Monto,
+                Saldo = incrementaNegInfo.Saldo,
+                Duración = incrementaNegInfo.Duracion
             };
-            var resultadoGuardaNeg = await connection.ExecuteAsync(
-                guardaNegociacionQuery,
+            var resultadoIncrementaNeg = await connection.QueryFirstOrDefaultAsync<ResultIncrementaNeg>(
+                incrementaNegQuery,
                 parameters,
-                commandType: CommandType.Text
+                commandType: CommandType.StoredProcedure
             );
 
-            return resultadoGuardaNeg;
-
+            return resultadoIncrementaNeg;
         }
+
+
 
         #endregion
 
