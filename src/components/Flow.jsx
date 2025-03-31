@@ -17,6 +17,7 @@ import SaveButton from "./flowComponents/SaveButton"; // Importa el nuevo compon
 
 const Flow = () => {
   const {
+    searchResults,
     selectedAnswer,
     setNegotiationActive,
     setFollowUpActive,
@@ -132,17 +133,49 @@ const Flow = () => {
       }
     }
   };
+  const responseData = JSON.parse(localStorage.getItem("responseData"));
+  const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+  const idContacto = answerHistory.find(
+    (item) => item.idPregunta === 3
+  )?.idValor;
+  const idSituacion = answerHistory.find(
+    (item) => item.idPregunta === 8
+  )?.idValor;
+  const idAcercamiento = answerHistory.find(
+    (item) => item.idPregunta === 10
+  )?.idValor;
+  const idParentesco = answerHistory.find(
+    (item) => item.idPregunta === 6
+  )?.idValor;
+  const idCausaNoPago = answerHistory.find(
+    (item) => item.idPregunta === 11
+  )?.idValor;
 
   const handleSave = async (comment) => {
     const dataManagment = {
-      time: stoppedTime,
-      communication: communicationData,
-      comment: comment
+      idCartera: searchResults?.[0].idCartera,
+      idCuenta: searchResults?.[0].idCuenta,
+      idEjecutivo: idEjecutivo,
+      numeroTelefonico: communicationData.telephone
+        ? communicationData.telephone
+        : null,
+      idContacto: idContacto ? idContacto : null,
+      idSituacion: idSituacion ? idSituacion : null,
+      idSucursal: 0,
+      extension: 0,
+      idModo: selectedAnswer.dataPhone.idModo,
+      idAcercamiento: idAcercamiento ? idAcercamiento : null,
+      duracion: stoppedTime ? stoppedTime : "00:01:02",
+      tiempoEnCuenta: "00:02:02",
+      idParentesco: idParentesco ? idParentesco : null,
+      nombreContacto: communicationData.name ? communicationData.name : null,
+      idCausaNoPago: idCausaNoPago ? idCausaNoPago : null,
+      comentario: comment
     };
-
+    console.log("Datos de gestión a guardar:", dataManagment);
     try {
       const response = await saveManagment(dataManagment); // Llama al servicio saveManagment
-      if (response.success) {
+      if (response) {
         toast.success("Gestión guardada correctamente.");
         handleLastAnswerActions(); // Ejecuta las acciones según las condiciones
       } else {
