@@ -1,8 +1,7 @@
-import { useState, useEffect, useContext} from "react";
+import { useState, useEffect} from "react";
 import { Modal, Button, Form, ListGroup, Placeholder } from "react-bootstrap";
 import { userRecovery, userNegotiations } from "../services/gespawebServices";
 import NegotiationsMonth from "./NegotiationsMonth.jsx";
-import { AppContext } from "../pages/Managment.jsx";
 
 const Recovery = ({ show, handleClose }) => {
   const [mes, setMes] = useState("actual");
@@ -15,9 +14,11 @@ const Recovery = ({ show, handleClose }) => {
   });
   const [loading, setLoading] = useState(true);
   const [negotiations, setNegotiations] = useState([]);
-  const { idEjecutivo } = useContext(AppContext);
+  const responseData = JSON.parse(localStorage.getItem("responseData"));
+  const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
   const fetchData = async (selectedMes) => {
     try {
+      const idEjecutivo = 14126;
       setLoading(true);
 
       const actual = selectedMes === "actual" ? 1 : 0;

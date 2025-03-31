@@ -185,13 +185,37 @@ const Search = ({ show, handleClose }) => {
       <Modal.Header closeButton>
         <Modal.Title>Búsquedas</Modal.Title>
       </Modal.Header>
-      <Modal.Body style={{maxHeight: '70vh', overflowY: 'auto', display: 'flex', width: '100%', justifyContent: 'space-between'}} className="d-block d-lg-flex">
-        <div className="scroll-container" style={{ width: '100%', maxHeight: '70vh', overflowY: 'auto', display: 'flex', flexDirection: 'column'}}>
+      <Modal.Body
+        style={{
+          maxHeight: "70vh",
+          overflowY: "auto",
+          display: "flex",
+          width: "100%",
+          justifyContent: "space-between",
+        }}
+        className="d-block d-lg-flex"
+      >
+        <div
+          className="scroll-container"
+          style={{
+            width: "100%",
+            maxHeight: "70vh",
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           <Form style={{ flexGrow: 1 }}>
-            <div style={{display: 'flex', justifyContent:'space-between', marginRight: '20px'}}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginRight: "20px",
+              }}
+            >
               <Form.Group className="mb-3">
                 <Form.Label>Dato</Form.Label>
-                <Dropdown onSelect={(value) => handleChange('dato', value)}>
+                <Dropdown onSelect={(value) => handleChange("dato", value)}>
                   <Dropdown.Toggle variant="primary" id="dropdown-dato">
                     {searchData.dato || "Seleccionar"}
                   </Dropdown.Toggle>
@@ -206,7 +230,7 @@ const Search = ({ show, handleClose }) => {
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label>Valor</Form.Label>
-                <Dropdown onSelect={(value) => handleChange('valor', value)}>
+                <Dropdown onSelect={(value) => handleChange("valor", value)}>
                   <Dropdown.Toggle variant="primary" id="dropdown-valor">
                     {searchData.valor || "Seleccionar"}
                   </Dropdown.Toggle>
@@ -220,10 +244,17 @@ const Search = ({ show, handleClose }) => {
                 </Dropdown>
               </Form.Group>
             </div>
-            <div style={{display: 'flex', justifyContent:'space-between', alignItems: 'end', marginRight: '20px'}}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "end",
+                marginRight: "20px",
+              }}
+            >
               <Form.Group className="mb-3">
                 <Form.Label>Fuente</Form.Label>
-                <Dropdown onSelect={(value) => handleChange('fuente', value)}>
+                <Dropdown onSelect={(value) => handleChange("fuente", value)}>
                   <Dropdown.Toggle variant="primary" id="dropdown-fuente">
                     {searchData.fuente || "Seleccionar"}
                   </Dropdown.Toggle>
@@ -236,16 +267,23 @@ const Search = ({ show, handleClose }) => {
                   </Dropdown.Menu>
                 </Dropdown>
               </Form.Group>
-              <Form.Check
-  type="checkbox"
-  label="Encontrado"
-  checked={searchData.encontrado}
-  onChange={(e) => {
-    const isChecked = e.target.checked;
-    setSearchData(prev => ({ ...prev, encontrado: isChecked }));
-    setShowForm(isChecked);
-  }}
-/>
+              <Form.Group controlId="formBasicCheckbox">
+                <Form.Check
+                  id="checkbox-encontrado" // Se agrega el id
+                  type="checkbox"
+                  label="Encontrado"
+                  name="encontrado"
+                  checked={searchData.encontrado} // Vinculado al estado
+                  onChange={(e) => {
+                    const isChecked = e.target.checked;
+                    setSearchData((prev) => ({
+                      ...prev,
+                      encontrado: isChecked, // Actualiza el estado correctamente
+                    }));
+                    setShowForm(isChecked); // Controla la visibilidad del formulario
+                  }}
+                />
+              </Form.Group>
             </div>
             {showForm && (
               <Form.Group className="mb-3 me-3">
@@ -254,27 +292,42 @@ const Search = ({ show, handleClose }) => {
                   type="text"
                   placeholder=""
                   value={searchData.nombre}
-                  onChange={(e) => handleChange('nombre', e.target.value)}
+                  onChange={(e) => handleChange("nombre", e.target.value)}
                 />
                 <Form.Label>Puesto</Form.Label>
                 <Form.Control
                   type="text"
                   placeholder=""
                   value={searchData.puesto}
-                  onChange={(e) => handleChange('puesto', e.target.value)}
+                  onChange={(e) => handleChange("puesto", e.target.value)}
                 />
                 <Form.Label>Teléfonos</Form.Label>
                 <Form.Control
                   type="text"
                   placeholder=""
                   value={searchData.telefonos}
-                  onChange={(e) => handleChange('telefonos', e.target.value)}
+                  onChange={(e) => handleChange("telefonos", e.target.value)}
                 />
                 <div>
                   {phoneNumbers.map((phone, index) => (
-                    <div key={index} style={{ display: 'flex', alignItems: 'center', marginTop: '3px', marginBottom: '3px'}}>
-                      <Button variant="danger" size="sm" style={{padding: '0px 5px'}} onClick={() => handleRemovePhoneNumber(index)}>X</Button>
-                      <span style={{ marginLeft: '10px' }}>{phone}</span>
+                    <div
+                      key={index}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginTop: "3px",
+                        marginBottom: "3px",
+                      }}
+                    >
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        style={{ padding: "0px 5px" }}
+                        onClick={() => handleRemovePhoneNumber(index)}
+                      >
+                        X
+                      </Button>
+                      <span style={{ marginLeft: "10px" }}>{phone}</span>
                     </div>
                   ))}
                 </div>
@@ -283,24 +336,24 @@ const Search = ({ show, handleClose }) => {
                   type="text"
                   placeholder=""
                   value={searchData.lugar}
-                  onChange={(e) => handleChange('lugar', e.target.value)}
+                  onChange={(e) => handleChange("lugar", e.target.value)}
                 />
                 <Form.Label>Link de la página</Form.Label>
                 <Form.Control
                   type="text"
                   placeholder=""
                   value={searchData.link}
-                  onChange={(e) => handleChange('link', e.target.value)}
+                  onChange={(e) => handleChange("link", e.target.value)}
                 />
               </Form.Group>
             )}
           </Form>
-          <div style={{ marginTop: 'auto' }}>
+          <div style={{ marginTop: "auto" }}>
             <Button
               variant="primary"
               type="button"
               onClick={handleGuardarClick}
-              style={{ marginBottom: '10px' }}
+              style={{ marginBottom: "10px" }}
               disabled={!isFormValid}
             >
               Guardar
@@ -314,7 +367,15 @@ const Search = ({ show, handleClose }) => {
             </Spinner>
           </div>
         ) : (
-          <div className="scroll-container" style={{ overflow: 'auto', maxHeight: '70vh', maxWidth: '800px', minWidth: '250px'}}>
+          <div
+            className="scroll-container"
+            style={{
+              overflow: "auto",
+              maxHeight: "70vh",
+              maxWidth: "800px",
+              minWidth: "250px",
+            }}
+          >
             <Table striped bordered hover variant="dark" className="mt-3">
               <thead>
                 <tr>
@@ -344,14 +405,14 @@ const Search = ({ show, handleClose }) => {
                     <td>{item.Dato}</td>
                     <td>{item.DatoBuscado}</td>
                     <td>{item.idFuente}</td>
-                    <td>{item.Encontrado ? 'Sí' : 'No'}</td>
+                    <td>{item.Encontrado ? "Sí" : "No"}</td>
                     <td>{item.Telefonos}</td>
                     <td>{item.Persona}</td>
                     <td>{item.Puesto}</td>
                     <td>{item.Lugar}</td>
                     <td>{item.idEjecutivo}</td>
                     <td>{item.InfoEncontrada}</td>
-                    <td>{item.Confirmado ? 'Sí' : 'No'}</td>
+                    <td>{item.Confirmado ? "Sí" : "No"}</td>
                     <td>{item.Link}</td>
                   </tr>
                 ))}
