@@ -2,7 +2,7 @@ import { Form, Stack } from "react-bootstrap";
 import { useState, useEffect, useContext } from "react";
 import { AppContext } from "../../pages/Managment";
 
-const CommunicationPhone = ({ idComunico }) => {
+const CommunicationPhone = ({ idComunico, selectedAnswerValue }) => {
   const { setCommunicationData } = useContext(AppContext); // Contexto para actualizar los datos
   const [telephone, setTelephone] = useState("");
   const [name, setName] = useState("");
@@ -33,13 +33,19 @@ const CommunicationPhone = ({ idComunico }) => {
 
   useEffect(() => {
     // Actualizar el contexto dependiendo de las condiciones
-    if (idComunico) {
-      if (isTelephoneValid && isNameValid) {
-        setCommunicationData({ telephone, name });
+    if (selectedAnswerValue === 2) {
+      if (idComunico && isNameValid) {
+        setCommunicationData({ name });
       }
-    } else {
-      if (isTelephoneValid) {
-        setCommunicationData({ telephone });
+    } else if (selectedAnswerValue === 10) {
+      if (idComunico) {
+        if (isTelephoneValid && isNameValid) {
+          setCommunicationData({ telephone, name });
+        }
+      } else {
+        if (isTelephoneValid) {
+          setCommunicationData({ telephone });
+        }
       }
     }
   }, [
@@ -48,29 +54,32 @@ const CommunicationPhone = ({ idComunico }) => {
     isTelephoneValid,
     isNameValid,
     idComunico,
+    selectedAnswerValue,
     setCommunicationData
   ]);
 
   return (
     <>
-      <Stack gap={2} className="col-md-8 mx-auto">
-        <div className="p-2">
-          <Form.Group className="mb-2">
-            <Form.Label>Teléfono del que se comunicó</Form.Label>
-            <Form.Control
-              id="ComTelephone"
-              type="text"
-              placeholder="_______-_______-_______"
-              value={telephone}
-              onChange={handleTelephoneChange}
-              isInvalid={!isTelephoneValid}
-            />
-            <Form.Control.Feedback type="invalid">
-              El teléfono debe contener exactamente 10 dígitos.
-            </Form.Control.Feedback>
-          </Form.Group>
-        </div>
-      </Stack>
+      {selectedAnswerValue === 10 && (
+        <Stack gap={2} className="col-md-8 mx-auto">
+          <div className="p-2">
+            <Form.Group className="mb-2">
+              <Form.Label>Teléfono del que se comunicó</Form.Label>
+              <Form.Control
+                id="ComTelephone"
+                type="text"
+                placeholder="_______-_______-_______"
+                value={telephone}
+                onChange={handleTelephoneChange}
+                isInvalid={!isTelephoneValid}
+              />
+              <Form.Control.Feedback type="invalid">
+                El teléfono debe contener exactamente 10 dígitos.
+              </Form.Control.Feedback>
+            </Form.Group>
+          </div>
+        </Stack>
+      )}
 
       {idComunico && (
         <div>

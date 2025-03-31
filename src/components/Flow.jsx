@@ -424,7 +424,10 @@ const Flow = () => {
           return (
             <>
               {/***Aqui cuando que dijo */}
-              <CommunicationPhone idComunico={idComunico} />
+              <CommunicationPhone
+                idComunico={idComunico}
+                selectedAnswerValue={selectedAnswer.value} // Pasar selectedAnswer.value
+              />
               <Comment
                 comentario=""
                 isValid={true}
@@ -438,7 +441,10 @@ const Flow = () => {
               {/***Aqui cuando que dijo es false pero comentario va activo porque
                 es un quien contesto */}
 
-              <CommunicationPhone idComunico={idComunico} />
+              <CommunicationPhone
+                idComunico={idComunico}
+                selectedAnswerValue={selectedAnswer.value} // Pasar selectedAnswer.value
+              />
               <Comment
                 comentario=""
                 isValid={true}
@@ -450,18 +456,99 @@ const Flow = () => {
           return (
             <>
               {/***Flujo finalizado */}
-              <CommunicationPhone idComunico={idComunico} />
+              <CommunicationPhone
+                idComunico={idComunico}
+                selectedAnswerValue={selectedAnswer.value} // Pasar selectedAnswer.value
+              />
             </>
           );
         }
       } else if (idQuienContesto) {
-        return <CommunicationPhone idComunico={idComunico} />;
+        return (
+          <CommunicationPhone
+            idComunico={idComunico}
+            selectedAnswerValue={selectedAnswer.value} // Pasar selectedAnswer.value
+          />
+        );
       } else {
         return (
           <>
             {/***Flujo finalizado */}
             <h5></h5>
-            <CommunicationPhone idComunico={idComunico} />
+            <CommunicationPhone
+              idComunico={idComunico}
+              selectedAnswerValue={selectedAnswer.value} // Pasar selectedAnswer.value
+            />
+            <Comment
+              comentario=""
+              isValid={true}
+              onCommentChange={handleCommentChange}
+            />
+          </>
+        );
+      }
+    };
+
+    const renderContentEnter = () => {
+      if (idComunico) {
+        if (idDijo) {
+          return (
+            <>
+              {/***Aqui cuando que dijo */}
+              <CommunicationPhone
+                idComunico={idComunico}
+                selectedAnswerValue={selectedAnswer.value} // Pasar selectedAnswer.value
+              />
+              <Comment
+                comentario=""
+                isValid={true}
+                onCommentChange={handleCommentChange}
+              />
+            </>
+          );
+        } else if (shouldShowComment) {
+          return (
+            <>
+              {/***Aqui cuando que dijo es false pero comentario va activo porque
+                  es un quien contesto */}
+              <CommunicationPhone
+                idComunico={idComunico}
+                selectedAnswerValue={selectedAnswer.value} // Pasar selectedAnswer.value
+              />
+              <Comment
+                comentario=""
+                isValid={true}
+                onCommentChange={handleCommentChange}
+              />
+            </>
+          );
+        } else {
+          return (
+            <>
+              {/***Flujo finalizado */}
+              <CommunicationPhone
+                idComunico={idComunico}
+                selectedAnswerValue={selectedAnswer.value} // Pasar selectedAnswer.value
+              />
+            </>
+          );
+        }
+      } else if (idQuienContesto) {
+        return (
+          <CommunicationPhone
+            idComunico={idComunico}
+            selectedAnswerValue={selectedAnswer.value} // Pasar selectedAnswer.value
+          />
+        );
+      } else {
+        return (
+          <>
+            {/***Flujo finalizado */}
+            <h5></h5>
+            <CommunicationPhone
+              idComunico={idComunico}
+              selectedAnswerValue={selectedAnswer.value} // Pasar selectedAnswer.value
+            />
             <Comment
               comentario=""
               isValid={true}
@@ -503,26 +590,9 @@ const Flow = () => {
             {/* Implementación del timer */}
             {isFlowFinished ? (
               selectedAnswer.value === 10 ? (
-                renderContent()
+                renderContent() //Renderiza formulario final de flujo para llamada entrada
               ) : selectedAnswer.value === 2 ? (
-                shouldShowComment ? (
-                  <>
-                    <Comment
-                      comentario=""
-                      isValid={true}
-                      onCommentChange={handleCommentChange}
-                    />
-                    {savedComment && (
-                      <p className="mt-3 text-success">
-                        Comentario guardado: {savedComment}
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <h5>
-                    Flujo para guardar gestión cuando no se muestra comentario
-                  </h5>
-                )
+                renderContentEnter() //Renderiza formulario final de flujo para llamada manual
               ) : (
                 <h5>
                   Flujo para guardar gestión cuando no se muestra comentario
@@ -606,7 +676,11 @@ const Flow = () => {
       </Row>
 
       {/* Modal de FollowUps */}
-      <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps}isFollowUpActive={isFollowUpActive} />
+      <FollowUps
+        show={showFollowUps}
+        handleClose={handleCloseFollowUps}
+        isFollowUpActive={isFollowUpActive}
+      />
     </>
   );
 };

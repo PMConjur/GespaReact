@@ -158,7 +158,7 @@ export const getValidateResponse = async (
   console.log("idPregunta:", idPregunta);
   console.log("idRespuesta:", idRespuesta);
   console.log("idSiguientePregunta logica del flujo:", idSiguientePregunta);
-  console.log(" texto:", valor);
+  console.log("valor:", valor);
   console.log("pregunta:", pregunta);
   console.log("idClase:", idClase);
   console.log("valor:", value);
@@ -200,32 +200,61 @@ export const getValidateResponse = async (
         idSiguientePregunta == "12" ||
         idSiguientePregunta == "13" ||
         !(
-          Catálogo1 === "Clases" &&
-          Catálogo2 === "Modificables" &&
-          Valor2 === "Modificable"
+          relationData.Catálogo1 === "Clases" &&
+          relationData.Catálogo2 === "Modificables" &&
+          relationData.Valor2 === "Modificable"
         )
       ) {
         // Lógica adicional para manejar idClase cuando idSiguientePregunta sea 12 o 13
-        try {
-          const userFlowResponse = await userFlow();
-          const nextQuestion = userFlowResponse.find(
-            (item) => item.idPregunta === idSiguientePregunta
-          );
-          if (nextQuestion) {
-            idValor = 0; // Fijar idValor en 0 por defecto
-            console.log(
-              "Siguiente pregunta encontrada:",
-              nextQuestion.idPregunta
+        console.log("Aqui solo si ENTRO A RELACION DEL IF:");
+        if (
+          relationData.Catálogo1 === "Clases" &&
+          relationData.Catálogo2 === "Modificables" &&
+          relationData.Valor2 === "Modificable"
+        ) {
+          try {
+            const userFlowResponse = await userFlow();
+            const nextQuestion = userFlowResponse.find(
+              (item) => item.idPregunta === idSiguientePregunta
             );
-            return {
-              idPregunta: nextQuestion.idPregunta,
-              idSiguientePregunta: nextQuestion.idPregunta
-            }; // Devolver idPregunta e idSiguientePregunta del resultado
-          } else {
-            console.log("No se encontró la siguiente pregunta.");
+            if (nextQuestion) {
+              idValor = 0; // Fijar idValor en 0 por defecto
+              console.log(
+                "Siguiente pregunta encontrada para nextQUESTION:",
+                nextQuestion.idPregunta
+              );
+              return {
+                idPregunta: nextQuestion.idPregunta,
+                idSiguientePregunta: nextQuestion.idPregunta
+              }; // Devolver idPregunta e idSiguientePregunta del resultado
+            } else {
+              console.log("No se encontró la siguiente pregunta.");
+            }
+          } catch (error) {
+            console.error("Error al obtener la siguiente pregunta:", error);
           }
-        } catch (error) {
-          console.error("Error al obtener la siguiente pregunta:", error);
+        } else {
+          try {
+            const userFlowResponse = await userFlow();
+            const nextQuestion = userFlowResponse.find(
+              (item) => item.idPregunta === idSiguientePregunta
+            );
+            if (nextQuestion) {
+              idValor = 0; // Fijar idValor en 0 por defecto
+              console.log(
+                "Siguiente pregunta encontrada para nextQUESTION:",
+                nextQuestion.idPregunta
+              );
+              return {
+                idPregunta: nextQuestion.idPregunta,
+                idSiguientePregunta: nextQuestion.idSiguientePregunta
+              }; // Devolver idPregunta e idSiguientePregunta del resultado
+            } else {
+              console.log("No se encontró la siguiente pregunta.");
+            }
+          } catch (error) {
+            console.error("Error al obtener la siguiente pregunta:", error);
+          }
         }
       }
     } else {
