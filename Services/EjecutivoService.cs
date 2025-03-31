@@ -4384,22 +4384,15 @@ namespace NoriAPI.Services
                         command.Parameters.AddWithValue("@idSucursal", gestion.IdSucursal);
                         command.Parameters.AddWithValue("@Extensión", gestion.Extension ?? (object)DBNull.Value);
                         command.Parameters.AddWithValue("@NombreContacto", gestion.NombreContacto ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@CodificaciónCartera", gestion.CodificacionCartera);
                         command.Parameters.AddWithValue("@NúmeroTelefónico", gestion.NumeroTelefonico);
                         command.Parameters.AddWithValue("@Duración", gestion.Duracion);
                         command.Parameters.AddWithValue("@idModo", gestion.IdModo);
                         command.Parameters.AddWithValue("@idAcercamiento", gestion.IdAcercamiento ?? (object)DBNull.Value);
                         command.Parameters.AddWithValue("@Comentario", gestion.Comentario ?? (object)DBNull.Value);
                         command.Parameters.AddWithValue("@TiempoEnCuenta", gestion.TiempoEnCuenta);
-                        // Parámetros adicionales
-                        command.Parameters.AddWithValue("@Fechavici", gestion.Fechavici ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@Nivel", gestion.Nivel ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@Situacion", gestion.Situacion ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@Productos", gestion.Productos ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@Producto", gestion.Producto ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@NumeroCliente", gestion.NumeroCliente ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@Billing", gestion.Billing ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@Contacto", gestion.Contacto ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@Situaciones", gestion.Situaciones ?? (object)DBNull.Value);
+                       
+                
 
                         int rowsAffected = await command.ExecuteNonQueryAsync();
                         return rowsAffected > 0;

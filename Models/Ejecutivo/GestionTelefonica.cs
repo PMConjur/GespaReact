@@ -18,18 +18,10 @@ namespace NoriAPI.Models.Ejecutivo
         public TimeSpan TiempoEnCuenta { get; set; }
         public short? IdParentesco { get; set; }
         public string? NombreContacto { get; set; }
+        public string? CodificacionCartera { get; set; }
         public short? IdCausaNoPago { get; set; }
         public string? Comentario { get; set; }
-        public int? IdValidador { get; set; }
+
         // Añadimos las propiedades extras.
-        public string? Fechavici { get; set; }
-        public string? Nivel { get; set; }
-        public string? Situacion { get; set; }
-        public string? Productos { get; set; }
-        public string? Producto { get; set; }
-        public string? NumeroCliente { get; set; }
-        public string? Billing { get; set; }
-        public string? Contacto { get; set; }
-        public string? Situaciones { get; set; }
     }
 }
