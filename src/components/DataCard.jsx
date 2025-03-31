@@ -101,7 +101,7 @@ const DataCard = () => {
                   <div className="p-2 action">
                     <TelephoneInboundFill />
                     <span> Blaster : 33</span>
-                   </div>
+                    </div>
                   <div className="p-2 action">
                     <EnvelopeAtFill />
                     <span> Correo : 4</span>

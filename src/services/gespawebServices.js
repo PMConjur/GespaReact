@@ -1210,3 +1210,23 @@ export const fetchSaveDeleteDeadlines = async (requestData) => {
     throw error;
   }
 };
+
+export const createOnlineCharge = async (data) => {
+  try {
+    const response = await servicio.post(`/ejecutivo/SaveCargoEnlinea`, data);
+
+    if (response.status !== 200) {
+      throw new Error(`Error en la respuesta. Estado: ${response.status}`);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error en createOnlineCharge:", error);
+    if (error.response) {
+      const errorMessage =
+        error.response.data?.mensaje || "Error al crear Cargos en Linea";
+      throw new Error(errorMessage);
+    }
+    throw error;
+  }
+};
