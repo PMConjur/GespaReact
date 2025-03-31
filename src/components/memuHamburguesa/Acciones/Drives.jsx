@@ -1,14 +1,19 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Modal, Button, Table } from 'react-bootstrap';
-import { fetchDrives } from '../../../services/gespawebServices';
-import { AppContext } from '../../../pages/Managment';
-import { toast } from 'sonner'; // Importar toast de sonner
+import React, { useState, useEffect, useContext } from "react";
+import { Modal, Button, Table } from "react-bootstrap";
+import { fetchDrives } from "../../../services/gespawebServices";
+import { AppContext } from "../../../pages/Managment";
+import { toast } from "sonner"; // Importar toast de sonner
 import "../../../scss/styles.scss";
+
+import { formatearFecha } from "../../ValoresCatalogos"; // Importa el método de reemplazo de valores
 
 const AccionamientosTable = ({ data }) => {
   return (
-    <div className='scroll-container' style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-      <Table striped bordered hover className="custom-table" variant='dark'>
+    <div
+      className="scroll-container"
+      style={{ maxHeight: "70vh", overflowY: "auto" }}
+    >
+      <Table striped bordered hover className="custom-table" variant="dark">
         <thead>
           <tr>
             <th>Fecha</th>
@@ -20,9 +25,9 @@ const AccionamientosTable = ({ data }) => {
         <tbody>
           {data.map((item, index) => (
             <tr key={index}>
-              <td>{item.Fecha_Insert}</td>
+              <td>{formatearFecha(item.Fecha_Insert)}</td>
               <td>{item.Acercamiento}</td>
-              <td>{item._Entregado ? 'Sí' : 'No'}</td>
+              <td>{item._Entregado ? "Sí" : "No"}</td>
               <td>{item.Mensaje}</td>
             </tr>
           ))}
@@ -34,7 +39,12 @@ const AccionamientosTable = ({ data }) => {
 
 const AccionamientosModal = ({ show, handleClose, data }) => {
   return (
-    <Modal show={show} onHide={handleClose} size="xl" dialogClassName="dark-modal">
+    <Modal
+      show={show}
+      onHide={handleClose}
+      size="xl"
+      dialogClassName="dark-modal"
+    >
       <Modal.Header closeButton>
         <Modal.Title>Accionamientos</Modal.Title>
       </Modal.Header>
@@ -78,7 +88,11 @@ const Drives = ({ showModal, handleCloseModal }) => {
   }, [showModal, searchResults]);
 
   return (
-    <AccionamientosModal show={showModal} handleClose={handleCloseModal} data={accionamientosData} />
+    <AccionamientosModal
+      show={showModal}
+      handleClose={handleCloseModal}
+      data={accionamientosData}
+    />
   );
 };
 

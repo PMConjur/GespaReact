@@ -4,6 +4,7 @@ import {
   reemplazarValores,
   reemplazarValoresProducto,
   reemplazarValoresCartera,
+  agregarSignoDolar,
 } from "./ValoresCatalogos"; // Importa el método
 
 const TableMultiDeptor = ({ tableData }) => {
@@ -47,7 +48,7 @@ const TableMultiDeptor = ({ tableData }) => {
               <td>{item.NombreDeudor ?? ""}</td>
               <td>{item.RFC ?? ""}</td>
               <td>{item.NumeroCliente ?? ""}</td>
-              <td>{item.Saldo ?? ""}</td>
+              <td>{agregarSignoDolar(item.Saldo) ?? ""}</td>
               <td>
                 {item["Activación"]
                   ? new Date(item["Activación"]).toLocaleDateString()

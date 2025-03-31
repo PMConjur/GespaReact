@@ -1,22 +1,26 @@
 import { useContext, useState, useEffect } from "react";
-import { Modal, Button, Form, Table, Spinner, Dropdown } from 'react-bootstrap';
-import { fetchActionsSearch, fetchSaveExecutive } from '../../../services/gespawebServices';
+import { Modal, Button, Form, Table, Spinner, Dropdown } from "react-bootstrap";
+import {
+  fetchActionsSearch,
+  fetchSaveExecutive,
+} from "../../../services/gespawebServices";
 import { AppContext } from "../../../pages/Managment";
-import "../../../scss/styles.scss"
+import "../../../scss/styles.scss";
 import { toast } from "sonner";
+import { formatearFecha } from "../../ValoresCatalogos"; // Importa el método de reemplazo de valores
 
 const Search = ({ show, handleClose }) => {
   const { searchResults } = useContext(AppContext);
 
   const [searchData, setSearchData] = useState({
-    dato: '',
-    fuente: '',
+    dato: "",
+    fuente: "",
     encontrado: false,
-    nombre: '',
-    puesto: '',
-    telefonos: '',
-    lugar: '',
-    link: ''
+    nombre: "",
+    puesto: "",
+    telefonos: "",
+    lugar: "",
+    link: "",
   });
 
   const [phoneNumbers, setPhoneNumbers] = useState([]);
@@ -36,9 +40,14 @@ const Search = ({ show, handleClose }) => {
   }, [show, searchResults]);
 
   useEffect(() => {
-    const isValid = searchData.dato && searchData.fuente && searchData.nombre && 
-                    searchData.puesto && phoneNumbers.length > 0 && 
-                    searchData.lugar && searchData.link;
+    const isValid =
+      searchData.dato &&
+      searchData.fuente &&
+      searchData.nombre &&
+      searchData.puesto &&
+      phoneNumbers.length > 0 &&
+      searchData.lugar &&
+      searchData.link;
     setIsFormValid(isValid);
   }, [searchData, phoneNumbers]);
 
@@ -49,7 +58,7 @@ const Search = ({ show, handleClose }) => {
       const mappedData = mapResponseToTableData(response);
       setTableData(mappedData);
     } catch (error) {
-      console.error('Error al obtener los datos:', error);
+      console.error("Error al obtener los datos:", error);
       toast.error("Hubo un error al cargar los datos.");
     } finally {
       setLoading(false);
@@ -66,43 +75,49 @@ const Search = ({ show, handleClose }) => {
       idFuente: item.Fuente,
       Encontrado: item._Encontrado,
       Telefonos: item.Teléfonos,
-      Persona: Object.keys(item.Persona).length ? JSON.stringify(item.Persona) : '--',
-      Puesto: Object.keys(item.Puesto).length ? JSON.stringify(item.Puesto) : '--',
-      Lugar: Object.keys(item.Lugar).length ? JSON.stringify(item.Lugar) : '--',
+      Persona: Object.keys(item.Persona).length
+        ? JSON.stringify(item.Persona)
+        : "--",
+      Puesto: Object.keys(item.Puesto).length
+        ? JSON.stringify(item.Puesto)
+        : "--",
+      Lugar: Object.keys(item.Lugar).length ? JSON.stringify(item.Lugar) : "--",
       idEjecutivo: item.idEjecutivo,
-      InfoEncontrada: Object.keys(item.InfoEncontrada).length ? JSON.stringify(item.InfoEncontrada) : '--',
+      InfoEncontrada: Object.keys(item.InfoEncontrada).length
+        ? JSON.stringify(item.InfoEncontrada)
+        : "--",
       Confirmado: item._Confirmado,
-      Link: item.Link || '--',
+      Link: item.Link || "--",
     }));
   };
 
   const handleCheckboxChange = (e) => {
     const { checked } = e.target;
-    setSearchData(prev => ({
+    setSearchData((prev) => ({
       ...prev,
-      encontrado: checked
+      encontrado: checked,
     }));
     setShowForm(checked);
   };
 
   const handleChange = (name, value) => {
-    if (name === 'telefonos') {
+    if (name === "telefonos") {
       const regex = /^[0-9\b]+$/;
-      if (value === '' || (regex.test(value) && value.length <= 10)) {
+      if (value === "" || (regex.test(value) && value.length <= 10)) {
         setSearchData((prev) => ({
           ...prev,
           [name]: value,
         }));
-  
+
         if (value.length === 10) {
           setPhoneNumbers((prev) => [...prev, value]);
           setSearchData((prev) => ({
             ...prev,
-            telefonos: '',
+            telefonos: "",
           }));
         }
       }
-    } else if (name === 'nombre' || name === 'puesto' || name === 'lugar') {
+    } else if (name === "nombre" || name === "puesto" || name === "lugar") {
       setSearchData((prev) => ({
         ...prev,
         [name]: value,
@@ -112,14 +127,14 @@ const Search = ({ show, handleClose }) => {
         ...prev,
         [name]: value,
       }));
-  
-      if (name === 'dato') {
+
+      if (name === "dato") {
         const selectedValue = Number(value);
         const filteredValues = tableData
           .filter((item) => item.Dato === selectedValue)
           .map((item) => item.DatoBuscado);
         setValorOptions([...new Set(filteredValues)]);
-  
+
         const filteredFuentes = tableData
           .filter((item) => item.Dato === selectedValue)
           .map((item) => item.idFuente);
@@ -133,7 +148,9 @@ const Search = ({ show, handleClose }) => {
   };
 
   const handleGuardarClick = async () => {
-    const currentTime = new Date().toLocaleTimeString('en-GB', { hour12: false });
+    const currentTime = new Date().toLocaleTimeString("en-GB", {
+      hour12: false,
+    });
     const currentDate = new Date().toISOString();
 
     try {
@@ -147,35 +164,37 @@ const Search = ({ show, handleClose }) => {
         idFuente: Number(searchData.fuente),
         dato: searchData.dato,
         encontrado: searchData.encontrado,
-        teléfonos: phoneNumbers.map((númeroTelefónico) => ({ númeroTelefónico })),
+        teléfonos: phoneNumbers.map((númeroTelefónico) => ({
+          númeroTelefónico,
+        })),
         persona: searchData.nombre,
         puesto: searchData.puesto,
         lugar: searchData.lugar,
         link: searchData.link,
         validador: 0,
         fecha_Insert: currentDate,
-        segundo_Insert: currentTime
+        segundo_Insert: currentTime,
       };
-      
+
       const response = await fetchSaveExecutive(requestData);
       toast.success("Datos guardados correctamente.");
 
       // Limpia el formulario y actualiza la tabla
       setSearchData({
-        dato: '2601',
-        fuente: '',
+        dato: "2601",
+        fuente: "",
         encontrado: false,
-        nombre: '',
-        puesto: '',
-        telefonos: '',
-        lugar: '',
-        link: ''
+        nombre: "",
+        puesto: "",
+        telefonos: "",
+        lugar: "",
+        link: "",
       });
       setPhoneNumbers([]);
       setShowForm(false);
       fetchData(idCuenta); // Vuelve a cargar los datos de la tabla
     } catch (error) {
-      console.error('Error al guardar los datos:', error);
+      console.error("Error al guardar los datos:", error);
       toast.error("Hubo un error al guardar los datos.");
     }
   };
@@ -185,13 +204,37 @@ const Search = ({ show, handleClose }) => {
       <Modal.Header closeButton>
         <Modal.Title>Búsquedas</Modal.Title>
       </Modal.Header>
-      <Modal.Body style={{maxHeight: '70vh', overflowY: 'auto', display: 'flex', width: '100%', justifyContent: 'space-between'}} className="d-block d-lg-flex">
-        <div className="scroll-container" style={{ width: '100%', maxHeight: '70vh', overflowY: 'auto', display: 'flex', flexDirection: 'column'}}>
+      <Modal.Body
+        style={{
+          maxHeight: "70vh",
+          overflowY: "auto",
+          display: "flex",
+          width: "100%",
+          justifyContent: "space-between",
+        }}
+        className="d-block d-lg-flex"
+      >
+        <div
+          className="scroll-container"
+          style={{
+            width: "100%",
+            maxHeight: "70vh",
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           <Form style={{ flexGrow: 1 }}>
-            <div style={{display: 'flex', justifyContent:'space-between', marginRight: '20px'}}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginRight: "20px",
+              }}
+            >
               <Form.Group className="mb-3">
                 <Form.Label>Dato</Form.Label>
-                <Dropdown onSelect={(value) => handleChange('dato', value)}>
+                <Dropdown onSelect={(value) => handleChange("dato", value)}>
                   <Dropdown.Toggle variant="primary" id="dropdown-dato">
                     {searchData.dato || "Seleccionar"}
                   </Dropdown.Toggle>
@@ -206,7 +249,7 @@ const Search = ({ show, handleClose }) => {
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label>Valor</Form.Label>
-                <Dropdown onSelect={(value) => handleChange('valor', value)}>
+                <Dropdown onSelect={(value) => handleChange("valor", value)}>
                   <Dropdown.Toggle variant="primary" id="dropdown-valor">
                     {searchData.valor || "Seleccionar"}
                   </Dropdown.Toggle>
@@ -220,10 +263,17 @@ const Search = ({ show, handleClose }) => {
                 </Dropdown>
               </Form.Group>
             </div>
-            <div style={{display: 'flex', justifyContent:'space-between', alignItems: 'end', marginRight: '20px'}}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "end",
+                marginRight: "20px",
+              }}
+            >
               <Form.Group className="mb-3">
                 <Form.Label>Fuente</Form.Label>
-                <Dropdown onSelect={(value) => handleChange('fuente', value)}>
+                <Dropdown onSelect={(value) => handleChange("fuente", value)}>
                   <Dropdown.Toggle variant="primary" id="dropdown-fuente">
                     {searchData.fuente || "Seleccionar"}
                   </Dropdown.Toggle>
@@ -237,15 +287,15 @@ const Search = ({ show, handleClose }) => {
                 </Dropdown>
               </Form.Group>
               <Form.Check
-  type="checkbox"
-  label="Encontrado"
-  checked={searchData.encontrado}
-  onChange={(e) => {
-    const isChecked = e.target.checked;
-    setSearchData(prev => ({ ...prev, encontrado: isChecked }));
-    setShowForm(isChecked);
-  }}
-/>
+                type="checkbox"
+                label="Encontrado"
+                checked={searchData.encontrado}
+                onChange={(e) => {
+                  const isChecked = e.target.checked;
+                  setSearchData((prev) => ({ ...prev, encontrado: isChecked }));
+                  setShowForm(isChecked);
+                }}
+              />
             </div>
             {showForm && (
               <Form.Group className="mb-3 me-3">
@@ -254,27 +304,42 @@ const Search = ({ show, handleClose }) => {
                   type="text"
                   placeholder=""
                   value={searchData.nombre}
-                  onChange={(e) => handleChange('nombre', e.target.value)}
+                  onChange={(e) => handleChange("nombre", e.target.value)}
                 />
                 <Form.Label>Puesto</Form.Label>
                 <Form.Control
                   type="text"
                   placeholder=""
                   value={searchData.puesto}
-                  onChange={(e) => handleChange('puesto', e.target.value)}
+                  onChange={(e) => handleChange("puesto", e.target.value)}
                 />
                 <Form.Label>Teléfonos</Form.Label>
                 <Form.Control
                   type="text"
                   placeholder=""
                   value={searchData.telefonos}
-                  onChange={(e) => handleChange('telefonos', e.target.value)}
+                  onChange={(e) => handleChange("telefonos", e.target.value)}
                 />
                 <div>
                   {phoneNumbers.map((phone, index) => (
-                    <div key={index} style={{ display: 'flex', alignItems: 'center', marginTop: '3px', marginBottom: '3px'}}>
-                      <Button variant="danger" size="sm" style={{padding: '0px 5px'}} onClick={() => handleRemovePhoneNumber(index)}>X</Button>
-                      <span style={{ marginLeft: '10px' }}>{phone}</span>
+                    <div
+                      key={index}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginTop: "3px",
+                        marginBottom: "3px",
+                      }}
+                    >
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        style={{ padding: "0px 5px" }}
+                        onClick={() => handleRemovePhoneNumber(index)}
+                      >
+                        X
+                      </Button>
+                      <span style={{ marginLeft: "10px" }}>{phone}</span>
                     </div>
                   ))}
                 </div>
@@ -283,24 +348,24 @@ const Search = ({ show, handleClose }) => {
                   type="text"
                   placeholder=""
                   value={searchData.lugar}
-                  onChange={(e) => handleChange('lugar', e.target.value)}
+                  onChange={(e) => handleChange("lugar", e.target.value)}
                 />
                 <Form.Label>Link de la página</Form.Label>
                 <Form.Control
                   type="text"
                   placeholder=""
                   value={searchData.link}
-                  onChange={(e) => handleChange('link', e.target.value)}
+                  onChange={(e) => handleChange("link", e.target.value)}
                 />
               </Form.Group>
             )}
           </Form>
-          <div style={{ marginTop: 'auto' }}>
+          <div style={{ marginTop: "auto" }}>
             <Button
               variant="primary"
               type="button"
               onClick={handleGuardarClick}
-              style={{ marginBottom: '10px' }}
+              style={{ marginBottom: "10px" }}
               disabled={!isFormValid}
             >
               Guardar
@@ -314,7 +379,15 @@ const Search = ({ show, handleClose }) => {
             </Spinner>
           </div>
         ) : (
-          <div className="scroll-container" style={{ overflow: 'auto', maxHeight: '70vh', maxWidth: '800px', minWidth: '250px'}}>
+          <div
+            className="scroll-container"
+            style={{
+              overflow: "auto",
+              maxHeight: "70vh",
+              maxWidth: "800px",
+              minWidth: "250px",
+            }}
+          >
             <Table striped bordered hover variant="dark" className="mt-3">
               <thead>
                 <tr>
@@ -338,20 +411,20 @@ const Search = ({ show, handleClose }) => {
               <tbody>
                 {tableData.map((item, index) => (
                   <tr key={index}>
-                    <td>{item.Fecha}</td>
+                    <td>{formatearFecha(item.Fecha)}</td>
                     <td>{item.Hora}</td>
                     <td>{item.Ejecutivo}</td>
                     <td>{item.Dato}</td>
                     <td>{item.DatoBuscado}</td>
                     <td>{item.idFuente}</td>
-                    <td>{item.Encontrado ? 'Sí' : 'No'}</td>
+                    <td>{item.Encontrado ? "Sí" : "No"}</td>
                     <td>{item.Telefonos}</td>
                     <td>{item.Persona}</td>
                     <td>{item.Puesto}</td>
                     <td>{item.Lugar}</td>
                     <td>{item.idEjecutivo}</td>
                     <td>{item.InfoEncontrada}</td>
-                    <td>{item.Confirmado ? 'Sí' : 'No'}</td>
+                    <td>{item.Confirmado ? "Sí" : "No"}</td>
                     <td>{item.Link}</td>
                   </tr>
                 ))}

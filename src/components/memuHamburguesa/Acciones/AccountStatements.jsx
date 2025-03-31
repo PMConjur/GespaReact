@@ -2,18 +2,19 @@ import { useContext, useState, useEffect } from "react";
 import { Modal, Table, Button, Card, Form, Col } from "react-bootstrap";
 import {
   fetchAccoutStatements,
-  fetchSaveAccount
+  fetchSaveAccount,
 } from "../../../services/gespawebServices";
 import { AppContext } from "../../../pages/Managment";
 import { toast } from "sonner";
 import "../../../scss/styles.scss";
+import { formatearFecha } from "../../ValoresCatalogos"; // Importa el método de reemplazo de valores
 
 const EstadoCuentaModal = ({ show, handleClose }) => {
   const [accountData, setAccountData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedDateRange, setSelectedDateRange] = useState({
     startDate: "",
-    endDate: ""
+    endDate: "",
   });
   const [selectedEmail, setSelectedEmail] = useState("");
   const [selectedOption, setSelectedOption] = useState(false);
@@ -100,7 +101,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
       fechaInicial: new Date(selectedDateRange.startDate).toISOString(),
       fechaFinal: new Date(selectedDateRange.endDate).toISOString(),
       consulta: selectedOption,
-      correoElectrónico: selectedEmail
+      correoElectrónico: selectedEmail,
     };
 
     try {
@@ -118,13 +119,18 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
     .filter((email) => typeof email === "string");
 
   return (
-    <Modal show={show} onHide={handleClose} size="xl" >
+    <Modal show={show} onHide={handleClose} size="xl">
       <Modal.Header closeButton>
         <Modal.Title>Estado de Cuenta</Modal.Title>
       </Modal.Header>
 
       <Modal.Body
-        style={{ padding: "5px 10px", maxHeight: '70vh', overflowY: "auto", position: 'relative' }}
+        style={{
+          padding: "5px 10px",
+          maxHeight: "70vh",
+          overflowY: "auto",
+          position: "relative",
+        }}
       >
         <div className="d-block d-lg-flex">
           <div>
@@ -134,7 +140,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                 overflow: "auto ",
                 maxWidth: "800px",
                 marginBottom: "auto",
-                maxHeight: '70vh'
+                maxHeight: "70vh",
               }}
             >
               {loading ? (
@@ -162,11 +168,11 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                     <tbody>
                       {accountData.map((item, index) => (
                         <tr key={index}>
-                          <td>{item.Fecha_Insert}</td>
+                          <td>{formatearFecha(item.Fecha_Insert)}</td>
                           <td>{item.Segundo_Insert}</td>
                           <td>{item.NombreEjecutivo}</td>
-                          <td>{item.FechaInicial}</td>
-                          <td>{item.FechaFinal}</td>
+                          <td>{formatearFecha(item.FechaInicial)}</td>
+                          <td>{formatearFecha(item.FechaFinal)}</td>
                           <td>{item._Consulta}</td>
                           <td>
                             {item["Correo Electrónico"] &&

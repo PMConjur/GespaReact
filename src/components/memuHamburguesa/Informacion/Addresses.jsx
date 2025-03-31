@@ -368,6 +368,17 @@ const Addresses = ({ show, handleClose }) => {
     });
     setClase(""); // Limpia el campo "Clase"
   };
+
+  const handlePostalRowClick = (item) => {
+    setFormData((prev) => ({
+      ...prev,
+      colonia: item.colonia || "",
+      municipio: item.municipio || "",
+      estado: item.estado || "",
+    }));
+    toast.info("Datos cargados desde la tabla postal.");
+  };
+
   return (
     <Modal
       show={show}
@@ -437,6 +448,9 @@ const Addresses = ({ show, handleClose }) => {
                           ...formData,
                           codigoPostal: inputValue, // Permite ingresar texto directamente
                         });
+
+                        // Llama a la función para actualizar la tabla postal
+                        handleDomicilioSelection(inputValue);
                       }}
                       placeholder={
                         formData.codigoPostal || "Ingrese el código postal"
@@ -714,7 +728,11 @@ const Addresses = ({ show, handleClose }) => {
                 </thead>
                 <tbody>
                   {postalTableData?.map((item, index) => (
-                    <tr key={index}>
+                    <tr
+                      key={index}
+                      onClick={() => handlePostalRowClick(item)} // Llama a la función al hacer clic en una fila
+                      style={{ cursor: "pointer" }} // Opcional: Cambia el cursor para indicar que es clickeable
+                    >
                       <td>{renderCell(item.códigoPostal)}</td>
                       <td>{renderCell(item.colonia)}</td>
                       <td>{renderCell(item.municipio)}</td>

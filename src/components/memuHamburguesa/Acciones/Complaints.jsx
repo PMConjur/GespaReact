@@ -1,21 +1,28 @@
-import { useState, useContext, useEffect } from 'react';
-import { Modal, Button, Form, Table, Dropdown, Col} from 'react-bootstrap';
-import { fetchComplaints, fetchViewComplaints, fetchOriginComplaints, fetchDdComplaints} from '../../../services/gespawebServices';
+import { useState, useContext, useEffect } from "react";
+import { Modal, Button, Form, Table, Dropdown, Col } from "react-bootstrap";
+import {
+  fetchComplaints,
+  fetchViewComplaints,
+  fetchOriginComplaints,
+  fetchDdComplaints,
+} from "../../../services/gespawebServices";
 import { AppContext } from "../../../pages/Managment";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 import "../../../scss/styles.scss";
+import { formatearFecha } from "../../ValoresCatalogos"; // Importa el método de reemplazo de valores
 
 const Complaints = ({ show, handleClose }) => {
-  const { searchResults, idEjecutivo, nombreEjecutivo } = useContext(AppContext);
+  const { searchResults, idEjecutivo, nombreEjecutivo } =
+    useContext(AppContext);
 
   const [formData, setFormData] = useState({
-    idQueja: '',
-    idInstitucion: '',
-    folio: '',
+    idQueja: "",
+    idInstitucion: "",
+    folio: "",
     llamadaEntrada: false,
-    comentarios: '',
+    comentarios: "",
     titular: false,
-    solicitante: ''
+    solicitante: "",
   });
 
   const [complaints, setComplaints] = useState([]);
@@ -25,7 +32,12 @@ const Complaints = ({ show, handleClose }) => {
 
   // Validar el formulario
   useEffect(() => {
-    const isValid = formData.idQueja && formData.idInstitucion && formData.folio && formData.comentarios && formData.solicitante;
+    const isValid =
+      formData.idQueja &&
+      formData.idInstitucion &&
+      formData.folio &&
+      formData.comentarios &&
+      formData.solicitante;
     setIsFormValid(isValid);
   }, [formData]);
 
@@ -40,8 +52,8 @@ const Complaints = ({ show, handleClose }) => {
           console.log("Datos recibidos de fetchViewComplaints:", result);
           setComplaints(result);
         } catch (error) {
-          toast.error('Error 408: Error al cargar las quejas');
-          console.error('Error al cargar las quejas:', error);
+          toast.error("Error 408: Error al cargar las quejas");
+          console.error("Error al cargar las quejas:", error);
         }
       }
     };
@@ -58,7 +70,6 @@ const Complaints = ({ show, handleClose }) => {
         console.log("Llamando a fetchOriginComplaints");
         const result = await fetchOriginComplaints();
         console.log("Datos recibidos de fetchOriginComplaints:", result);
-        
 
         // Mapear los datos para extraer idValor y Valor
         const mappedData = result.map((item) => ({
@@ -145,7 +156,7 @@ const Complaints = ({ show, handleClose }) => {
   };
 
   return (
-    <Modal show={show} onHide={handleClose} size="xl" >
+    <Modal show={show} onHide={handleClose} size="xl">
       <Modal.Header closeButton>
         <Modal.Title>Quejas</Modal.Title>
       </Modal.Header>
@@ -153,7 +164,7 @@ const Complaints = ({ show, handleClose }) => {
         <Col>
           <div
             className="scroll-container"
-            style={{ maxHeight: '70vh', overflowY: "auto" }}
+            style={{ maxHeight: "70vh", overflowY: "auto" }}
           >
             <Form>
               <div style={{ justifyContent: "space-between" }}>
@@ -319,7 +330,7 @@ const Complaints = ({ show, handleClose }) => {
           className="scroll-container"
           style={{
             overflow: "auto",
-            maxHeight: '70vh',
+            maxHeight: "70vh",
             maxWidth: "800px",
             minWidth: "250px",
           }}
@@ -345,7 +356,7 @@ const Complaints = ({ show, handleClose }) => {
             <tbody>
               {complaints.map((complaint, index) => (
                 <tr key={index}>
-                  <td>{complaint.Fecha_Insert || "--"}</td>
+                  <td>{formatearFecha(complaint.Fecha_Insert) || "--"}</td>
                   <td>{complaint.Segundo_Insert || "--"}</td>
                   <td>
                     {typeof complaint.Folio === "object" &&
@@ -353,8 +364,10 @@ const Complaints = ({ show, handleClose }) => {
                       ? "--"
                       : complaint.Folio || "--"}
                   </td>
-                  <td>{complaint.Queja || "--"}</td> {/* Muestra el valor de Queja */}
-                  <td>{complaint.Institución || "--"}</td> {/* Muestra el valor de Institución */}
+                  <td>{complaint.Queja || "--"}</td>{" "}
+                  {/* Muestra el valor de Queja */}
+                  <td>{complaint.Institución || "--"}</td>{" "}
+                  {/* Muestra el valor de Institución */}
                   <td>{complaint.Solicitante || "--"}</td>
                   <td>
                     {typeof complaint.NúmeroTelefónico === "object" &&

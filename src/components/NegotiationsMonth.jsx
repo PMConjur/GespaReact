@@ -3,7 +3,11 @@ import { Table, Card } from "react-bootstrap";
 import { userNegotiations, searchCustomer } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast, Toaster } from "sonner";
-import { reemplazarValores } from "./ValoresCatalogos"; // Importa el método de reemplazo de valores
+import {
+  reemplazarValores,
+  formatearFecha,
+  agregarSignoDolar,
+} from "./ValoresCatalogos"; // Importa el método de reemplazo de valores
 
 const NegotiationsMonth = () => {
   const responseData = JSON.parse(localStorage.getItem("responseData"));
@@ -68,10 +72,10 @@ const NegotiationsMonth = () => {
                       </td>
                       <td>{negotiation.herramienta}</td>
                       <td>{reemplazarValores(negotiation.idEstado)}</td>
-                      <td>{negotiation.fechaCreacion}</td>
-                      <td>{negotiation.fechaTermino}</td>
-                      <td>{negotiation.montoNegociado}</td>
-                      <td>{negotiation.montoPagado}</td>
+                      <td>{formatearFecha(negotiation.fechaCreacion)}</td>
+                      <td>{formatearFecha(negotiation.fechaTermino)}</td>
+                      <td>{agregarSignoDolar(negotiation.montoNegociado)}</td>
+                      <td>{agregarSignoDolar(negotiation.montoPagado)}</td>
                       <td>{negotiation.pagos}</td>
                     </tr>
                   ))
