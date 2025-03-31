@@ -1235,6 +1235,7 @@ export const createOnlineCharge = async (data) => {
     throw error;
   }
 };
+
 // endpoint guardar-Gestion-Telefonica
 export const saveManagment = async (dataManagment) => {
   try {
@@ -1254,6 +1255,30 @@ export const saveManagment = async (dataManagment) => {
     return result;
   } catch (error) {
     console.error("Error al guardar la gestión", error);
+    throw error;
+  }
+};
+
+// endpoint guardar negociacion plazos
+export const fetchSaveNegotiationDeadlines = async () => {
+  try {
+    console.log("Enviando datos al endpoint:");
+    const response = await servicio.post(
+      `/ejecutivo/GuardaNegociacionPlazos`,
+      
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Respuesta del endpoint:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchSaveDeleteDeadlines:", error);
     throw error;
   }
 };

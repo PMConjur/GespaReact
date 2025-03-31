@@ -20,10 +20,12 @@ const AccionamientosTable = ({ data }) => {
         <tbody>
           {data.map((item, index) => (
             <tr key={index}>
-              <td>{item.Fecha_Insert.split("T")[0]}</td> {/* Solo muestra la fecha antes de la "T" */}
-              <td>{item.Acercamiento}</td>
-              <td>{typeof item._Entregado === "boolean" ? (item._Entregado ? "Sí" : "No") : ""}</td> {/* Maneja booleanos y valores no válidos */}
-              <td>{item.Mensaje || ""}</td> {/* Muestra "--" si no hay mensaje */}
+              <td style={{ textAlign: "left" }}>{item.Fecha_Insert.split("T")[0]}</td> {/* Solo muestra la fecha antes de la "T" */}
+              <td style={{ textAlign: "left" }}>{item.Acercamiento}</td>
+              <td style={{ textAlign: "left" }}>
+                {typeof item._Entregado === "boolean" ? (item._Entregado ? "Sí" : "No") : ""}
+              </td> {/* Maneja booleanos y valores no válidos */}
+              <td style={{ textAlign: "left" }}>{item.Mensaje || ""}</td> {/* Muestra "--" si no hay mensaje */}
             </tr>
           ))}
         </tbody>
