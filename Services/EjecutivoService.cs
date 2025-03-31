@@ -79,8 +79,13 @@ namespace NoriAPI.Services
         Task<string> SaveCargoEnlinea(CargoEnLineaRe newCargoEn);
         Task<string> SaveEstadoDeCuenta(EstadoDeCuentaRe newEstadoEn);
         Task ObtenerMultideudores(DataRow drDatos, DataSet dsTablas, Hashtable htProducto, string sortMultideudores, string connectionString);
+
+        #region Pagos
         Task ObtenerPagos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerPago(DataRow drDatos, DataSet dsTablas);
+        Task<bool> GuardaPagos(Models.Ejecutivo.Pagos pago);
+        #endregion
+
         Task<DataTable> ObtieneGestionTeAsync(int idCartera, string idCuenta, int Top);
         Task ObtenerDomicilios(DataRow drDatos, DataSet dsTablas);
         DataTable ObtieneGestionesDelDia(int idEjecutivo);
@@ -3640,6 +3645,108 @@ namespace NoriAPI.Services
 
             dsTablas.Tables.Add(pagosGet);
         }
+
+        //public async Task<bool> GuardaPagos(Models.Ejecutivo.Pagos pago)
+        //{
+        //    //try
+        //    //{
+        //        Debug.WriteLine("Iniciando GuardaPagos...");
+
+        //        // 1. Obtener la cadena de conexión
+        //        string connectionString = _configuration.GetConnectionString("Piso2Amex");
+        //        Debug.WriteLine($"Cadena de conexión: {connectionString}");
+
+        //        // 2. Crear y abrir la conexión
+        //        using (SqlConnection connection = new SqlConnection(connectionString))
+        //        {
+        //            await connection.OpenAsync();
+        //            Debug.WriteLine("Conexión a la base de datos abierta.");
+
+        //            // 3. Crear el comando SQL
+        //            using (SqlCommand command = new SqlCommand("EXEC [dbCollection].[dbo].[2.7.ReporteDePago] @idCartera, @idCuenta, @FechaPago, @MontoPago, @Referencia, @Sucursal, @idEjecutivo ", connection))
+        //            {
+        //                command.CommandType = System.Data.CommandType.StoredProcedure;
+
+        //                // 4. Agregar parámetros al comando
+        //                command.Parameters.AddWithValue("@idCartera", pago.idCartera);
+        //                command.Parameters.AddWithValue("@idCuenta", pago.idCuenta);
+        //                command.Parameters.AddWithValue("@idEjecutivo", pago.idEjecutivo);
+        //                command.Parameters.AddWithValue("@FechaPago", pago.FechaPago.Date);
+        //                command.Parameters.AddWithValue("@MontoPago", pago.MontoPago);
+
+        //                // 5. Manejar valores nulos y longitud de cadenas
+        //                string referencia = string.IsNullOrEmpty(pago.Referencia) ? null : pago.Referencia.Substring(0, Math.Min(15, pago.Referencia.Length));
+        //                string sucursal = string.IsNullOrEmpty(pago.Sucursal) ? null : pago.Sucursal.Substring(0, Math.Min(15, pago.Sucursal.Length));
+
+        //                command.Parameters.AddWithValue("@Referencia", referencia ?? (object)DBNull.Value);
+        //                command.Parameters.AddWithValue("@Sucursal", sucursal ?? (object)DBNull.Value);
+
+        //                // 6. Registrar los valores de los parámetros
+        //                Debug.WriteLine($"Parámetros: idCartera={pago.idCartera}, idCuenta={pago.idCuenta}, idEjecutivo={pago.idEjecutivo}, FechaPago={pago.FechaPago.Date}, MontoPago={pago.MontoPago}, Referencia={referencia}, Sucursal={sucursal}");
+
+        //                // 7. Ejecutar el comando y obtener el número de filas afectadas
+        //                int rowsAffected = await command.ExecuteNonQueryAsync();
+        //                Debug.WriteLine($"Filas afectadas: {rowsAffected}");
+
+        //                // 8. Devolver el resultado
+        //                return rowsAffected > 0;
+        //            } // El comando se libera aquí
+        //        } // La conexión se libera aquí
+        //    //}
+        //    //catch (SqlException ex)
+        //    //{
+        //    //    // 9. Manejar errores de SQL Server
+        //    //    Debug.WriteLine($"Error de SQL: {ex.Message}");
+        //    //    return false;
+        //    //}
+        //    //catch (ObjectDisposedException ex)
+        //    //{
+        //    //    // 10. Manejar errores de objeto liberado
+        //    //    Debug.WriteLine($"Error de objeto liberado: {ex.Message}");
+        //    //    return false;
+        //    //}
+        //    //catch (Exception ex)
+        //    //{
+        //    //    // 11. Manejar otros errores
+        //    //    Debug.WriteLine($"Error general: {ex.Message}");
+        //    //    return false;
+        //    //}
+        //    //finally
+        //    //{
+        //    //    Debug.WriteLine("Finalizando GuardaPagos.");
+        //    //}
+        //}
+
+        public async Task<bool> GuardaPagos(Models.Ejecutivo.Pagos pago)
+        {
+            string connectionString = _configuration.GetConnectionString("Piso2Amex");
+
+            using SqlConnection connection = new(connectionString);
+
+            await connection.OpenAsync();
+
+            string storedProcedure = "[dbCollection].[dbo].[2.7.ReporteDePago]";
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@idCartera", pago.idCartera, DbType.Int32);
+            parameters.Add("@idCuenta", pago.idCuenta, DbType.String, size: 16);
+            parameters.Add("@idEjecutivo", pago.idEjecutivo, DbType.Int32);
+            parameters.Add("@FechaPago", pago.FechaPago.Date, DbType.Date);
+            parameters.Add("@MontoPago", pago.MontoPago, DbType.Decimal);
+
+            string referencia = string.IsNullOrEmpty(pago.Referencia) ? null : pago.Referencia.Substring(0, Math.Min(15, pago.Referencia.Length));
+            string sucursal = string.IsNullOrEmpty(pago.Sucursal) ? null : pago.Sucursal.Substring(0, Math.Min(15, pago.Sucursal.Length));
+
+            parameters.Add("@Referencia", referencia ?? (object)DBNull.Value, DbType.String, size: 15);
+            parameters.Add("@Sucursal", sucursal ?? (object)DBNull.Value, DbType.String, size: 15);
+
+
+            int rowsAffected = await connection.ExecuteAsync(storedProcedure, parameters, commandType: CommandType.StoredProcedure);
+
+            return rowsAffected > 0;
+
+        }
+
         #endregion
 
         #region Gestiones

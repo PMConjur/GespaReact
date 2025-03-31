@@ -268,10 +268,10 @@ namespace NoriAPI.Controllers
 
         #region Recuperacion
         [HttpGet("get-recuperacion-Actual")]
-      
+
         public async Task<IActionResult> GetRecuperacion(int idEjecutivo)
         {
-            
+
             var recuperacion = await _ejecutivoService.RecuperacionActual(idEjecutivo);
 
             if (recuperacion == null)
@@ -282,7 +282,7 @@ namespace NoriAPI.Controllers
             return Ok(recuperacion);
         }
         [HttpGet("get-recuperacion-Anterior")]
-      
+
         public async Task<IActionResult> GetRecuperacionAnterior(int idEjecutivo)
         {
 
@@ -371,7 +371,7 @@ namespace NoriAPI.Controllers
             return Ok(result);
         }
 
-        
+
         [HttpPost ("GuardaNegociacionPlazos")]
         [AllowAnonymous]
         public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] NegociacionPlazosInput input)
@@ -389,7 +389,7 @@ namespace NoriAPI.Controllers
         public async Task<IActionResult> GuardaEliminaPlazos([FromBody] EliminaGuardaPlazos PlazosInfo)
         {
             var result = await _ejecutivoService.GuardaEliminaPlazos(PlazosInfo);
-            //return Ok(result);            
+            //return Ok(result);
             return Ok(new { Mensaje = result });
 
         }
@@ -408,7 +408,7 @@ namespace NoriAPI.Controllers
                 return Ok(result);
             }
 
-            
+
 
         }
 
@@ -717,6 +717,26 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+
+        [HttpPost("GuardarPagos")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GuardarPagos([FromBody] Pagos pago)
+        {
+            if (pago == null)
+            {
+                return BadRequest(new { Result = "Datos de Pago no válidos."});
+            }
+
+            if (await _ejecutivoService.GuardaPagos(pago))
+            {
+                return Ok(new { Result = "Pago guardado exitosamente." });
+            }
+            else
+            {
+                return BadRequest(new { Result = "Error al guardar el Pago." });
+            }
+        }
+
         #endregion
 
         #region Gestiones
