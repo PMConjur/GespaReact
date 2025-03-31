@@ -164,7 +164,7 @@ namespace NoriAPI.Repositories
         {
             using var connection = GetConnection("Piso2Amex");
 
-            string phonesQuery = "SELECT * FROM [dbo].[fn_TeléfonosLadasGMT](@idCartera, @idCuenta)";
+            string phonesQuery = "SELECT * FROM [dbo].[fn_TeléfonosLadasTest](@idCartera, @idCuenta)";
 
             var phoneList = await connection.QueryAsync<Phone>(
                 phonesQuery,
