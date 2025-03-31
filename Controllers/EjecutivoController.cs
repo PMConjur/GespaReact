@@ -27,7 +27,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/ejecutivo")]
-    [Authorize]
+    //[Authorize]
     public class EjecutivoController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -372,18 +372,43 @@ namespace NoriAPI.Controllers
         {
             var result = await _ejecutivoService.GuardaEliminaPlazos(PlazosInfo);
             //return Ok(result);            
-            return Ok(new { Mensaje = result });
-
-        }
-
-        [HttpPost ("GuardaNegociacionPlazos")]
-        public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] GuardaNegociacionPlazos negociacionInfo)
-        {
-            var result = await _ejecutivoService.GuardaNegoaciacionPlazos_(negociacionInfo);
-
             return Ok(result);
 
         }
+        
+        [HttpPost ("GuardaNegociacionPlazos")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] NegociacionPlazosInput input)
+        {
+            var result = await _ejecutivoService.GuardaNegociacionPlazos(input);
+
+            if (!string.IsNullOrEmpty(result.Mensaje))
+            {
+                return BadRequest(result); // Devuelve BadRequest con el mensaje de error
+            }
+
+            return Ok(result); // Devuelve el resultado si no hay error
+        }
+
+        [HttpPost ("IncrementaNegociacion")]
+
+        public async Task<IActionResult> IncrementaNegociacion([FromBody] IncrementoNegociacion incrementaNegInfo)
+        {
+            var result = await _ejecutivoService.IncrementaNegociacion(incrementaNegInfo);
+            if(result == "")
+            {
+                return Ok("Correcto");
+            }
+            else
+            {
+                return Ok(result);
+            }
+
+            
+
+        }
+
+
 
 
         #endregion
