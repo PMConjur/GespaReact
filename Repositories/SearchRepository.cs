@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using NoriAPI.Models.Busqueda.InfoProducto;
@@ -163,7 +164,7 @@ namespace NoriAPI.Repositories
         {
             using var connection = GetConnection("Piso2Amex");
 
-            string phonesQuery = "SELECT * FROM [dbo].[fn_TeléfonosLadasGMT](@idCartera, @idCuenta)";
+            string phonesQuery = "SELECT * FROM [dbo].[fn_TeléfonosLadasTest](@idCartera, @idCuenta)";
 
             var phoneList = await connection.QueryAsync<Phone>(
                 phonesQuery,
@@ -327,13 +328,15 @@ namespace NoriAPI.Repositories
             return visitas;
         }
 
-        public async Task<List<CodigosPostales>> SearchCodigosPostales(int idCodigoPostal)
+        public async Task<List<CodigosPostales>> SearchCodigosPostales(int CodigoPostal)
+           
         {
+         
             using var connection = GetConnection("Piso2Amex");
 
-            string codigosPostalesQuery = "SELECT * FROM [dbAllocation].[dbo].[CódigosPostales] (NOLOCK) WHERE idCódigoPostal = @IdCodigoPostal";
+            string codigosPostalesQuery = "SELECT TOP (30) * FROM [dbAllocation].[dbo].[CódigosPostales] WHERE CódigoPostal = @CódigoPostal";
 
-            var parameters = new { IdCodigoPostal = idCodigoPostal };
+            var parameters = new { CódigoPostal = CodigoPostal };
 
             var codigosPostales = await connection.QueryAsync<CodigosPostales>(
                 codigosPostalesQuery,
@@ -376,6 +379,7 @@ namespace NoriAPI.Repositories
 
             return codigosPostales.ToList();
         }
+
 
         public async Task<dynamic> UpdateAddressInfo(UpdateAddressInfoRequest domicilioInfoUpdate)
         {

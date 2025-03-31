@@ -236,7 +236,7 @@ namespace NoriAPI.Services
 
                     using (var adapter = new SqlDataAdapter(command))
                     {
-                        adapter.Fill(sesionCierre);
+                        adapter.Fill(sesionCierre);//
                     }
                 }
             }
@@ -276,3 +276,4 @@ namespace NoriAPI.Services
         }
     }
 }
+

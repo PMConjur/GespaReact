@@ -18,7 +18,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/search-customer")]
-    [Authorize]
+    //[Authorize]
     public class CustomerSearchController : ControllerBase
 
     {
@@ -154,6 +154,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("search-postal-code")]
+       
         public async Task<ActionResult<List<CodigosPostales>>> FindPostalCode([FromQuery] int codigoPostal)
         {
             var postalCode = await _searchService.FindPostalCodeInfo(codigoPostal);

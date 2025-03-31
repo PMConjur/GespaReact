@@ -267,20 +267,12 @@ namespace NoriAPI.Controllers
         #endregion
 
         #region Recuperacion
-        [HttpGet("get-recuperacion")]
-        public async Task<IActionResult> GetRecuperacion([FromQuery] int idEjecutivo, [FromQuery] int actual)
+        [HttpGet("get-recuperacion-Actual")]
+      
+        public async Task<IActionResult> GetRecuperacion(int idEjecutivo)
         {
-            if (idEjecutivo <= 0)
-            {
-                return BadRequest(new { Mensaje = "El ID del ejecutivo debe ser un número positivo." });
-            }
-
-            if (actual != 0 && actual != 1)
-            {
-                return BadRequest(new { Mensaje = "El parámetro 'actual' debe ser 0 (anterior) o 1 (actual)." });
-            }
-
-            var recuperacion = await _ejecutivoService.GetRecuperacion(idEjecutivo, actual);
+            
+            var recuperacion = await _ejecutivoService.RecuperacionActual(idEjecutivo);
 
             if (recuperacion == null)
             {
@@ -289,6 +281,22 @@ namespace NoriAPI.Controllers
 
             return Ok(recuperacion);
         }
+        [HttpGet("get-recuperacion-Anterior")]
+      
+        public async Task<IActionResult> GetRecuperacionAnterior(int idEjecutivo)
+        {
+
+            var recuperacion = await _ejecutivoService.RecuperacionAnterior(idEjecutivo);
+
+            if (recuperacion == null)
+            {
+                return BadRequest(new { Mensaje = "Parámetros inválidos o no se encontró información de recuperación del ejecutivo." });
+            }
+
+            return Ok(recuperacion);
+        }
+
+
         #endregion
 
         #region Flujo Preguntas Respuestas
@@ -363,6 +371,20 @@ namespace NoriAPI.Controllers
             return Ok(result);
         }
 
+        
+        [HttpPost ("GuardaNegociacionPlazos")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] NegociacionPlazosInput input)
+        {
+            var result = await _ejecutivoService.GuardaNegociacionPlazos(input);
+
+            if (!string.IsNullOrEmpty(result.Mensaje))
+            {
+                return BadRequest(result); // Devuelve BadRequest con el mensaje de error
+            }
+
+            return Ok(result); // Devuelve el resultado si no hay error
+        }
         [HttpPost("guarda-Elimina-Plazos")]
         public async Task<IActionResult> GuardaEliminaPlazos([FromBody] EliminaGuardaPlazos PlazosInfo)
         {
@@ -372,12 +394,21 @@ namespace NoriAPI.Controllers
 
         }
 
-        [HttpPost ("GuardaNegociacionPlazos")]
-        public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] GuardaNegociacionPlazos negociacionInfo)
-        {
-            var result = await _ejecutivoService.GuardaNegoaciacionPlazos_(negociacionInfo);
+        [HttpPost ("IncrementaNegociacion")]
 
-            return Ok(result);
+        public async Task<IActionResult> IncrementaNegociacion([FromBody] IncrementoNegociacion incrementaNegInfo)
+        {
+            var result = await _ejecutivoService.IncrementaNegociacion(incrementaNegInfo);
+            if(result == "")
+            {
+                return Ok("Correcto");
+            }
+            else
+            {
+                return Ok(result);
+            }
+
+            
 
         }
 
@@ -1015,7 +1046,33 @@ namespace NoriAPI.Controllers
             }
         }
 
+        [HttpGet("validadores")]
+        public async Task<IActionResult> GetValidadores(int idProducto)
+        {
+            DataSet dsTablas = new DataSet();
+            try
+            {
+                DataTable Validador = new DataTable();
 
+                Validador = await _ejecutivoService.GetValidadoresAsync(idProducto);
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var Validadores = ConvertDataTableToList(Validador);
+
+                // Serializamos la lista a JSON
+                string jsonValidadores = JsonSerializer.Serialize(Validadores, new JsonSerializerOptions { WriteIndented = true });
+
+                //dsTablas.Tables.Add(Negociaciones);
+
+                return Ok(jsonValidadores);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+
+        }
 
         [HttpPost("accionesComentarios")]
         public async Task<ActionResult> NewComentario(AccionesComentarioRequest request)
