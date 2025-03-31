@@ -16,11 +16,6 @@ const Talks = ({ show, handleClose }) => {
             <Modal.Body>
                 <TableTalks/>
             </Modal.Body>
-            <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
-                    Cerrar
-                </Button>
-            </Modal.Footer>
         </Modal>
     );
 };

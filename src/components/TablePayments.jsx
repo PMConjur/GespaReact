@@ -68,12 +68,12 @@ const TablePayments = ({ customColumnNames = {} }) => {
     if (loading) {
         return (
             <div style={{ textAlign: "center", marginTop: "20px" }}>
-                <Spinner animation="border" role="status">
-                    <span className="visually-hidden">Cargando...</span>
-                </Spinner>
+                    <Spinner animation="border" variant="primary" />
+                    <span className="ms-2">Cargando datos...</span>
             </div>
         );
     }
+
 
     if (!sortedData || sortedData.length === 0) {
         return <p>No hay datos disponibles.</p>;
@@ -246,5 +246,6 @@ const TablePayments = ({ customColumnNames = {} }) => {
         </>
     );
 };
+
 
 export default TablePayments;

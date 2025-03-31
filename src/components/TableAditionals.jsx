@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useContext } from "react";
-import { Table, Form } from "react-bootstrap";
+import { Table, Form, Spinner } from "react-bootstrap";
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
 import { getAditionalsData } from "../services/gespawebServices";
@@ -10,12 +10,15 @@ const TableAditionals = ({ customColumnNames = {} }) => {
   const [sortedData, setSortedData] = useState([]); // Hook 2
   const [sortByOldest, setSortByOldest] = useState(false); // Hook 3
   const [toastShown, setToastShown] = useState(false); // Hook 4
+  const [loading, setLoading] = useState(true);
 
   // Hook 5: useEffect para obtener datos
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       if (!searchResults || searchResults.length === 0) {
         toast.error("Error 428: Primero debes buscar una Cuenta");
+        setLoading(false);
         return;
       }
 
@@ -23,13 +26,16 @@ const TableAditionals = ({ customColumnNames = {} }) => {
         const idCuenta = searchResults[0]?.idCuenta; // Obtener el primer idCuenta como ejemplo
         if (!idCuenta) {
           toast.error("No se encontró un idCuenta válido.");
+          setLoading(false);
           return;
         }
 
-        const aditionalsData = await getAditionalsData(1, idCuenta); // idCartera fijo como 1
-        setSortedData(aditionalsData);
+          const aditionalsData = await getAditionalsData(1, idCuenta); // idCartera fijo como 1
+          setSortedData(aditionalsData);
       } catch (error) {
-        console.error("Error al obtener los datos de Adicionales:", error);
+          console.error("Error al obtener los datos de Adicionales:", error);
+      } finally {
+          setLoading(false);
       }
     };
 
@@ -59,9 +65,21 @@ const TableAditionals = ({ customColumnNames = {} }) => {
     }
   }, [sortByOldest, sortedData, toastShown]);
 
+  
+  if (loading) {
+    return (
+        <div style={{ textAlign: "center", marginTop: "20px" }}>
+                <Spinner animation="border" variant="primary" />
+                <span className="ms-2">Cargando datos...</span>
+        </div>
+    );
+  }
+
   if (!sortedData || sortedData.length === 0) {
     return <p>No hay datos disponibles.</p>;
   }
+
+
   // 🔹 Campos que NO se mostrarán en la tabla
   const hiddenFields = [];
 

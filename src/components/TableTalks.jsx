@@ -72,7 +72,7 @@ const TableTalks = ({ customColumnNames = {} }) => {
     const defaultColumnNames = {
         "FechaHora": "Fecha y Hora",
         "Herramienta": "Herramienta",
-        "idEstado": "Estado",
+        "Estado": "Status",
         "Vencimiento": "Vencimiento",
         "Saldo": "Saldo",
         "Descuento": " (%)Descuento",

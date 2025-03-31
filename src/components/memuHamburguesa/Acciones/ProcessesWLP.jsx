@@ -16,11 +16,6 @@ const ProcessesWLP = ({ show, handleCloseProcessesWLP, loadingProcessesWLP }) =>
           <TDropdownProcessesWLP />
         )}
       </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={handleCloseProcessesWLP}>
-          Cerrar
-        </Button>
-      </Modal.Footer>
     </Modal>
   );
 };
