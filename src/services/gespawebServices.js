@@ -726,30 +726,52 @@ export const getAditionalsData = async (idCartera, idCuenta) => {
   }
 };
 
-// Nueva función para obtener datos de ProcessesWLP
+// gespawebServices.js (actualización de fetchProcessesWLP)
 export const fetchProcessesWLP = async (proceso, idCuenta) => {
   try {
     if (!proceso || !idCuenta) {
-      throw new Error("proceso o idCuenta no son válidos.");
+      console.error('Parámetros inválidos:', { proceso, idCuenta });
+      throw new Error("Se requieren ambos parámetros: proceso e idCuenta");
     }
 
     const url = `/ejecutivo/ProcesosWLP`;
-    console.log("Solicitando datos de Procesos WLP a:", url); // Depurar URL
+    const params = {
+      proceso,
+      idCuenta: idCuenta.toString().trim()
+    };
 
-    const response = await servicio.get(url);
-    const message = getErrorStatus(response.status);
+    console.log("Realizando solicitud a:", url, "con parámetros:", params);
+
+    const response = await servicio.get(url, { params });
+    console.log("Respuesta recibida:", response);
+
+    if (!response) {
+      throw new Error("No se recibió respuesta del servidor");
+    }
 
     if (response.status !== 200) {
-      toast.error(message, { position: "top-right" });
+      const message = getErrorStatus(response.status) || `Error ${response.status}`;
       throw new Error(message);
     }
 
-    return response.data;
+    if (!response.data) {
+      console.warn("La respuesta no contiene data");
+      return [];
+    }
+
+    // Asegurarnos de que siempre devolvemos un array
+    return Array.isArray(response.data) ? response.data : [response.data];
   } catch (error) {
-    console.error("Error en fetchProcessesWLP:", error);
-    toast.error(
-      "No se pudo obtener los datos de Procesos WLP. Verifica la conexión o los parámetros."
-    );
+    console.error("Error en fetchProcessesWLP:", {
+      error: error.message,
+      stack: error.stack
+    });
+    
+    toast.error(`Error al obtener procesos WLP: ${error.message}`, { 
+      position: "top-right",
+      duration: 5000
+    });
+    
     throw error;
   }
 };
@@ -1185,6 +1207,26 @@ export const fetchSaveDeleteDeadlines = async (requestData) => {
     return result;
   } catch (error) {
     console.error("Error en fetchSaveDeleteDeadlines:", error);
+    throw error;
+  }
+};
+
+export const createOnlineCharge = async (data) => {
+  try {
+    const response = await servicio.post(`/ejecutivo/SaveCargoEnlinea`, data);
+
+    if (response.status !== 200) {
+      throw new Error(`Error en la respuesta. Estado: ${response.status}`);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error en createOnlineCharge:", error);
+    if (error.response) {
+      const errorMessage =
+        error.response.data?.mensaje || "Error al crear Cargos en Linea";
+      throw new Error(errorMessage);
+    }
     throw error;
   }
 };

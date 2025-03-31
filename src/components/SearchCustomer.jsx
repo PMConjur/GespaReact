@@ -24,20 +24,26 @@ const SearchCustomer = () => {
 
     // Asignar la URL de la imagen y el color del texto según la situación
     switch (situacion) {
-      case "Incumplió negociación":
       case "En Proceso":
-      case "Accionamiento":
+      case "Seguimiento":
+      case "Precaución":
         iconoCorazon = CorazonRojo; // Corazón rojo
         colorTexto = "#4285F6"; // Texto rojo
         gradientText = "header-red";
         break;
+      case "Negociación titular":
       case "Sondeo":
       case "Pagada":
+      case "Reporte de pago":
         iconoCorazon = CorazonVerde; // Corazón verde
         colorTexto = "#39fc8d"; // Texto verde
         gradientText = "header-green";
         break;
+      case "Accionamiento":
       case "Nueva":
+      case "Recado":
+      case "Búsqueda Datos":
+      case "Localización":
       default:
         iconoCorazon = CorazonBlanco; // Corazón blanco
         colorTexto = "#f8f9fa"; // Texto blanco

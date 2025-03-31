@@ -19,8 +19,6 @@ const Managments = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (!searchResults || searchResults.length === 0) {
-        setToastMessage("Error 428: Primero debes buscar una Cuenta.");
-        setShowToast(true);
         return;
       }
 

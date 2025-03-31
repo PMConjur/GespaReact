@@ -144,48 +144,15 @@ const TableTalks = ({ customColumnNames = {} }) => {
                                 {headers.map((header) => {
                                     let value = item[header];
 
-                                    // 🔹 Formatear FechaHora en dos filas con estilos compactos
+                                    // 🔹 Formatear FechaHora en una sola línea
                                     if (header === "FechaHora" && typeof value === "string" && value.includes("T")) {
                                         const date = new Date(value);
                                         if (!isNaN(date.getTime())) {
                                             const formattedDate = date.toISOString().split("T")[0]; // YYYY-MM-DD
                                             const hours = date.getHours().toString().padStart(2, "0");
                                             const minutes = date.getMinutes().toString().padStart(2, "0");
-                                            value = (
-                                                <div style={{ 
-                                                    whiteSpace: "nowrap", 
-                                                    textAlign: "center", 
-                                                    minWidth: "100px", 
-                                                    maxWidth: "120px",
-                                                    padding: "2px", 
-                                                    lineHeight: "1.1"
-                                                }}>
-                                                    {formattedDate} <br /> {hours}:{minutes} hrs
-                                                </div>
-                                            );
+                                            value = `${formattedDate} ${hours}:${minutes} hrs`;
                                         }
-                                    }
-
-                                    // 🔹 Formatear Ofertante y Validador en máximo 2 filas
-                                    if ((header === "Ofreció" || header === "Validó") && typeof value === "string") {
-                                        value = (
-                                            <div style={{
-                                                maxHeight: "35px",
-                                            
-                                                textAlign: "center",
-                                                whiteSpace: "nowrap",
-                                                display: "-webkit-box",
-                                                WebkitLineClamp: 2,
-                                                WebkitBoxOrient: "vertical"
-                                            }}>
-                                                {value}
-                                            </div>
-                                        );
-                                    }
-
-                                    // 🔹 Formatear Vencimiento -> Solo YYYY-MM-DD
-                                    if (header === "Vencimiento" && typeof value === "string" && value.includes("T")) {
-                                        value = value.split("T")[0];
                                     }
 
                                     // 🔹 Formatear campos de moneda con "$" y separadores de miles
@@ -198,6 +165,11 @@ const TableTalks = ({ customColumnNames = {} }) => {
                                         value = `${value.toFixed(2)}%`;
                                     }
 
+                                    // 🔹 Formatear Vencimiento como una sola línea
+                                    if (header === "Vencimiento" && typeof value === "string" && value.includes("T")) {
+                                        value = value.split("T")[0];
+                                    }
+
                                     // 🔹 Manejo de valores nulos o no definidos
                                     if (value === null || value === undefined || (typeof value === "object" && Object.keys(value).length === 0)) {
                                         value = "--";
@@ -206,10 +178,12 @@ const TableTalks = ({ customColumnNames = {} }) => {
                                     return (
                                         <td key={header} 
                                             style={{ 
-                                                padding: "20px", 
+                                                padding: ".7rem", 
                                                 minHeight: "20px", 
                                                 textAlign: "center", 
-                                                lineHeight: "1.5", 
+                                                whiteSpace: "nowrap", // 🔹 Evita saltos de línea
+                                                overflow: "hidden",  // 🔹 Oculta contenido desbordado
+                                                textOverflow: "ellipsis" // 🔹 Agrega puntos suspensivos si el texto es muy largo
                                             }}>
                                         {value}
                                     </td>

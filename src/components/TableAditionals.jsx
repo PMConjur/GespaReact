@@ -98,57 +98,93 @@ const TableAditionals = ({ customColumnNames = {} }) => {
         type="checkbox"
         id="sortByOldest"
         label="Más antiguo"
-        className="mb-3"
+        className="mb-2"
         checked={sortByOldest}
         onChange={handleSortChange}
       />
+
       <div
+        className="scroll-container"
         style={{
-          maxHeight: "400px", // Altura máxima del contenedor
-          overflowY: "auto", // Scroll vertical si es necesario
-          overflowX: "auto", // Scroll horizontal si es necesario
-          width: "100%", // Que la tabla use el ancho disponible
+          width: "100%",
+          maxHeight: "500px",
+          overflowY: "auto",
+          display: "flex",
+          backgroundColor: "#343a40", // Fondo oscuro
+          color: "#ffffff", // Texto claro
+          scrollbarColor: "#6c757d #343a40", // Colores del scroll
+          scrollbarWidth: "thin", // Scroll más delgado
         }}
       >
-        <Table striped bordered hover responsive variant="dark">
-          <thead>
-            <tr>
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          variant="dark"
+          style={{ fontSize: "13px" }}
+        >
+          <thead
+            style={{
+              position: "sticky",
+              top: 0,
+              zIndex: 1,
+              backgroundColor: "#343a40",
+            }} // Encabezado fijo
+          >
+            <tr style={{ height: "55px" }}> {/* Reducimos la altura de los encabezados */}
               {headers.map((header) => (
-                <th key={header}>
+                <th
+                  key={header}
+                  style={{
+                    padding: "4px",
+                    minHeight: "20px",
+                    textAlign: "center",
+                  }}
+                >
                   {columnNames[header] || header.replace(/_/g, " ")}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody
+            style={{
+              width: "100%", // 🔹 Evita que la tabla se desconfigure
+            }}
+          >
             {sortedData.map((item, index) => (
-              <tr key={index}>
+              <tr key={index} style={{ height: "24px" }}> {/* Reducimos la altura de cada fila */}
                 {headers.map((header) => {
                   let value = item[header];
-                  // Aplica reemplazarValores solo para idParentesco
+
+                  // 🔹 Aplicar reemplazarValores para idParentesco
                   if (header === "idParentesco") {
                     value = reemplazarValores(value);
                   }
 
-                  // 🔹 Formatear campos de moneda con "$" y separadores de miles
+                  // 🔹 Manejo de valores nulos o no definidos
                   if (
-                    currencyFields.includes(header) &&
-                    typeof value === "number"
+                    value === null ||
+                    value === undefined ||
+                    (typeof value === "object" &&
+                      Object.keys(value).length === 0)
                   ) {
-                    value = `$${value.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}`;
+                    value = "--";
                   }
 
                   return (
-                    <td key={header}>
-                      {header === "Fecha_Insert"
-                        ? item[header].split("T")[0] // Extrae solo la fecha
-                        : typeof item[header] === "object" &&
-                          Object.keys(item[header]).length === 0
-                        ? "--" // Si el valor es un objeto vacío, mostrar "--"
-                        : value ?? "--"}
+                    <td
+                      key={header}
+                      style={{
+                        padding: ".7rem",
+                        minHeight: "20px",
+                        textAlign: "center",
+                        whiteSpace: "nowrap", // 🔹 Evita saltos de línea
+                        overflow: "hidden", // 🔹 Oculta contenido desbordado
+                        textOverflow: "ellipsis", // 🔹 Agrega puntos suspensivos si el texto es muy largo
+                      }}
+                    >
+                      {value}
                     </td>
                   );
                 })}
