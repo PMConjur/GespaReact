@@ -158,7 +158,7 @@ export const getValidateResponse = async (
   console.log("idPregunta:", idPregunta);
   console.log("idRespuesta:", idRespuesta);
   console.log("idSiguientePregunta logica del flujo:", idSiguientePregunta);
-  console.log("valor:", valor);
+  console.log(" texto:", valor);
   console.log("pregunta:", pregunta);
   console.log("idClase:", idClase);
   console.log("valor:", value);
@@ -192,6 +192,9 @@ export const getValidateResponse = async (
         Catálogo2
       };
       console.log("Relación encontrada:", relationData);
+      console.log("Catálogo1:", Catálogo1);
+      console.log("Catálogo2:", Catálogo2);
+      console.log("Valor2:", Valor2);
       // Si la siguiente pregunta es  ¿Clase de teléfono?
       if (
         idSiguientePregunta == "12" ||
@@ -216,7 +219,7 @@ export const getValidateResponse = async (
             );
             return {
               idPregunta: nextQuestion.idPregunta,
-              idSiguientePregunta: nextQuestion.idSiguientePregunta
+              idSiguientePregunta: nextQuestion.idPregunta
             }; // Devolver idPregunta e idSiguientePregunta del resultado
           } else {
             console.log("No se encontró la siguiente pregunta.");

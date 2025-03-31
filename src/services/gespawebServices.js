@@ -1198,7 +1198,7 @@ export const fetchSaveDeleteDeadlines = async (requestData) => {
 export const saveManagment = async (dataManagment) => {
   try {
     const response = await servicio.post(
-      `/api/ejecutivo/GuardarGestionTe`,
+      `/ejecutivo/GuardarGestionTe`,
       dataManagment
     );
 

@@ -6,11 +6,16 @@ import { AppContext } from "../../../pages/Managment";
 
 const FollowUps = ({ show, handleClose }) => {
   const { searchResults, idEjecutivo } = useContext(AppContext);
-  
-  console.log('[FollowUps] Render - idEjecutivo:', idEjecutivo, 'searchResults:', searchResults);
+
+  // console.log(
+  //   "[FollowUps] Render - idEjecutivo:",
+  //   idEjecutivo,
+  //   "searchResults:",
+  //   searchResults
+  // );
 
   const handleRefreshData = () => {
-    console.log('[FollowUps] Refrescando datos después de guardar seguimiento');
+    //console.log('[FollowUps] Refrescando datos después de guardar seguimiento');
     // Aquí puedes agregar lógica para refrescar la tabla si es necesario
   };
 
@@ -25,7 +30,7 @@ const FollowUps = ({ show, handleClose }) => {
             <TableFollowUps />
           </Col>
           <Col md={6}>
-            <FormFollowUps 
+            <FormFollowUps
               onSubmitSuccess={handleRefreshData}
               handleClose={handleClose}
               searchResults={searchResults}
