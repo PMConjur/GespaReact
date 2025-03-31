@@ -103,9 +103,9 @@ namespace NoriAPI.Services
         Task<GuardaGestionTelefonicaResult> GuardarGestionTelefonica(EndGestionRequest infoEndGestion);
         Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas);
 
-        
-        
-        
+
+
+
         #region Acciones
         Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta);
         Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta);
@@ -1896,7 +1896,7 @@ namespace NoriAPI.Services
         }
         private (DataTable tblPlazo, double nuevoPago) ModificaPagos(int iPlazo, double dMontoNegociado, DateTime dtFechaPago, DataTable tblPlazo, double montoMod, bool _bLendingPrimes)
         {
-            float dCentavos = 0;            
+            float dCentavos = 0;
             // modificamos el pago de la fila seleccionada
             int rowIndex = iPlazo; // Reemplaza con el índice de la fila que deseas modificar
             double nuevoPago = montoMod; // Reemplaza con el nuevo valor de pago
@@ -2029,14 +2029,14 @@ namespace NoriAPI.Services
 
         #region GuardaEliminaPlazos
         public async Task<string> GuardaEliminaPlazos(EliminaGuardaPlazos PlazosInfo)
-        {          
+        {
             //--------------------------------Todas las herramientas------------------------------//
             DataTable dtHerramientas = await _ejecutivoRepository.ObtieneHerramientasCompletas();
             dtHerramientas.PrimaryKey = new DataColumn[] { dtHerramientas.Columns["idHerramienta"] };
-           
+
             //----------------------------------------------------------------------------------------------------//
             int idBuscado = PlazosInfo.IdHerramienta;
-            
+
             int iMargen = Convert.ToInt32(dtHerramientas.Rows.Find(idBuscado)["Margen"]);
             int iDiasEntrePagos = Convert.ToInt32(dtHerramientas.Rows.Find(idBuscado)["DíasEntrePagos"]);
 
@@ -2080,14 +2080,14 @@ namespace NoriAPI.Services
                         dtFin = PlazosInfo.Plazos[iNúmPago].Fecha.AddDays(iMargen);
                     }
                 }
-                if(iNúmPago == 0)
+                if (iNúmPago == 0)
                 {
                     var borrarPlazos = _ejecutivoRepository.Elimina_Plazos(PlazosInfo);
-                }                    
+                }
                 var GuardaPlazos = _ejecutivoRepository.Guarda_Plazos(PlazosInfo, PagoNeg, dtInicio, dtFin, iNúmPago);
 
                 iNúmPago++;
-                               
+
             }
 
             return "Correcto.";
@@ -2622,6 +2622,7 @@ namespace NoriAPI.Services
             return new TimeSpan(totalTicks / tiempos.Count);
         }
         #endregion
+
 
         #region Recuperacion
         public async Task<Recuperacion?> GetRecuperacion(int idEjecutivo, int actual)
@@ -4742,7 +4743,7 @@ namespace NoriAPI.Services
         #endregion
 
         #region Usos Horarios
-        public async Task<DataTable> GetUsosHorariosAsync(string Telefono, string idCuenta,int idCartera,int idEjecutivo)
+        public async Task<DataTable> GetUsosHorariosAsync(string Telefono, string idCuenta, int idCartera, int idEjecutivo)
         {
             DataTable estado = new DataTable();
             string query = "exec [dbCollection].dbo.[ValidarHorarioMarcacion] @Telefono,@idCuenta,@idCartera,@idEjecutivo";
@@ -4779,7 +4780,7 @@ namespace NoriAPI.Services
             var Telefono = Convert.ToString(drDatos["Telefono"]);
             var idEjecutivo = Convert.ToInt32(drDatos["idEjecutivo"]);
 
-            DataTable estadoGet = await GetUsosHorariosAsync(Telefono, idCuenta, idCartera,idEjecutivo);
+            DataTable estadoGet = await GetUsosHorariosAsync(Telefono, idCuenta, idCartera, idEjecutivo);
 
             if (estadoGet == null || estadoGet.Rows.Count == 0)
                 return;
@@ -4801,7 +4802,7 @@ namespace NoriAPI.Services
             if (table.Columns.Contains(columnaBase))
             {
                 // Crear e insertar la nueva columna después de la columna base
-                DataColumn nuevaCol = new DataColumn(nuevaColumna, typeof(string));
+                DataColumn nuevaCol = new(nuevaColumna, typeof(string));
                 table.Columns.Add(nuevaCol);
                 table.Columns[nuevaColumna].SetOrdinal(table.Columns.IndexOf(columnaBase) + 1);
 
