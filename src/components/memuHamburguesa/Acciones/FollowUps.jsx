@@ -1,6 +1,6 @@
 import { Modal, Row, Col } from "react-bootstrap";
 import TableFollowUps from "../../TableFollowUps";
-import FormFollowUps from "./FormFollowUps";
+// import FormFollowUps from "./FormFollowUps";
 
 const FollowUps = ({ 
   show, 
@@ -53,7 +53,7 @@ const FollowUps = ({
                 overflowY: "auto", // Scroll interno para el formulario
               }}
             >
-              <FormFollowUps handleClose={handleClose} />
+              {/* <FormFollowUps handleClose={handleClose} /> */}
             </Col>
           )}
         </Row>
