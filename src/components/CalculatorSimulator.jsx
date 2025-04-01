@@ -358,7 +358,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
       <Modal show={show} onHide={handleClose} size="xl">
         <Modal.Header closeButton>
           <Modal.Title style={{ color: "#0dcaf0" }} className="ms-3">
-            Calculadora-Simulador
+            Calculadora
           </Modal.Title>
         </Modal.Header>
         <Modal.Body
@@ -379,16 +379,27 @@ const CalculatorSimulator = ({show, handleClose}) => {
                 <Col>
                   <div
                     className="custom-scrollbar"
-                    style={{ maxHeight: "300px", overflowY: "auto" }}
+                    style={{
+                      maxHeight: "300px",
+                      overflowY: "auto",
+                      position: "relative", // Necesario para el scroll del tbody
+                    }}
                   >
-                    <Table striped bordered hover variant="dark">
-                      <thead>
+                    <Table striped bordered hover variant="dark" style={{ marginBottom: "0" }}>
+                      <thead
+                        style={{
+                          position: "sticky",
+                          top: "0",
+                          backgroundColor: "#343a40", // Color de fondo para que coincida con el tema oscuro
+                          zIndex: "1",
+                        }}
+                      >
                         <tr>
-                          <th>FechaHora</th>
-                          <th>Herramienta</th>
-                          <th>Status</th>
-                          <th>Vencimiento</th>
-                          <th>Saldo</th>
+                          <th style={{ textAlign: "center" }}>FechaHora</th>
+                          <th style={{ textAlign: "center" }}>Herramienta</th>
+                          <th style={{ textAlign: "center" }}>Status</th>
+                          <th style={{ textAlign: "center" }}>Vencimiento</th>
+                          <th style={{ textAlign: "center" }}>Saldo</th>
                         </tr>
                       </thead>
                       <tbody> 
@@ -398,11 +409,11 @@ const CalculatorSimulator = ({show, handleClose}) => {
                             const fechaConHora = row.fecha_Insert ? `${fechaSinHora} - ${row.segundo_Insert || "--"}` : "--"; // Combina fecha y hora o muestra "--"
                             return (
                               <tr key={index}>
-                                <td>{fechaConHora}</td>
-                                <td>{row.herramienta || "--"}</td> {/* Muestra "--" si no hay valor */}
-                                <td>{row.idEstado || "--"}</td> {/* Muestra "--" si no hay valor */}
-                                <td>{row.vencimiento || "--"}</td> {/* Muestra "--" si no hay valor */}
-                                <td>
+                                <td style={{ textAlign: "left" }}>{fechaConHora}</td>
+                                <td style={{ textAlign: "left" }}>{row.herramienta || "--"}</td> {/* Muestra "--" si no hay valor */}
+                                <td style={{ textAlign: "left" }}>{row.idEstado || "--"}</td> {/* Muestra "--" si no hay valor */}
+                                <td style={{ textAlign: "left" }}>{row.vencimiento || "--"}</td> {/* Muestra "--" si no hay valor */}
+                                <td style={{ textAlign: "left" }}>
                                   {row.saldoInterés !== undefined
                                     ? `$${parseFloat(row.saldoInterés).toFixed(2)}`
                                     : "--"} {/* Muestra "--" si no hay valor */}
