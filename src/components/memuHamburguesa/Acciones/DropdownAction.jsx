@@ -11,6 +11,7 @@ import OnlineCharge from "./OnlineCharge";
 import Complaints from "./Complaints"; // Importar el componente Complaints
 import { Back } from "react-bootstrap-icons";
 import Comments from "./Comments"; // Importar el componente Comments
+import ModFormOnlineCharge from "./ModFormOnlineCharge"; // Importar el modal del formulario
 
 import ProcessesWLP from "./ProcessesWLP";
 import { data } from "react-router-dom";
@@ -38,6 +39,7 @@ const DropdownActions = () => {
   const handleCloseComments = () => setShowComments(false); // Función para cerrar el modal de comentarios
 
   const [showOnlinecharge, setShowOnlinecharge] = useState(false);
+  const [showFormOnlinecharge, setShowFormOnlinecharge] = useState(false); // Estado para el segundo modal
   const [onlinechargeData, setOnlinechargeData] = useState([]);
   const [loadingOnlinecharge, setLoadingonlinecharge] = useState(false);
 
@@ -53,6 +55,9 @@ const DropdownActions = () => {
 
   const handleShowOnlinecharge = () => setShowOnlinecharge(true); // Solo abre el modal
   const handleCloseOnlinecharge = () => setShowOnlinecharge(false);
+
+  const handleShowFormOnlinecharge = () => setShowFormOnlinecharge(true);
+  const handleCloseFormOnlinecharge = () => setShowFormOnlinecharge(false);
 
   const handleShowTalks = () => setShowTalks(true);
   const handleCloseTalks = () => setShowTalks(false);
@@ -107,7 +112,10 @@ const DropdownActions = () => {
             Busqueda
           </Dropdown.Item>
           <Dropdown.Item
-            onClick={handleShowOnlinecharge}
+            onClick={() => {
+              handleShowOnlinecharge();
+              handleShowFormOnlinecharge();
+            }}
             className="custom-dropdown-item"
           >
             Cargos en línea
@@ -154,6 +162,10 @@ const DropdownActions = () => {
         handleClose={handleCloseOnlinecharge}
         data={onlinechargeData}
         loading={loadingOnlinecharge}
+      />
+      <ModFormOnlineCharge
+        show={showFormOnlinecharge}
+        handleClose={handleCloseFormOnlinecharge}
       />
       <Drives showModal={showDrives} handleCloseModal={handleCloseDrives} />
       <Search show={showModal} handleClose={handleCloseModal} />

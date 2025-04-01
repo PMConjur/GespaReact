@@ -1,20 +1,22 @@
 import { Modal, Row, Col } from "react-bootstrap";
 import TableOnlineCharge from "../../TableOnlineCharge";
-import FormOnlineCharge from "./FormOnlineCharge"; // Importar el formulario
 
 const OnlineCharge = ({ show, handleClose }) => {
   return (
-    <Modal show={show} onHide={handleClose} size="xl">
+    <Modal
+      show={show}
+      onHide={handleClose}
+      size="lg" // Cambiar tamaño para que coincida con ModFormOnlineCharge
+      centered // Centrar el modal
+      className="unified-modal" // Clase compartida para estilos unificados
+    >
       <Modal.Header closeButton>
         <Modal.Title>Cargos en Línea</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Row>
-          <Col md={8}>
+          <Col md={12}>
             <TableOnlineCharge />
-          </Col>
-          <Col md={4}>
-            <FormOnlineCharge handleClose={handleClose} />
           </Col>
         </Row>
       </Modal.Body>

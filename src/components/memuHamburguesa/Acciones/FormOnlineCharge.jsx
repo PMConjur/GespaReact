@@ -3,6 +3,7 @@ import { Form, Button, Row, Col } from "react-bootstrap";
 import { toast } from "sonner";
 import { createOnlineCharge } from "../../../services/gespawebServices"; // Se agrega getBancos
 import { AppContext } from "../../../pages/Managment";
+import { idBanco } from "../../valoresBanco"; // Importar ValoresBanco
 
 const FormOnlineCharge = ({ handleClose }) => {
   const { searchResults } = useContext(AppContext);
@@ -18,45 +19,44 @@ const FormOnlineCharge = ({ handleClose }) => {
 
   const [loading, setLoading] = useState(false);
   const [bancos, setBancos] = useState([]); // Bancos obtenidos de la consulta
+  const today = new Date().toISOString().split("T")[0]; // Obtener la fecha actual para establecerla como mínima
+  const [tipoTarjeta, setTipoTarjeta] = useState("tarjetaCredito"); // Estado local para tipoTarjeta
   const [formData, setFormData] = useState({
+    idCartera: 1,
     idCuenta: idCuenta[0]?.trim(),
     idEjecutivo: idEjecutivo,
-    idCartera: 1,
-    status: "Acepta",
-    tipoTarjeta: "tarjetaCredito",  
     tarjeta: "",
     nombre: "",
-    tuNombre: "",
-    vencimiento: "",
-    monto: "",
-    banco: "",
-    autorizacion: "",
+    vencimiento: today, // Establecer el día actual como valor inicial
+    monto: 0,
+    idBanco: "",
     esClabe: false,
     domiciliado: false,
+    autorizacion: "",
+    idEjecutivoAutorizo: idEjecutivo,
+    sistema: true,
+    status: 1, // Valor por defecto de status es 1 (Acepta)
   });
-
-  // Obtener la fecha actual para establecerla como mínima
-  const today = new Date().toISOString().split("T")[0];
 
   // Obtener los bancos al cargar el componente
   useEffect(() => {
-    const fetchBancos = async () => {
-      try {
-        const bancosData = await getBancos();
-        setBancos(bancosData);
-      } catch (error) {
-        console.error("Error al obtener los bancos:", error);
-      }
-    };
-    fetchBancos();
+    // Obtener los bancos de la lista ValoresBanco
+    const bancosData = Object.entries(idBanco).map(([id, nombre]) => ({
+      id,
+      nombre,
+    }));
+    setBancos(bancosData);
   }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
-    // Limpiar el campo tarjeta al cambiar el tipo de tarjeta
     if (name === "tipoTarjeta") {
-      setFormData({ ...formData, tarjeta: "", [name]: value });
+      setTipoTarjeta(value); // Actualizar solo el estado local de tipoTarjeta
+      setFormData({ ...formData, tarjeta: "" }); // Limpiar el campo tarjeta al cambiar el tipo
+    } else if (name === "idBanco") {
+      // Convertir idBanco a entero
+      setFormData({ ...formData, [name]: parseInt(value, 10) });
     } else {
       setFormData({
         ...formData,
@@ -70,17 +70,71 @@ const FormOnlineCharge = ({ handleClose }) => {
     setLoading(true);
 
     try {
-      const response = await createOnlineCharge(formData);
+      // Preparar los datos para enviar, asegurando que monto sea un entero
+      const dataToSend = { 
+        ...formData, 
+        monto: parseInt(formData.monto, 10) || 0 // Convertir monto a entero, usar 0 si es inválido
+      };
+
+      console.log("Datos a enviar:", dataToSend); // Log de los datos que se intentan enviar
+
+      // Llamar al método createOnlineCharge
+      const response = await createOnlineCharge(dataToSend);
+      console.log("Respuesta del endpoint:", response); // Log de la respuesta del endpoint
+
       if (response.success) {
-        toast.success("Cargo en línea realizado con éxito.");
-        handleClose();
+        toast.success(response.mensaje || "Cargo en línea guardado exitosamente.");
+        handleClose(); // Cerrar el formulario después de un envío exitoso
+
+        // Limpiar los campos del formulario
+        setFormData({
+          idCartera: 1,
+          idCuenta: idCuenta[0]?.trim(),
+          idEjecutivo: idEjecutivo,
+          tarjeta: "",
+          nombre: "",
+          vencimiento: today,
+          monto: 0,
+          idBanco: "",
+          esClabe: false,
+          domiciliado: false,
+          autorizacion: "",
+          idEjecutivoAutorizo: idEjecutivo,
+          sistema: "true",
+          status: 1,
+        });
       } else {
         throw new Error(response.message || "Error desconocido.");
       }
-    } catch (err) {
-      toast.error(`Error al realizar el cargo: ${err.message}`);
+    } catch (error) {
+      console.error("Error al realizar el cargo:", error); // Log del error
+      toast.error(error.message || "Ocurrió un error al realizar el cargo.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGuardar = async () => {
+    console.log("Datos a guardar:", formData); // Log de los datos que se intentan guardar
+
+    try {
+      // Preparar los datos para enviar, asegurando que monto sea un entero
+      const dataToSend = { 
+        ...formData, 
+        monto: parseInt(formData.monto, 10) || 0 // Convertir monto a entero, usar 0 si es inválido
+      };
+
+      const response = await createOnlineCharge(dataToSend);
+      console.log("Respuesta del envío de datos:", response); // Log de la respuesta del envío
+
+      if (response.success) {
+        toast.success(response.mensaje || "Datos guardados exitosamente.");
+      } else {
+        throw new Error(response.message || "Error desconocido.");
+      }
+    } catch (error) {
+      console.error("Error al guardar los datos:", error); // Log del error
+      toast.error(error.message || "Ocurrió un error al guardar los datos.");
     }
   };
 
@@ -95,19 +149,19 @@ const FormOnlineCharge = ({ handleClose }) => {
               value={formData.status}
               onChange={handleChange}
             >
-              <option value="Acepta">Acepta</option>
-              <option value="No acepta">No acepta</option>
-              <option value="Se enviaron documentos">Se enviaron documentos</option>
+              <option value={1}>Acepta</option> {/* Valor 1 para "Acepta" */}
+              <option value={2}>No acepta</option> {/* Valor 2 para "No acepta" */}
+              <option value={3}>Se enviaron documentos</option> {/* Valor 3 para "Se enviaron documentos" */}
             </Form.Select>
           </Form.Group>
         </Col>
-        {formData.status === "Acepta" && (
+        {formData.status === 1 && (
           <Col>
             <Form.Group>
               <Form.Label>Tipo de tarjeta</Form.Label>
               <Form.Select
                 name="tipoTarjeta"
-                value={formData.tipoTarjeta}
+                value={tipoTarjeta}
                 onChange={handleChange}
               >
                 <option value="tarjetaCredito">Tarjeta de crédito</option>
@@ -119,7 +173,7 @@ const FormOnlineCharge = ({ handleClose }) => {
         )}
       </Row>
 
-      {formData.status === "Acepta" && (
+      {formData.status === 1 && (
         <>
           <Row className="mb-3">
             <Col>
@@ -131,35 +185,36 @@ const FormOnlineCharge = ({ handleClose }) => {
                   value={formData.tarjeta}
                   onChange={handleChange}
                   maxLength={
-                    formData.tipoTarjeta === "tarjetaCredito"
+                    tipoTarjeta === "tarjetaCredito"
                       ? 16
-                      : formData.tipoTarjeta === "clabeInterbancaria"
+                      : tipoTarjeta === "clabeInterbancaria"
                       ? 18
                       : 4
                   }
                   placeholder={
-                    formData.tipoTarjeta === "tarjetaCredito"
+                    tipoTarjeta === "tarjetaCredito"
                       ? "Ingrese 16 dígitos"
-                      : formData.tipoTarjeta === "clabeInterbancaria"
+                      : tipoTarjeta === "clabeInterbancaria"
                       ? "Ingrese 18 dígitos"
-                      : "Ultimos 4 Digitos XXXX"
+                      : "Ultimos 4 Dígitos XXXX"
                   }
                 />
               </Form.Group>
             </Col>
             <Col>
               <Form.Group>
-                <Form.Label>Monto</Form.Label>
+              <Form.Label>Monto</Form.Label>
                 <Form.Control
-                  type="text"
+                  type="number"
                   name="monto"
-                  value={formData.monto}
-                  onChange={(e) =>
+                  value={formData.monto || ""}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 0; // Convierte a entero, si no es válido usa 0
                     setFormData({
                       ...formData,
-                      monto: e.target.value.replace(/[^0-9.]/g, ""),
-                    })
-                  }
+                      monto: value
+                    });
+                  }}
                   placeholder="$"
                 />
               </Form.Group>
@@ -167,27 +222,28 @@ const FormOnlineCharge = ({ handleClose }) => {
           </Row>
 
           <Form.Group>
-                <Form.Label>Nombre de Autorizacion</Form.Label>
-                <Form.Select
-                  name="No. Autorizo"
-                  value={formData.banco}
-                  onChange={handleChange}
-                >
-                  <option value="">Seleccione un banco</option>
-                  {bancos.map((banco) => (
-                    <option key={banco.id} value={banco.nombre}>
-                      {banco.nombre}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
+            <Form.Label>Numero de Autorizacion</Form.Label>
+            <Form.Control
+              type="number"
+              name="autorizacion"
+              value={formData.autorizacion}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  autorizacion: e.target.value.replace(/[^0-9]/g, "").slice(0, 6), // Limitar a 100000
+                })
+              }
+              placeholder="Ingrese un número de referencia"
+              max="100000"
+            />
+          </Form.Group>
 
           <Form.Group className="mb-3">
             <Form.Label>Tu nombre</Form.Label>
             <Form.Control
               type="text"
-              name="tuNombre"
-              value={formData.tuNombre || ""}
+              name="nombre"
+              value={formData.nombre || ""}
               onChange={handleChange}
               placeholder="Ingresa tu nombre"
             />
@@ -202,7 +258,7 @@ const FormOnlineCharge = ({ handleClose }) => {
                   name="vencimiento"
                   value={formData.vencimiento}
                   onChange={handleChange}
-                  min={today} // Fecha mínima
+                  min={today} // Asegurar que la fecha mínima sea el día actual
                 />
               </Form.Group>
             </Col>
@@ -227,6 +283,7 @@ const FormOnlineCharge = ({ handleClose }) => {
                 onChange={handleChange}
               />
             </Col>
+          
           </Row>
 
           <Row className="mb-3">
@@ -234,21 +291,27 @@ const FormOnlineCharge = ({ handleClose }) => {
               <Form.Group>
                 <Form.Label>Banco</Form.Label>
                 <Form.Select
-                  name="banco"
-                  value={formData.banco}
+                  name="idBanco"
+                  value={formData.idBanco}
                   onChange={handleChange}
                 >
                   <option value="">Seleccione un banco</option>
-                  {bancos.map((banco) => (
-                    <option key={banco.id} value={banco.nombre}>
-                      {banco.nombre}
+                  {Object.entries(idBanco).map(([id, nombre]) => (
+                    <option key={id} value={id}>
+                      {nombre}
                     </option>
                   ))}
                 </Form.Select>
               </Form.Group>
             </Col>
             <Col className="d-flex align-items-end">
-              <Button variant="primary" type="submit" className="w-100" disabled={loading}>
+              <Button
+                variant="primary"
+                type="submit"
+                className="w-100"
+                disabled={loading}
+                onClick={handleGuardar} // Llamar al método handleGuardar
+              >
                 {loading ? "Guardando..." : "Guardar"}
               </Button>
             </Col>
