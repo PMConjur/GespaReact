@@ -167,15 +167,21 @@ const FormOnlineCharge = ({ handleClose }) => {
             </Col>
           </Row>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Nombre titular</Form.Label>
-            <Form.Control
-              type="text"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-            />
-          </Form.Group>
+          <Form.Group>
+                <Form.Label>Nombre de Autorizacion</Form.Label>
+                <Form.Select
+                  name="No. Autorizo"
+                  value={formData.banco}
+                  onChange={handleChange}
+                >
+                  <option value="">Seleccione un banco</option>
+                  {bancos.map((banco) => (
+                    <option key={banco.id} value={banco.nombre}>
+                      {banco.nombre}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
 
           <Form.Group className="mb-3">
             <Form.Label>Tu nombre</Form.Label>
