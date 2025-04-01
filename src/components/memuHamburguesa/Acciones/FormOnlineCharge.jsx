@@ -1,4 +1,3 @@
-// filepath: c:\Users\Alan De La O\Documents\GespaTra\GespaReact\src\components\memuHamburguesa\Acciones\FormOnlineCharge.jsx
 import { useState, useContext, useEffect } from "react";
 import { Form, Button, Row, Col } from "react-bootstrap";
 import { toast } from "sonner";
@@ -24,10 +23,10 @@ const FormOnlineCharge = ({ handleClose }) => {
     idEjecutivo: idEjecutivo,
     idCartera: 1,
     status: "Acepta",
-    tipoTarjeta: "tarjetaCredito", // Selección predeterminada
+    tipoTarjeta: "tarjetaCredito",  
     tarjeta: "",
     nombre: "",
-    tuNombre: "", // Campo adicional
+    tuNombre: "",
     vencimiento: "",
     monto: "",
     banco: "",

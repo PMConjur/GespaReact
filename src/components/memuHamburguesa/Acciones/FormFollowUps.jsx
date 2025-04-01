@@ -18,7 +18,6 @@ const FormFollowUps = ({ handleClose }) => {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-
     const [formData, setFormData] = useState({
         idCartera: 1,
         idCuenta: idCuenta[0].trim(),
