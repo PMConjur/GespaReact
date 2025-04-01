@@ -19,6 +19,7 @@ const Managments = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (!searchResults || searchResults.length === 0) {
+        setSortedData([]); // Limpiar datos si no hay resultados
         return;
       }
 
@@ -27,22 +28,30 @@ const Managments = () => {
         if (!idCuenta) {
           setToastMessage("No se encontró un idCuenta válido.");
           setShowToast(true);
+          setSortedData([]); // Limpiar datos si no hay idCuenta válido
           return;
         }
 
         setIsLoading(true); // Iniciar carga
         const gestionData = await getGestionTeData(currentPage, idCuenta); // Usar currentPage para la paginación
-        setSortedData((prevData) => [...prevData, ...gestionData]); // Agregar nuevos datos a los existentes
+        setSortedData((prevData) =>
+          currentPage === 1 ? gestionData : [...prevData, ...gestionData]
+        ); // Reemplazar o agregar datos
         setIsLoading(false); // Finalizar carga
       } catch (error) {
         console.error("Error al obtener los datos de gestión:", error);
-        setToastMessage("❌ Error al obtener los datos de gestión. Intente nuevamente.");
+        setToastMessage(
+          "❌ Error al obtener los datos de gestión. Intente nuevamente."
+        );
         setShowToast(true);
         setIsLoading(false); // Finalizar carga en caso de error
       }
     };
 
-    fetchData();
+    // Reiniciar el estado cuando cambie searchResults
+    setCurrentPage(1); // Reiniciar la página actual
+    setSortedData([]); // Limpiar los datos actuales
+    fetchData(); // Llamar a fetchData para cargar los nuevos datos
   }, [searchResults, currentPage]);
 
   // Validar campos para evitar errores al renderizar
@@ -74,7 +83,9 @@ const Managments = () => {
         setIsLoading(false); // Finalizar carga
       } catch (error) {
         console.error("Error al obtener los datos de la página:", error);
-        setToastMessage("❌ Error al obtener los datos de la página. Intente nuevamente.");
+        setToastMessage(
+          "❌ Error al obtener los datos de la página. Intente nuevamente."
+        );
         setShowToast(true);
         setIsLoading(false); // Finalizar carga en caso de error
       }
@@ -138,7 +149,7 @@ const Managments = () => {
                 style={{
                   maxHeight: "300px", // Ajuste de altura a 300px
                   overflowY: "auto", // Habilitar scroll vertical dentro de la tabla
-                  display: "block",  // Necesario para que funcione el scroll en tablas
+                  display: "block", // Necesario para que funcione el scroll en tablas
                 }}
               >
                 <thead>
@@ -355,18 +366,23 @@ const Managments = () => {
                         onClick={() => handleRowClick(gestion)} // Manejar clic en la fila
                         style={{
                           cursor: "pointer",
-                          backgroundColor: selectedGestion === gestion ? "#343a40" : "inherit", // Resaltar la fila seleccionada
+                          backgroundColor:
+                            selectedGestion === gestion ? "#343a40" : "inherit", // Resaltar la fila seleccionada
                         }}
                       >
                         <td>{validateField(gestion.Fecha_Insert)}</td>
                         <td>{validateField(gestion.Segundo_Insert)}</td>
                         <td>{validateField(gestion.NúmeroTelefónico)}</td>
-                        <td>{validateField(gestion.Contacto)}</td> {/* Muestra Contacto */}
-                        <td>{validateField(gestion.Situación)}</td> {/* Muestra Situación */}
+                        <td>{validateField(gestion.Contacto)}</td>{" "}
+                        {/* Muestra Contacto */}
+                        <td>{validateField(gestion.Situación)}</td>{" "}
+                        {/* Muestra Situación */}
                         <td>{validateField(gestion.NombreContacto)}</td>
                         <td>{validateField(gestion.Parentesco)}</td>
-                        <td>{validateField(gestion.CausaNoPago)}</td> {/* Muestra CausaNoPago */}
-                        <td>{validateField(gestion.Modo)}</td> {/* Muestra Modo */}
+                        <td>{validateField(gestion.CausaNoPago)}</td>{" "}
+                        {/* Muestra CausaNoPago */}
+                        <td>{validateField(gestion.Modo)}</td>{" "}
+                        {/* Muestra Modo */}
                         <td>{validateField(gestion.idAcercamiento)}</td>
                         <td>{validateField(gestion.idEtapa)}</td>
                         <td>{validateField(gestion.Seguimiento)}</td>
@@ -390,8 +406,22 @@ const Managments = () => {
               </table>
             </Card.Body>
             <Card.Body>
-              <div style={{ display: "flex", justifyContent: "", marginBottom: "16px" }}>
-                <div style={{ width: "40%", display: "flex", justifyContent: "", alignItems: "center", marginRight: "16px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "",
+                  marginBottom: "16px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "40%",
+                    display: "flex",
+                    justifyContent: "",
+                    alignItems: "center",
+                    marginRight: "16px",
+                  }}
+                >
                   <strong style={{ marginRight: "8px" }}>Comentario:</strong>
                   {selectedGestion ? (
                     <span>{validateField(selectedGestion.Comentario)}</span>
@@ -400,13 +430,19 @@ const Managments = () => {
                   )}
                 </div>
                 <Pagination variant="dark">
-                  <Pagination.First onClick={() => handlePageChange(1)} disabled={currentTablePage === 1} />
+                  <Pagination.First
+                    onClick={() => handlePageChange(1)}
+                    disabled={currentTablePage === 1}
+                  />
                   <Pagination.Prev
                     onClick={() => handlePageChange(currentTablePage - 1)}
                     disabled={currentTablePage === 1}
                   />
                   {paginationGroup > 0 && (
-                    <Pagination.Ellipsis onClick={handlePrevGroup} title="Páginas anteriores" />
+                    <Pagination.Ellipsis
+                      onClick={handlePrevGroup}
+                      title="Páginas anteriores"
+                    />
                   )}
                   {visiblePages.map((page) => (
                     <Pagination.Item
@@ -418,7 +454,10 @@ const Managments = () => {
                     </Pagination.Item>
                   ))}
                   {(paginationGroup + 1) * 10 < totalPages && (
-                    <Pagination.Ellipsis onClick={handleNextGroup} title="Siguientes páginas" />
+                    <Pagination.Ellipsis
+                      onClick={handleNextGroup}
+                      title="Siguientes páginas"
+                    />
                   )}
                   <Pagination.Next
                     onClick={() => handlePageChange(currentTablePage + 1)}
