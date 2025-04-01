@@ -415,7 +415,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
                             ))}
                           </Form.Select>
                         </Form.Group>
-                        <div>
+                        <div style={{ display: "flex", justifyContent: "flex-end" }}>
                           <Button
                             variant="primary"
                             onClick={handleSetFormValues}
@@ -506,7 +506,12 @@ const CalculatorSimulator = ({show, handleClose}) => {
                             <Form.Control
                               type="text"
                               placeholder="Monto Negociado"
-                              value={montoNegociado} // Muestra el valor de "Monto Negociado"
+                              value={montoNegociado ? `$${montoNegociado}` : ""} // Agrega un '$' al inicio del valor
+                              onKeyPress={(e) => {
+                                if (!/^\d*\.?\d*$/.test(e.key)) {
+                                  e.preventDefault(); // Evita que se ingresen caracteres no numéricos
+                                }
+                              }}
                               readOnly // Hace que el campo no sea editable
                               disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
                             />
@@ -522,16 +527,14 @@ const CalculatorSimulator = ({show, handleClose}) => {
                             <Form.Label>Máximo 15 días</Form.Label>
                           </Form.Group>
                         </div >
-                        <div style={{justifyContent: 'space-between'}} className=" gap-3 d-flex">
-                          <div>
-                            <Button
-                              variant="primary"
-                              onClick={handleAgregarPago} // Llama a la función para agregar el pago
-                              disabled={!isAddButtonEnabled} // Deshabilita el botón si no es válido
-                            >
-                              Agregar
-                            </Button>
-                          </div>
+                        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                          <Button
+                            variant="primary"
+                            onClick={handleAgregarPago} // Llama a la función para agregar el pago
+                            disabled={!isAddButtonEnabled} // Deshabilita el botón si no es válido
+                          >
+                            Agregar
+                          </Button>
                         </div>
                       </Form>
                     </Card.Body>
