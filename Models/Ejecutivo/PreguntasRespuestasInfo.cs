@@ -9,7 +9,7 @@
         public string Respuesta { get; set; }
         public int IdSiguientePregunta { get; set; }
         public int Seguimiento { get; set; }
-        public int Negociacion { get; set; }
+        public int Negociación { get; set; }
         public int Identificador { get; set; }
         public string Valor { get; set; }
         public int ValorActivo { get; set; }
