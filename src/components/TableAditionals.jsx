@@ -3,7 +3,7 @@ import { Table, Form } from "react-bootstrap";
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
 import { getAditionalsData } from "../services/gespawebServices";
-import { reemplazarValores } from "./ValoresCatalogos"; // Importa el método
+import { reemplazarValores } from "./ValoresCatalogos.js"; // Importa el método
 
 const TableAditionals = ({ customColumnNames = {} }) => {
   const { searchResults } = useContext(AppContext); // Hook 1
@@ -132,7 +132,9 @@ const TableAditionals = ({ customColumnNames = {} }) => {
               backgroundColor: "#343a40",
             }} // Encabezado fijo
           >
-            <tr style={{ height: "55px" }}> {/* Reducimos la altura de los encabezados */}
+            <tr style={{ height: "55px" }}>
+              {" "}
+              {/* Reducimos la altura de los encabezados */}
               {headers.map((header) => (
                 <th
                   key={header}
@@ -153,7 +155,9 @@ const TableAditionals = ({ customColumnNames = {} }) => {
             }}
           >
             {sortedData.map((item, index) => (
-              <tr key={index} style={{ height: "24px" }}> {/* Reducimos la altura de cada fila */}
+              <tr key={index} style={{ height: "24px" }}>
+                {" "}
+                {/* Reducimos la altura de cada fila */}
                 {headers.map((header) => {
                   let value = item[header];
 

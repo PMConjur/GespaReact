@@ -1,6 +1,6 @@
 import React from "react";
 import { Table, Row, Container } from "react-bootstrap";
-import { reemplazarValores } from "./ValoresCatalogos"; // Importa el método
+import { reemplazarValores } from "./ValoresCatalogos.js"; // Importa el método
 
 const Tabledailymanagement = ({ cuentasData }) => {
   const renderCell = (value) => {

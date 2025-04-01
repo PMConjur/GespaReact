@@ -12,7 +12,7 @@ import servicio from "../../../services/axiosServices";
 import { toast } from "sonner";
 import Conversation from "./conversation";
 import { AppContext } from "../../../pages/Managment"; // Asegúrate de que la ruta sea correcta
-import { reemplazarValores } from "../../ValoresCatalogos"; // Importa el método de reemplazo de valores
+import { reemplazarValores } from "../../ValoresCatalogos.js"; // Importa el método de reemplazo de valores
 
 const Mail = ({ show, handleClose }) => {
   const { searchResults } = useContext(AppContext); // Obtén el contexto

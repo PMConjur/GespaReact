@@ -3,7 +3,7 @@ import { Table, Form } from "react-bootstrap";
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
 import { getOnlinechargeData } from "../services/gespawebServices";
-import { reemplazarValores } from "./ValoresCatalogos"; // Importa el método
+import { reemplazarValores } from "./ValoresCatalogos.js"; // Importa el método
 
 const TableOnlineCharge = ({ customColumnNames = {} }) => {
   const { searchResults } = useContext(AppContext); // Hook 1
@@ -63,10 +63,7 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
     return <p>No hay datos disponibles.</p>;
   }
   // Campos que NO se mostrarán en la tabla
-  const hiddenFields = [
-    "idBanco",
-    "_Autorizado",
-  ];
+  const hiddenFields = ["idBanco", "_Autorizado"];
 
   // Nombres de columnas por defecto (se pueden sobrescribir con `customColumnNames`)
   const defaultColumnNames = {

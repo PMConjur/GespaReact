@@ -1,4 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useMemo, useEffect, useState, useContext } from "react";
 import { Card, Row, Col, Stack } from "react-bootstrap";
 import {
   PersonFill,
@@ -7,33 +8,67 @@ import {
   ChatLeftDotsFill,
   EnvelopePaperFill,
   TelephoneInboundFill,
-  EnvelopeAtFill
+  EnvelopeAtFill,
 } from "react-bootstrap-icons";
-import "../scss/styles.scss";
-import { useContext } from "react";
 import { AppContext } from "../pages/Managment";
+import { fetchDrives } from "../services/gespawebServices";
 
 const DataCard = () => {
   const { searchResults } = useContext(AppContext);
+
+  const [actionCounts, setActionCounts] = useState({
+    SMS: 0,
+    Carta: 0,
+    Blaster: 0,
+    Email: 0,
+  });
 
   // Datos predeterminados en caso de que no haya resultados
   const defaultData = {
     nombreDeudor: "-",
     saldo: "-",
-    minimoAtrasado: "-"
+    minimoAtrasado: "-",
+    idCuenta: null,
   };
 
   // Usar el primer resultado o los datos predeterminados
-  const result = searchResults[0] || defaultData;
+  const result = useMemo(() => {
+    return searchResults[0] || defaultData;
+  }, [searchResults]);
 
-  // Formatear números con validación adicional
-  const formatNumber = (number) => {
-    if (number === null || number === undefined || isNaN(number)) return "-";
-    return number.toLocaleString("es-MX", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  };
+  const { idCuenta, nombreDeudor, saldo } = result;
+
+  // Actualizar accionamientos dinámicamente cuando cambie idCuenta
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!idCuenta) return; // No hacer nada si idCuenta es null o undefined
+      console.log("Fetching drives for idCuenta:", idCuenta);
+
+      try {
+        const idCartera = 1; // Puedes ajustar este valor según sea necesario
+        const data = await fetchDrives(idCartera, idCuenta);
+
+        // Reducir los datos para contar los tipos de accionamientos
+        const counts = data.reduce(
+          (acc, item) => {
+            if (item.Acercamiento === "SMS") acc.SMS++;
+            if (item.Acercamiento === "Carta") acc.Carta++;
+            if (item.Acercamiento === "Blaster") acc.Blaster++;
+            if (item.Acercamiento === "Email") acc.Email++;
+            return acc;
+          },
+          { SMS: 0, Carta: 0, Blaster: 0, Email: 0 }
+        );
+
+        setActionCounts(counts); // Actualizar el estado con los nuevos valores
+      } catch (error) {
+        console.error("Error fetching drives:", error);
+        setActionCounts({ SMS: 0, Carta: 0, Blaster: 0, Email: 0 }); // Reiniciar en caso de error
+      }
+    };
+
+    fetchData();
+  }, [idCuenta]); // Ejecutar cada vez que cambie idCuenta
 
   return (
     <Row className="dashboard">
@@ -50,7 +85,7 @@ const DataCard = () => {
                   style={{ fontSize: "1.2rem", color: "#6dd6ff" }}
                   id="nombreDeudor"
                 >
-                  {result.nombreDeudor}
+                  {nombreDeudor}
                 </h6>
                 <span className="small pt-1 fw-bold">Deudor</span>
               </div>
@@ -69,8 +104,12 @@ const DataCard = () => {
               </div>
               <div className="ps-3">
                 <h6 style={{ fontSize: "1.5rem", color: "#39FC8D" }}>
-                  {result.saldo !== "-"
-                    ? "$" + formatNumber(parseFloat(result.saldo))
+                  {saldo !== "-"
+                    ? "$" +
+                      parseFloat(saldo).toLocaleString("es-MX", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })
                     : "-"}
                 </h6>
                 <span className="small pt-1 fw-bold">Saldo registrado</span>
@@ -92,19 +131,19 @@ const DataCard = () => {
                 <Stack direction="horizontal" gap={6}>
                   <div className="p-2 action">
                     <ChatLeftDotsFill />
-                    <span> SMS : 191</span>
+                    <span> SMS : {actionCounts.SMS}</span>
                   </div>
                   <div className="p-2 action">
                     <EnvelopePaperFill />
-                    <span> Carta : 1</span>
+                    <span> Carta : {actionCounts.Carta}</span>
                   </div>
                   <div className="p-2 action">
                     <TelephoneInboundFill />
-                    <span> Blaster : 33</span>
-                    </div>
+                    <span> Blaster : {actionCounts.Blaster}</span>
+                  </div>
                   <div className="p-2 action">
                     <EnvelopeAtFill />
-                    <span> Correo : 4</span>
+                    <span> Correo : {actionCounts.Email}</span>
                   </div>
                 </Stack>
                 <span className="small pt-1 fw-bold">Conteo</span>
