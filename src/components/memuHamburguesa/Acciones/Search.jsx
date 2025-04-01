@@ -6,7 +6,7 @@ import "../../../scss/styles.scss"
 import { toast } from "sonner";
 
 const Search = ({ show, handleClose }) => {
-  const { searchResults } = useContext(AppContext);
+  const { searchResults, idEjecutivo} = useContext(AppContext);
 
   const [searchData, setSearchData] = useState({
     dato: '',
@@ -48,6 +48,9 @@ const Search = ({ show, handleClose }) => {
       const response = await fetchActionsSearch(idCuenta);
       const mappedData = mapResponseToTableData(response);
       setTableData(mappedData);
+
+      // Depuración: Verifica los datos obtenidos
+      console.log("Datos obtenidos de la búsqueda:", mappedData);
     } catch (error) {
       console.error('Error al obtener los datos:', error);
       toast.error("Hubo un error al cargar los datos.");
@@ -61,9 +64,11 @@ const Search = ({ show, handleClose }) => {
       Fecha: item.Fecha_Insert,
       Hora: item.Segundo_Insert,
       Ejecutivo: item.Ejecutivo,
+      idDato: item.idDato, // Obtén idDato
       Dato: item.Dato,
       DatoBuscado: item.DatoBuscado,
-      idFuente: item.Fuente,
+      idFuente: item.idFuente, // Obtén idFuente
+      Fuente: item.Fuente,
       Encontrado: item._Encontrado,
       Telefonos: item.Teléfonos,
       Persona: Object.keys(item.Persona).length ? JSON.stringify(item.Persona) : '--',
@@ -135,34 +140,50 @@ const Search = ({ show, handleClose }) => {
   const handleGuardarClick = async () => {
     const currentTime = new Date().toLocaleTimeString('en-GB', { hour12: false });
     const currentDate = new Date().toISOString();
-
+  
     try {
       const idCuenta = searchResults[0].idCuenta.trim();
-      const idEjecutivo = searchResults[0].idEjecutivo;
+      const idEjecutivo2 = idEjecutivo;
+  
+      // Encuentra los valores correctos de idDato y idFuente
+      const selectedRow = tableData.find(
+        (item) =>
+          item.Dato === searchData.dato &&
+          item.DatoBuscado === searchData.DatoBuscado &&
+          item.Fuente === searchData.fuente
+      );
+  
+      if (!selectedRow) {
+        toast.error("No se encontró una fila válida para los datos seleccionados.");
+        return;
+      }
+  
       const requestData = {
         idCartera: 1,
         idCuenta: idCuenta,
-        idEjecutivo: idEjecutivo,
-        idDato: Number(searchData.dato),
-        idFuente: Number(searchData.fuente),
-        dato: searchData.dato,
+        idEjecutivo: idEjecutivo2,
+        idDato: selectedRow.idDato, // Usa idDato de la fila seleccionada
+        idFuente: selectedRow.idFuente, // Usa idFuente de la fila seleccionada
+        dato: selectedRow.Fuente, // Envía el valor de "Fuente" como "dato"
         encontrado: searchData.encontrado,
-        teléfonos: phoneNumbers.map((númeroTelefónico) => ({ númeroTelefónico })),
-        persona: searchData.nombre,
+        numeroTelefonosEncontrado: 1,
+        nombrePersona: searchData.nombre,
         puesto: searchData.puesto,
-        lugar: searchData.lugar,
+        nombreLugar: searchData.lugar,
+        domicilioLugar: "CDMX",
         link: searchData.link,
-        validador: 0,
-        fecha_Insert: currentDate,
-        segundo_Insert: currentTime
+        validador: "18967",
+        tiempoEnCuenta: currentTime,
       };
-      
+  
+      console.log("Datos enviados al endpoint:", requestData);
+  
       const response = await fetchSaveExecutive(requestData);
       toast.success("Datos guardados correctamente.");
-
-      // Limpia el formulario y actualiza la tabla
+  
+      // Limpia el formulario
       setSearchData({
-        dato: '2601',
+        dato: '',
         fuente: '',
         encontrado: false,
         nombre: '',
@@ -173,9 +194,14 @@ const Search = ({ show, handleClose }) => {
       });
       setPhoneNumbers([]);
       setShowForm(false);
+  
+      // Recarga la tabla
       fetchData(idCuenta); // Vuelve a cargar los datos de la tabla
     } catch (error) {
       console.error('Error al guardar los datos:', error);
+      if (error.response) {
+        console.error('Detalles del error:', error.response.data);
+      }
       toast.error("Hubo un error al guardar los datos.");
     }
   };
@@ -215,7 +241,16 @@ const Search = ({ show, handleClose }) => {
             >
               <Form.Group className="mb-3">
                 <Form.Label>Dato</Form.Label>
-                <Dropdown onSelect={(value) => handleChange("dato", value)}>
+                <Dropdown onSelect={(value) => {
+                  handleChange("dato", value);
+                  const selectedRow = tableData.find((item) => item.Dato === value);
+                  if (selectedRow) {
+                    setSearchData((prev) => ({
+                      ...prev,
+                      DatoBuscado: selectedRow.DatoBuscado,
+                    }));
+                  }
+                }}>
                   <Dropdown.Toggle variant="primary" id="dropdown-dato">
                     {searchData.dato || "Seleccionar"}
                   </Dropdown.Toggle>
@@ -230,14 +265,18 @@ const Search = ({ show, handleClose }) => {
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label>Valor</Form.Label>
-                <Dropdown onSelect={(value) => handleChange("valor", value)}>
+                <Dropdown onSelect={(value) => handleChange("DatoBuscado", value)}>
                   <Dropdown.Toggle variant="primary" id="dropdown-valor">
-                    {searchData.valor || "Seleccionar"}
+                    {searchData.DatoBuscado || "Seleccionar"}
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
-                    {valorOptions.map((valor, index) => (
-                      <Dropdown.Item key={index} eventKey={valor}>
-                        {valor}
+                    {[...new Set(
+                      tableData
+                        .filter((item) => item.Dato === searchData.dato)
+                        .map((item) => item.DatoBuscado)
+                    )].map((uniqueValue, index) => (
+                      <Dropdown.Item key={index} eventKey={uniqueValue}>
+                        {uniqueValue}
                       </Dropdown.Item>
                     ))}
                   </Dropdown.Menu>
@@ -259,11 +298,17 @@ const Search = ({ show, handleClose }) => {
                     {searchData.fuente || "Seleccionar"}
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
-                    {fuenteOptions.map((fuente, index) => (
-                      <Dropdown.Item key={index} eventKey={fuente}>
-                        {fuente}
-                      </Dropdown.Item>
-                    ))}
+                    {tableData
+                      .filter(
+                        (item) =>
+                          item.Dato === searchData.dato &&
+                          item.DatoBuscado === searchData.DatoBuscado
+                      )
+                      .map((item, index) => (
+                        <Dropdown.Item key={index} eventKey={item.Fuente}>
+                          {item.Fuente}
+                        </Dropdown.Item>
+                      ))}
                   </Dropdown.Menu>
                 </Dropdown>
               </Form.Group>
@@ -363,7 +408,6 @@ const Search = ({ show, handleClose }) => {
         {loading ? (
           <div className="text-center">
             <Spinner animation="border" role="status">
-              <span className="visually-hidden">Cargando...</span>
             </Spinner>
           </div>
         ) : (
@@ -374,10 +418,11 @@ const Search = ({ show, handleClose }) => {
               maxHeight: "70vh",
               maxWidth: "800px",
               minWidth: "250px",
+              position: "relative",
             }}
           >
-            <Table striped bordered hover variant="dark" className="mt-3">
-              <thead>
+            <Table striped bordered hover variant="dark" className="mt-3" style={{ whiteSpace: "nowrap" }}>
+              <thead style={{ position: "sticky", top: 0, backgroundColor: "#343a40", zIndex: 1 }}>
                 <tr>
                   <th>Fecha</th>
                   <th>Hora</th>
@@ -399,7 +444,7 @@ const Search = ({ show, handleClose }) => {
               <tbody>
                 {tableData.map((item, index) => (
                   <tr key={index}>
-                    <td>{item.Fecha}</td>
+                    <td>{item.Fecha.split('T')[0]}</td> {/* Muestra solo la fecha antes de la 'T' */}
                     <td>{item.Hora}</td>
                     <td>{item.Ejecutivo}</td>
                     <td>{item.Dato}</td>
