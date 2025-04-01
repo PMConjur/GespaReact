@@ -1,5 +1,5 @@
 import { Row, Col, Card } from "react-bootstrap";
-import { NodePlusFill } from "react-icons";
+import { NodePlusFill } from "react-bootstrap-icons";
 const FlowEnded = () => {
   return (
     <>

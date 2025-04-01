@@ -17,6 +17,7 @@ import SaveButton from "./flowComponents/SaveButton"; // Importa el nuevo compon
 import CalculatorSimulator from "./CalculatorSimulator"; // Importa el componente CalculatorSimulator
 import Payments from "./memuHamburguesa/Informacion/Payments"; // Importa el componente Payments
 import OnlineCharge from "./memuHamburguesa/Acciones/OnlineCharge"; // Importa el componente OnlineCharge
+import FlowEnded from "./flowComponents/FlowEnded";
 
 const Flow = () => {
   const {
@@ -126,21 +127,47 @@ const Flow = () => {
     setStartTimer(false);
   };
   const clearStatesManagment = () => {
-    setUserFlowData([]);
     setCurrentQuestionId(null);
-    setSelectedAnswers({});
-    setSelectedValues({});
-    setAnswerHistory([]);
-    setIsFlowFinished(false);
-    setSavedComment("");
-
-    setTriggerLastAnswerActions(false);
-
-    setStartTimer(false);
-    clearStatesManagment(); // Limpia los estados del managment
   };
 
-  //Renderiza las ventanas que continunan del flujo
+  const renderMainContent = () => (
+    <>
+      <Row xs="auto" md="auto" className="g-2">
+        <Col md={12}>
+          {currentQuestionId ? (
+            renderQuestions(currentQuestionId)
+          ) : (
+            <Card className="flow-size" border="primary">
+              <Card.Header className="text-white">
+                <i className="h5">
+                  <NodePlusFill></NodePlusFill> Flujo
+                </i>
+              </Card.Header>
+              <Card.Body className="scroll-flow">
+                <h5>Selecciona una cuenta para trabajar en el flujo</h5>
+              </Card.Body>
+            </Card>
+          )}
+        </Col>
+      </Row>
+
+      <CalculatorSimulator
+        show={showCalculator}
+        handleClose={handleCloseCalculator} // Asegura el cierre correcto
+      />
+      <Payments show={showPayments} handleClose={handleClosePayments} />
+      <OnlineCharge
+        show={showOnlineCharge}
+        handleClose={handleCloseOnlineCharge}
+      />
+      <FollowUps
+        show={showFollowUps}
+        handleClose={handleCloseFollowUps} // Asegura el cierre correcto
+        isFollowUpActive={isFollowUpActive}
+      />
+    </>
+  );
+
   const handleLastAnswerActions = () => {
     if (answerHistory.length > 0) {
       const lastAnswer = answerHistory[answerHistory.length - 1]; // Obtiene el último elemento del historial
@@ -150,46 +177,32 @@ const Flow = () => {
         setIsNegotiationActive(true); // Activa la variable de negociación
         handleOpenCalculator(); // Abre el modal CalculatorSimulator
         toast.info("Flujo preparado para negociación.");
+        clearStatesManagment(); //Limpia solo para renderizar el formulario vacio
+        return renderMainContent(); // Renderiza el contenido principal
       } else if (lastAnswer.seguimiento === 1 && lastAnswer.negociación === 0) {
         console.log("Entró a seguimiento.");
         setIsFollowUpActive(true); // Activa la variable de seguimiento
         setShowFollowUps(true); // Muestra el modal de FollowUps
         toast.info("Flujo preparado para seguimiento.");
+        clearStatesManagment(); //Limpia solo para renderizar el formulario vacio
+        return renderMainContent(); // Renderiza el contenido principal
       } else if (idReportePago === 1013) {
         console.log("Entró a Reporte de Pago.");
         setIsPaymentActive(true); // Activa la variable de pagos
         handleOpenPayments(); // Abre el modal Payments
         toast.info("Flujo preparado para reportar pago.");
+        clearStatesManagment(); //Limpia solo para renderizar el formulario vacio
+        return renderMainContent(); // Renderiza el contenido principal
       } else if (idCargoLinea === 1034) {
         console.log("Entró a Cargo Linea.");
         setIsOnlineChargeActive(true); // Activa la variable de cargos en línea
         handleOpenOnlineCharge(); // Abre el modal OnlineCharge
         toast.info("Flujo preparado para generar Cargo Linea.");
+        clearStatesManagment(); //Limpia solo para renderizar el formulario vacio
+        return renderMainContent(); // Renderiza el contenido principal
       } else {
         clearStates(); // Limpia los estados
-        // Renderiza nuevamente el flujo
-        return (
-          <>
-            <Row xs="auto" md="auto" className="g-2">
-              <Col md={12}>
-                {currentQuestionId ? (
-                  renderQuestions(currentQuestionId)
-                ) : (
-                  <Card className="flow-size" border="primary">
-                    <Card.Header className="text-white">
-                      <i className="h5">
-                        <NodePlusFill></NodePlusFill> Flujo
-                      </i>
-                    </Card.Header>
-                    <Card.Body className="scroll-flow">
-                      <h5>Selecciona una cuenta para trabajar en el flujo</h5>
-                    </Card.Body>
-                  </Card>
-                )}
-              </Col>
-            </Row>
-          </>
-        );
+        return renderMainContent(); // Renderiza el contenido principal
       }
     }
   };
@@ -719,46 +732,7 @@ const Flow = () => {
     );
   };
 
-  return (
-    <>
-      <Row xs="auto" md="auto" className="g-2">
-        <Col md={12}>
-          {currentQuestionId ? (
-            renderQuestions(currentQuestionId)
-          ) : (
-            <Card className="flow-size" border="primary">
-              <Card.Header className="text-white">
-                <i className="h5">
-                  <NodePlusFill></NodePlusFill> Flujo
-                </i>
-              </Card.Header>
-              <Card.Body className="scroll-flow">
-                <h5>Selecciona una cuenta para trabajar en el flujo</h5>
-              </Card.Body>
-            </Card>
-          )}
-        </Col>
-      </Row>
-
-      <CalculatorSimulator
-        show={showCalculator}
-        handleClose={handleCloseCalculator} // Asegura el cierre correcto
-      />
-
-      <Payments show={showPayments} handleClose={handleClosePayments} />
-      <OnlineCharge
-        show={showOnlineCharge}
-        handleClose={handleCloseOnlineCharge}
-      />
-
-      {/* Modal de FollowUps */}
-      <FollowUps
-        show={showFollowUps}
-        handleClose={handleCloseFollowUps} // Asegura el cierre correcto
-        isFollowUpActive={isFollowUpActive}
-      />
-    </>
-  );
+  return renderMainContent();
 };
 
 export default Flow;
