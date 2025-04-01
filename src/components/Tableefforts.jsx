@@ -1,7 +1,7 @@
 import React from "react";
 import { Table, Row, Container } from "react-bootstrap";
 import { Modal } from "react-bootstrap";
-import { reemplazarValores } from "./ValoresCatalogos"; // Importa el método
+import { reemplazarValores } from "./ValoresCatalogos.js"; // Importa el método
 
 const Tableefforts = ({ gestionesData, handleRowClick, selectedGestion }) => {
   const renderCell = (value) => {

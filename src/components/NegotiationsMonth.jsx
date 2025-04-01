@@ -3,8 +3,7 @@ import { Table, Card } from "react-bootstrap";
 import { userNegotiations, searchCustomer } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast, Toaster } from "sonner";
-import { reemplazarValores } from "./ValoresCatalogos"; 
-
+import { reemplazarValores } from "./ValoresCatalogos.js";
 
 const NegotiationsMonth = () => {
   const { idEjecutivo } = useContext(AppContext);

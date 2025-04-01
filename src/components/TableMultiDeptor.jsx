@@ -4,7 +4,7 @@ import {
   reemplazarValores,
   reemplazarValoresProducto,
   reemplazarValoresCartera,
-} from "./ValoresCatalogos"; // Importa el método
+} from "./ValoresCatalogos.js"; // Importa el método
 
 const TableMultiDeptor = ({ tableData }) => {
   const renderCell = (value) => {
