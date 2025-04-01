@@ -79,7 +79,7 @@ namespace NoriAPI.Repositories
         #region GuardaNegociacion
         Task<dynamic> Guarda_Plazos(EliminaGuardaPlazos PlazosInfo, Pago_ pago_, DateTime dtInicio, DateTime dtFin, int iNúmPago);
         Task<dynamic> Elimina_Plazos(EliminaGuardaPlazos PlazosInfo);
-       // Task<dynamic> Guarda_Negociacion_Plazos(GuardaNegociacionPlazos negociacionInfo);
+        // Task<dynamic> Guarda_Negociacion_Plazos(GuardaNegociacionPlazos negociacionInfo);
         Task<dynamic> IncrementaNegociacion(IncrementoNegociacion incrementaNegInfo);
         #endregion
 
@@ -89,7 +89,7 @@ namespace NoriAPI.Repositories
         #endregion
 
         #region Cargo En Linea
-        Task<dynamic> RegisterNewCargo(CargoEnLinea newCargoEnLinea);
+        Task<dynamic> RegisterNewCargo(CargoEnLineaRequest newCargoEnLinea);
         Task<dynamic> RegisterNewEstado(EstadoDeCuenta newEstadoDeCuenta);
         #endregion
 
@@ -860,7 +860,7 @@ namespace NoriAPI.Repositories
 
         #endregion
 
-        #region GuardaEliminaPlazos 
+        #region GuardaEliminaPlazos
 
         public async Task<dynamic> Elimina_Plazos(EliminaGuardaPlazos PlazosInfo)
         {
@@ -983,7 +983,7 @@ namespace NoriAPI.Repositories
 
             string incrementaNegQuery = "[dbMemory].PS.IncrementaNegociación";
 
-            var parameters = new 
+            var parameters = new
             {
                 idEjecutivo = incrementaNegInfo.idEjecutivo,
                 Monto = incrementaNegInfo.Monto,
@@ -1248,7 +1248,7 @@ namespace NoriAPI.Repositories
         #endregion
 
         #region Cargos en linea
-        public async Task<dynamic> RegisterNewCargo(CargoEnLinea newCargoEnLinea)
+        public async Task<dynamic> RegisterNewCargo(CargoEnLineaRequest newCargoEnLinea)
         {
             using var connection = GetConnection("Piso2Amex");
 
@@ -1259,9 +1259,9 @@ namespace NoriAPI.Repositories
                 tarjeta = newCargoEnLinea.Tarjeta,
 
                 status = newCargoEnLinea.Status,
-                IdBanco = newCargoEnLinea.idBanco,
+                IdBanco = newCargoEnLinea.IdBanco,
                 vencimiento = newCargoEnLinea.Vencimiento,
-                autorizacion = newCargoEnLinea.Autorización,
+                autorizacion = newCargoEnLinea.Autorizacion,
                 nombre = newCargoEnLinea.Nombre,
                 esClabe = newCargoEnLinea.EsClabe,
                 domiciliado = newCargoEnLinea.Domiciliado,
@@ -1288,10 +1288,10 @@ namespace NoriAPI.Repositories
             if (dict != null && dict.ContainsKey("Resultado"))
             {
                 return new Dictionary<string, object>
-        {
-            { "Success", false },
-            { "Resultado", dict["Resultado"].ToString() }
-        };
+                {
+                    { "Success", false },
+                    { "Resultado", dict["Resultado"].ToString() }
+                };
             }
 
             return new Dictionary<string, object> { { "Success", true }, { "Data ", result } };

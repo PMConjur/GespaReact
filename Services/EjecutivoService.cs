@@ -76,8 +76,9 @@ namespace NoriAPI.Services
 
         Task<DataTable> GetCargosEnLineaAsync(int idCartera, string idCuenta);
         Task ObtenerCargosEnLinea(DataRow drDatos, DataSet dsTablas);
-        Task<string> SaveCargoEnlinea(CargoEnLineaRe newCargoEn);
+        Task<string> SaveCargoEnlinea(CargoEnLineaRequest newCargoEn);
         Task<string> SaveEstadoDeCuenta(EstadoDeCuentaRe newEstadoEn);
+        Task<string> ClasificaTelefonoAsignadoAsync(int idCartera, string idCuenta, long numeroTelefonico, int idClase, int idEjecutivoClasificacion);
         Task ObtenerMultideudores(DataRow drDatos, DataSet dsTablas, Hashtable htProducto, string sortMultideudores, string connectionString);
 
         #region Pagos
@@ -3071,11 +3072,11 @@ namespace NoriAPI.Services
 
             dsTablas.Tables.Add(cargoGet);
         }
-        public async Task<string> SaveCargoEnlinea(CargoEnLineaRe newCargoEn)
+        public async Task<string> SaveCargoEnlinea(CargoEnLineaRequest newCargoEn)
         {
             try
             {
-                string idCuenta = newCargoEn.idCuenta.ToString();
+                string idCuenta = newCargoEn.IdCuenta.ToString();
                 int idCartera = ObtenerIdCarteraDesdeBaseDeDatos(idCuenta);
                 dynamic cargoData = ObtenerDatosCargoEnLinea(idCartera, idCuenta);
 
@@ -3083,31 +3084,40 @@ namespace NoriAPI.Services
                 {
                     try
                     {
-                        if (long.TryParse(cargoData.Tarjeta.ToString(), out long numeroTarjetaLong))
+                        // Declaración de numeroTarjetaLong fuera del bloque if
+                        long numeroTarjetaLong = 0; // Valor predeterminado
+
+                        if (cargoData.Tarjeta != null && long.TryParse(cargoData.Tarjeta.ToString(), out numeroTarjetaLong))
                         {
                             Console.WriteLine($"cargoData.Tarjeta: {cargoData.Tarjeta}, numeroTarjetaLong: {numeroTarjetaLong}");
 
                             string autorizacionString = cargoData.Autorización?.ToString();
 
-                            // Deserialización como DateTime
-                            DateTime fechaVencimiento = newCargoEn.vencimiento; // Obtener la fecha del modelo
+                            // Conversión a byte
+                            byte statusByte = cargoData.Status != null ? Convert.ToByte(cargoData.Status) : (byte)0;
 
-                            CargoEnLinea newCargo = new CargoEnLinea(
+                            // Conversión a short?
+                            short? idBancoShort = cargoData.IdBanco != null ? Convert.ToInt16(cargoData.IdBanco) : (short?)null;
+
+                            // Validación de cargoData.Nombre a string
+                            string nombreString = cargoData.Nombre?.ToString();
+
+                            // Construcción del objeto CargoEnLinea
+                            CargoEnLineaRequest newCargo = new CargoEnLineaRequest(
                                 monto: Convert.ToDecimal(newCargoEn.Monto),
                                 tarjeta: numeroTarjetaLong,
                                 autorizacion: autorizacionString,
-                                // Pasar el valor de noAutorizacion
-                                status: Convert.ToInt32(cargoData.Status),
-                                IdBanco: Convert.ToInt32(cargoData.idBanco),
-                                idEjecutivoAutorizo: Convert.ToInt32(newCargoEn.IdEjecutivoAutorizo),
-                                vencimiento: fechaVencimiento, // Pasar el objeto DateTime
-                                nombre: cargoData.Nombre.ToString(),
-                                esClabe: Convert.ToBoolean(cargoData._EsClabe),
-                                domiciliado: Convert.ToBoolean(cargoData._Domiciliado),
+                                status: statusByte, // Usando el valor convertido
+                                idBanco: idBancoShort, // Usando el valor convertido
+                                idEjecutivoAutorizo: newCargoEn.IdEjecutivoAutorizo,
+                                vencimiento: newCargoEn.Vencimiento,
+                                nombre: nombreString,
+                                esClabe: cargoData._EsClabe != null ? Convert.ToBoolean(cargoData._EsClabe) : false,
+                                domiciliado: cargoData._Domiciliado != null ? Convert.ToBoolean(cargoData._Domiciliado) : false,
                                 sistema: false,
                                 idCartera: idCartera,
                                 idCuenta: idCuenta,
-                                idEjecutivo: Convert.ToInt32(newCargoEn.idEjecutivo)
+                                idEjecutivo: newCargoEn.IdEjecutivo
                             );
 
                             string saveCargoResult = await ValidateNewCargo(newCargo);
@@ -3120,8 +3130,8 @@ namespace NoriAPI.Services
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Error al convertir el número de tarjeta: {ex.Message}");
-                        return $"Error al convertir el número de tarjeta: {ex.Message}";
+                        Console.WriteLine($"Error al convertir datos del cargo en línea: {ex.Message}");
+                        return $"Error al convertir datos del cargo en línea: {ex.Message}";
                     }
                 }
                 else
@@ -3131,12 +3141,12 @@ namespace NoriAPI.Services
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error al guardar el cargo en línea: {ex.Message}");
                 return $"Error al guardar el cargo en línea: {ex.Message}";
             }
-            return "Error desconocido al procesar el cargo en línea.";
         }
 
-        private async Task<string> ValidateNewCargo(CargoEnLinea cargoCuenta)
+        private async Task<string> ValidateNewCargo(CargoEnLineaRequest cargoCuenta)
         {
             // Registra el valor de cargoCuenta.Tarjeta
             Console.WriteLine($"Validando Tarjeta: {cargoCuenta.Tarjeta}");
@@ -3172,6 +3182,86 @@ namespace NoriAPI.Services
             {
                 Console.WriteLine($"Error al obtener datos de CargoEnLínea: {ex.Message}");
                 return null;
+            }
+        }
+
+        public async Task<string> ClasificaTelefonoAsignadoAsync(int idCartera, string idCuenta, long numeroTelefonico, int idClase, int idEjecutivoClasificacion)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    // Simulación de _drTeléfono
+                    Hashtable drTelefono = new Hashtable();
+                    drTelefono["NúmeroTelefónico"] = numeroTelefonico;
+                    drTelefono["idClase"] = 1517; // Valor simulado, cambia según tu lógica
+
+                    // Simulación de Catálogos.NombresId
+                    Hashtable nombresId = new Hashtable();
+                    nombresId[idClase.ToString()] = "idClase";
+
+                    // Simulación de Catálogos.Relaciones
+                    Hashtable htModificables = new Hashtable();
+                    htModificables["1517"] = true; // Simula que la clase 1517 es modificable
+
+                    // Validación de _drTeléfono
+                    if (drTelefono == null)
+                    {
+                        return "Telefono actual no asignado.";
+                    }
+
+                    // Validación de idClase
+                    if (idClase == 0) // Simula que 0 es nulo
+                    {
+                        return "Clase nula.";
+                    }
+
+                    // Validación de Catálogos.NombresId
+                    object nombreId = nombresId[idClase.ToString()];
+                    if (nombreId == null || nombreId.ToString() != "idClase")
+                    {
+                        return "El id no corresponde a una clase de teléfono.";
+                    }
+
+                    // Validación de Catálogos.Relaciones
+                    string idClaseTelefono = drTelefono["idClase"].ToString();
+                    if (htModificables[idClaseTelefono] == null && idClase != 1518) // Simula la condición idClase.ToString() != "1518"
+                    {
+                        return "La clase no es modificable.";
+                    }
+
+                    // Actualización de la tabla Teléfonos
+                    string updateQuery = "UPDATE Teléfonos SET " +
+                                         " idClase = @idClase " +
+                                         ", FechaClasificación = GETDATE() " +
+                                         ", idEjecutivoClasificación = @idEjecutivoClasificación " +
+                                         " WHERE idCartera = @idCartera AND idCuenta = @idCuenta AND NúmeroTelefónico = @NúmeroTelefónico ";
+
+                    using (SqlCommand updateCommand = new SqlCommand(updateQuery, connection))
+                    {
+                        updateCommand.Parameters.AddWithValue("@idCartera", idCartera);
+                        updateCommand.Parameters.AddWithValue("@idCuenta", idCuenta);
+                        updateCommand.Parameters.AddWithValue("@NúmeroTelefónico", numeroTelefonico);
+                        updateCommand.Parameters.AddWithValue("@idClase", idClase);
+                        updateCommand.Parameters.AddWithValue("@idEjecutivoClasificación", idEjecutivoClasificacion);
+
+                        int rowsAffected = await updateCommand.ExecuteNonQueryAsync();
+
+                        if (rowsAffected == 0)
+                        {
+                            return "Error en base al clasificar teléfono.";
+                        }
+                    }
+
+                    return ""; // Éxito
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en ClasificaTelefonoAsignadoAsync: {ex.Message}");
+                return $"Fallo en base de datos al clasificar teléfono: {ex.Message}";
             }
         }
 

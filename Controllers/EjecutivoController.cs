@@ -373,7 +373,6 @@ namespace NoriAPI.Controllers
 
 
         [HttpPost ("GuardaNegociacionPlazos")]
-        [AllowAnonymous]
         public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] NegociacionPlazosInput input)
         {
             var result = await _ejecutivoService.GuardaNegociacionPlazos(input);
@@ -416,9 +415,6 @@ namespace NoriAPI.Controllers
 
 
         #endregion
-
-
-
 
 
 
@@ -533,8 +529,10 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+
         [HttpPost("SaveCargoEnlinea")]
-        public async Task<IActionResult> SaveCargoEnlinea([FromBody] CargoEnLineaRe newCargoEn)
+        [AllowAnonymous]
+        public async Task<IActionResult> SaveCargoEnlinea([FromBody] CargoEnLineaRequest newCargoEn)
         {
             if (newCargoEn == null)
             {
@@ -719,7 +717,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost("GuardarPagos")]
-        [AllowAnonymous]
         public async Task<IActionResult> GuardarPagos([FromBody] Pagos pago)
         {
             if (pago == null)
@@ -1718,6 +1715,22 @@ namespace NoriAPI.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpPut("ClasificaTelefono")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ClasificaTelefono(int idCartera, string idCuenta, long numeroTelefonico, int idClase, int idEjecutivoClasificacion)
+        {
+            string resultado = await _ejecutivoService.ClasificaTelefonoAsignadoAsync(idCartera, idCuenta, numeroTelefonico, idClase, idEjecutivoClasificacion);
+
+            if (string.IsNullOrEmpty(resultado))
+            {
+                return Ok("Teléfono clasificado exitosamente.");
+            }
+            else
+            {
+                return BadRequest(resultado);
             }
         }
 

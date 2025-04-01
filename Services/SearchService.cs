@@ -14,6 +14,7 @@ using NoriAPI.Models;
 using System.Collections;
 using System.Reflection;
 using System.Numerics;
+using NoriAPI.Models.Busqueda.InfoProducto;
 using Microsoft.Data.SqlClient;
 
 
@@ -24,12 +25,10 @@ namespace NoriAPI.Services
         Task<ResultadoBusqueda> ValidateBusqueda(string filtro, string ValorBusqueda);
         Task<ResultadoAutomatico> ValidateAutomatico(int numEmpleado);
         Task<List<PhoneTranslated>> FetchPhones(string idCuenta);
-        Task<Dictionary<string, object>> CalculateProductData(string idCuenta);
+        Task<Dictionary<string, ProductDataResponse>> CalculateProductData(string idCuenta);
         Task<bool> ValidatePhone(string telefono, string idCuenta);
         Task<string> SaveNewPhone(NewPhoneRequest newPhoneData);
         Task<string> SaveNewPhoneRe(NewPhoneRe newPhoneData);
-
-
 
         #region Domicilios
         Task<DomiciliosVisitasResult> DomiciliosVisitas(int idCartera, string idCuenta);
@@ -50,14 +49,12 @@ namespace NoriAPI.Services
         private readonly IConfiguration _configuration;
         private readonly ISearchRepository _searchRepository;
         private readonly IEjecutivoRepository _ejecutivoRepository;
-        private readonly string _connectionString;
 
         public SearchService(IConfiguration configuration, ISearchRepository searchRepository, IEjecutivoRepository ejecutivoRepository)
         {
             _configuration = configuration;
             _searchRepository = searchRepository;
             _ejecutivoRepository = ejecutivoRepository;
-            _connectionString = _configuration.GetConnectionString("Piso2Amex");
         }
 
         public async Task<ResultadoBusqueda> ValidateBusqueda(string filtro, string ValorBusqueda)
@@ -394,9 +391,9 @@ namespace NoriAPI.Services
         #endregion
 
         #region InfoProductos
-        public async Task<Dictionary<string, object>> CalculateProductData(string idCuenta)
+        public async Task<Dictionary<string, ProductDataResponse>> CalculateProductData(string idCuenta)
         {
-            var resultado = new Dictionary<string, object>();
+            var resultado = new Dictionary<string, ProductDataResponse>();
 
             var camposPantalla = await _searchRepository.GetCamposPantalla(1, 1);
             var producto = await _searchRepository.GetProducto(idCuenta);
@@ -405,7 +402,12 @@ namespace NoriAPI.Services
             if (((IDictionary<string, object>)producto).ContainsKey("batchdate"))
             {
                 limitDay = Convert.ToDateTime(producto.batchdate);
-                resultado["Dif_diasTotales"] = (DateTime.Now - limitDay.Value).Days;
+                resultado["Dif_diasTotales"] = new ProductDataResponse
+                {
+                    Valor = (DateTime.Now - limitDay.Value).Days,
+                    FontWeight = null,
+                    Color = null
+                };
             }
 
             foreach (var campo in camposPantalla)
@@ -413,17 +415,37 @@ namespace NoriAPI.Services
                 string nombreCampo = campo.NombreCampo;
                 string aliasCampo = campo.AliasCampo;
 
-                // Asegurar que el resultado de CampoCalculado se espere correctamente
-                object valorCampo = await CampoCalculado(producto, nombreCampo);
+                object valorCampo = CampoCalculado(producto, nombreCampo);
                 object valorFormateado = Formato(valorCampo, campo.IdFormatoCampo);
 
-                resultado[aliasCampo] = valorFormateado;
+                string campoStyle = string.Empty;
+                string campoColor = string.Empty;
+
+                switch (campo.IdFormatoCampo)
+                {
+                    case 1:
+                        campoColor = "7FFFD4";
+                        campoStyle = "font-weight-normal";
+                        break;
+                    case 2:
+                        campoColor = "ADFF2F";
+                        campoStyle = "font-weight-bold";
+                        break;
+                }
+
+                resultado[aliasCampo] = new ProductDataResponse
+                {
+                    Valor = valorFormateado,
+                    FontWeight = campoStyle,
+                    Color = campoColor
+                };
             }
 
             return resultado;
         }
 
-        public async Task<object> CampoCalculado(dynamic producto, string expresion)
+
+        public object CampoCalculado(dynamic producto, string expresion)
         {
             if (producto == null)
                 return "";
@@ -531,16 +553,15 @@ namespace NoriAPI.Services
             if (Regex.Matches(expression, @"[a-zA-Z]").Count > 0)
                 return new DateTime(0);
 
-            DateTime dtPrimero = new DateTime();
-            DateTime dtSegundo = new DateTime();
-            int iDías = 0;
-
+            DateTime dtPrimero = new();
+            DateTime dtSegundo = new();
             string[] sExpresión = expression.Trim().Split(' ');
 
 
             if (sExpresión.Length != 3 || !TryParseDate(sExpresión[0], out dtPrimero))
                 return "";
 
+            int iDías;
             switch (sExpresión[1])
             {
 
@@ -1062,6 +1083,8 @@ namespace NoriAPI.Services
             // Si la lista no está vacía, se retorna; de lo contrario, se devuelve null.
             return (codigosPostales != null && codigosPostales.Count > 0) ? codigosPostales : null;
         }
+
+
 
 
         #endregion
