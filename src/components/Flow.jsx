@@ -16,7 +16,7 @@ import Timmer from "./flowComponents/Timmer";
 import SaveButton from "./flowComponents/SaveButton"; // Importa el nuevo componente SaveButton
 import CalculatorSimulator from "./CalculatorSimulator"; // Importa el componente CalculatorSimulator
 import Payments from "./memuHamburguesa/Informacion/Payments"; // Importa el componente Payments
-import Talks from "./memuHamburguesa/Acciones/Talks"; // Importa el componente Talks
+import OnlineCharge from "./memuHamburguesa/Acciones/OnlineCharge"; // Importa el componente OnlineCharge
 
 const Flow = () => {
   const {
@@ -24,10 +24,12 @@ const Flow = () => {
     selectedAnswer,
     setNegotiationActive,
     setFollowUpActive,
+    setPaymentActive,
+    setOnlineChargeActive,
     stoppedTime,
     communicationData,
     setStoppedTime
-  } = useContext(AppContext); // Agrega stoppedTime y communicationData del contexto
+  } = useContext(AppContext); // Agrega funciones del contexto para manejar estados
   const [userFlowData, setUserFlowData] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
   const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -45,9 +47,9 @@ const Flow = () => {
   const [isCommentValid, setIsCommentValid] = useState(false); // Estado para la validez del comentario
   const [showCalculator, setShowCalculator] = useState(false); // Estado para controlar el modal CalculatorSimulator
   const [showPayments, setShowPayments] = useState(false); // Estado para controlar el modal Payments
-  const [showTalks, setShowTalks] = useState(false); // Estado para controlar el modal Talks
-
-  console.log(setStoppedTime);
+  const [showOnlineCharge, setShowOnlineCharge] = useState(false); // Estado para controlar el modal OnlineCharge
+  const [isPaymentActive, setIsPaymentActive] = useState(false); // Estado para pagos
+  const [isOnlineChargeActive, setIsOnlineChargeActive] = useState(false); // Estado para cargos en línea
 
   const handleSaveComment = (comment) => {
     setSavedComment(comment); // Actualiza el comentario guardado
@@ -55,24 +57,33 @@ const Flow = () => {
   };
 
   const handleCloseFollowUps = () => {
-    setShowFollowUps(false); // Cierra el modal de seguimiento
+    console.log("Cerrando FollowUps...");
+    setShowFollowUps(false); // Cierra el modal FollowUps
   };
 
   const handleOpenCalculator = () => setShowCalculator(true); // Abre el modal
-  const handleCloseCalculator = () => setShowCalculator(false); // Cierra el modal
+  const handleCloseCalculator = () => {
+    console.log("Cerrando CalculatorSimulator...");
+    setShowCalculator(false); // Cierra el modal CalculatorSimulator
+  };
 
   const handleOpenPayments = () => setShowPayments(true); // Abre el modal Payments
-  const handleClosePayments = () => setShowPayments(false); // Cierra el modal Payments
+  const handleClosePayments = () => {
+    console.log("Cerrando Payments...");
+    setShowPayments(false); // Cierra el modal Payments
+  };
 
-  const handleOpenTalks = () => setShowTalks(true); // Abre el modal Talks
-  const handleCloseTalks = () => setShowTalks(false); // Cierra el modal Talks
+  const handleOpenOnlineCharge = () => setShowOnlineCharge(true); // Abre el modal OnlineCharge
+  const handleCloseOnlineCharge = () => {
+    console.log("Cerrando OnlineCharge...");
+    setShowOnlineCharge(false); // Cierra el modal OnlineCharge
+  };
 
   const handleStopTimer = () => {
     if (stoppedTime) {
-      console.log("Tiempo detenido desde AppContext:", stoppedTime); // Imprime el tiempo detenido
+      // Imprime el tiempo detenido
       return stoppedTime; // Devuelve el tiempo detenido
     } else {
-      console.warn("El tiempo detenido aún es null.");
       return "00:00:02"; // Valor predeterminado
     }
   };
@@ -92,6 +103,14 @@ const Flow = () => {
     setFollowUpActive(isFollowUpActive); // Envía isFollowUpActive al contexto
   }, [isFollowUpActive, setFollowUpActive]);
 
+  useEffect(() => {
+    setPaymentActive(isPaymentActive); // Envía isPaymentActive al contexto
+  }, [isPaymentActive, setPaymentActive]);
+
+  useEffect(() => {
+    setOnlineChargeActive(isOnlineChargeActive); // Envía isOnlineChargeActive al contexto
+  }, [isOnlineChargeActive, setOnlineChargeActive]);
+
   const clearStates = () => {
     setUserFlowData([]);
     setCurrentQuestionId(null);
@@ -106,34 +125,47 @@ const Flow = () => {
     setIsFollowUpActive(false);
     setStartTimer(false);
   };
+  const clearStatesManagment = () => {
+    setUserFlowData([]);
+    setCurrentQuestionId(null);
+    setSelectedAnswers({});
+    setSelectedValues({});
+    setAnswerHistory([]);
+    setIsFlowFinished(false);
+    setSavedComment("");
+
+    setTriggerLastAnswerActions(false);
+
+    setStartTimer(false);
+    clearStatesManagment(); // Limpia los estados del managment
+  };
 
   //Renderiza las ventanas que continunan del flujo
   const handleLastAnswerActions = () => {
     if (answerHistory.length > 0) {
       const lastAnswer = answerHistory[answerHistory.length - 1]; // Obtiene el último elemento del historial
 
-      if (lastAnswer.negociacion === 1 && lastAnswer.seguimiento === 1) {
+      if (lastAnswer.negociación === 1 && lastAnswer.seguimiento === 1) {
         console.log("Entró a negociación.");
         setIsNegotiationActive(true); // Activa la variable de negociación
         handleOpenCalculator(); // Abre el modal CalculatorSimulator
         toast.info("Flujo preparado para negociación.");
-      } else if (lastAnswer.seguimiento === 1 && lastAnswer.negociacion === 0) {
+      } else if (lastAnswer.seguimiento === 1 && lastAnswer.negociación === 0) {
         console.log("Entró a seguimiento.");
         setIsFollowUpActive(true); // Activa la variable de seguimiento
         setShowFollowUps(true); // Muestra el modal de FollowUps
         toast.info("Flujo preparado para seguimiento.");
       } else if (idReportePago === 1013) {
         console.log("Entró a Reporte de Pago.");
+        setIsPaymentActive(true); // Activa la variable de pagos
         handleOpenPayments(); // Abre el modal Payments
         toast.info("Flujo preparado para reportar pago.");
       } else if (idCargoLinea === 1034) {
         console.log("Entró a Cargo Linea.");
-        handleOpenTalks(); // Abre el modal Talks
+        setIsOnlineChargeActive(true); // Activa la variable de cargos en línea
+        handleOpenOnlineCharge(); // Abre el modal OnlineCharge
         toast.info("Flujo preparado para generar Cargo Linea.");
       } else {
-        toast.success(
-          "Flujo finalizado aqui renderiza cuando no hay negociacion ni seguimiento."
-        );
         clearStates(); // Limpia los estados
         // Renderiza nuevamente el flujo
         return (
@@ -165,7 +197,7 @@ const Flow = () => {
   const responseData = JSON.parse(localStorage.getItem("responseData"));
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
   const idContacto = answerHistory.find(
-    (item) => item.idPregunta === 3
+    (item) => item.idPregunta === 3 || item.idPregunta === 4
   )?.idValor;
   const idSituacion = answerHistory.find(
     (item) => item.idPregunta === 8
@@ -205,7 +237,7 @@ const Flow = () => {
       idParentesco: idParentesco ? idParentesco : null,
       nombreContacto: communicationData?.name ? communicationData.name : null,
       idCausaNoPago: idCausaNoPago ? idCausaNoPago : null,
-      comentario: comment
+      comentario: comment ? comment : null
     };
     console.log("Datos de gestión a guardar:", dataManagment);
     try {
@@ -322,11 +354,7 @@ const Flow = () => {
     const idQuienContesto = answerHistory.some(
       (item) => item.idValor === 1109 || item.idValor === 1129
     );
-    console.log(
-      "Comunico =" + idComunico,
-      "Dijo =" + idDijo,
-      "Quien contesto =" + idQuienContesto
-    );
+
     const handleAnswerChange = async (
       idPregunta,
       idRespuesta,
@@ -336,7 +364,7 @@ const Flow = () => {
       respuesta,
       pregunta,
       seguimiento,
-      negociacion,
+      negociación,
       identificador
     ) => {
       // Verifica si el flujo ha terminado
@@ -352,7 +380,7 @@ const Flow = () => {
             idSiguientePregunta: idSiguientePregunta,
             idValor: idValor,
             seguimiento: seguimiento,
-            negociacion: negociacion,
+            negociación: negociación,
             identificador: identificador
           }
         ];
@@ -378,7 +406,7 @@ const Flow = () => {
           idSiguientePregunta: idSiguientePregunta,
           idValor: idValor,
           seguimiento: seguimiento,
-          negociacion: negociacion,
+          negociación: negociación,
           identificador: identificador
         }
       ];
@@ -407,7 +435,7 @@ const Flow = () => {
           pregunta: pregunta,
           idClase: idClase,
           seguimiento: seguimiento,
-          negociacion: negociacion,
+          negociación: negociación,
           identificador: identificador
         },
         selectedAnswer
@@ -625,13 +653,15 @@ const Flow = () => {
             {/* Implementación del timer */}
             {isFlowFinished ? (
               selectedAnswer.value === 10 ? (
-                renderContent() //Renderiza formulario final de flujo para llamada entrada
+                renderContent() // Renderiza formulario final de flujo para llamada entrada
               ) : selectedAnswer.value === 2 ? (
-                renderContentEnter() //Renderiza formulario final de flujo para llamada manual
+                renderContentEnter() // Renderiza formulario final de flujo para llamada manual
               ) : (
-                <h5>
-                  Flujo para guardar gestión cuando no se muestra comentario
-                </h5>
+                <>
+                  <h5>Presiona guardar para finalizar el flujo</h5>
+                  {setIsCommentValid(true)}{" "}
+                  {/* Marca isCommentValid como true */}
+                </>
               )
             ) : (
               <>
@@ -658,7 +688,7 @@ const Flow = () => {
                         question.respuesta,
                         question.pregunta,
                         question.seguimiento,
-                        question.negociacion,
+                        question.negociación,
                         question.identificador
                       )
                     }
@@ -712,16 +742,19 @@ const Flow = () => {
 
       <CalculatorSimulator
         show={showCalculator}
-        handleClose={handleCloseCalculator}
+        handleClose={handleCloseCalculator} // Asegura el cierre correcto
       />
 
       <Payments show={showPayments} handleClose={handleClosePayments} />
-      <Talks show={showTalks} handleClose={handleCloseTalks} />
+      <OnlineCharge
+        show={showOnlineCharge}
+        handleClose={handleCloseOnlineCharge}
+      />
 
       {/* Modal de FollowUps */}
       <FollowUps
         show={showFollowUps}
-        handleClose={handleCloseFollowUps}
+        handleClose={handleCloseFollowUps} // Asegura el cierre correcto
         isFollowUpActive={isFollowUpActive}
       />
     </>

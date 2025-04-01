@@ -244,6 +244,12 @@ const Telephones = () => {
                     className="me-2 input-phone"
                     style={{ width: "25%" }}
                     onClick={() => {
+                      if (!searchResults || searchResults.length === 0) {
+                        toast.warning("Primero debes seleccionar una cuenta.", {
+                          position: "top-right"
+                        });
+                        return;
+                      }
                       setSelectedAnswer({
                         value: 10,
                         dataPhone: {

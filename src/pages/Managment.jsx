@@ -39,6 +39,8 @@ const Managment = () => {
   const [lastPhoneNumberFromToast, setLastPhoneNumberFromToast] = useState("");
   const [communicationData, setCommunicationData] = useState(null); // Estado para los datos de CommunicationPhone
   const [stoppedTime, setStoppedTime] = useState(null); // Estado para el tiempo detenido
+  const [isPaymentActive, setPaymentActive] = useState(false); // Estado para pagos
+  const [isOnlineChargeActive, setOnlineChargeActive] = useState(false); // Estado para cargos en línea
   const token = responseData?.ejecutivo?.token;
   const nombreEjecutivo =
     responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
@@ -188,6 +190,10 @@ const Managment = () => {
     setNegotiationActive,
     isFollowUpActive,
     setFollowUpActive,
+    isPaymentActive, // Enviar estado de pagos al contexto
+    setPaymentActive, // Enviar función para actualizar pagos al contexto
+    isOnlineChargeActive, // Enviar estado de cargos en línea al contexto
+    setOnlineChargeActive, // Enviar función para actualizar cargos en línea al contexto
     lastPhoneNumberFromToast,
     setLastPhoneNumberFromToast,
     communicationData,
