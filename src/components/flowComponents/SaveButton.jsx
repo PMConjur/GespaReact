@@ -11,7 +11,7 @@ const SaveButton = ({ onSave, isValid, data, onStopTimer }) => {
         if (stoppedTime) {
           console.log("Tiempo detenido desde SaveButton:", stoppedTime); // Imprime el tiempo detenido
           onSave(data); // Envía los datos al componente padre
-          toast.success("Guardado correctamente.");
+          
         } else {
           toast.error(
             "No se pudo detener el temporizador. Verifica la configuración."
