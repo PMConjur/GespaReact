@@ -178,7 +178,8 @@ const Telephones = () => {
           _Confirmado: foundRow._Confirmado,
           fecha_Insert: foundRow.fecha_Insert,
           calificacion: foundRow.calificacion,
-          activo: foundRow.activo
+          activo: foundRow.activo,
+          idModo: 2202
         }
       });
       toast.success(`Número encontrado: ${phoneNumber}`, {
