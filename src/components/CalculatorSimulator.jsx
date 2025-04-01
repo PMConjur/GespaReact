@@ -795,6 +795,11 @@ const CalculatorSimulator = ({show, handleClose}) => {
                                 name="meses"
                                 value={formInputs.meses}
                                 onChange={handleInputChange} // Actualiza el estado formInputs
+                                onKeyPress={(e) => {
+                                  if (!/^\d*$/.test(e.key)) {
+                                    e.preventDefault(); // Evita que se ingresen caracteres no numéricos
+                                  }
+                                }}
                               />
                             </Form.Group>
                             <Form.Group className="mt-3">
@@ -926,8 +931,26 @@ const CalculatorSimulator = ({show, handleClose}) => {
                                 placeholder="Monto"
                                 type="text"
                                 name="montoMod"
-                                value={modifyForm.montoMod}
-                                onChange={handleModifyFormChange}
+                                value={
+                                  modifyForm.montoMod
+                                    ? `$${modifyForm.montoMod}`
+                                    : ""
+                                }
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(
+                                    /^\$/,
+                                    ""
+                                  ); // Elimina el '$' si ya existe
+                                  setModifyForm((prev) => ({
+                                    ...prev,
+                                    montoMod: value, // Actualiza el estado sin el '$'
+                                  }));
+                                }}
+                                onKeyPress={(e) => {
+                                  if (!/^\d*\.?\d*$/.test(e.key)) {
+                                    e.preventDefault(); // Evita que se ingresen caracteres no numéricos
+                                  }
+                                }}
                               />
                             </Form.Group>
                             <Form.Group className="">
