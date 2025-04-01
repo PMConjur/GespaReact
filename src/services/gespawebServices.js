@@ -143,7 +143,7 @@ export const fetchInformation = async (idCuenta) => {
     //console.log("Iniciando llamada a la API...");
 
     const response = await servicio.get(
-      `/search-customer/products-info?idCuenta=${idCuenta}`
+      `/search-customer/products-info-full?idCuenta=${idCuenta}`
     );
 
     const message = getErrorStatus(response.status);

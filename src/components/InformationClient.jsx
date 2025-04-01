@@ -24,7 +24,7 @@ const InformationClient = () => {
               toast.error(
                 `No hay carga de información para la cuenta ${result.idCuenta}`,
                 {
-                  position: "top-right" // Mostrar toast en el lado derecho
+                  position: "top-right", // Mostrar toast en el lado derecho
                 }
               );
               setToastShown(true); // Marcar que el toast ya se mostró
@@ -56,10 +56,17 @@ const InformationClient = () => {
     for (let i = 0; i < entries.length; i += 3) {
       // Dividir en filas de 3 columnas
       rows.push(
-        <tr key={i} >
+        <tr key={i}>
           {entries.slice(i, i + 3).map(([key, value], index) => (
-            <td key={index} className="text-info">
-              {key}: {value || "--"}
+            <td
+              key={index}
+              className="text-info"
+              style={{
+                fontWeight: value.fontWeight || "normal",
+                color: value.color || "inherit",
+              }}
+            >
+              {key}: {value.valor || "--"}
             </td>
           ))}
         </tr>
