@@ -115,13 +115,13 @@ function Login() {
                   GESPA <Image src={logo} rounded className="img-logo" />
                 </h1>
               </div>
-              <br/>
-              <br/>
+              <br />
+              <br />
               <Card
                 className="p-4 text-white shadow-lg"
                 style={{ backgroundColor: "#1c1f24" }}
               >
-                <h3>Inicio sesión CJ</h3>
+                <h3>Inicio sesión</h3>
 
                 <span className="bg-gray">
                   Ingresa tu usuario de 4 dígitos y tu contraseña
