@@ -908,95 +908,100 @@ namespace NoriAPI.Services
             //---------------------------------------Negociaciones--------------------------------//
             //con el Idestado se valida si la promesa esta vigente
 
-
             dtnegociaciones = await _ejecutivoRepository.ObtieneNegociaciones(Cartera, NoCuenta);
-
-            dtnegociaciones.PrimaryKey = new DataColumn[] {
+            DataTable dtFiltrado = new DataTable();
+            if (dtnegociaciones != null)
+            {
+                dtnegociaciones.PrimaryKey = new DataColumn[] {
                 dtnegociaciones.Columns["Fecha_Insert"],
                 dtnegociaciones.Columns["Segundo_Insert"],
                 dtnegociaciones.Columns["idHerramienta"]
             };
-            dtnegociaciones.DefaultView.Sort = "FechaHora DESC";
+                dtnegociaciones.DefaultView.Sort = "FechaHora DESC";
 
-            // Crear nuevo DataTable solo con las columnas que quieres
-            DataTable dtFiltrado = new DataTable();
-            dtFiltrado.Columns.Add("Fecha_Insert", typeof(DateTime));
-            dtFiltrado.Columns.Add("Segundo_Insert", typeof(string));
-            dtFiltrado.Columns.Add("Herramienta", typeof(string));
-            dtFiltrado.Columns.Add("idEstado", typeof(string)); // Aquí lo dejamos como string para poder poner "Incumplida"
-            dtFiltrado.Columns.Add("Vencimiento", typeof(string));
-            dtFiltrado.Columns.Add("SaldoInterés", typeof(decimal));
+                // Crear nuevo DataTable solo con las columnas que quieres                
+                dtFiltrado.Columns.Add("Fecha_Insert", typeof(DateTime));
+                dtFiltrado.Columns.Add("Segundo_Insert", typeof(string));
+                dtFiltrado.Columns.Add("Herramienta", typeof(string));
+                dtFiltrado.Columns.Add("idEstado", typeof(string)); // Aquí lo dejamos como string para poder poner "Incumplida"
+                dtFiltrado.Columns.Add("Vencimiento", typeof(string));
+                dtFiltrado.Columns.Add("SaldoInterés", typeof(decimal));
 
-            foreach (DataRow row in dtnegociaciones.Rows)
-            {
-                DateTime fechaInsert = Convert.ToDateTime(row["Fecha_Insert"].ToString());
-                string segundoInsert = row["Segundo_Insert"].ToString();
-                string herramienta = row["Herramienta"].ToString();
-                string estado = row["idEstado"].ToString();
-                string vencimiento = row["Vencimiento"].ToString().Replace("12:00:00 a. m.", "");
-                decimal saldo = Convert.ToDecimal(row["SaldoInterés"]);
+                foreach (DataRow row in dtnegociaciones.Rows)
+                {
+                    DateTime fechaInsert = Convert.ToDateTime(row["Fecha_Insert"].ToString());
+                    string segundoInsert = row["Segundo_Insert"].ToString();
+                    string herramienta = row["Herramienta"].ToString();
+                    string estado = row["idEstado"].ToString();
+                    string vencimiento = row["Vencimiento"].ToString().Replace("12:00:00 a. m.", "");
+                    decimal saldo = Convert.ToDecimal(row["SaldoInterés"]);
 
-                // Validación del estado
-                if (estado == "2901")
-                    estado = "Vigente";
-                else if (estado == "2902")
-                    estado = "Cumplida";
-                else if (estado == "2903")
-                    estado = "Incumplida";
-                else if (estado == "2904")
-                    estado = "Parcialmente Cumplida";
-                else if (estado == "2905")
-                    estado = "Cancelada";
-                else if (estado == "2906")
-                    estado = "Plazo vencido";
-                else if (estado == "2907")
-                    estado = "Pendiente";
-                else if (estado == "2908")
-                    estado = "Permanente";
-                else if (estado == "2909")
-                    estado = "Reestructurada";
-                else if (estado == "")
-                    estado = "";
+                    // Validación del estado
+                    if (estado == "2901")
+                        estado = "Vigente";
+                    else if (estado == "2902")
+                        estado = "Cumplida";
+                    else if (estado == "2903")
+                        estado = "Incumplida";
+                    else if (estado == "2904")
+                        estado = "Parcialmente Cumplida";
+                    else if (estado == "2905")
+                        estado = "Cancelada";
+                    else if (estado == "2906")
+                        estado = "Plazo vencido";
+                    else if (estado == "2907")
+                        estado = "Pendiente";
+                    else if (estado == "2908")
+                        estado = "Permanente";
+                    else if (estado == "2909")
+                        estado = "Reestructurada";
+                    else if (estado == "")
+                        estado = "";
 
-                // Agregamos la fila con los valores al nuevo DataTable
-                dtFiltrado.Rows.Add(fechaInsert, segundoInsert, herramienta, estado, vencimiento, saldo);
-                dtFiltrado.DefaultView.Sort = "Fecha_Insert DESC";
-                dtFiltrado = dtFiltrado.DefaultView.ToTable();
+                    // Agregamos la fila con los valores al nuevo DataTable
+                    dtFiltrado.Rows.Add(fechaInsert, segundoInsert, herramienta, estado, vencimiento, saldo);
+                    dtFiltrado.DefaultView.Sort = "Fecha_Insert DESC";
+                    dtFiltrado = dtFiltrado.DefaultView.ToTable();
 
-            }
-
+                }
+            }           
             //-----------------------------------Plazos------------------------------------------//
 
             dtPlazos = await _ejecutivoRepository.ObtienePlazos(Cartera, NoCuenta);
-
-            DataColumn dcFechaHora = new DataColumn("FechaHora_Insert", typeof(DateTime));
-            dtPlazos.Columns.Add(dcFechaHora);
-            for (int i = 0; i < dtPlazos.Rows.Count; i++)
+            if (dtPlazos != null)
             {
-                DateTime dtFecha = Convert.ToDateTime(dtPlazos.Rows[i]["Fecha_Insert"]);
+                DataColumn dcFechaHora = new DataColumn("FechaHora_Insert", typeof(DateTime));
+                dtPlazos.Columns.Add(dcFechaHora);
+                for (int i = 0; i < dtPlazos.Rows.Count; i++)
+                {
+                    DateTime dtFecha = Convert.ToDateTime(dtPlazos.Rows[i]["Fecha_Insert"]);
 
-                // Intentar convertir "Segundo_Insert" a un TimeSpan
-                if (TimeSpan.TryParse(dtPlazos.Rows[i]["Segundo_Insert"].ToString(), out TimeSpan tsSegundo))
-                {
-                    dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.Add(tsSegundo);
+                    // Intentar convertir "Segundo_Insert" a un TimeSpan
+                    if (TimeSpan.TryParse(dtPlazos.Rows[i]["Segundo_Insert"].ToString(), out TimeSpan tsSegundo))
+                    {
+                        dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.Add(tsSegundo);
+                    }
+                    else if (double.TryParse(dtPlazos.Rows[i]["Segundo_Insert"].ToString(), out double segundos))
+                    {
+                        dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.AddSeconds(segundos);
+                    }
+                    else
+                    {
+                        throw new InvalidCastException($"No se pudo convertir 'Segundo_Insert' en la fila {i} a TimeSpan.");
+                    }
+                    //DateTime dtFecha = Convert.ToDateTime(dtPlazos.Rows[i]["Fecha_Insert"]);
+                    //TimeSpan tsSegundo = (TimeSpan)dtPlazos.Rows[i]["Segundo_Insert"];
+                    //dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.Add(tsSegundo);
                 }
-                else if (double.TryParse(dtPlazos.Rows[i]["Segundo_Insert"].ToString(), out double segundos))
-                {
-                    dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.AddSeconds(segundos);
-                }
-                else
-                {
-                    throw new InvalidCastException($"No se pudo convertir 'Segundo_Insert' en la fila {i} a TimeSpan.");
-                }
-                //DateTime dtFecha = Convert.ToDateTime(dtPlazos.Rows[i]["Fecha_Insert"]);
-                //TimeSpan tsSegundo = (TimeSpan)dtPlazos.Rows[i]["Segundo_Insert"];
-                //dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.Add(tsSegundo);
-            }
+            }            
 
             //----------------------------------------Pagos----------------------------------------------//
 
             dtPagos = await _ejecutivoRepository.ObtienePagos(Cartera, NoCuenta);
-            dtPagos.DefaultView.Sort = "FechaPago DESC";
+            if (dtPagos != null) 
+            {
+                dtPagos.DefaultView.Sort = "FechaPago DESC";
+            }            
 
             //------------------------------------Herramientas------------------------------------------//
 
@@ -1186,10 +1191,13 @@ namespace NoriAPI.Services
             //Math.Ceiling(MontoRequerido * 100) / 100;
             días1erPago = Convert.ToInt32(drHerramienta["Días1erPago"]);
 
-            DataRow[] drParcial = dtnegociaciones.Select("idHerramienta IN (145,137) AND Fecha_Insert > '" + DateTime.Today.AddMonths(-1).ToShortDateString() + "'");
-            if (drParcial.Length > 0)
-                días1erPago = 28;
-
+            if(dtnegociaciones != null)
+            {
+                DataRow[] drParcial = dtnegociaciones.Select("idHerramienta IN (145,137) AND Fecha_Insert > '" + DateTime.Today.AddMonths(-1).ToShortDateString() + "'");
+                if (drParcial.Length > 0)
+                    días1erPago = 28;
+            }                                                                     
+            
             _iMensualidades = Convert.ToInt16(drHerramienta["Mensualidades"]);
 
             //Días Máximos
@@ -1198,7 +1206,7 @@ namespace NoriAPI.Services
             /////////////////////////////Aqui termina el metodo///////////////////////////////////////////
 
             //Convierte datatable a list
-
+            
             List<OfrecimientosInfo> listaOfrecimientos = _ejecutivoRepository.ConvertirDataTableALista(dtFiltrado);
             List<HerramientasInfo> listaHerramientas = _ejecutivoRepository.ConvertirDataTableALista_(dtHerrFiltradas);
 
@@ -1240,20 +1248,22 @@ namespace NoriAPI.Services
             //---------------------------------------Negociaciones--------------------------------//
             //con el Idestado se valida si la promesa esta vigente
             dtnegociaciones = await _ejecutivoRepository.ObtieneNegociaciones(idcartera, nocuenta);
-
-            dtnegociaciones.PrimaryKey = new DataColumn[] {
+            if (dtnegociaciones != null)
+            {
+                dtnegociaciones.PrimaryKey = new DataColumn[] {
                 dtnegociaciones.Columns["Fecha_Insert"],
                 dtnegociaciones.Columns["Segundo_Insert"],
                 dtnegociaciones.Columns["idHerramienta"]
             };
-            dtnegociaciones.DefaultView.Sort = "FechaHora DESC";
-
+                dtnegociaciones.DefaultView.Sort = "FechaHora DESC";
+            }
+            
             //----------------------------------------Saldo y producto----------------------------------------------//
 
             tblsaldo = await _ejecutivoRepository.InfoCuenta(idcartera, nocuenta);
             double saldo = Convert.ToDouble(tblsaldo.Rows[0]["Saldo"].ToString());
 
-            tblCuenta = await _ejecutivoRepository.ObtieneProducto(nocuenta);
+            //tblCuenta = await _ejecutivoRepository.ObtieneProducto(nocuenta);
 
             //------------------------------------Herramientas------------------------------------------//
 
@@ -1261,23 +1271,24 @@ namespace NoriAPI.Services
             HerramientasC = await _ejecutivoRepository.ObtieneHerramientasCompletas();
             HerramientasC.PrimaryKey = new DataColumn[] { HerramientasC.Columns["idHerramienta"] };
             // IDs que quieres filtrar
-            int[] idsFiltrar = { 0, 136, 137, 138, 139, 1010, 142, 684 };
+            //int[] idsFiltrar = { 0, 136, 137, 138, 139, 1010, 142, 684 };
 
-            dtHerrFiltradas.Columns.Add("idHerramienta", typeof(int));
-            dtHerrFiltradas.Columns.Add("Nombre", typeof(string));
+            //dtHerrFiltradas.Columns.Add("idHerramienta", typeof(int));
+            //dtHerrFiltradas.Columns.Add("Nombre", typeof(string));
 
-            // Recorrer las filas y filtrar
-            foreach (DataRow row in HerramientasC.Rows)
-            {
-                int idHerramienta = Convert.ToInt32(row["idHerramienta"]);
-                if (idsFiltrar.Contains(idHerramienta))
-                {
-                    DataRow newRow = dtHerrFiltradas.NewRow();
-                    newRow["idHerramienta"] = idHerramienta;
-                    newRow["Nombre"] = row["Nombre"].ToString();
-                    dtHerrFiltradas.Rows.Add(newRow);
-                }
-            }
+            //// Recorrer las filas y filtrar
+            //foreach (DataRow row in HerramientasC.Rows)
+            //{
+            //    int idHerramienta = Convert.ToInt32(row["idHerramienta"]);
+            //    if (idsFiltrar.Contains(idHerramienta))
+            //    {
+            //        DataRow newRow = dtHerrFiltradas.NewRow();
+            //        newRow["idHerramienta"] = idHerramienta;
+            //        newRow["Nombre"] = row["Nombre"].ToString();
+            //        dtHerrFiltradas.Rows.Add(newRow);
+            //    }
+            //}
+
             DataRow drHerramienta = HerramientasC.Rows.Find(idherramienta);// aqui va la herramienta elegida
             dtDescuentos.Columns.Add("idHerramienta");
             dtDescuentos.Columns.Add("Descuento");
@@ -1351,43 +1362,47 @@ namespace NoriAPI.Services
 
             dtPagosOriginal = await _ejecutivoRepository.ObtienePagos(idcartera, nocuenta);
             dtPagos = new DataTable(); // Crea un nuevo DataTable
-            dtPagos.Columns.Add("idCartera", typeof(int));
-            dtPagos.Columns.Add("idCuenta", typeof(string));
-            dtPagos.Columns.Add("FechaPago", typeof(DateTime));
-            dtPagos.Columns.Add("MontoPago", typeof(double)); // Columna MontoPago como double
-            dtPagos.Columns.Add("Referencia", typeof(string));
-            dtPagos.Columns.Add("Sucursal", typeof(string));
-            dtPagos.Columns.Add("Reportado", typeof(string));
-            dtPagos.Columns.Add("idEtapa", typeof(string));
-            dtPagos.Columns.Add("AcornPostDate", typeof(string));
-            dtPagos.Columns.Add("Guardado", typeof(string));
-            foreach (DataRow fila in dtPagosOriginal.Rows)
+
+            if (dtPagosOriginal != null)
             {
-                DataRow nuevaFila = dtPagos.NewRow();
+                dtPagos.Columns.Add("idCartera", typeof(int));
+                dtPagos.Columns.Add("idCuenta", typeof(string));
+                dtPagos.Columns.Add("FechaPago", typeof(DateTime));
+                dtPagos.Columns.Add("MontoPago", typeof(double)); // Columna MontoPago como double
+                dtPagos.Columns.Add("Referencia", typeof(string));
+                dtPagos.Columns.Add("Sucursal", typeof(string));
+                dtPagos.Columns.Add("Reportado", typeof(string));
+                dtPagos.Columns.Add("idEtapa", typeof(string));
+                dtPagos.Columns.Add("AcornPostDate", typeof(string));
+                dtPagos.Columns.Add("Guardado", typeof(string));
+                foreach (DataRow fila in dtPagosOriginal.Rows)
+                {
+                    DataRow nuevaFila = dtPagos.NewRow();
 
-                // Manejo de valores nulos
-                nuevaFila["idCartera"] = fila["idCartera"] == DBNull.Value ? null : fila["idCartera"];
-                nuevaFila["idCuenta"] = fila["idCuenta"] == DBNull.Value ? null : fila["idCuenta"];
-                nuevaFila["FechaPago"] = fila["FechaPago"] == DBNull.Value ? DateTime.MinValue : fila["FechaPago"];
-                // Convierte el valor de MontoPago a double
-                if (fila["MontoPago"] != DBNull.Value && double.TryParse(fila["MontoPago"].ToString(), out double montoPago))
-                {
-                    nuevaFila["MontoPago"] = montoPago;
+                    // Manejo de valores nulos
+                    nuevaFila["idCartera"] = fila["idCartera"] == DBNull.Value ? null : fila["idCartera"];
+                    nuevaFila["idCuenta"] = fila["idCuenta"] == DBNull.Value ? null : fila["idCuenta"];
+                    nuevaFila["FechaPago"] = fila["FechaPago"] == DBNull.Value ? DateTime.MinValue : fila["FechaPago"];
+                    // Convierte el valor de MontoPago a double
+                    if (fila["MontoPago"] != DBNull.Value && double.TryParse(fila["MontoPago"].ToString(), out double montoPago))
+                    {
+                        nuevaFila["MontoPago"] = montoPago;
+                    }
+                    else
+                    {
+                        nuevaFila["MontoPago"] = 0.0; // O algún valor predeterminado si la conversión falla o es nulo
+                    }
+                    nuevaFila["Referencia"] = fila["Referencia"] == DBNull.Value ? null : fila["Referencia"];
+                    nuevaFila["Sucursal"] = fila["Sucursal"] == DBNull.Value ? null : fila["Sucursal"];
+                    nuevaFila["Reportado"] = fila["Reportado"] == DBNull.Value ? "" : fila["Reportado"];
+                    nuevaFila["idEtapa"] = fila["idEtapa"] == DBNull.Value ? null : fila["idEtapa"];
+                    nuevaFila["AcornPostDate"] = fila["AcornPostDate"] == DBNull.Value ? "" : fila["AcornPostDate"];
+                    nuevaFila["Guardado"] = fila["Guardado"] == DBNull.Value ? DateTime.MinValue : fila["Guardado"];
+                    dtPagos.Rows.Add(nuevaFila);
                 }
-                else
-                {
-                    nuevaFila["MontoPago"] = 0.0; // O algún valor predeterminado si la conversión falla o es nulo
-                }
-                nuevaFila["Referencia"] = fila["Referencia"] == DBNull.Value ? null : fila["Referencia"];
-                nuevaFila["Sucursal"] = fila["Sucursal"] == DBNull.Value ? null : fila["Sucursal"];
-                nuevaFila["Reportado"] = fila["Reportado"] == DBNull.Value ? "" : fila["Reportado"];
-                nuevaFila["idEtapa"] = fila["idEtapa"] == DBNull.Value ? null : fila["idEtapa"];
-                nuevaFila["AcornPostDate"] = fila["AcornPostDate"] == DBNull.Value ? "" : fila["AcornPostDate"];
-                nuevaFila["Guardado"] = fila["Guardado"] == DBNull.Value ? DateTime.MinValue : fila["Guardado"];
-                dtPagos.Rows.Add(nuevaFila);
+                dtPagos.DefaultView.Sort = "FechaPago DESC";
             }
-            dtPagos.DefaultView.Sort = "FechaPago DESC";
-
+            
             DateTime dtFechaPago = DateTime.Now;//este siempre va a ser un dia despues de la fecha actual y la manda el omi
             dtFechaPago = dtFechaPago.AddDays(1);
 
@@ -1464,14 +1479,11 @@ namespace NoriAPI.Services
                             (tblPlazos, double nuevoPago) = ModificaPagos(filaMod, dMontoNegociado, dtFechaPago_, tblPlazos, montoMod, _bLendingPrimes);
                             dPago = nuevoPago;
                         }
-
                     }
-
                 }
-
             }
             //Muestra cálculos
-            double MontoRequerido_ = Convert.ToDouble(dMontoRequerido.ToString());
+            double MontoRequerido_ = Convert.ToDouble(MontoRequerido.ToString());
             double MontoNegociado_ = Convert.ToDouble(dMontoNegociado.ToString());
             double Pago = Convert.ToDouble(tblPlazos.Rows[0]["Pago"].ToString());
             string Plazos = tblPlazos.Rows.Count.ToString();

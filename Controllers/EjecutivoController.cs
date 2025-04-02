@@ -370,10 +370,16 @@ namespace NoriAPI.Controllers
 
             return Ok(result);
         }
+        [HttpPost("guarda-Elimina-Plazos")]
+        public async Task<IActionResult> GuardaEliminaPlazos([FromBody] EliminaGuardaPlazos PlazosInfo)
+        {
+            var result = await _ejecutivoService.GuardaEliminaPlazos(PlazosInfo);
+            //return Ok(result);            
+            return Ok(new { Mensaje = result });
 
-        
-        [HttpPost ("GuardaNegociacionPlazos")]
-        [AllowAnonymous]
+        }
+
+        [HttpPost ("GuardaNegociacionPlazos")]       
         public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] NegociacionPlazosInput input)
         {
             var result = await _ejecutivoService.GuardaNegociacionPlazos(input);
@@ -385,17 +391,8 @@ namespace NoriAPI.Controllers
 
             return Ok(result); // Devuelve el resultado si no hay error
         }
-        [HttpPost("guarda-Elimina-Plazos")]
-        public async Task<IActionResult> GuardaEliminaPlazos([FromBody] EliminaGuardaPlazos PlazosInfo)
-        {
-            var result = await _ejecutivoService.GuardaEliminaPlazos(PlazosInfo);
-            //return Ok(result);            
-            return Ok(new { Mensaje = result });
-
-        }
-
+        
         [HttpPost ("IncrementaNegociacion")]
-
         public async Task<IActionResult> IncrementaNegociacion([FromBody] IncrementoNegociacion incrementaNegInfo)
         {
             var result = await _ejecutivoService.IncrementaNegociacion(incrementaNegInfo);
