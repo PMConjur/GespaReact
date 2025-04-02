@@ -72,6 +72,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   };
 
   const handleOptionChange = (e) => {
+    console.log("Switch cambiado a:", e.target.checked);
     setSelectedOption(e.target.checked);
   };
 
@@ -126,13 +127,18 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
     .filter((email) => typeof email === "string");
 
   return (
-    <Modal show={show} onHide={handleClose} size="xl" >
+    <Modal show={show} onHide={handleClose} size="xl">
       <Modal.Header closeButton>
         <Modal.Title>Estado de Cuenta</Modal.Title>
       </Modal.Header>
 
       <Modal.Body
-        style={{ padding: "5px 10px", maxHeight: '70vh', overflowY: "auto", position: 'relative' }}
+        style={{
+          padding: "5px 10px",
+          maxHeight: "70vh",
+          overflowY: "auto",
+          position: "relative",
+        }}
       >
         <div className="d-block d-lg-flex">
           <div>
@@ -142,11 +148,13 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                 overflow: "auto ",
                 maxWidth: "800px",
                 marginBottom: "auto",
-                maxHeight: '70vh'
+                maxHeight: "70vh",
               }}
             >
               {loading ? (
-                <span><Spinner animation="border" /></span> 
+                <span>
+                  <Spinner animation="border" />
+                </span>
               ) : (
                 <div>
                   <Table
@@ -157,7 +165,14 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                     className="custom-table-account"
                     style={{ tableLayout: "auto", whiteSpace: "nowrap" }} // Ajusta el ancho al contenido y evita el salto de línea
                   >
-                    <thead style={{ position: "sticky", top: 0, backgroundColor: "#343a40", zIndex: 1 }}>
+                    <thead
+                      style={{
+                        position: "sticky",
+                        top: 0,
+                        backgroundColor: "#343a40",
+                        zIndex: 1,
+                      }}
+                    >
                       <tr>
                         <th>Fecha</th>
                         <th>Hora</th>
@@ -178,12 +193,27 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                       ) : (
                         accountData.map((item, index) => (
                           <tr key={index}>
-                            <td style={{ textAlign: "left" }}>{item.Fecha_Insert?.split("T")[0] || "--"}</td> {/* Solo muestra la fecha antes de la 'T' */}
-                            <td style={{ textAlign: "left" }}>{item.Segundo_Insert}</td>
-                            <td style={{ textAlign: "left" }}>{item.NombreEjecutivo}</td>
-                            <td style={{ textAlign: "left" }}>{item.FechaInicial?.split("T")[0] || "--"}</td> {/* Solo muestra la fecha antes de la 'T' */}
-                            <td style={{ textAlign: "left" }}>{item.FechaFinal?.split("T")[0] || "--"}</td> {/* Solo muestra la fecha antes de la 'T' */}
-                            <td style={{ textAlign: "left" }}>{item._Consulta}</td>
+                            <td style={{ textAlign: "left" }}>
+                              {item.Fecha_Insert?.split("T")[0] || "--"}
+                            </td>{" "}
+                            {/* Solo muestra la fecha antes de la 'T' */}
+                            <td style={{ textAlign: "left" }}>
+                              {item.Segundo_Insert}
+                            </td>
+                            <td style={{ textAlign: "left" }}>
+                              {item.NombreEjecutivo}
+                            </td>
+                            <td style={{ textAlign: "left" }}>
+                              {item.FechaInicial?.split("T")[0] || "--"}
+                            </td>{" "}
+                            {/* Solo muestra la fecha antes de la 'T' */}
+                            <td style={{ textAlign: "left" }}>
+                              {item.FechaFinal?.split("T")[0] || "--"}
+                            </td>{" "}
+                            {/* Solo muestra la fecha antes de la 'T' */}
+                            <td style={{ textAlign: "left" }}>
+                              {item._Consulta}
+                            </td>
                             <td style={{ textAlign: "left" }}>
                               {item["Correo Electrónico"] &&
                               typeof item["Correo Electrónico"] === "string"
@@ -247,6 +277,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
 
                   <div className="d-grid gap-2 mb-3">
                     <Form.Switch
+                      key={selectedOption} // Fuerza el re-renderizado cuando cambia el estado
                       label="Consulta"
                       name="option"
                       checked={selectedOption}
