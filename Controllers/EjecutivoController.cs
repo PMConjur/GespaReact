@@ -531,7 +531,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost("SaveCargoEnlinea")]
-        [AllowAnonymous]
         public async Task<IActionResult> SaveCargoEnlinea( CargoEnLinea newCargoEn)
         {
             if (newCargoEn == null)
@@ -892,10 +891,10 @@ namespace NoriAPI.Controllers
             }
         }
 
-        [HttpGet("scripts-full/{idProducto}/{idCartera}/{cuenta}")]
-        public async Task<IActionResult> BuscaScripts(int idEjecutivo, int idProducto, int idCartera, string cuenta)
+        [HttpGet("scripts-full/{idEjecutivo}/{idProducto}/{idCartera}/{idCuenta}")]
+        public async Task<IActionResult> BuscaScripts(int idEjecutivo, int idProducto, int idCartera, string idCuenta)
         {
-            var resultado = await _ejecutivoService.BuscaScriptsTranslated(idEjecutivo, idProducto, idCartera, cuenta);
+            var resultado = await _ejecutivoService.BuscaScriptsTranslated(idEjecutivo, idProducto, idCartera, idCuenta);
 
             if (resultado.Rows.Count == 0)
             {
@@ -1114,7 +1113,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("ddDatos")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetDropDatos()
         {
             try
@@ -1141,7 +1139,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("ddFuentes")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetDropFuentes()
         {
             try
@@ -1764,7 +1761,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPut("ClasificaTelefono")]
-        [AllowAnonymous]
         public async Task<IActionResult> ClasificaTelefono(int idCartera, string idCuenta, long numeroTelefonico, int idClase, int idEjecutivoClasificacion)
         {
             string resultado = await _ejecutivoService.ClasificaTelefonoAsignadoAsync(idCartera, idCuenta, numeroTelefonico, idClase, idEjecutivoClasificacion);
