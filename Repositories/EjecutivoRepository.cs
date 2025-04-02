@@ -630,9 +630,13 @@ namespace NoriAPI.Repositories
                 parameters,
                 commandType: CommandType.Text
              ));
-
-            return ConvertToDataTable(negociaciones, "Negociaciones");
+            if (negociaciones != null && negociaciones.Any())
+                return ConvertToDataTable(negociaciones, "Negociaciones");
+            else
+                return null;
         }
+
+         
         public async Task<DataTable> ObtienePlazos(int Cartera, string NoCuenta)
         {
             using var connection = GetConnection("Piso2Amex");
@@ -649,8 +653,10 @@ namespace NoriAPI.Repositories
                 commandType: CommandType.Text
              ));
 
-            return ConvertToDataTable(plazos, "Plazos");
-
+            if (plazos != null && plazos.Any())
+                return ConvertToDataTable(plazos, "Plazos");
+            else
+                return null;
         }
         public async Task<DataTable> ObtienePagos(int Cartera, string NoCuenta)
         {
@@ -668,7 +674,10 @@ namespace NoriAPI.Repositories
                 parameters,
                 commandType: CommandType.Text
              ));
-            return ConvertToDataTable(pagos, "Pagos");
+            if (pagos != null && pagos.Any())
+                return ConvertToDataTable(pagos, "Pagos");
+            else
+                return null;
 
         }
         public async Task<DataTable> ObtieneHerramientas(string NoCuenta)
@@ -1354,24 +1363,29 @@ namespace NoriAPI.Repositories
         }
         public List<OfrecimientosInfo> ConvertirDataTableALista(DataTable dt)
         {
-            return dt.AsEnumerable().Select(row => new OfrecimientosInfo
+            if (dt.Rows.Count > 0)
             {
-                Fecha_Insert = Convert.ToString(row.Field<DateTime>("Fecha_Insert")),
-                Segundo_Insert = row.Field<string>("Segundo_Insert"),
-                Herramienta = row.Field<string>("Herramienta"),
-                idEstado = row.Field<string>("idEstado"),
-                Vencimiento = row.Field<string>("Vencimiento"),
-                SaldoInterés = Convert.ToString(row.Field<Decimal>("SaldoInterés"))
-            }).ToList();
+                return dt.AsEnumerable().Select(row => new OfrecimientosInfo
+                {
+                    Fecha_Insert = Convert.ToString(row.Field<DateTime>("Fecha_Insert")),
+                    Segundo_Insert = row.Field<string>("Segundo_Insert"),
+                    Herramienta = row.Field<string>("Herramienta"),
+                    idEstado = row.Field<string>("idEstado"),
+                    Vencimiento = row.Field<string>("Vencimiento"),
+                    SaldoInterés = Convert.ToString(row.Field<Decimal>("SaldoInterés"))
+                }).ToList();
+            }
+            else
+                return null;
         }
-        public List<HerramientasInfo> ConvertirDataTableALista_(DataTable dt)
-        {
-            return dt.AsEnumerable().Select(row => new HerramientasInfo
-            {
-                idHerramienta = row.Field<int>("idHerramienta"),
-                Nombre = row.Field<string>("Nombre")
-            }).ToList();
-        }
+                public List<HerramientasInfo> ConvertirDataTableALista_(DataTable dt)
+                {
+                    return dt.AsEnumerable().Select(row => new HerramientasInfo
+                    {
+                        idHerramienta = row.Field<int>("idHerramienta"),
+                        Nombre = row.Field<string>("Nombre")
+                    }).ToList();
+                }
         public List<CalculosInfo> ConvertirDataTableAListaC(DataTable dt)
         {
             return dt.AsEnumerable().Select(row => new CalculosInfo

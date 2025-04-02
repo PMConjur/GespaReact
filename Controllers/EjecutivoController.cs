@@ -24,7 +24,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/ejecutivo")]
-    //[Authorize]
+    [Authorize]
     public class EjecutivoController : ControllerBase
     {
         private readonly IConfiguration _configuration;
