@@ -70,7 +70,7 @@ namespace NoriAPI.Controllers
             return Ok(phones);
         }
 
-        [HttpGet("products-info")]
+        [HttpGet("products-info-full")]
         [AllowAnonymous]
         public async Task<IActionResult> GetProductData([FromQuery] string idCuenta)
         {
