@@ -36,6 +36,7 @@ const Managment = () => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isNegotiationActive, setNegotiationActive] = useState(false);
   const [isFollowUpActive, setFollowUpActive] = useState(false);
+  const [isOnlineChargeActive, setOnlineChargeActive] = useState(false);
   const [lastPhoneNumberFromToast, setLastPhoneNumberFromToast] = useState("");
   const [communicationData, setCommunicationData] = useState(null); // Estado para los datos de CommunicationPhone
   const [stoppedTime, setStoppedTime] = useState(null); // Estado para el tiempo detenido
@@ -188,6 +189,8 @@ const Managment = () => {
     setNegotiationActive,
     isFollowUpActive,
     setFollowUpActive,
+    isOnlineChargeActive,
+    setOnlineChargeActive,
     lastPhoneNumberFromToast,
     setLastPhoneNumberFromToast,
     communicationData,

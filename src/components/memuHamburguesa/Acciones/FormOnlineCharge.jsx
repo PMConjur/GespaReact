@@ -20,6 +20,8 @@ const FormOnlineCharge = ({ handleClose }) => {
   const [loading, setLoading] = useState(false);
   const [bancos, setBancos] = useState([]); // Bancos obtenidos de la consulta
   const today = new Date().toISOString().split("T")[0]; // Obtener la fecha actual para establecerla como mínima
+  const maxVencimiento = new Date();
+  maxVencimiento.setFullYear(maxVencimiento.getFullYear() + 20); // Limitar a 20 años más
   const [tipoTarjeta, setTipoTarjeta] = useState("tarjetaCredito"); // Estado local para tipoTarjeta
   const [formData, setFormData] = useState({
     idCartera: 1,
@@ -37,6 +39,27 @@ const FormOnlineCharge = ({ handleClose }) => {
     sistema: true,
     status: 1, // Valor por defecto de status es 1 (Acepta)
   });
+  const [registroRealizado, setRegistroRealizado] = useState(false); // Estado para controlar si se realizó un registro
+
+  const resetForm = () => {
+    setFormData({
+      idCartera: 1,
+      idCuenta: idCuenta[0]?.trim(),
+      idEjecutivo: idEjecutivo,
+      tarjeta: "",
+      nombre: "",
+      vencimiento: today,
+      monto: 0,
+      idBanco: "",
+      esClabe: false,
+      domiciliado: false,
+      autorizacion: "",
+      idEjecutivoAutorizo: idEjecutivo,
+      sistema: true,
+      status: 1,
+    });
+    setTipoTarjeta("tarjetaCredito"); // Restablecer tipoTarjeta
+  };
 
   // Obtener los bancos al cargar el componente
   useEffect(() => {
@@ -55,8 +78,26 @@ const FormOnlineCharge = ({ handleClose }) => {
       setTipoTarjeta(value); // Actualizar solo el estado local de tipoTarjeta
       setFormData({ ...formData, tarjeta: "" }); // Limpiar el campo tarjeta al cambiar el tipo
     } else if (name === "idBanco") {
-      // Convertir idBanco a entero
       setFormData({ ...formData, [name]: parseInt(value, 10) });
+    } else if (name === "monto") {
+      // Limitar monto a 8 caracteres
+      setFormData({
+        ...formData,
+        monto: value.replace(/[^0-9]/g, "").slice(0, 8),
+      });
+    } else if (name === "nombre") {
+      // Permitir solo letras y espacios, limitar a 120 caracteres
+      setFormData({
+        ...formData,
+        nombre: value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "").slice(0, 120),
+      });
+    } else if (name === "vencimiento") {
+      const selectedDate = new Date(value);
+      if (selectedDate > maxVencimiento) {
+        toast.error("La fecha de vencimiento no puede ser mayor a 20 años desde hoy.");
+      } else {
+        setFormData({ ...formData, vencimiento: value });
+      }
     } else {
       setFormData({
         ...formData,
@@ -67,47 +108,43 @@ const FormOnlineCharge = ({ handleClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validar que todos los campos requeridos estén llenos
+    if (
+      !formData.idCuenta ||
+      !formData.tarjeta ||
+      !formData.nombre ||
+      !formData.vencimiento ||
+      !formData.monto ||
+      !formData.idBanco ||
+      !formData.autorizacion
+    ) {
+      toast.error("Todos los campos son obligatorios. Por favor, complétalos.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Preparar los datos para enviar, asegurando que monto sea un entero
       const dataToSend = { 
         ...formData, 
-        monto: parseInt(formData.monto, 10) || 0 // Convertir monto a entero, usar 0 si es inválido
+        monto: parseInt(formData.monto, 10) || 0 // Convertir monto a entero
       };
 
-      console.log("Datos a enviar:", dataToSend); // Log de los datos que se intentan enviar
+      console.log("Datos a enviar:", dataToSend);
 
-      // Llamar al método createOnlineCharge
       const response = await createOnlineCharge(dataToSend);
-      console.log("Respuesta del endpoint:", response); // Log de la respuesta del endpoint
+      console.log("Respuesta del endpoint:", response);
 
       if (response.success) {
         toast.success(response.mensaje || "Cargo en línea guardado exitosamente.");
-        handleClose(); // Cerrar el formulario después de un envío exitoso
-
-        // Limpiar los campos del formulario
-        setFormData({
-          idCartera: 1,
-          idCuenta: idCuenta[0]?.trim(),
-          idEjecutivo: idEjecutivo,
-          tarjeta: "",
-          nombre: "",
-          vencimiento: today,
-          monto: 0,
-          idBanco: "",
-          esClabe: false,
-          domiciliado: false,
-          autorizacion: "",
-          idEjecutivoAutorizo: idEjecutivo,
-          sistema: "true",
-          status: 1,
-        });
+        setRegistroRealizado(true); // Marcar que se realizó un registro
+        resetForm(); // Limpiar el formulario
       } else {
-        throw new Error(response.message || "Error desconocido.");
+        toast.error(response.mensaje || "Error al enviar el cargo en línea.");
       }
     } catch (error) {
-      console.error("Error al realizar el cargo:", error); // Log del error
+      console.error("Error al realizar el cargo:", error);
       toast.error(error.message || "Ocurrió un error al realizar el cargo.");
     } finally {
       setLoading(false);
@@ -117,20 +154,35 @@ const FormOnlineCharge = ({ handleClose }) => {
   const handleGuardar = async () => {
     console.log("Datos a guardar:", formData); // Log de los datos que se intentan guardar
 
+    // Validar que todos los campos requeridos estén llenos
+    if (
+      !formData.idCuenta ||
+      !formData.tarjeta ||
+      !formData.nombre ||
+      !formData.vencimiento ||
+      !formData.monto ||
+      !formData.idBanco ||
+      !formData.autorizacion
+    ) {
+      toast.error("Todos los campos son obligatorios. Por favor, complétalos.");
+      return;
+    }
+
     try {
-      // Preparar los datos para enviar, asegurando que monto sea un entero
       const dataToSend = { 
         ...formData, 
-        monto: parseInt(formData.monto, 10) || 0 // Convertir monto a entero, usar 0 si es inválido
+        monto: parseInt(formData.monto, 10) || 0 // Convertir monto a entero
       };
 
       const response = await createOnlineCharge(dataToSend);
-      console.log("Respuesta del envío de datos:", response); // Log de la respuesta del envío
+      console.log("Respuesta del envío de datos:", response);
 
       if (response.success) {
         toast.success(response.mensaje || "Datos guardados exitosamente.");
+        setRegistroRealizado(true); // Marcar que se realizó un registro
+        resetForm(); // Limpiar el formulario
       } else {
-        throw new Error(response.message || "Error desconocido.");
+        toast.error(response.mensaje || "Error al guardar los datos.");
       }
     } catch (error) {
       console.error("Error al guardar los datos:", error); // Log del error
@@ -208,14 +260,9 @@ const FormOnlineCharge = ({ handleClose }) => {
                   type="number"
                   name="monto"
                   value={formData.monto || ""}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value) || 0; // Convierte a entero, si no es válido usa 0
-                    setFormData({
-                      ...formData,
-                      monto: value
-                    });
-                  }}
+                  onChange={handleChange}
                   placeholder="$"
+                  maxLength={8} // Limitar a 8 caracteres
                 />
               </Form.Group>
             </Col>
@@ -246,6 +293,7 @@ const FormOnlineCharge = ({ handleClose }) => {
               value={formData.nombre || ""}
               onChange={handleChange}
               placeholder="Ingresa tu nombre"
+              maxLength={120} // Limitar a 120 caracteres
             />
           </Form.Group>
 
@@ -259,6 +307,7 @@ const FormOnlineCharge = ({ handleClose }) => {
                   value={formData.vencimiento}
                   onChange={handleChange}
                   min={today} // Asegurar que la fecha mínima sea el día actual
+                  max={maxVencimiento.toISOString().split("T")[0]} // Limitar a 20 años más
                 />
               </Form.Group>
             </Col>
@@ -318,6 +367,18 @@ const FormOnlineCharge = ({ handleClose }) => {
           </Row>
         </>
       )}
+      <Button
+        variant="secondary"
+        onClick={() => {
+          if (!registroRealizado) {
+            toast.error("Debe realizar al menos un registro antes de cerrar el formulario.");
+            return;
+          }
+          handleClose(); 
+        }}
+      >
+        Cerrar
+      </Button>
     </Form>
   );
 };

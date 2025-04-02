@@ -58,9 +58,6 @@ const FollowUps = ({
           )}
         </Row>
       </Modal.Body>
-      <Modal.Footer>
-        {/* Espacio del footer vacío */}
-      </Modal.Footer>
     </Modal>
   );
 };

@@ -14,6 +14,7 @@ import FollowUps from "./memuHamburguesa/Acciones/FollowUps"; // Importa el comp
 import CommunicationPhone from "./flowComponents/CommunicationPhone"; // Importa el componente CommunicationPhone
 import Timmer from "./flowComponents/Timmer";
 import SaveButton from "./flowComponents/SaveButton"; // Importa el nuevo componente SaveButton
+import OnlineCharge from "./memuHamburguesa/Acciones/OnlineCharge";
 
 const Flow = () => {
   const {
@@ -21,6 +22,7 @@ const Flow = () => {
     selectedAnswer,
     setNegotiationActive,
     setFollowUpActive,
+    setOnlineChargeActive,
     stoppedTime,
     communicationData
   } = useContext(AppContext); // Agrega stoppedTime y communicationData del contexto
@@ -32,10 +34,12 @@ const Flow = () => {
   const [isFlowFinished, setIsFlowFinished] = useState(false); // Estado para verificar si el flujo ha terminado
   const [savedComment, setSavedComment] = useState(""); // Estado para el comentario guardado
   const [showFollowUps, setShowFollowUps] = useState(false); // Estado para controlar el modal de FollowUps
+  const [showOnlineCharge, setShowOnlineCharge] = useState(false);
   const [triggerLastAnswerActions, setTriggerLastAnswerActions] =
     useState(false); // Estado para controlar cuándo ejecutar las acciones
   const [isNegotiationActive, setIsNegotiationActive] = useState(false); // Variable para controlar la acción de negociación
   const [isFollowUpActive, setIsFollowUpActive] = useState(false); // Variable para controlar la acción de seguimiento
+  const [isOnlineChargeActive, setIsOnlineChargeActive] = useState(false); // Variable para controlar la acción de seguimiento
   const [startTimer, setStartTimer] = useState(false); // Estado para iniciar el timer
   const [commentData, setCommentData] = useState(""); // Estado para el comentario
   const [isCommentValid, setIsCommentValid] = useState(false); // Estado para la validez del comentario
@@ -47,6 +51,10 @@ const Flow = () => {
 
   const handleCloseFollowUps = () => {
     setShowFollowUps(false); // Cierra el modal de seguimiento
+  };
+
+  const handleCloseOnlineCharge = () => {
+    setShowOnlineCharge(false); // Cierra el modal de seguimiento
   };
 
   const handleStopTimer = () => {
@@ -73,6 +81,10 @@ const Flow = () => {
     setFollowUpActive(isFollowUpActive); // Envía isFollowUpActive al contexto
   }, [isFollowUpActive, setFollowUpActive]);
 
+  useEffect(() => {
+    setOnlineChargeActive(isOnlineChargeActive); // Envía isOnlineChargeActive al contexto
+  }, [isOnlineChargeActive, setOnlineChargeActive]);
+
   const clearStates = () => {
     setUserFlowData([]);
     setCurrentQuestionId(null);
@@ -82,10 +94,13 @@ const Flow = () => {
     setIsFlowFinished(false);
     setSavedComment("");
     setShowFollowUps(false);
+    setShowOnlineCharge(false);
     setTriggerLastAnswerActions(false);
     setIsNegotiationActive(false);
     setIsFollowUpActive(false);
+    setIsOnlineChargeActive(false);
     setStartTimer(false);
+    
   };
 
   const handleLastAnswerActions = () => {
@@ -101,6 +116,8 @@ const Flow = () => {
         console.log("Entró a seguimiento.");
         setIsFollowUpActive(true); // Activa la variable de seguimiento
         setShowFollowUps(true); // Muestra el modal de FollowUps
+        setIsOnlineChargeActive(true); // Muestra el modal de OnlineCharge
+        setShowOnlineCharge(true);
         toast.info("Flujo preparado para seguimiento.");
       } else {
         toast.success(
@@ -607,6 +624,7 @@ const Flow = () => {
 
       {/* Modal de FollowUps */}
       <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps}isFollowUpActive={isFollowUpActive} />
+      <OnlineCharge show={showOnlineCharge} handleClose={handleCloseOnlineCharge}isOnlineChargeActive={isOnlineChargeActive} />
     </>
   );
 };
