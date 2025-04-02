@@ -127,6 +127,8 @@ namespace NoriAPI.Services
 
         //Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
         Task<DataTable> GetDropDQuejasAsync();
+        Task<DataTable> GetDropDDatosAsync();
+        Task<DataTable> GetDropDFuentesAsync();
         Task<DataTable> GetDropDOrigenQuejasAsync();
         Task<DataTable> GetViewQuejasAsync(int idCartera, string idCuenta);
         Task<string> CreaSeguimientoAsync(SeguimientoCompletoModel seguimiento, DataRow _drInfo, int idEjecutivo);
@@ -655,6 +657,46 @@ namespace NoriAPI.Services
             {
                 return ("Error al insertar la queja.", false);
             }
+        }
+
+        public async Task<DataTable> GetDropDDatosAsync()
+        {
+            DataTable datosDrop = new DataTable();
+            string query = "SELECT  VC.idValor, VC.Valor FROM dbCollection..ValoresCatálogo VC WHERE idCatálogo = 16"; // Evita inyección SQL
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(datosDrop);
+                    }
+                }
+            }
+
+            return datosDrop;
+        }
+
+        public async Task<DataTable> GetDropDFuentesAsync()
+        {
+            DataTable fuentesDrop = new DataTable();
+            string query = "SELECT  VC.idValor, VC.Valor FROM dbCollection..ValoresCatálogo VC WHERE idCatálogo = 17"; // Evita inyección SQL
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(fuentesDrop);
+                    }
+                }
+            }
+
+            return fuentesDrop;
         }
 
         public async Task<DataTable> GetDropDQuejasAsync()

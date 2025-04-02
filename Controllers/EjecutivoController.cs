@@ -1096,6 +1096,59 @@ namespace NoriAPI.Controllers
             return Ok(new { mensaje = mensaje.Item1, exito = true });
         }
 
+        [HttpGet("ddDatos")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetDropDatos()
+        {
+            try
+            {
+                DataTable DDdatos = new DataTable();
+
+                DDdatos = await _ejecutivoService.GetDropDDatosAsync();
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var DatosDD = ConvertDataTableToList(DDdatos);
+
+                // Serializamos la lista a JSON
+                string jsonDDdatos = JsonSerializer.Serialize(DatosDD, new JsonSerializerOptions { WriteIndented = true });
+
+                //dsTablas.Tables.Add(Negociaciones);
+
+                //return Ok(jsonDDQuejas);
+                return Content(jsonDDdatos, "application/json; charset=utf-8");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpGet("ddFuentes")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetDropFuentes()
+        {
+            try
+            {
+                DataTable DDFuentes = new DataTable();
+
+                DDFuentes = await _ejecutivoService.GetDropDFuentesAsync();
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var FuentesDD = ConvertDataTableToList(DDFuentes);
+
+                // Serializamos la lista a JSON
+                string jsonDDFuentes = JsonSerializer.Serialize(FuentesDD, new JsonSerializerOptions { WriteIndented = true });
+
+                //dsTablas.Tables.Add(Negociaciones);
+
+                //return Ok(jsonDDQuejas);
+                return Content(jsonDDFuentes, "application/json; charset=utf-8");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
 
         /*[HttpGet("accionesComentario")]
             public async Task<IActionResult> GetAccionesComentario(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion)
@@ -1185,12 +1238,7 @@ namespace NoriAPI.Controllers
         //}
 
 
-
-
-
-
         [HttpGet("ddQuejas")]
-
         public async Task<IActionResult> GetDropQuejas()
         {
             try
@@ -1209,8 +1257,6 @@ namespace NoriAPI.Controllers
 
                 //return Ok(jsonDDQuejas);
                 return Content(jsonDDQuejas, "application/json; charset=utf-8");
-
-
             }
             catch (Exception ex)
             {
@@ -1219,7 +1265,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("ddOrigenQuejas")]
-
         public async Task<IActionResult> GetDropOrigenQuejas()
         {
             try
