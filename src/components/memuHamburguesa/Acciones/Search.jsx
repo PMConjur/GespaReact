@@ -314,7 +314,7 @@ const Search = ({ show, handleClose }) => {
               </Form.Group>
               <Form.Group controlId="formBasicCheckbox">
                 <Form.Check
-                  id="checkbox-encontrado" // Se agrega el id
+                  id={searchData.encontrado} // Se agrega un id
                   type="checkbox"
                   label="Encontrado"
                   name="encontrado"
