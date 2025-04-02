@@ -367,18 +367,6 @@ const FormOnlineCharge = ({ handleClose }) => {
           </Row>
         </>
       )}
-      <Button
-        variant="secondary"
-        onClick={() => {
-          if (!registroRealizado) {
-            toast.error("Debe realizar al menos un registro antes de cerrar el formulario.");
-            return;
-          }
-          handleClose(); 
-        }}
-      >
-        Cerrar
-      </Button>
     </Form>
   );
 };

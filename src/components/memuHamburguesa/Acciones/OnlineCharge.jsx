@@ -1,6 +1,6 @@
 import { Modal, Row, Col } from "react-bootstrap";
 import TableOnlineCharge from "../../TableOnlineCharge";
-import ModFormOnlineCharge from "./ModFormOnlineCharge";
+import FormOnlineCharge from "./FormOnlineCharge";
 
 const OnlineCharge = ({ 
   show, 
@@ -11,15 +11,15 @@ const OnlineCharge = ({
     <Modal 
       show={show} 
       onHide={handleClose} 
-      size="xl" // Ajusta el tamaño del modal
-      backdrop={isOnlineChargeActive ? "static" : true} // Evita cerrar al hacer clic fuera si está activo
-      keyboard={!isOnlineChargeActive} // Deshabilita el teclado si está activo
+      size="xl"
+      backdrop="static"
+      keyboard={true}
       contentClassName="d-flex flex-column"
       dialogClassName="my-custom-modal"
     >
-      <Modal.Header closeButton={!isOnlineChargeActive}>
+      <Modal.Header closeButton>
         <Modal.Title>
-          {isOnlineChargeActive ? "Nuevo Cargo en Línea" : "Registros de Cargos en Línea"}
+          {isOnlineChargeActive ? "Registros de Cargos en Línea" : "Registros y Nuevo Cargo en Línea"}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body 
@@ -28,30 +28,25 @@ const OnlineCharge = ({
       >
         <Row className="flex-grow-1 g-0" style={{ height: "100%" }}>
           <Col 
-            md={isOnlineChargeActive ? 6 : 12} 
+            md={isOnlineChargeActive ? 12 : 6} 
             className="h-100 d-flex flex-column" 
             style={{ 
               maxHeight: "700px",
-              overflowY: "auto" // Scroll interno si el contenido excede
+              overflowY: "auto"
             }}
           >
             <TableOnlineCharge />
           </Col>
-          
-          {isOnlineChargeActive && (
+          {!isOnlineChargeActive && (
             <Col 
               md={6} 
               className="h-100 d-flex flex-column"
               style={{ 
-                maxHeight: "680px",
-                overflowY: "auto" // Scroll interno para el formulario
+                maxHeight: "700px",
+                overflowY: "auto"
               }}
             >
-              <ModFormOnlineCharge 
-                show={show} 
-                handleClose={handleClose} 
-                isOnlineChargeActive={isOnlineChargeActive}
-              />
+              <FormOnlineCharge handleClose={handleClose} />
             </Col>
           )}
         </Row>

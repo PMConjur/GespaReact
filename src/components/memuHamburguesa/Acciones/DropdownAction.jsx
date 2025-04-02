@@ -113,7 +113,7 @@ const DropdownActions = () => {
           </Dropdown.Item>
           <Dropdown.Item
             onClick={() => {
-              handleShowOnlinecharge();
+              setShowOnlinecharge(true);
             }}
             className="custom-dropdown-item"
           >
@@ -162,8 +162,7 @@ const DropdownActions = () => {
       <OnlineCharge
         show={showOnlinecharge}
         handleClose={handleCloseOnlinecharge}
-        data={onlinechargeData}
-        loading={loadingOnlinecharge}
+        isOnlineChargeActive={true} // Cambiar a true para mostrar ambos componentes
       />
     
       <Drives showModal={showDrives} handleCloseModal={handleCloseDrives} />
