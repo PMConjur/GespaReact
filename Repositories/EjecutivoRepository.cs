@@ -89,7 +89,7 @@ namespace NoriAPI.Repositories
         #endregion
 
         #region Cargo En Linea
-        Task<dynamic> RegisterNewCargo(CargoEnLineaRequest newCargoEnLinea);
+        
         Task<dynamic> RegisterNewEstado(EstadoDeCuenta newEstadoDeCuenta);
         #endregion
 
@@ -1248,54 +1248,7 @@ namespace NoriAPI.Repositories
         #endregion
 
         #region Cargos en linea
-        public async Task<dynamic> RegisterNewCargo(CargoEnLineaRequest newCargoEnLinea)
-        {
-            using var connection = GetConnection("Piso2Amex");
-
-            string newPhoneQuery = "[dbCollection].[dbo].[2.11.CargoEnLínea]";
-            var parameters = new
-            {
-                monto = newCargoEnLinea.Monto,
-                tarjeta = newCargoEnLinea.Tarjeta,
-
-                status = newCargoEnLinea.Status,
-                IdBanco = newCargoEnLinea.IdBanco,
-                vencimiento = newCargoEnLinea.Vencimiento,
-                autorizacion = newCargoEnLinea.Autorizacion,
-                nombre = newCargoEnLinea.Nombre,
-                esClabe = newCargoEnLinea.EsClabe,
-                domiciliado = newCargoEnLinea.Domiciliado,
-                sistema = newCargoEnLinea.Sistema,
-                idCartera = newCargoEnLinea.IdCartera,
-                idCuenta = newCargoEnLinea.IdCuenta, // Agregar el parámetro idCuenta
-                idEjecutivo = newCargoEnLinea.IdEjecutivo,
-
-            };
-
-            var result = await connection.QueryFirstOrDefaultAsync<dynamic>(
-                newPhoneQuery,
-                parameters,
-                commandType: CommandType.StoredProcedure
-            );
-            if (result == null)
-            {
-                return new { Success = false, Message = "No se recibió respuesta del procedimiento almacenado." };
-            }
-
-            // Convertimos a IDictionary para acceder a los valores sin errores
-            var dict = result as IDictionary<string, object>;
-
-            if (dict != null && dict.ContainsKey("Resultado"))
-            {
-                return new Dictionary<string, object>
-                {
-                    { "Success", false },
-                    { "Resultado", dict["Resultado"].ToString() }
-                };
-            }
-
-            return new Dictionary<string, object> { { "Success", true }, { "Data ", result } };
-        }
+        
         #endregion
 
         #region Estado de cuenta

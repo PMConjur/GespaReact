@@ -532,7 +532,7 @@ namespace NoriAPI.Controllers
 
         [HttpPost("SaveCargoEnlinea")]
         [AllowAnonymous]
-        public async Task<IActionResult> SaveCargoEnlinea([FromBody] CargoEnLineaRequest newCargoEn)
+        public async Task<IActionResult> SaveCargoEnlinea( CargoEnLinea newCargoEn)
         {
             if (newCargoEn == null)
             {

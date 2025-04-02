@@ -76,7 +76,7 @@ namespace NoriAPI.Services
 
         Task<DataTable> GetCargosEnLineaAsync(int idCartera, string idCuenta);
         Task ObtenerCargosEnLinea(DataRow drDatos, DataSet dsTablas);
-        Task<string> SaveCargoEnlinea(CargoEnLineaRequest newCargoEn);
+        Task<string> SaveCargoEnlinea(CargoEnLinea newCargoEn);
         Task<string> SaveEstadoDeCuenta(EstadoDeCuentaRe newEstadoEn);
         Task<string> ClasificaTelefonoAsignadoAsync(int idCartera, string idCuenta, long numeroTelefonico, int idClase, int idEjecutivoClasificacion);
         Task ObtenerMultideudores(DataRow drDatos, DataSet dsTablas, Hashtable htProducto, string sortMultideudores, string connectionString);
@@ -3072,101 +3072,87 @@ namespace NoriAPI.Services
 
             dsTablas.Tables.Add(cargoGet);
         }
-        public async Task<string> SaveCargoEnlinea(CargoEnLineaRequest newCargoEn)
+        public async Task<string> SaveCargoEnlinea(CargoEnLinea newCargoEn)
         {
+            Debug.WriteLine("Entrando en SaveCargoEnlinea");
+
             try
             {
-                string idCuenta = newCargoEn.IdCuenta.ToString();
+                string idCuenta = newCargoEn.idCuenta.ToString();
                 int idCartera = ObtenerIdCarteraDesdeBaseDeDatos(idCuenta);
                 dynamic cargoData = ObtenerDatosCargoEnLinea(idCartera, idCuenta);
 
-                if (cargoData != null)
+                if (cargoData == null)
                 {
-                    try
+                    Debug.WriteLine("No se encontraron datos para el cargo en línea.");
+                    return "No se encontraron datos para el cargo en línea.";
+                }
+
+                long numeroTarjetaLong = 0;
+                long parsedTarjeta = 0;
+
+                if (cargoData.Tarjeta != null && long.TryParse(cargoData.Tarjeta.ToString(), out parsedTarjeta))
+                {
+                    numeroTarjetaLong = parsedTarjeta;
+                    Debug.WriteLine($"cargoData.Tarjeta: {cargoData.Tarjeta}, numeroTarjetaLong: {numeroTarjetaLong}");
+                    
+
+
+
+                    using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Piso2Amex")))
                     {
-                        // Declaración de numeroTarjetaLong fuera del bloque if
-                        long numeroTarjetaLong = 0; // Valor predeterminado
-
-                        if (cargoData.Tarjeta != null && long.TryParse(cargoData.Tarjeta.ToString(), out numeroTarjetaLong))
+                        await connection.OpenAsync();
+                        using (SqlCommand command = new SqlCommand("[dbo].[2.11.CargoEnLínea]", connection))
                         {
-                            Console.WriteLine($"cargoData.Tarjeta: {cargoData.Tarjeta}, numeroTarjetaLong: {numeroTarjetaLong}");
+                            command.CommandType = System.Data.CommandType.StoredProcedure;
 
-                            string autorizacionString = cargoData.Autorización?.ToString();
+                            command.Parameters.AddWithValue("@idCartera", idCartera);
+                            command.Parameters.AddWithValue("@idCuenta", idCuenta);
+                            command.Parameters.AddWithValue("@idEjecutivo", newCargoEn.idEjecutivo);
+                            command.Parameters.AddWithValue("@Tarjeta", newCargoEn.Tarjeta);
+                            command.Parameters.AddWithValue("@Nombre", newCargoEn.Nombre);
+                            command.Parameters.AddWithValue("@Vencimiento", newCargoEn.Vencimiento);
+                            command.Parameters.AddWithValue("@Monto", newCargoEn.Monto);
+                            command.Parameters.AddWithValue("@idBanco", newCargoEn.idBanco ?? (object)DBNull.Value);
+                            command.Parameters.AddWithValue("@EsClabe", newCargoEn.EsClabe);
+                            command.Parameters.AddWithValue("@Domiciliado", newCargoEn.Domiciliado);
+                            command.Parameters.AddWithValue("@Autorización", newCargoEn.Autorizacion ?? (object)DBNull.Value);
+                            command.Parameters.AddWithValue("@idEjecutivo_Autorizo", newCargoEn.idEjecutivo_Autorizo ?? (object)DBNull.Value);
+                            command.Parameters.AddWithValue("@Sistema", newCargoEn.Sistema);
+                            command.Parameters.AddWithValue("@Status", newCargoEn.Status);
 
-                            // Conversión a byte
-                            byte statusByte = cargoData.Status != null ? Convert.ToByte(cargoData.Status) : (byte)0;
-
-                            // Conversión a short?
-                            short? idBancoShort = cargoData.IdBanco != null ? Convert.ToInt16(cargoData.IdBanco) : (short?)null;
-
-                            // Validación de cargoData.Nombre a string
-                            string nombreString = cargoData.Nombre?.ToString();
-
-                            // Construcción del objeto CargoEnLinea
-                            CargoEnLineaRequest newCargo = new CargoEnLineaRequest(
-                                monto: Convert.ToDecimal(newCargoEn.Monto),
-                                tarjeta: numeroTarjetaLong,
-                                autorizacion: autorizacionString,
-                                status: statusByte, // Usando el valor convertido
-                                idBanco: idBancoShort, // Usando el valor convertido
-                                idEjecutivoAutorizo: newCargoEn.IdEjecutivoAutorizo,
-                                vencimiento: newCargoEn.Vencimiento,
-                                nombre: nombreString,
-                                esClabe: cargoData._EsClabe != null ? Convert.ToBoolean(cargoData._EsClabe) : false,
-                                domiciliado: cargoData._Domiciliado != null ? Convert.ToBoolean(cargoData._Domiciliado) : false,
-                                sistema: false,
-                                idCartera: idCartera,
-                                idCuenta: idCuenta,
-                                idEjecutivo: newCargoEn.IdEjecutivo
-                            );
-
-                            string saveCargoResult = await ValidateNewCargo(newCargo);
-                            return saveCargoResult;
-                        }
-                        else
-                        {
-                            return "El número de tarjeta no es válido.";
+                            await command.ExecuteNonQueryAsync();
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error al convertir datos del cargo en línea: {ex.Message}");
-                        return $"Error al convertir datos del cargo en línea: {ex.Message}";
-                    }
+
+                    return "Inserción exitosa.";
                 }
                 else
                 {
-                    return "No se encontraron datos para el cargo en línea.";
+                    Debug.WriteLine("La conversión del número de tarjeta falló.");
+                    return "El número de tarjeta no es válido.";
                 }
+            }
+            catch (SqlException ex)
+            {
+                Debug.WriteLine($"Error de SQL: {ex.Message}");
+                foreach (SqlError error in ex.Errors)
+                {
+                    Debug.WriteLine($"  Error Number: {error.Number}");
+                    Debug.WriteLine($"  Message: {error.Message}");
+                    Debug.WriteLine($"  Line Number: {error.LineNumber}");
+                    Debug.WriteLine($"  Procedure: {error.Procedure}");
+                }
+                return $"Error al guardar el cargo en línea: {ex.Message}";
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error al guardar el cargo en línea: {ex.Message}");
+                Debug.WriteLine($"Error en SaveCargoEnlinea: {ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
                 return $"Error al guardar el cargo en línea: {ex.Message}";
             }
         }
-
-        private async Task<string> ValidateNewCargo(CargoEnLineaRequest cargoCuenta)
-        {
-            // Registra el valor de cargoCuenta.Tarjeta
-            Console.WriteLine($"Validando Tarjeta: {cargoCuenta.Tarjeta}");
-
-            var newCargoResult = await _ejecutivoRepository.RegisterNewCargo(cargoCuenta);
-
-            if (newCargoResult == null)
-            {
-                return "Fallo al guardar el cargo en la base de datos.";
-            }
-
-            //  Verifica si el resultado contiene un mensaje de error
-            if (newCargoResult is IDictionary<string, object> cargoResultDict &&
-                cargoResultDict.TryGetValue("Resultado", out object resultadoObj) && resultadoObj != null)
-            {
-                return Convert.ToString(resultadoObj);
-            }
-
-            return "";
-        }
+        
 
         private dynamic ObtenerDatosCargoEnLinea(int idCartera, string idCuenta)
         {
