@@ -454,7 +454,7 @@ namespace NoriAPI.Services
             var valoresProducto = ((IDictionary<string, object>)producto)
                 .ToDictionary(k => k.Key.Trim(), v => v.Value ?? ""); // Agregar Trim() a la clave
 
-            string[] campos = expresion.Split(['[', ']'], StringSplitOptions.RemoveEmptyEntries);
+            string[] campos = expresion.Split(new char[] { '[', ']' }, StringSplitOptions.RemoveEmptyEntries);
             string resultado = expresion;
 
             foreach (var campo in from campo in campos
