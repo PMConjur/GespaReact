@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from "react";
-import { Modal, Table, Button, Card, Form, Col } from "react-bootstrap";
+import { Modal, Table, Button, Card, Form, Col, Spinner} from "react-bootstrap";
 import {
   fetchAccoutStatements,
   fetchSaveAccount
@@ -72,6 +72,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   };
 
   const handleOptionChange = (e) => {
+    console.log("Switch cambiado a:", e.target.checked);
     setSelectedOption(e.target.checked);
   };
 
@@ -106,6 +107,14 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
     try {
       const response = await fetchSaveAccount(requestData);
       toast.success("Solicitud enviada correctamente.");
+
+      // Limpia el formulario
+      setSelectedDateRange({ startDate: "", endDate: "" });
+      setSelectedEmail("");
+      setSelectedOption(false);
+
+      // Recarga la tabla
+      await handleAccountStatement();
     } catch (error) {
       console.error("Error al enviar la solicitud:", error);
       toast.error("Hubo un error al enviar la solicitud.");
@@ -118,13 +127,18 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
     .filter((email) => typeof email === "string");
 
   return (
-    <Modal show={show} onHide={handleClose} size="xl" >
+    <Modal show={show} onHide={handleClose} size="xl">
       <Modal.Header closeButton>
         <Modal.Title>Estado de Cuenta</Modal.Title>
       </Modal.Header>
 
       <Modal.Body
-        style={{ padding: "5px 10px", maxHeight: '70vh', overflowY: "auto", position: 'relative' }}
+        style={{
+          padding: "5px 10px",
+          maxHeight: "70vh",
+          overflowY: "auto",
+          position: "relative",
+        }}
       >
         <div className="d-block d-lg-flex">
           <div>
@@ -134,11 +148,13 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                 overflow: "auto ",
                 maxWidth: "800px",
                 marginBottom: "auto",
-                maxHeight: '70vh'
+                maxHeight: "70vh",
               }}
             >
               {loading ? (
-                <p>Cargando datos...</p>
+                <span>
+                  <Spinner animation="border" />
+                </span>
               ) : (
                 <div>
                   <Table
@@ -147,8 +163,16 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                     hover
                     variant="dark"
                     className="custom-table-account"
+                    style={{ tableLayout: "auto", whiteSpace: "nowrap" }} // Ajusta el ancho al contenido y evita el salto de línea
                   >
-                    <thead>
+                    <thead
+                      style={{
+                        position: "sticky",
+                        top: 0,
+                        backgroundColor: "#343a40",
+                        zIndex: 1,
+                      }}
+                    >
                       <tr>
                         <th>Fecha</th>
                         <th>Hora</th>
@@ -160,22 +184,45 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {accountData.map((item, index) => (
-                        <tr key={index}>
-                          <td>{item.Fecha_Insert}</td>
-                          <td>{item.Segundo_Insert}</td>
-                          <td>{item.NombreEjecutivo}</td>
-                          <td>{item.FechaInicial}</td>
-                          <td>{item.FechaFinal}</td>
-                          <td>{item._Consulta}</td>
-                          <td>
-                            {item["Correo Electrónico"] &&
-                            typeof item["Correo Electrónico"] === "string"
-                              ? item["Correo Electrónico"]
-                              : "--"}
+                      {loading ? (
+                        <tr>
+                          <td colSpan="7" className="text-center">
+                            <Spinner animation="border" />
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        accountData.map((item, index) => (
+                          <tr key={index}>
+                            <td style={{ textAlign: "left" }}>
+                              {item.Fecha_Insert?.split("T")[0] || "--"}
+                            </td>{" "}
+                            {/* Solo muestra la fecha antes de la 'T' */}
+                            <td style={{ textAlign: "left" }}>
+                              {item.Segundo_Insert}
+                            </td>
+                            <td style={{ textAlign: "left" }}>
+                              {item.NombreEjecutivo}
+                            </td>
+                            <td style={{ textAlign: "left" }}>
+                              {item.FechaInicial?.split("T")[0] || "--"}
+                            </td>{" "}
+                            {/* Solo muestra la fecha antes de la 'T' */}
+                            <td style={{ textAlign: "left" }}>
+                              {item.FechaFinal?.split("T")[0] || "--"}
+                            </td>{" "}
+                            {/* Solo muestra la fecha antes de la 'T' */}
+                            <td style={{ textAlign: "left" }}>
+                              {item._Consulta}
+                            </td>
+                            <td style={{ textAlign: "left" }}>
+                              {item["Correo Electrónico"] &&
+                              typeof item["Correo Electrónico"] === "string"
+                                ? item["Correo Electrónico"]
+                                : "--"}
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </Table>
                 </div>
@@ -230,6 +277,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
 
                   <div className="d-grid gap-2 mb-3">
                     <Form.Switch
+                      key={selectedOption} // Fuerza el re-renderizado cuando cambia el estado
                       label="Consulta"
                       name="option"
                       checked={selectedOption}

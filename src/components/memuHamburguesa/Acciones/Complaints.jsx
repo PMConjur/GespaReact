@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react';
-import { Modal, Button, Form, Table, Dropdown, Col} from 'react-bootstrap';
+import { Modal, Button, Form, Table, Dropdown, Col, Spinner} from 'react-bootstrap';
 import { fetchComplaints, fetchViewComplaints, fetchOriginComplaints, fetchDdComplaints} from '../../../services/gespawebServices';
 import { AppContext } from "../../../pages/Managment";
 import { toast } from 'sonner';
@@ -22,6 +22,7 @@ const Complaints = ({ show, handleClose }) => {
   const [originComplaints, setOriginComplaints] = useState([]); // Estado para almacenar los datos del endpoint
   const [isFormValid, setIsFormValid] = useState(false);
   const [ddComplaints, setDdComplaints] = useState([]);
+  const [isLoading, setIsLoading] = useState(false); // Estado para la animación de carga
 
   // Validar el formulario
   useEffect(() => {
@@ -100,7 +101,7 @@ const Complaints = ({ show, handleClose }) => {
 
   // Manejar cambios en el formulario
   const handleChange = (name, value) => {
-    console.log("Cambio detectado:", name, value); // Verifica si los espacios se capturan
+    console.log(`Cambio detectado en ${name}:`, value);
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -136,16 +137,37 @@ const Complaints = ({ show, handleClose }) => {
     };
 
     try {
+      setIsLoading(true); // Inicia la animación de carga
       const result = await fetchComplaints(requestData);
       toast.success("Queja guardada exitosamente");
+
+      // Limpia el formulario después de guardar
+      setFormData({
+        idQueja: '',
+        idInstitucion: '',
+        folio: '',
+        llamadaEntrada: false,
+        comentarios: '',
+        titular: false,
+        solicitante: ''
+      });
+
+      // Actualiza la tabla de quejas
+      const updatedComplaints = await fetchViewComplaints({
+        idCartera: 1,
+        idCuenta,
+      });
+      setComplaints(updatedComplaints);
     } catch (error) {
       toast.error("Error al guardar la queja");
       console.error("Error al guardar la queja:", error);
+    } finally {
+      setIsLoading(false); // Finaliza la animación de carga
     }
   };
 
   return (
-    <Modal show={show} onHide={handleClose} size="xl" >
+    <Modal show={show} onHide={handleClose} size="xl">
       <Modal.Header closeButton>
         <Modal.Title>Quejas</Modal.Title>
       </Modal.Header>
@@ -153,7 +175,7 @@ const Complaints = ({ show, handleClose }) => {
         <Col>
           <div
             className="scroll-container"
-            style={{ maxHeight: '70vh', overflowY: "auto" }}
+            style={{ maxHeight: "70vh", overflowY: "auto" }}
           >
             <Form>
               <div style={{ justifyContent: "space-between" }}>
@@ -255,6 +277,7 @@ const Complaints = ({ show, handleClose }) => {
               </Form.Group>
               <Form.Group className="mb-2">
                 <Form.Check
+                  key={formData.llamadaEntrada} // Fuerza el re-renderizado cuando cambia el estado
                   type="checkbox"
                   label="Llamada de entrada"
                   name="llamadaEntrada"
@@ -281,6 +304,7 @@ const Complaints = ({ show, handleClose }) => {
               <div style={{ display: "", justifyContent: "space-between" }}>
                 <Form.Group className="mb-1 mt-2" style={{ width: "48%" }}>
                   <Form.Check
+                    key={formData.titular} // Fuerza el re-renderizado cuando cambia el estado
                     type="checkbox"
                     label="Titular"
                     name="titular"
@@ -308,87 +332,123 @@ const Complaints = ({ show, handleClose }) => {
                 variant="danger"
                 onClick={handleReport}
                 style={{ width: "100%" }}
-                disabled={!isFormValid}
+                disabled={!isFormValid || isLoading} // Deshabilita el botón mientras carga
               >
-                Reportar
+                {isLoading ? "Guardando..." : "Reportar"}{" "}
+                {/* Cambia el texto durante la carga */}
               </Button>
             </Form>
           </div>
         </Col>
         <div
-          className="scroll-container"
+          className="table-responsive custom-scrollbar"
           style={{
-            overflow: "auto",
-            maxHeight: '70vh',
+            maxHeight: "70vh",
             maxWidth: "800px",
             minWidth: "250px",
+            overflowY: "auto", // Habilitar scroll vertical
           }}
         >
-          <h5 className="">Quejas</h5>
-          <Table striped bordered hover variant="dark">
-            <thead>
+          <Table
+            striped
+            bordered
+            hover
+            variant="dark"
+            style={{ tableLayout: "auto", whiteSpace: "nowrap" }} // Ajusta el ancho al contenido y evita el salto de línea
+          >
+            <thead
+              style={{
+                position: "sticky",
+                top: 0,
+                backgroundColor: "#343a40",
+                zIndex: 1,
+              }}
+            >
               <tr>
-                <th>Fecha</th>
-                <th>Hora</th>
-                <th>Folio</th>
-                <th>Queja</th>
-                <th>Institución</th>
-                <th>Solicitante</th>
-                <th>Teléfono</th>
-                <th>CorreoElectronico</th>
-                <th>Comentario</th>
-                <th>TelefonoContacto</th>
-                <th>CorreoContacto</th>
-                <th>Domicilio</th>
+                <th style={{ textAlign: "center" }}>Fecha</th>
+                <th style={{ textAlign: "center" }}>Hora</th>
+                <th style={{ textAlign: "center" }}>Folio</th>
+                <th style={{ textAlign: "center" }}>Queja</th>
+                <th style={{ textAlign: "center" }}>Institución</th>
+                <th style={{ textAlign: "center" }}>Solicitante</th>
+                <th style={{ textAlign: "center" }}>Teléfono</th>
+                <th style={{ textAlign: "center" }}>CorreoElectronico</th>
+                <th style={{ textAlign: "center" }}>Comentario</th>
+                <th style={{ textAlign: "center" }}>TelefonoContacto</th>
+                <th style={{ textAlign: "center" }}>CorreoContacto</th>
+                <th style={{ textAlign: "center" }}>Domicilio</th>
               </tr>
             </thead>
             <tbody>
-              {complaints.map((complaint, index) => (
-                <tr key={index}>
-                  <td>{complaint.Fecha_Insert || "--"}</td>
-                  <td>{complaint.Segundo_Insert || "--"}</td>
-                  <td>
-                    {typeof complaint.Folio === "object" &&
-                    Object.keys(complaint.Folio).length === 0
-                      ? "--"
-                      : complaint.Folio || "--"}
-                  </td>
-                  <td>{complaint.Queja || "--"}</td> {/* Muestra el valor de Queja */}
-                  <td>{complaint.Institución || "--"}</td> {/* Muestra el valor de Institución */}
-                  <td>{complaint.Solicitante || "--"}</td>
-                  <td>
-                    {typeof complaint.NúmeroTelefónico === "object" &&
-                    Object.keys(complaint.NúmeroTelefónico).length === 0
-                      ? "--"
-                      : complaint.NúmeroTelefónico || "--"}
-                  </td>
-                  <td>
-                    {typeof complaint.CorreoElectrónico === "object" &&
-                    Object.keys(complaint.CorreoElectrónico).length === 0
-                      ? "--"
-                      : complaint.CorreoElectrónico || "--"}
-                  </td>
-                  <td>{complaint.Comentario || "--"}</td>
-                  <td>
-                    {typeof complaint.TeléfonoContacto === "object" &&
-                    Object.keys(complaint.TeléfonoContacto).length === 0
-                      ? "--"
-                      : complaint.TeléfonoContacto || "--"}
-                  </td>
-                  <td>
-                    {typeof complaint.CorreoContacto === "object" &&
-                    Object.keys(complaint.CorreoContacto).length === 0
-                      ? "--"
-                      : complaint.CorreoContacto || "--"}
-                  </td>
-                  <td>
-                    {typeof complaint.idDomicilio === "object" &&
-                    Object.keys(complaint.idDomicilio).length === 0
-                      ? "--"
-                      : complaint.idDomicilio || "--"}
+              {isLoading ? (
+                <tr>
+                  <td colSpan="12" className="text-center">
+                    <Spinner animation="border" />
                   </td>
                 </tr>
-              ))}
+              ) : (
+                complaints.map((complaint, index) => (
+                  <tr key={index}>
+                    <td style={{ textAlign: "left" }}>
+                      {complaint.Fecha_Insert?.split("T")[0] || "--"}
+                    </td>{" "}
+                    {/* Solo muestra la fecha antes de la 'T' */}
+                    <td style={{ textAlign: "left" }}>
+                      {complaint.Segundo_Insert || "--"}
+                    </td>
+                    <td style={{ textAlign: "left" }}>
+                      {typeof complaint.Folio === "object" &&
+                      Object.keys(complaint.Folio).length === 0
+                        ? "--"
+                        : complaint.Folio || "--"}
+                    </td>
+                    <td style={{ textAlign: "left" }}>
+                      {complaint.Queja || "--"}
+                    </td>{" "}
+                    {/* Muestra el valor de Queja */}
+                    <td style={{ textAlign: "left" }}>
+                      {complaint.Institución || "--"}
+                    </td>{" "}
+                    {/* Muestra el valor de Institución */}
+                    <td style={{ textAlign: "left" }}>
+                      {complaint.Solicitante || "--"}
+                    </td>
+                    <td style={{ textAlign: "left" }}>
+                      {typeof complaint.NúmeroTelefónico === "object" &&
+                      Object.keys(complaint.NúmeroTelefónico).length === 0
+                        ? "--"
+                        : complaint.NúmeroTelefónico || "--"}
+                    </td>
+                    <td style={{ textAlign: "left" }}>
+                      {typeof complaint.CorreoElectrónico === "object" &&
+                      Object.keys(complaint.CorreoElectrónico).length === 0
+                        ? "--"
+                        : complaint.CorreoElectrónico || "--"}
+                    </td>
+                    <td style={{ textAlign: "left" }}>
+                      {complaint.Comentario || "--"}
+                    </td>
+                    <td style={{ textAlign: "left" }}>
+                      {typeof complaint.TeléfonoContacto === "object" &&
+                      Object.keys(complaint.TeléfonoContacto).length === 0
+                        ? "--"
+                        : complaint.TeléfonoContacto || "--"}
+                    </td>
+                    <td style={{ textAlign: "left" }}>
+                      {typeof complaint.CorreoContacto === "object" &&
+                      Object.keys(complaint.CorreoContacto).length === 0
+                        ? "--"
+                        : complaint.CorreoContacto || "--"}
+                    </td>
+                    <td style={{ textAlign: "left" }}>
+                      {typeof complaint.idDomicilio === "object" &&
+                      Object.keys(complaint.idDomicilio).length === 0
+                        ? "--"
+                        : complaint.idDomicilio || "--"}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </Table>
         </div>

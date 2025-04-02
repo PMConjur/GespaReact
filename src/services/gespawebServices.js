@@ -410,7 +410,7 @@ export const fetchActionsSearch = async (idCuenta) => {
 export const fetchSaveExecutive = async (data) => {
   try {
     console.log("Enviando datos al endpoint...", data); // Verifica que esto aparezca en la consola
-    const response = await servicio.post(`/ejecutivo/guardar`, data);
+    const response = await servicio.post(`/ejecutivo/GuardarBusqueda`, data);
 
     if (response.status !== 200) {
       throw new Error(
