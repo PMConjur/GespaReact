@@ -3137,8 +3137,7 @@ namespace NoriAPI.Services
                 {
                     numeroTarjetaLong = parsedTarjeta;
                     Debug.WriteLine($"cargoData.Tarjeta: {cargoData.Tarjeta}, numeroTarjetaLong: {numeroTarjetaLong}");
-                    string autorizacionString = cargoData.Autorización?.ToString();
-                    string nombreString = cargoData.Nombre?.ToString();
+                   
 
 
                     using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Piso2Amex")))
@@ -3152,13 +3151,13 @@ namespace NoriAPI.Services
                             command.Parameters.AddWithValue("@idCuenta", idCuenta);
                             command.Parameters.AddWithValue("@idEjecutivo", newCargoEn.idEjecutivo);
                             command.Parameters.AddWithValue("@Tarjeta", newCargoEn.Tarjeta);
-                            command.Parameters.AddWithValue("@Nombre", nombreString);
+                            command.Parameters.AddWithValue("@Nombre", newCargoEn.Nombre);
                             command.Parameters.AddWithValue("@Vencimiento", newCargoEn.Vencimiento);
                             command.Parameters.AddWithValue("@Monto", newCargoEn.Monto);
                             command.Parameters.AddWithValue("@idBanco", newCargoEn.idBanco ?? (object)DBNull.Value);
                             command.Parameters.AddWithValue("@EsClabe", newCargoEn.EsClabe);
                             command.Parameters.AddWithValue("@Domiciliado", newCargoEn.Domiciliado);
-                            command.Parameters.AddWithValue("@Autorización", autorizacionString ?? (object)DBNull.Value); ;
+                            command.Parameters.AddWithValue("@Autorización", newCargoEn.Autorizacion ?? (object)DBNull.Value); ;
                             command.Parameters.AddWithValue("@idEjecutivo_Autorizo", newCargoEn.idEjecutivo_Autorizo ?? (object)DBNull.Value);
                             command.Parameters.AddWithValue("@Sistema", newCargoEn.Sistema);
                             command.Parameters.AddWithValue("@Status", newCargoEn.Status);
