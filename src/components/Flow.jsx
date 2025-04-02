@@ -125,6 +125,7 @@ const Flow = () => {
     setIsNegotiationActive(false);
     setIsFollowUpActive(false);
     setStartTimer(false);
+    
   };
   const clearStatesManagment = () => {
     setCurrentQuestionId(null);
@@ -183,6 +184,7 @@ const Flow = () => {
         console.log("Entró a seguimiento.");
         setIsFollowUpActive(true); // Activa la variable de seguimiento
         setShowFollowUps(true); // Muestra el modal de FollowUps
+
         toast.info("Flujo preparado para seguimiento.");
         clearStatesManagment(); //Limpia solo para renderizar el formulario vacio
         return renderMainContent(); // Renderiza el contenido principal

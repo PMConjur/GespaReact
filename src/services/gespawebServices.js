@@ -513,12 +513,12 @@ export const getPaymentsData = async (idCartera, idCuenta) => {
 };
 
 // Nueva función para obtener datos de scripts
-export async function fetchScripts(idProducto) {
+export async function fetchScripts(idProducto,idCartera,idCuenta,idEjecutivo) {
   try {
     console.log("Iniciando llamada a la API para obtener scripts...");
-    console.log("URL de la API:", `${apiUrl}/ejecutivo/scripts/${idProducto}`);
+    console.log("URL de la API:", `${apiUrl}/ejecutivo/scripts-full/${idProducto}/${idCartera}/${idEjecutivo}/${idCuenta}`);
 
-    const response = await servicio.get(`/ejecutivo/scripts/${idProducto}`);
+    const response = await servicio.get(`/ejecutivo/scripts-full/${idProducto}/${idCartera}/${idEjecutivo}/${idCuenta}`);
 
     const message = getErrorStatus(response.status);
 
