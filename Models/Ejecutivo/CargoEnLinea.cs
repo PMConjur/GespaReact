@@ -5,41 +5,38 @@ namespace NoriAPI.Models.Ejecutivo
 {
     public class CargoEnLinea
     {
-        public decimal Monto { get; set; }
+        public int idCartera { get; set; }
+        public string idCuenta { get; set; }
+        public int idEjecutivo { get; set; }
         public long Tarjeta { get; set; }
-        public string Autorización { get; set; }
-        // Eliminar la siguiente línea:
-        // public string NoAutorización { get; set; }
-        public int Status { get; set; }
-        public int idBanco { get; set; }
-        public int IdEjecutivoAutorizo { get; set; }
-        public DateTime Vencimiento { get; set; }
         public string Nombre { get; set; }
+        public DateTime Vencimiento { get; set; }
+        public decimal Monto { get; set; }
+        public short? idBanco { get; set; }
         public bool EsClabe { get; set; }
         public bool Domiciliado { get; set; }
+        public string Autorizacion { get; set; }
+        public int? idEjecutivo_Autorizo { get; set; }
         public bool Sistema { get; set; }
-        public int IdCartera { get; set; }
-        public string IdCuenta { get; set; }
-        public int IdEjecutivo { get; set; }
+        public byte Status { get; set; }
+        public CargoEnLinea() { }
 
-        public CargoEnLinea(decimal monto, long tarjeta, string autorizacion, /* Eliminar noAutorizacion de aqui */ int status, int IdBanco, int idEjecutivoAutorizo, DateTime vencimiento, string nombre, bool esClabe, bool domiciliado, bool sistema, int idCartera, string idCuenta, int idEjecutivo)
+        public CargoEnLinea(decimal monto, long tarjeta, string autorizacion, byte status, short? idBanco, int? idEjecutivoAutorizo, DateTime vencimiento, string nombre, bool esClabe, bool domiciliado, bool sistema, int idCartera, string idCuenta, int idEjecutivo)
         {
             Monto = monto;
             Tarjeta = tarjeta;
-            Autorización = autorizacion;
-            // Eliminar la siguiente línea:
-            // NoAutorización = noAutorizacion;
+            Autorizacion = autorizacion;
             Status = status;
-            idBanco = IdBanco;
-            IdEjecutivoAutorizo = idEjecutivoAutorizo;
+            this.idBanco = idBanco;
+            idEjecutivo_Autorizo = idEjecutivoAutorizo;
             Vencimiento = vencimiento;
             Nombre = nombre;
             EsClabe = esClabe;
             Domiciliado = domiciliado;
             Sistema = sistema;
-            IdCartera = idCartera;
-            IdCuenta = idCuenta;
-            IdEjecutivo = idEjecutivo;
+            this.idCartera = idCartera;
+            this.idCuenta = idCuenta;
+            this.idEjecutivo = idEjecutivo;
         }
     }
 }

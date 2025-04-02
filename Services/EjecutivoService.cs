@@ -76,11 +76,17 @@ namespace NoriAPI.Services
 
         Task<DataTable> GetCargosEnLineaAsync(int idCartera, string idCuenta);
         Task ObtenerCargosEnLinea(DataRow drDatos, DataSet dsTablas);
-        Task<string> SaveCargoEnlinea(CargoEnLineaRe newCargoEn);
+        Task<string> SaveCargoEnlinea(CargoEnLinea newCargoEn);
         Task<string> SaveEstadoDeCuenta(EstadoDeCuentaRe newEstadoEn);
+        Task<string> ClasificaTelefonoAsignadoAsync(int idCartera, string idCuenta, long numeroTelefonico, int idClase, int idEjecutivoClasificacion);
         Task ObtenerMultideudores(DataRow drDatos, DataSet dsTablas, Hashtable htProducto, string sortMultideudores, string connectionString);
+
+        #region Pagos
         Task ObtenerPagos(DataRow drDatos, DataSet dsTablas);
         Task ObtenerPago(DataRow drDatos, DataSet dsTablas);
+        Task<bool> GuardaPagos(Models.Ejecutivo.Pagos pago);
+        #endregion
+
         Task<DataTable> ObtieneGestionTeAsync(int idCartera, string idCuenta, int Top);
         Task ObtenerDomicilios(DataRow drDatos, DataSet dsTablas);
         DataTable ObtieneGestionesDelDia(int idEjecutivo);
@@ -127,6 +133,8 @@ namespace NoriAPI.Services
 
         //Task<DataTable> GetAccionesComentarioAsync(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion);
         Task<DataTable> GetDropDQuejasAsync();
+        Task<DataTable> GetDropDDatosAsync();
+        Task<DataTable> GetDropDFuentesAsync();
         Task<DataTable> GetDropDOrigenQuejasAsync();
         Task<DataTable> GetViewQuejasAsync(int idCartera, string idCuenta);
         Task<string> CreaSeguimientoAsync(SeguimientoCompletoModel seguimiento, DataRow _drInfo, int idEjecutivo);
@@ -655,6 +663,46 @@ namespace NoriAPI.Services
             {
                 return ("Error al insertar la queja.", false);
             }
+        }
+
+        public async Task<DataTable> GetDropDDatosAsync()
+        {
+            DataTable datosDrop = new DataTable();
+            string query = "SELECT  VC.idValor, VC.Valor FROM dbCollection..ValoresCatálogo VC WHERE idCatálogo = 16"; // Evita inyección SQL
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(datosDrop);
+                    }
+                }
+            }
+
+            return datosDrop;
+        }
+
+        public async Task<DataTable> GetDropDFuentesAsync()
+        {
+            DataTable fuentesDrop = new DataTable();
+            string query = "SELECT  VC.idValor, VC.Valor FROM dbCollection..ValoresCatálogo VC WHERE idCatálogo = 17"; // Evita inyección SQL
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(query, connection))
+                {
+                    using (var adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(fuentesDrop);
+                    }
+                }
+            }
+
+            return fuentesDrop;
         }
 
         public async Task<DataTable> GetDropDQuejasAsync()
@@ -3066,92 +3114,87 @@ namespace NoriAPI.Services
 
             dsTablas.Tables.Add(cargoGet);
         }
-        public async Task<string> SaveCargoEnlinea(CargoEnLineaRe newCargoEn)
+        public async Task<string> SaveCargoEnlinea(CargoEnLinea newCargoEn)
         {
+            Debug.WriteLine("Entrando en SaveCargoEnlinea");
+
             try
             {
                 string idCuenta = newCargoEn.idCuenta.ToString();
                 int idCartera = ObtenerIdCarteraDesdeBaseDeDatos(idCuenta);
                 dynamic cargoData = ObtenerDatosCargoEnLinea(idCartera, idCuenta);
 
-                if (cargoData != null)
+                if (cargoData == null)
                 {
-                    try
+                    Debug.WriteLine("No se encontraron datos para el cargo en línea.");
+                    return "No se encontraron datos para el cargo en línea.";
+                }
+
+                long numeroTarjetaLong = 0;
+                long parsedTarjeta = 0;
+
+                if (cargoData.Tarjeta != null && long.TryParse(cargoData.Tarjeta.ToString(), out parsedTarjeta))
+                {
+                    numeroTarjetaLong = parsedTarjeta;
+                    Debug.WriteLine($"cargoData.Tarjeta: {cargoData.Tarjeta}, numeroTarjetaLong: {numeroTarjetaLong}");
+                    string autorizacionString = cargoData.Autorización?.ToString();
+                    string nombreString = cargoData.Nombre?.ToString();
+
+
+                    using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Piso2Amex")))
                     {
-                        if (long.TryParse(cargoData.Tarjeta.ToString(), out long numeroTarjetaLong))
+                        await connection.OpenAsync();
+                        using (SqlCommand command = new SqlCommand("[dbo].[2.11.CargoEnLínea]", connection))
                         {
-                            Console.WriteLine($"cargoData.Tarjeta: {cargoData.Tarjeta}, numeroTarjetaLong: {numeroTarjetaLong}");
+                            command.CommandType = System.Data.CommandType.StoredProcedure;
 
-                            string autorizacionString = cargoData.Autorización?.ToString();
+                            command.Parameters.AddWithValue("@idCartera", idCartera);
+                            command.Parameters.AddWithValue("@idCuenta", idCuenta);
+                            command.Parameters.AddWithValue("@idEjecutivo", newCargoEn.idEjecutivo);
+                            command.Parameters.AddWithValue("@Tarjeta", newCargoEn.Tarjeta);
+                            command.Parameters.AddWithValue("@Nombre", nombreString);
+                            command.Parameters.AddWithValue("@Vencimiento", newCargoEn.Vencimiento);
+                            command.Parameters.AddWithValue("@Monto", newCargoEn.Monto);
+                            command.Parameters.AddWithValue("@idBanco", newCargoEn.idBanco ?? (object)DBNull.Value);
+                            command.Parameters.AddWithValue("@EsClabe", newCargoEn.EsClabe);
+                            command.Parameters.AddWithValue("@Domiciliado", newCargoEn.Domiciliado);
+                            command.Parameters.AddWithValue("@Autorización", autorizacionString ?? (object)DBNull.Value); ;
+                            command.Parameters.AddWithValue("@idEjecutivo_Autorizo", newCargoEn.idEjecutivo_Autorizo ?? (object)DBNull.Value);
+                            command.Parameters.AddWithValue("@Sistema", newCargoEn.Sistema);
+                            command.Parameters.AddWithValue("@Status", newCargoEn.Status);
 
-                            // Deserialización como DateTime
-                            DateTime fechaVencimiento = newCargoEn.vencimiento; // Obtener la fecha del modelo
-
-                            CargoEnLinea newCargo = new CargoEnLinea(
-                                monto: Convert.ToDecimal(newCargoEn.Monto),
-                                tarjeta: numeroTarjetaLong,
-                                autorizacion: autorizacionString,
-                                // Pasar el valor de noAutorizacion
-                                status: Convert.ToInt32(cargoData.Status),
-                                IdBanco: Convert.ToInt32(cargoData.idBanco),
-                                idEjecutivoAutorizo: Convert.ToInt32(newCargoEn.IdEjecutivoAutorizo),
-                                vencimiento: fechaVencimiento, // Pasar el objeto DateTime
-                                nombre: cargoData.Nombre.ToString(),
-                                esClabe: Convert.ToBoolean(cargoData._EsClabe),
-                                domiciliado: Convert.ToBoolean(cargoData._Domiciliado),
-                                sistema: false,
-                                idCartera: idCartera,
-                                idCuenta: idCuenta,
-                                idEjecutivo: Convert.ToInt32(newCargoEn.idEjecutivo)
-                            );
-
-                            string saveCargoResult = await ValidateNewCargo(newCargo);
-                            return saveCargoResult;
-                        }
-                        else
-                        {
-                            return "El número de tarjeta no es válido.";
+                            await command.ExecuteNonQueryAsync();
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error al convertir el número de tarjeta: {ex.Message}");
-                        return $"Error al convertir el número de tarjeta: {ex.Message}";
-                    }
+
+                    return "Inserción exitosa.";
                 }
                 else
                 {
-                    return "No se encontraron datos para el cargo en línea.";
+                    Debug.WriteLine("La conversión del número de tarjeta falló.");
+                    return "El número de tarjeta no es válido.";
                 }
+            }
+            catch (SqlException ex)
+            {
+                Debug.WriteLine($"Error de SQL: {ex.Message}");
+                foreach (SqlError error in ex.Errors)
+                {
+                    Debug.WriteLine($"  Error Number: {error.Number}");
+                    Debug.WriteLine($"  Message: {error.Message}");
+                    Debug.WriteLine($"  Line Number: {error.LineNumber}");
+                    Debug.WriteLine($"  Procedure: {error.Procedure}");
+                }
+                return $"Error al guardar el cargo en línea: {ex.Message}";
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"Error en SaveCargoEnlinea: {ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
                 return $"Error al guardar el cargo en línea: {ex.Message}";
             }
-            return "Error desconocido al procesar el cargo en línea.";
         }
-
-        private async Task<string> ValidateNewCargo(CargoEnLinea cargoCuenta)
-        {
-            // Registra el valor de cargoCuenta.Tarjeta
-            Console.WriteLine($"Validando Tarjeta: {cargoCuenta.Tarjeta}");
-
-            var newCargoResult = await _ejecutivoRepository.RegisterNewCargo(cargoCuenta);
-
-            if (newCargoResult == null)
-            {
-                return "Fallo al guardar el cargo en la base de datos.";
-            }
-
-            //  Verifica si el resultado contiene un mensaje de error
-            if (newCargoResult is IDictionary<string, object> cargoResultDict &&
-                cargoResultDict.TryGetValue("Resultado", out object resultadoObj) && resultadoObj != null)
-            {
-                return Convert.ToString(resultadoObj);
-            }
-
-            return "";
-        }
+        
 
         private dynamic ObtenerDatosCargoEnLinea(int idCartera, string idCuenta)
         {
@@ -3167,6 +3210,86 @@ namespace NoriAPI.Services
             {
                 Console.WriteLine($"Error al obtener datos de CargoEnLínea: {ex.Message}");
                 return null;
+            }
+        }
+
+        public async Task<string> ClasificaTelefonoAsignadoAsync(int idCartera, string idCuenta, long numeroTelefonico, int idClase, int idEjecutivoClasificacion)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    // Simulación de _drTeléfono
+                    Hashtable drTelefono = new Hashtable();
+                    drTelefono["NúmeroTelefónico"] = numeroTelefonico;
+                    drTelefono["idClase"] = 1517; // Valor simulado, cambia según tu lógica
+
+                    // Simulación de Catálogos.NombresId
+                    Hashtable nombresId = new Hashtable();
+                    nombresId[idClase.ToString()] = "idClase";
+
+                    // Simulación de Catálogos.Relaciones
+                    Hashtable htModificables = new Hashtable();
+                    htModificables["1517"] = true; // Simula que la clase 1517 es modificable
+
+                    // Validación de _drTeléfono
+                    if (drTelefono == null)
+                    {
+                        return "Telefono actual no asignado.";
+                    }
+
+                    // Validación de idClase
+                    if (idClase == 0) // Simula que 0 es nulo
+                    {
+                        return "Clase nula.";
+                    }
+
+                    // Validación de Catálogos.NombresId
+                    object nombreId = nombresId[idClase.ToString()];
+                    if (nombreId == null || nombreId.ToString() != "idClase")
+                    {
+                        return "El id no corresponde a una clase de teléfono.";
+                    }
+
+                    // Validación de Catálogos.Relaciones
+                    string idClaseTelefono = drTelefono["idClase"].ToString();
+                    if (htModificables[idClaseTelefono] == null && idClase != 1518) // Simula la condición idClase.ToString() != "1518"
+                    {
+                        return "La clase no es modificable.";
+                    }
+
+                    // Actualización de la tabla Teléfonos
+                    string updateQuery = "UPDATE Teléfonos SET " +
+                                         " idClase = @idClase " +
+                                         ", FechaClasificación = GETDATE() " +
+                                         ", idEjecutivoClasificación = @idEjecutivoClasificación " +
+                                         " WHERE idCartera = @idCartera AND idCuenta = @idCuenta AND NúmeroTelefónico = @NúmeroTelefónico ";
+
+                    using (SqlCommand updateCommand = new SqlCommand(updateQuery, connection))
+                    {
+                        updateCommand.Parameters.AddWithValue("@idCartera", idCartera);
+                        updateCommand.Parameters.AddWithValue("@idCuenta", idCuenta);
+                        updateCommand.Parameters.AddWithValue("@NúmeroTelefónico", numeroTelefonico);
+                        updateCommand.Parameters.AddWithValue("@idClase", idClase);
+                        updateCommand.Parameters.AddWithValue("@idEjecutivoClasificación", idEjecutivoClasificacion);
+
+                        int rowsAffected = await updateCommand.ExecuteNonQueryAsync();
+
+                        if (rowsAffected == 0)
+                        {
+                            return "Error en base al clasificar teléfono.";
+                        }
+                    }
+
+                    return ""; // Éxito
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en ClasificaTelefonoAsignadoAsync: {ex.Message}");
+                return $"Fallo en base de datos al clasificar teléfono: {ex.Message}";
             }
         }
 
@@ -3640,6 +3763,108 @@ namespace NoriAPI.Services
 
             dsTablas.Tables.Add(pagosGet);
         }
+
+        //public async Task<bool> GuardaPagos(Models.Ejecutivo.Pagos pago)
+        //{
+        //    //try
+        //    //{
+        //        Debug.WriteLine("Iniciando GuardaPagos...");
+
+        //        // 1. Obtener la cadena de conexión
+        //        string connectionString = _configuration.GetConnectionString("Piso2Amex");
+        //        Debug.WriteLine($"Cadena de conexión: {connectionString}");
+
+        //        // 2. Crear y abrir la conexión
+        //        using (SqlConnection connection = new SqlConnection(connectionString))
+        //        {
+        //            await connection.OpenAsync();
+        //            Debug.WriteLine("Conexión a la base de datos abierta.");
+
+        //            // 3. Crear el comando SQL
+        //            using (SqlCommand command = new SqlCommand("EXEC [dbCollection].[dbo].[2.7.ReporteDePago] @idCartera, @idCuenta, @FechaPago, @MontoPago, @Referencia, @Sucursal, @idEjecutivo ", connection))
+        //            {
+        //                command.CommandType = System.Data.CommandType.StoredProcedure;
+
+        //                // 4. Agregar parámetros al comando
+        //                command.Parameters.AddWithValue("@idCartera", pago.idCartera);
+        //                command.Parameters.AddWithValue("@idCuenta", pago.idCuenta);
+        //                command.Parameters.AddWithValue("@idEjecutivo", pago.idEjecutivo);
+        //                command.Parameters.AddWithValue("@FechaPago", pago.FechaPago.Date);
+        //                command.Parameters.AddWithValue("@MontoPago", pago.MontoPago);
+
+        //                // 5. Manejar valores nulos y longitud de cadenas
+        //                string referencia = string.IsNullOrEmpty(pago.Referencia) ? null : pago.Referencia.Substring(0, Math.Min(15, pago.Referencia.Length));
+        //                string sucursal = string.IsNullOrEmpty(pago.Sucursal) ? null : pago.Sucursal.Substring(0, Math.Min(15, pago.Sucursal.Length));
+
+        //                command.Parameters.AddWithValue("@Referencia", referencia ?? (object)DBNull.Value);
+        //                command.Parameters.AddWithValue("@Sucursal", sucursal ?? (object)DBNull.Value);
+
+        //                // 6. Registrar los valores de los parámetros
+        //                Debug.WriteLine($"Parámetros: idCartera={pago.idCartera}, idCuenta={pago.idCuenta}, idEjecutivo={pago.idEjecutivo}, FechaPago={pago.FechaPago.Date}, MontoPago={pago.MontoPago}, Referencia={referencia}, Sucursal={sucursal}");
+
+        //                // 7. Ejecutar el comando y obtener el número de filas afectadas
+        //                int rowsAffected = await command.ExecuteNonQueryAsync();
+        //                Debug.WriteLine($"Filas afectadas: {rowsAffected}");
+
+        //                // 8. Devolver el resultado
+        //                return rowsAffected > 0;
+        //            } // El comando se libera aquí
+        //        } // La conexión se libera aquí
+        //    //}
+        //    //catch (SqlException ex)
+        //    //{
+        //    //    // 9. Manejar errores de SQL Server
+        //    //    Debug.WriteLine($"Error de SQL: {ex.Message}");
+        //    //    return false;
+        //    //}
+        //    //catch (ObjectDisposedException ex)
+        //    //{
+        //    //    // 10. Manejar errores de objeto liberado
+        //    //    Debug.WriteLine($"Error de objeto liberado: {ex.Message}");
+        //    //    return false;
+        //    //}
+        //    //catch (Exception ex)
+        //    //{
+        //    //    // 11. Manejar otros errores
+        //    //    Debug.WriteLine($"Error general: {ex.Message}");
+        //    //    return false;
+        //    //}
+        //    //finally
+        //    //{
+        //    //    Debug.WriteLine("Finalizando GuardaPagos.");
+        //    //}
+        //}
+
+        public async Task<bool> GuardaPagos(Models.Ejecutivo.Pagos pago)
+        {
+            string connectionString = _configuration.GetConnectionString("Piso2Amex");
+
+            using SqlConnection connection = new(connectionString);
+
+            await connection.OpenAsync();
+
+            string storedProcedure = "[dbCollection].[dbo].[2.7.ReporteDePago]";
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@idCartera", pago.idCartera, DbType.Int32);
+            parameters.Add("@idCuenta", pago.idCuenta, DbType.String, size: 16);
+            parameters.Add("@idEjecutivo", pago.idEjecutivo, DbType.Int32);
+            parameters.Add("@FechaPago", pago.FechaPago.Date, DbType.Date);
+            parameters.Add("@MontoPago", pago.MontoPago, DbType.Decimal);
+
+            string referencia = string.IsNullOrEmpty(pago.Referencia) ? null : pago.Referencia.Substring(0, Math.Min(15, pago.Referencia.Length));
+            string sucursal = string.IsNullOrEmpty(pago.Sucursal) ? null : pago.Sucursal.Substring(0, Math.Min(15, pago.Sucursal.Length));
+
+            parameters.Add("@Referencia", referencia ?? (object)DBNull.Value, DbType.String, size: 15);
+            parameters.Add("@Sucursal", sucursal ?? (object)DBNull.Value, DbType.String, size: 15);
+
+
+            int rowsAffected = await connection.ExecuteAsync(storedProcedure, parameters, commandType: CommandType.StoredProcedure);
+
+            return rowsAffected > 0;
+
+        }
+
         #endregion
 
         #region Gestiones

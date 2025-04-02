@@ -268,10 +268,10 @@ namespace NoriAPI.Controllers
 
         #region Recuperacion
         [HttpGet("get-recuperacion-Actual")]
-      
+
         public async Task<IActionResult> GetRecuperacion(int idEjecutivo)
         {
-            
+
             var recuperacion = await _ejecutivoService.RecuperacionActual(idEjecutivo);
 
             if (recuperacion == null)
@@ -282,7 +282,7 @@ namespace NoriAPI.Controllers
             return Ok(recuperacion);
         }
         [HttpGet("get-recuperacion-Anterior")]
-      
+
         public async Task<IActionResult> GetRecuperacionAnterior(int idEjecutivo)
         {
 
@@ -371,9 +371,8 @@ namespace NoriAPI.Controllers
             return Ok(result);
         }
 
-        
+
         [HttpPost ("GuardaNegociacionPlazos")]
-        [AllowAnonymous]
         public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] NegociacionPlazosInput input)
         {
             var result = await _ejecutivoService.GuardaNegociacionPlazos(input);
@@ -389,7 +388,7 @@ namespace NoriAPI.Controllers
         public async Task<IActionResult> GuardaEliminaPlazos([FromBody] EliminaGuardaPlazos PlazosInfo)
         {
             var result = await _ejecutivoService.GuardaEliminaPlazos(PlazosInfo);
-            //return Ok(result);            
+            //return Ok(result);
             return Ok(new { Mensaje = result });
 
         }
@@ -408,7 +407,7 @@ namespace NoriAPI.Controllers
                 return Ok(result);
             }
 
-            
+
 
         }
 
@@ -416,9 +415,6 @@ namespace NoriAPI.Controllers
 
 
         #endregion
-
-
-
 
 
 
@@ -533,8 +529,10 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+
         [HttpPost("SaveCargoEnlinea")]
-        public async Task<IActionResult> SaveCargoEnlinea([FromBody] CargoEnLineaRe newCargoEn)
+        [AllowAnonymous]
+        public async Task<IActionResult> SaveCargoEnlinea( CargoEnLinea newCargoEn)
         {
             if (newCargoEn == null)
             {
@@ -717,6 +715,25 @@ namespace NoriAPI.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+
+        [HttpPost("GuardarPagos")]
+        public async Task<IActionResult> GuardarPagos([FromBody] Pagos pago)
+        {
+            if (pago == null)
+            {
+                return BadRequest(new { Result = "Datos de Pago no válidos."});
+            }
+
+            if (await _ejecutivoService.GuardaPagos(pago))
+            {
+                return Ok(new { Result = "Pago guardado exitosamente." });
+            }
+            else
+            {
+                return BadRequest(new { Result = "Error al guardar el Pago." });
+            }
+        }
+
         #endregion
 
         #region Gestiones
@@ -1096,6 +1113,59 @@ namespace NoriAPI.Controllers
             return Ok(new { mensaje = mensaje.Item1, exito = true });
         }
 
+        [HttpGet("ddDatos")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetDropDatos()
+        {
+            try
+            {
+                DataTable DDdatos = new DataTable();
+
+                DDdatos = await _ejecutivoService.GetDropDDatosAsync();
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var DatosDD = ConvertDataTableToList(DDdatos);
+
+                // Serializamos la lista a JSON
+                string jsonDDdatos = JsonSerializer.Serialize(DatosDD, new JsonSerializerOptions { WriteIndented = true });
+
+                //dsTablas.Tables.Add(Negociaciones);
+
+                //return Ok(jsonDDQuejas);
+                return Content(jsonDDdatos, "application/json; charset=utf-8");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpGet("ddFuentes")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetDropFuentes()
+        {
+            try
+            {
+                DataTable DDFuentes = new DataTable();
+
+                DDFuentes = await _ejecutivoService.GetDropDFuentesAsync();
+
+                // Convertimos el DataTable a una lista de diccionarios
+                var FuentesDD = ConvertDataTableToList(DDFuentes);
+
+                // Serializamos la lista a JSON
+                string jsonDDFuentes = JsonSerializer.Serialize(FuentesDD, new JsonSerializerOptions { WriteIndented = true });
+
+                //dsTablas.Tables.Add(Negociaciones);
+
+                //return Ok(jsonDDQuejas);
+                return Content(jsonDDFuentes, "application/json; charset=utf-8");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
 
         /*[HttpGet("accionesComentario")]
             public async Task<IActionResult> GetAccionesComentario(int idCartera, string idCuenta, int idEjecutivo, string Comentario, bool ModificaSituacion)
@@ -1185,12 +1255,7 @@ namespace NoriAPI.Controllers
         //}
 
 
-
-
-
-
         [HttpGet("ddQuejas")]
-
         public async Task<IActionResult> GetDropQuejas()
         {
             try
@@ -1209,8 +1274,6 @@ namespace NoriAPI.Controllers
 
                 //return Ok(jsonDDQuejas);
                 return Content(jsonDDQuejas, "application/json; charset=utf-8");
-
-
             }
             catch (Exception ex)
             {
@@ -1219,7 +1282,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("ddOrigenQuejas")]
-
         public async Task<IActionResult> GetDropOrigenQuejas()
         {
             try
@@ -1698,6 +1760,22 @@ namespace NoriAPI.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpPut("ClasificaTelefono")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ClasificaTelefono(int idCartera, string idCuenta, long numeroTelefonico, int idClase, int idEjecutivoClasificacion)
+        {
+            string resultado = await _ejecutivoService.ClasificaTelefonoAsignadoAsync(idCartera, idCuenta, numeroTelefonico, idClase, idEjecutivoClasificacion);
+
+            if (string.IsNullOrEmpty(resultado))
+            {
+                return Ok("Teléfono clasificado exitosamente.");
+            }
+            else
+            {
+                return BadRequest(resultado);
             }
         }
 
