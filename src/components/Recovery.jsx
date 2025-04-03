@@ -1,4 +1,4 @@
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import { Modal, Button, Form, ListGroup, Placeholder } from "react-bootstrap";
 import { userRecovery, userNegotiations } from "../services/gespawebServices";
 import NegotiationsMonth from "./NegotiationsMonth.jsx";
@@ -18,7 +18,6 @@ const Recovery = ({ show, handleClose }) => {
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
   const fetchData = async (selectedMes) => {
     try {
-      const idEjecutivo = 14126;
       setLoading(true);
 
       const actual = selectedMes === "actual" ? 1 : 0;

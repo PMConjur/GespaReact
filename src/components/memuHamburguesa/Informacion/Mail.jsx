@@ -41,13 +41,25 @@ const Mail = ({ show, handleClose }) => {
   const idCuenta = searchResults.length > 0 ? searchResults[0].idCuenta : null;
 
   useEffect(() => {
+    console.log("idCuenta ha cambiado:", idCuenta); // Verifica si idCuenta cambia
+
     const fetchCorreos = async () => {
-      if (!idCuenta) return; // Asegúrate de que idCuenta sea válido
+      if (!idCuenta) {
+        console.log("idCuenta no es válido, no se ejecuta fetchCorreos");
+        setCorreos([]); // Limpia la tabla si idCuenta no es válido
+        return;
+      }
+
+      // Limpia la tabla antes de cargar nuevos datos
+      setCorreos([]);
 
       try {
         const url = `/ejecutivo/CorreosCarga/1/${idCuenta}`;
-        const response = await servicio.get(url); // Usa 'servicio' en lugar de 'axios'
+        console.log("Llamando a la API:", url); // Log para verificar la URL
+        const response = await servicio.get(url);
         const data = response.data;
+
+        console.log("Respuesta de la API CorreosCarga:", data); // Log para verificar la respuesta
 
         if (Array.isArray(data)) {
           const correosFormateados = data.map((item) => ({
@@ -55,7 +67,8 @@ const Mail = ({ show, handleClose }) => {
             origen: item.idOrigen,
             info: item.idInformación,
           }));
-          setCorreos(correosFormateados);
+          setCorreos(correosFormateados); // Actualiza el estado de correos
+          console.log("Correos actualizados:", correosFormateados); // Log para verificar el estado actualizado
         } else {
           console.error("La respuesta no es un arreglo:", data);
         }
@@ -65,7 +78,7 @@ const Mail = ({ show, handleClose }) => {
     };
 
     fetchCorreos();
-  }, [idCuenta]);
+  }, [idCuenta]); // Ejecutar cada vez que idCuenta cambie
 
   // Función para obtener los correos enviados
   const fetchCorreosEnviadosData = async () => {

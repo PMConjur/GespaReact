@@ -19,25 +19,25 @@ const Managments = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (!searchResults || searchResults.length === 0) {
-        setSortedData([]); // Limpiar datos si no hay resultados
+        setSortedData([]);
         return;
       }
 
       try {
-        const idCuenta = searchResults[0]?.idCuenta; // Obtener el primer idCuenta como ejemplo
+        const idCuenta = searchResults[0]?.idCuenta;
         if (!idCuenta) {
           setToastMessage("No se encontró un idCuenta válido.");
           setShowToast(true);
-          setSortedData([]); // Limpiar datos si no hay idCuenta válido
+          setSortedData([]);
           return;
         }
 
-        setIsLoading(true); // Iniciar carga
-        const gestionData = await getGestionTeData(currentPage, idCuenta); // Usar currentPage para la paginación
+        setIsLoading(true);
+        const gestionData = await getGestionTeData(currentPage, idCuenta);
         setSortedData((prevData) =>
           currentPage === 1 ? gestionData : [...prevData, ...gestionData]
-        ); // Reemplazar o agregar datos
-        setIsLoading(false); // Finalizar carga
+        );
+        setIsLoading(false);
       } catch (error) {
         console.error("Error al obtener los datos de gestión:", error);
         setToastMessage(
@@ -49,9 +49,9 @@ const Managments = () => {
     };
 
     // Reiniciar el estado cuando cambie searchResults
-    setCurrentPage(1); // Reiniciar la página actual
-    setSortedData([]); // Limpiar los datos actuales
-    fetchData(); // Llamar a fetchData para cargar los nuevos datos
+    setCurrentPage(1);
+    setSortedData([]);
+    fetchData();
   }, [searchResults, currentPage]);
 
   // Validar campos para evitar errores al renderizar

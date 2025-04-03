@@ -7,17 +7,18 @@ import {
   FormControl,
   Placeholder,
   DropdownButton,
-  Dropdown
+  Dropdown,
 } from "react-bootstrap";
 import {
   fetchPhones,
   fetchValidationTel,
-  fetchNewTel
+  fetchNewTel,
 } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 import "../scss/styles.scss";
 import { TelephoneFill } from "react-bootstrap-icons";
+import axios from "axios"; // Asegúrate de tener axios instalado
 
 const Telephones = () => {
   const [data, setData] = useState([]);
@@ -39,12 +40,13 @@ const Telephones = () => {
       setPhoneNumber(input);
     }
   };
+  const token = responseData?.ejecutivo?.token;
 
   const handleValidatePhone = async () => {
     if (!phoneNumber.trim()) {
       toast.warning("Ingrese un número de teléfono", {
         position: "top-right",
-        style: { transform: "translateY(80vh)" }
+        style: { transform: "translateY(80vh)" },
       });
       return;
     }
@@ -52,14 +54,14 @@ const Telephones = () => {
       toast.warning(
         "Error 400: El número de teléfono debe tener 10 o 11 dígitos",
         {
-          position: "top-right"
+          position: "top-right",
         }
       );
       return;
     }
     if (searchResults.length === 0 || !searchResults[0].idCuenta) {
       toast.warning("Error 404: No hay una cuenta válida seleccionada", {
-        position: "top-right"
+        position: "top-right",
       });
       return;
     }
@@ -69,19 +71,19 @@ const Telephones = () => {
     try {
       const response = await fetchValidationTel({
         telefono: phoneNumber,
-        idCuenta
+        idCuenta,
       });
 
       if (response.exists) {
         toast.success(" El número de teléfono existe en la cuenta", {
           position: "top-right",
-          style: { transform: "translateY(80vh)" }
+          style: { transform: "translateY(80vh)" },
         });
         setIsPhoneNew(false); // El teléfono existe, no es nuevo
       } else {
         toast.error("Error 404: El número de telefono no existe en la cuenta", {
           position: "center-right",
-          style: { transform: "translateY(80vh)" }
+          style: { transform: "translateY(80vh)" },
         });
         setIsPhoneNew(true); // El teléfono no existe, es nuevo
       }
@@ -89,7 +91,7 @@ const Telephones = () => {
       console.error("Error al validar el teléfono:", error);
       toast.error("Error 404: El número de teléfono no existe en la cuenta", {
         position: "top-right",
-        style: { transform: "translateY(80vh)" }
+        style: { transform: "translateY(80vh)" },
       });
       setIsPhoneNew(true); // En caso de error, considerar el teléfono como nuevo
     }
@@ -99,7 +101,7 @@ const Telephones = () => {
     if (!phoneNumber.trim()) {
       toast.warning("Error 400: Ingrese un número de teléfono", {
         position: "top-right",
-        style: { transform: "translateY(80vh)" }
+        style: { transform: "translateY(80vh)" },
       });
       return;
     }
@@ -107,14 +109,14 @@ const Telephones = () => {
       toast.warning(
         "Error 400: El número de teléfono debe tener 10 o 11 dígitos",
         {
-          position: "top-right"
+          position: "top-right",
         }
       );
       return;
     }
     if (searchResults.length === 0 || !searchResults[0].idCuenta) {
       toast.warning("Error 400: No hay una cuenta válida seleccionada", {
-        position: "top-right"
+        position: "top-right",
       });
       return;
     }
@@ -129,7 +131,7 @@ const Telephones = () => {
       telefonia: "fija", // Ajusta estos valores según sea necesario
       claseTelefono: selectedClaseTelefono,
       horarioContacto: horarioContacto,
-      extension: 0
+      extension: 0,
     };
 
     console.log("Horario de contacto:", horarioContacto);
@@ -139,7 +141,7 @@ const Telephones = () => {
       await fetchNewTel(newPhoneData);
       toast.success("Nuevo número de teléfono guardado", {
         position: "top-right",
-        style: { transform: "translateY(80vh)" }
+        style: { transform: "translateY(80vh)" },
       });
       setIsPhoneNew(false); // Restablecer el estado del teléfono nuevo
       setPhoneNumber(""); // Limpiar el campo de entrada
@@ -148,7 +150,7 @@ const Telephones = () => {
       console.error("Error al guardar el nuevo teléfono:", error);
       toast.error("Error 408: Error al guardar el nuevo teléfono", {
         position: "top-right",
-        style: { transform: "translateY(80vh)" }
+        style: { transform: "translateY(80vh)" },
       });
     }
   };
@@ -178,15 +180,15 @@ const Telephones = () => {
           _Confirmado: foundRow._Confirmado,
           fecha_Insert: foundRow.fecha_Insert,
           calificacion: foundRow.calificacion,
-          activo: foundRow.activo
-        }
+          activo: foundRow.activo,
+        },
       });
       toast.success(`Número encontrado: ${phoneNumber}`, {
-        position: "top-right"
+        position: "top-right",
       });
     } else {
       toast.error(`Número no encontrado: ${phoneNumber}`, {
-        position: "top-right"
+        position: "top-right",
       });
     }
   };
@@ -209,7 +211,7 @@ const Telephones = () => {
       setData(flatPhones);
       if (flatPhones.length === 0 && !toastShown) {
         toast.error("Error 404: No hay carga de teléfonos", {
-          position: "top-right"
+          position: "top-right",
         });
         setToastShown(true);
       }
@@ -228,6 +230,82 @@ const Telephones = () => {
     }
   }, [searchResults]);
 
+  // Método para validar el huso horario
+  const validateTimeZone = async (idCuenta, numeroTelefonico, idEjecutivo) => {
+    try {
+      // Obtener el token de manera similar a como lo haces en agregarCorreo
+      const token = responseData?.ejecutivo?.token;
+
+      // Verificar si el token está disponible y agregar un console.log para visualizarlo
+      if (!token) {
+        console.error("Error: Token no disponible.");
+        return {
+          isValid: false,
+          mensaje:
+            "Error: No se encontró un token válido para la autenticación.",
+        };
+      }
+
+      // Mostrar el token que se está pasando en la solicitud
+      console.log("Token que se está pasando:", token);
+
+      // Limpieza de los parámetros
+      const cleanIdCuenta = String(idCuenta).trim();
+      const cleanNumeroTelefonico = String(numeroTelefonico).trim();
+      const cleanIdEjecutivo = String(idEjecutivo).trim();
+
+      // Construcción de la URL con parámetros de consulta
+      const url = `/ejecutivo/UsosHorarios/1/${cleanIdCuenta}/${cleanNumeroTelefonico}/${cleanIdEjecutivo}`;
+
+      // Realizar la solicitud al servidor utilizando el token en la cabecera
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Agregar el token como en agregarCorreo
+        },
+      });
+
+      // Verificar si la respuesta es un JSON válido
+      if (response.headers["content-type"]?.includes("application/json")) {
+        const data = response.data;
+
+        // Verificar la respuesta de la API
+        if (Array.isArray(data) && data.length > 0 && data[0]?.Mensaje) {
+          const mensaje = data[0].Mensaje;
+          if (mensaje === "La marcación es válida") {
+            return { isValid: true, mensaje };
+          } else {
+            return { isValid: false, mensaje };
+          }
+        } else {
+          console.error("Estructura inesperada en la respuesta:", data);
+          return {
+            isValid: false,
+            mensaje: "Error: Respuesta inesperada del servidor.",
+          };
+        }
+      } else {
+        console.error(
+          "El servidor devolvió un contenido no JSON:",
+          response.data
+        );
+        return {
+          isValid: false,
+          mensaje: "Error: El servidor devolvió un contenido no válido.",
+        };
+      }
+    } catch (error) {
+      console.error("Error al validar el huso horario:", error);
+      return {
+        isValid: false,
+        mensaje:
+          error.response?.data?.message ||
+          "Error al validar el huso horario. Intente nuevamente.",
+      };
+    }
+  };
+
+  // METODO DE HORARIO
+
   return (
     <Card className="overflow-auto card-phones">
       <Card.Body className="card-body-phones">
@@ -243,32 +321,74 @@ const Telephones = () => {
                     variant="primary"
                     className="me-2 input-phone"
                     style={{ width: "25%" }}
-                    onClick={() => {
-                      setSelectedAnswer({
-                        value: 10,
-                        dataPhone: {
-                          idClase: 0,
-                          titulares: 0,
-                          conocidos: 0,
-                          desconocidos: 0,
-                          sinContacto: 0,
-                          intentosViciDial: 0,
-                          id: 0,
-                          númeroTelefónico: 0,
-                          idTelefonía: 0,
-                          idOrigen: 0,
-                          estado: 0,
-                          municipio: 0,
-                          husoHorario: 0,
-                          segHorarioContacto: 0,
-                          extensión: 0,
-                          _Confirmado: 0,
-                          fecha_Insert: 0,
-                          calificacion: 0,
-                          activo: 0,
-                          idModo: 2201
-                        }
-                      }); // Enviar valor 10 al Form.Check en Flow.jsx
+                    onClick={async () => {
+                      const idCuenta = searchResults[0]?.idCuenta; // Obtén el idCuenta del contexto
+                      const idEjecutivo =
+                        responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo; // Obtén el idEjecutivo
+                      const numeroTelefonico = phoneNumber; // Número telefónico seleccionado
+
+                      // Agregar logs para depuración
+                      console.log("idCuenta:", idCuenta);
+                      console.log("idEjecutivo:", idEjecutivo);
+                      console.log("numeroTelefonico:", numeroTelefonico);
+
+                      // Validación específica para numeroTelefonico
+                      if (!numeroTelefonico || numeroTelefonico.trim() === "") {
+                        toast.error(
+                          "Error: Ingrese un número telefónico válido.",
+                          {
+                            position: "top-center",
+                          }
+                        );
+                        return;
+                      }
+
+                      if (!idCuenta || !idEjecutivo) {
+                        toast.error(
+                          "Error: Información incompleta para validar el huso horario.",
+                          {
+                            position: "top-center",
+                          }
+                        );
+                        return;
+                      }
+
+                      const { isValid, mensaje } = await validateTimeZone(
+                        idCuenta,
+                        numeroTelefonico,
+                        idEjecutivo
+                      );
+
+                      if (isValid) {
+                        setSelectedAnswer({
+                          value: 10,
+                          dataPhone: {
+                            idClase: 0,
+                            titulares: 0,
+                            conocidos: 0,
+                            desconocidos: 0,
+                            sinContacto: 0,
+                            intentosViciDial: 0,
+                            id: 0,
+                            númeroTelefónico: numeroTelefonico,
+                            idTelefonía: 0,
+                            idOrigen: 0,
+                            estado: 0,
+                            municipio: 0,
+                            husoHorario: 0,
+                            segHorarioContacto: 0,
+                            extensión: 0,
+                            _Confirmado: 0,
+                            fecha_Insert: 0,
+                            calificacion: 0,
+                            activo: 0,
+                          },
+                        }); // Enviar valor 10 al Form.Check en Flow.jsx
+                      } else {
+                        toast.error(mensaje, {
+                          position: "top-center",
+                        });
+                      }
                     }}
                   >
                     Llamada de entrada
@@ -305,7 +425,7 @@ const Telephones = () => {
                           "Celular",
                           "Recados",
                           "Oficina",
-                          "Baja"
+                          "Baja",
                         ].map((item) => (
                           <Dropdown.Item key={item} eventKey={item}>
                             {item}
@@ -406,8 +526,7 @@ const Telephones = () => {
                                 fecha_Insert: row.fecha_Insert,
                                 calificacion: row.calificacion,
                                 activo: row.activo,
-                                idModo: 2202
-                              }
+                              },
                             })
                           }
                         >
