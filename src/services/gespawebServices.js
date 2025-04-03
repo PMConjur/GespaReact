@@ -58,9 +58,14 @@ export async function userProductivity(numEmpleado) {
 export async function userRecovery(idEjecutivo, actual) {
   try {
     console.log(idEjecutivo, actual);
-    const response = await servicio.get(
-      `/ejecutivo/get-recuperacion?idEjecutivo=${idEjecutivo}&actual=${actual}`
-    );
+
+    // Seleccionar el endpoint según el valor de "actual"
+    const endpoint =
+      actual === 1
+        ? `/ejecutivo/get-recuperacion-Actual?idEjecutivo=${idEjecutivo}`
+        : `/ejecutivo/get-recuperacion-Anterior?idEjecutivo=${idEjecutivo}`;
+
+    const response = await servicio.get(endpoint);
     const data = response.data;
     console.log(data);
     return data;
