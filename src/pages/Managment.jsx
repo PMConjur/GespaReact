@@ -16,7 +16,7 @@ import CustomToast from "../components/CustomToast";
 import Managments from "../components/Managments";
 import NotesWidget from "../components/NotesWidget";
 import { searchCustomer } from "../services/gespawebServices";
-
+import StickyTimmer from "../components/StickyTimmer";
 export const AppContext = createContext();
 
 const Managment = () => {
@@ -41,6 +41,8 @@ const Managment = () => {
   const [stoppedTime, setStoppedTime] = useState(null); // Estado para el tiempo detenido
   const [isPaymentActive, setPaymentActive] = useState(false); // Estado para pagos
   const [isOnlineChargeActive, setOnlineChargeActive] = useState(false); // Estado para cargos en línea
+  const [stoppedTimeSticky, setStoppedTimeSticky] = useState(null); // Estado para el tiempo actual del StickyTimmer
+  const [triggerUpdateStickyTime, setTriggerUpdateStickyTime] = useState(false); // Estado para accionar la actualización del tiempo
   const token = responseData?.ejecutivo?.token;
   const nombreEjecutivo =
     responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
@@ -199,7 +201,11 @@ const Managment = () => {
     communicationData,
     setCommunicationData,
     stoppedTime,
-    setStoppedTime
+    setStoppedTime,
+    stoppedTimeSticky,
+    setStoppedTimeSticky,
+    triggerUpdateStickyTime,
+    setTriggerUpdateStickyTime
   };
 
   return (
@@ -207,7 +213,7 @@ const Managment = () => {
       <AppContext.Provider value={contextValue}>
         <section>
           <NavbarComponent />
-
+          <StickyTimmer />
           <CustomToast
             show={showToast}
             onClose={handleToastClosed} // Usamos la función renombrada
