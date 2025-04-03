@@ -1,10 +1,8 @@
-import { useState, useEffect, useRef, useContext } from "react";
-import { AppContext } from "../../pages/Managment";
+import { useState, useEffect, useRef } from "react";
 
-const Timmer = ({ start, stop }) => {
+const TimmerAccount = ({ start, onCaptureTime }) => {
   const [time, setTime] = useState(0); // Tiempo en segundos
   const timerIntervalRef = useRef(null);
-  const { setStoppedTime } = useContext(AppContext);
 
   const formatTime = (totalSeconds) => {
     const hours = Math.floor(totalSeconds / 3600);
@@ -17,23 +15,24 @@ const Timmer = ({ start, stop }) => {
 
   useEffect(() => {
     if (start && !timerIntervalRef.current) {
-      //console.log("Cronómetro iniciado.");
       timerIntervalRef.current = setInterval(() => {
         setTime((prevTime) => prevTime + 1);
       }, 1000);
-      const formattedTime = formatTime(time);
-      setStoppedTime(formattedTime); // Envía el tiempo detenido al contexto
-    
     }
 
-  
     return () => {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
       }
     };
-  }, [start, stop, time, setStoppedTime]);
+  }, [start]);
+
+  useEffect(() => {
+    if (onCaptureTime) {
+      onCaptureTime(formatTime(time)); // Envía el tiempo actual al padre
+    }
+  }, [onCaptureTime, time]);
 
   return (
     <div>
@@ -42,4 +41,4 @@ const Timmer = ({ start, stop }) => {
   );
 };
 
-export default Timmer;
+export default TimmerAccount;

@@ -1818,13 +1818,9 @@ $color-green-secondary: #17ff1f;
     82deg,
     $color-white,
     color.adjust($color-white-secondary, $lightness: -1%),
-  
     color.adjust($color-white, $lightness: 35%),
-  
     color.adjust($color-white, $lightness: 5%),
-   
     color.adjust($color-white-secondary, $saturation: -35%)
- 
   );
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
@@ -1832,9 +1828,113 @@ $color-green-secondary: #17ff1f;
   table-layout: auto; // Permite que las celdas se ajusten al contenido
   word-wrap: break-word; // Evita que el contenido se desborde
   white-space: nowrap; // Evita que el texto se divida en varias líneas
-  td, th {
+  td,
+  th {
     text-align: center; // Centra el contenido
     vertical-align: middle; // Alinea verticalmente el contenido
-    padding: .7rem;
+    padding: 0.7rem;
+  }
+}
+//---Estilos para flotante del timer
+// Variables
+$btn-width: auto;
+$btn-height: auto;
+$border-radius: 10px;
+$transition-speed: 0.4s;
+$main-color: #191919b3;
+$accent-color: #000000d2;
+
+.sticky-timmer {
+  &-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.2));
+  }
+
+  &-btn {
+    all: unset;
+    width: $btn-width;
+    min-width: 120px;
+    height: $btn-height;
+    min-height: 35px;
+    font-size: 14px;
+    background: transparent;
+    border: none;
+    position: relative;
+    color: #f0f0f0;
+    cursor: pointer;
+    z-index: 1;
+    padding: 5px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+
+    &::after,
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      z-index: -99999;
+      transition: all $transition-speed;
+    }
+
+    &::before {
+      transform: translate(0%, 0%);
+      width: 100%;
+      height: 100%;
+      background: $main-color;
+      border-radius: $border-radius;
+    }
+
+    &::after {
+      transform: translate(10px, 10px);
+      width: 35px;
+      height: 35px;
+      background: $accent-color;
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      border-radius: 50px;
+    }
+
+    &:hover::before {
+      transform: translate(5%, 20%);
+      width: 110%;
+      height: 110%;
+    }
+
+    &:hover::after {
+      border-radius: $border-radius;
+      transform: translate(0, 0);
+      width: 100%;
+      height: 100%;
+    }
+
+    &:active::after {
+      transition: 0s;
+      transform: translate(0, 5%);
+    }
+
+    h6 {
+      margin: 0;
+      padding: 0;
+      font-size: 14px;
+      font-weight: normal;
+      line-height: 1.2;
+      color: inherit;
+    }
+
+    .timmer {
+      font-size: 12px;
+      margin-top: 4px;
+      color: inherit;
+    }
   }
 }

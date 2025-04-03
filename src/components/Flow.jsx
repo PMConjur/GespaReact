@@ -29,7 +29,8 @@ const Flow = () => {
     setOnlineChargeActive,
     stoppedTime,
     communicationData,
-    setStoppedTime
+    setStoppedTime,
+    stoppedTimeSticky
   } = useContext(AppContext); // Agrega funciones del contexto para manejar estados
   const [userFlowData, setUserFlowData] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
@@ -81,11 +82,10 @@ const Flow = () => {
   };
 
   const handleStopTimer = () => {
+    setStartTimer(false); // Detiene el cronómetro
     if (stoppedTime) {
-      // Imprime el tiempo detenido
+      console.log("Tiempo detenido:", stoppedTime); // Imprime el tiempo detenido
       return stoppedTime; // Devuelve el tiempo detenido
-    } else {
-      return "00:00:02"; // Valor predeterminado
     }
   };
 
@@ -230,8 +230,11 @@ const Flow = () => {
   const idCargoLinea = answerHistory.find(
     (item) => item.idPregunta === 8
   )?.idValor;
-
+  //console.log(stoppedTimeSticky);
   const handleSave = async (comment) => {
+    const tiempoEnCuenta = stoppedTimeSticky || "00:00:00"; // Usa el tiempo capturado por TimmerAccount
+    const duracion = stoppedTime || "00:00:02"; // Usa el tiempo detenido del cronómetro interno de Flow.jsx
+
     const dataManagment = {
       idCartera: searchResults?.[0].idCartera,
       idCuenta: searchResults?.[0].idCuenta,
@@ -245,13 +248,14 @@ const Flow = () => {
       extension: 0,
       idModo: selectedAnswer.dataPhone.idModo,
       idAcercamiento: idAcercamiento ? idAcercamiento : null,
-      duracion: stoppedTime ? stoppedTime : "00:00:02", // Usa el tiempo detenido desde AppContext
-      tiempoEnCuenta: "00:02:02",
+      duracion, // Usa el tiempo del cronómetro interno
+      tiempoEnCuenta, // Usa el tiempo capturado por TimmerAccount
       idParentesco: idParentesco ? idParentesco : null,
       nombreContacto: communicationData?.name ? communicationData.name : null,
       idCausaNoPago: idCausaNoPago ? idCausaNoPago : null,
       comentario: comment ? comment : null
     };
+
     console.log("Datos de gestión a guardar:", dataManagment);
     try {
       const response = await saveManagment(dataManagment); // Llama al servicio saveManagment
