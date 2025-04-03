@@ -513,12 +513,17 @@ export const getPaymentsData = async (idCartera, idCuenta) => {
 };
 
 // Nueva función para obtener datos de scripts
-export async function fetchScripts(idProducto) {
+ 
+export async function fetchScripts(Ejecutivo, idProducto, idCartera, cuenta) {
   try {
     console.log("Iniciando llamada a la API para obtener scripts...");
-    console.log("URL de la API:", `${apiUrl}/ejecutivo/scripts/${idProducto}`);
-
-    const response = await servicio.get(`/ejecutivo/scripts/${idProducto}`);
+    
+    //console.log("URL de la API scripts-full :", `${apiUrl}/ejecutivo/scripts-full/1/1/370700000000004`);
+    console.log("URL de la API scripts-full :", `${apiUrl}/ejecutivo/scripts-full/${Ejecutivo}/1/1/${cuenta}`);
+   
+    const response = await servicio.get(`/ejecutivo/scripts-full/${Ejecutivo}/1/1/${cuenta}`, {
+     
+    });
 
     const message = getErrorStatus(response.status);
 
@@ -538,7 +543,6 @@ export async function fetchScripts(idProducto) {
     throw error;
   }
 }
-
 // Endpoint de gestión TE para múltiples cuentas
 export const getGestionTeData = async (idCartera, idCuenta) => {
   try {

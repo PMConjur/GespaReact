@@ -21,6 +21,7 @@ function DropdownExecutive() {
   const handleShowScripts = async () => {
     setLoadingScripts(true);
     try {
+      // const scripts = await fetchScripts(28916, 1, 1, "370700000000004"); // Obtener los datos de scripts
       const scripts = await fetchScripts(1); // Obtener los datos de scripts
       setScriptsData(scripts); // Establece los datos recibidos
       setShowScripts(true);

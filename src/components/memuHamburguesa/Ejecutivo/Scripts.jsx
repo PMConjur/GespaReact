@@ -7,8 +7,12 @@ const Scripts = ({ show, handleCloseScripts, data, loadingScripts }) => {
         <Modal show={show} onHide={handleCloseScripts} size="xl" centered>
             <Modal.Header closeButton>
                 <Modal.Title>Scripts</Modal.Title>
+                
             </Modal.Header>
+           
+        
             <Modal.Body style={{ maxHeight: '600px', overflow: 'auto', height: '500px' }}>
+                
                 {loadingScripts ? (
                     <div className="d-flex justify-content-center">
                         <Spinner animation="border" />
