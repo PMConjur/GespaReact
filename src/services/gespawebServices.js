@@ -1236,6 +1236,7 @@ export const createOnlineCharge = async (data) => {
     throw error;
   }
 };
+
 // endpoint guardar-Gestion-Telefonica
 export const saveManagment = async (dataManagment) => {
   try {
@@ -1278,6 +1279,75 @@ export const fetchSearchAddDate = async () => {
     return result;
   } catch (error) {
     console.error("Error en fetchValidators:", error);
+    throw error;
+  }
+};
+
+//endpoint carga telefonos
+export const fetchEmailsCharging = async (idCartera, idCuenta) => {
+  try {
+    console.log("Llamando al endpoint /ejecutivo/CorreosCarga/${idCartera}/${idCuenta}");
+    const response = await servicio.get(`/ejecutivo/CorreosCarga/${idCartera}/${idCuenta}`);
+
+    console.log("Respuesta recibida:", response);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Validación recibida Validators:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchValidators:", error);
+    throw error;
+  }
+};
+
+// endpoint Guarda Negociacion Plazos
+export const fetchSaveNegotiationDeadlines = async () => {
+  try {
+    console.log("Enviando datos al endpoint:");
+    const response = await servicio.post(
+      `/ejecutivo/GuardaNegociacionPlazos`
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Respuesta del endpoint:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchSaveNegotiationDeadlines:", error);
+    throw error;
+  }
+};
+
+// endpoint incrementa negociacion 
+export const fetchIncreasesNegotiation = async () => {
+  try {
+    console.log("Enviando datos al endpoint:");
+    const response = await servicio.post(
+      `/ejecutivo/IncrementaNegociacion`
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Respuesta del endpoint IncrementaNegociacion:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchIncreasesNegotiation:", error);
     throw error;
   }
 };

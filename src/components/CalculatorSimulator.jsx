@@ -493,6 +493,16 @@ const CalculatorSimulator = ({show, handleClose}) => {
                             Calcular
                           </Button>
                         </div>
+
+                        <div>
+                          <Button
+                            variant="primary"
+                            onClick={handleOpenValidators} // Abre el modal
+                          >
+                            Validación
+                          </Button>
+                        </div>
+                        
                       </Col>
                       <Col>
                         <div className="d-flex">
