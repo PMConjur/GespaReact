@@ -1258,3 +1258,26 @@ export const saveManagment = async (dataManagment) => {
     throw error;
   }
 };
+
+//endpoint buscar-tipo de queja y origen de queja
+export const fetchSearchAddDate = async () => {
+  try {
+    console.log("Llamando al endpoint /ejecutivo/ddDatos");
+    const response = await servicio.get(`/ejecutivo/ddDatos`);
+
+    console.log("Respuesta recibida:", response);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Validación recibida Validators:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchValidators:", error);
+    throw error;
+  }
+};

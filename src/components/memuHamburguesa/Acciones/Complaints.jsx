@@ -109,6 +109,17 @@ const Complaints = ({ show, handleClose }) => {
     }));
   };
 
+  const handleFolioChange = (e) => {
+    const { name, value } = e.target;
+    const regex = /^[0-9]*$/; // Solo permite números
+  
+    if (regex.test(value)) {
+      handleChange(name, value); // Actualiza el estado si el valor es válido
+    } else {
+      toast.warning("Solo se permiten números en el folio."); // Muestra un mensaje de advertencia
+    }
+  };
+
   // Manejar el envío del formulario
   const handleReport = async () => {
     const idCuenta =
@@ -178,9 +189,8 @@ const Complaints = ({ show, handleClose }) => {
             style={{ maxHeight: "70vh", overflowY: "auto" }}
           >
             <Form>
-              <div style={{ justifyContent: "space-between" }}>
+              <div className="mb-3">
                 <Form.Group className="mb-3">
-                  <Form.Label>Tipo de queja</Form.Label>
                   <Dropdown
                     onSelect={(value) => {
                       const selectedComplaint = ddComplaints.find(
@@ -198,15 +208,9 @@ const Complaints = ({ show, handleClose }) => {
                       variant="primary"
                       id="dropdown-queja"
                     >
-                      {formData.tipoQuejaDescripcion || "Seleccionar"}
+                      {formData.tipoQuejaDescripcion || "Tipo de queja"}
                     </Dropdown.Toggle>
-                    <Dropdown.Menu
-                      style={{
-                        maxHeight: "300px",
-                        maxWidth: "300px",
-                        overflowY: "auto", // Habilitar scroll vertical
-                      }}
-                    >
+                    <Dropdown.Menu className="dropdown-menu">
                       {ddComplaints.length > 0 ? (
                         ddComplaints.map((complaint) => (
                           <Dropdown.Item
@@ -224,8 +228,7 @@ const Complaints = ({ show, handleClose }) => {
                     </Dropdown.Menu>
                   </Dropdown>
                 </Form.Group>
-                <Form.Group className="mb-1" style={{ width: "100%" }}>
-                  <Form.Label>Origen</Form.Label>
+                <Form.Group className="mb-1 full-width">
                   <Dropdown
                     onSelect={(value) => {
                       const selectedOrigin = originComplaints.find(
@@ -243,14 +246,9 @@ const Complaints = ({ show, handleClose }) => {
                       variant="primary"
                       id="dropdown-institucion"
                     >
-                      {formData.institucionDescripcion || "Seleccionar"}
+                      {formData.institucionDescripcion || "Origen"}
                     </Dropdown.Toggle>
-                    <Dropdown.Menu
-                      style={{
-                        maxHeight: "300px", // Altura máxima del menú desplegable
-                        overflowY: "auto", // Habilitar scroll vertical
-                      }}
-                    >
+                    <Dropdown.Menu className="dropdown-menu">
                       {originComplaints.length > 0 ? (
                         originComplaints.map((origin) => (
                           <Dropdown.Item key={origin.id} eventKey={origin.id}>
@@ -267,12 +265,13 @@ const Complaints = ({ show, handleClose }) => {
                 </Form.Group>
               </div>
               <Form.Group className="mb-1">
-                <Form.Label>Folio</Form.Label>
+
                 <Form.Control
                   type="text"
                   name="folio"
+                  placeholder='Folio'
                   value={formData.folio}
-                  onChange={(e) => handleChange(e.target.name, e.target.value)}
+                  onChange={handleFolioChange} // Usa la función específica para manejar el cambio
                 />
               </Form.Group>
               <Form.Group className="mb-2">
@@ -288,21 +287,21 @@ const Complaints = ({ show, handleClose }) => {
                 />
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Label>Comentarios</Form.Label>
                 <textarea
                   className="form-control"
                   rows={3}
                   name="comentarios"
-                  placeholder="Escribe un comentario aquí"
+                  placeholder="Escribir comentario"
                   value={formData.comentarios}
                   onChange={(e) => {
                     console.log("Valor del textarea:", e.target.value); // Verifica el valor en tiempo real
                     handleChange(e.target.name, e.target.value); // Pasa el valor sin modificaciones
                   }}
+                  onKeyDown={(e) => e.key === ' ' && e.stopPropagation()}
                 />
               </Form.Group>
-              <div style={{ display: "", justifyContent: "space-between" }}>
-                <Form.Group className="mb-1 mt-2" style={{ width: "48%" }}>
+              <div className="">
+                <Form.Group className="mb-1 mt-2 half-width">
                   <Form.Check
                     key={formData.titular} // Fuerza el re-renderizado cuando cambia el estado
                     type="checkbox"
@@ -314,12 +313,12 @@ const Complaints = ({ show, handleClose }) => {
                     }
                   />
                 </Form.Group>
-                <Form.Group className="mb-3 w-100" style={{ width: "48%" }}>
-                  <Form.Label>Solicitante</Form.Label>
+                <Form.Group className="mb-3 w-100 half-width">
                   <Form.Control
                     className="w-100"
                     type="text"
                     name="solicitante"
+                    placeholder="Solicitante"
                     value={formData.solicitante}
                     onChange={(e) =>
                       handleChange(e.target.name, e.target.value)
@@ -328,16 +327,31 @@ const Complaints = ({ show, handleClose }) => {
                 </Form.Group>
               </div>
               <Button
-                className="mt-3"
+                className="mt-3 full-width"
                 variant="danger"
                 onClick={handleReport}
-                style={{ width: "100%" }}
                 disabled={!isFormValid || isLoading} // Deshabilita el botón mientras carga
               >
                 {isLoading ? "Guardando..." : "Reportar"}{" "}
                 {/* Cambia el texto durante la carga */}
               </Button>
             </Form>
+            <style jsx>{`
+              .form-row {
+                display: flex;
+                justify-content: space-between;
+              }
+              .full-width {
+                width: 100%;
+              }
+              .half-width {
+                width: 48%;
+              }
+              .dropdown-menu {
+                max-height: 300px;
+                overflow-y: auto;
+              }
+            `}</style>
           </div>
         </Col>
         <div
