@@ -1,6 +1,6 @@
 import { useContext, useState, useEffect } from "react";
 import { Modal, Button, Form, Table, Spinner, Dropdown } from 'react-bootstrap';
-import { fetchActionsSearch, fetchSaveExecutive } from '../../../services/gespawebServices';
+import { fetchActionsSearch, fetchSaveExecutive, fetchSearchAddDate } from '../../../services/gespawebServices';
 import { AppContext } from "../../../pages/Managment";
 import { toast } from "sonner";
 
@@ -42,6 +42,34 @@ const Search = ({ show, handleClose }) => {
     useEffect(()=>{
         setShowForm(searchData.encontrado)
     },[searchData.encontrado])
+
+    useEffect(() => {
+        const fetchSearchData = async () => {
+            try {
+                console.log("Llamando a fetchSearchAddDate");
+                const result = await fetchSearchAddDate();
+                console.log("Datos recibidos de fetchSearchAddDate:", result);
+
+                // Validar que la respuesta sea un array
+                if (Array.isArray(result)) {
+                    // Mapear los datos para el dropdown
+                    const mappedDatos = result.map((item) => ({
+                        id: item.idValor,
+                        descripcion: item.Valor,
+                    }));
+
+                    setValorOptions(mappedDatos); // Guardar los datos en el estado valorOptions
+                } else {
+                    throw new Error("La respuesta del endpoint no es un array.");
+                }
+            } catch (error) {
+                toast.error("Error al cargar los datos del dropdown.");
+                console.error("Error al cargar los datos del dropdown:", error);
+            }
+        };
+
+        fetchSearchData();
+    }, []);
 
     const fetchData = async (idCuenta) => {
         setLoading(true);
@@ -199,9 +227,9 @@ const Search = ({ show, handleClose }) => {
                                             {searchData.dato || "Seleccionar"}
                                         </Dropdown.Toggle>
                                         <Dropdown.Menu>
-                                            {datosUnicos.map((dato, index) => (
-                                                <Dropdown.Item key={index} eventKey={dato}>
-                                                    {dato}
+                                            {valorOptions.map((dato, index) => (
+                                                <Dropdown.Item key={index} eventKey={dato.id}>
+                                                    {dato.descripcion}
                                                 </Dropdown.Item>
                                             ))}
                                         </Dropdown.Menu>
