@@ -166,7 +166,6 @@ function Login() {
                     <option value="1">American Express</option>
                   </Form.Select>
                 </Form.Group>
-
                 <Button variant="primary" type="submit" className="w-100">
                   Ingresar
                 </Button>
