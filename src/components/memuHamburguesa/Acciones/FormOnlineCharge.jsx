@@ -36,6 +36,8 @@ const FormOnlineCharge = ({ handleClose }) => {
     tarjeta: "",
     nombre: "",
     vencimiento: today,
+    vencimientoMes: today.split("-")[1], // Mes actual
+    vencimientoAnio: today.split("-")[0], // Año actual
     monto: 0,
     idBanco: "",
     esClabe: false,
@@ -55,6 +57,8 @@ const FormOnlineCharge = ({ handleClose }) => {
       tarjeta: "",
       nombre: "",
       vencimiento: today,
+      vencimientoMes: today.split("-")[1], // Mes actual
+      vencimientoAnio: today.split("-")[0], // Año actual
       monto: 0,
       idBanco: "",
       esClabe: false,
@@ -159,13 +163,12 @@ const FormOnlineCharge = ({ handleClose }) => {
           .replace(/(.)\1{3,}/g, "$1$1$1") // Limita a 3 caracteres repetidos
           .slice(0, 120), // Limita a 120 caracteres
       });
-    } else if (name === "vencimiento") {
-      const selectedDate = new Date(value);
-      if (selectedDate > maxVencimiento) {
-        toast.error("La fecha de vencimiento no puede ser mayor a 20 años desde hoy."); // Valida la fecha de vencimiento
-      } else {
-        setFormData({ ...formData, vencimiento: value }); // Establece la fecha de vencimiento
-      }
+    } else if (name === "vencimientoMes" || name === "vencimientoAnio") {
+      setFormData({
+        ...formData,
+        [name]: value,
+        vencimiento: `${formData.vencimientoAnio}-${formData.vencimientoMes}-01`, // Actualiza la fecha completa
+      });
     } else {
       setFormData({
         ...formData,
@@ -305,7 +308,7 @@ const FormOnlineCharge = ({ handleClose }) => {
             </Col>
             <Col>
               <Form.Group>
-              <Form.Label>Monto</Form.Label>
+                <Form.Label>Monto</Form.Label>
                 <Form.Control
                   type="number"
                   name="monto"
@@ -318,22 +321,64 @@ const FormOnlineCharge = ({ handleClose }) => {
             </Col>
           </Row>
 
-          <Form.Group>
-            <Form.Label>Numero de Autorizacion</Form.Label>
-            <Form.Control
-              type="number"
-              name="autorizacion"
-              value={formData.autorizacion}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  autorizacion: e.target.value.replace(/[^0-9]/g, "").slice(0, 6), // Limitar a 100000
-                })
-              }
-              placeholder="Ingrese un número de referencia"
-              max="999999"
-            />
-          </Form.Group>
+          <Row className="mb-3">
+            <Col>
+              <Form.Group>
+                <Form.Label>Mes de vencimiento</Form.Label>
+                <Form.Select
+                  name="vencimientoMes"
+                  value={formData.vencimientoMes}
+                  onChange={handleChange}
+                >
+                  {Array.from({ length: 12 }, (_, i) => {
+                    const month = (i + 1).toString().padStart(2, "0");
+                    return (
+                      <option key={month} value={month}>
+                        {month}
+                      </option>
+                    );
+                  })}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group>
+                <Form.Label>Año de vencimiento</Form.Label>
+                <Form.Select
+                  name="vencimientoAnio"
+                  value={formData.vencimientoAnio}
+                  onChange={handleChange}
+                >
+                  {Array.from({ length: 21 }, (_, i) => {
+                    const year = new Date().getFullYear() + i;
+                    return (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    );
+                  })}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group>
+                <Form.Label>No. Autorización</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="autorizacion"
+                  value={formData.autorizacion}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      autorizacion: e.target.value.replace(/[^0-9]/g, "").slice(0, 6), // Limitar a 6 dígitos
+                    })
+                  }
+                  placeholder="Ingrese un número de referencia"
+                  max="999999"
+                />
+              </Form.Group>
+            </Col>
+          </Row>
 
           <Form.Group className="mb-3">
             <Form.Label>Nombre</Form.Label>
@@ -349,24 +394,8 @@ const FormOnlineCharge = ({ handleClose }) => {
 
           <Row className="mb-3">
             <Col>
-              <Form.Group>
-                <Form.Label>Fecha vencimiento</Form.Label>
-                <Form.Control
-                  type="date"
-                  name="vencimiento"
-                  value={formData.vencimiento}
-                  onChange={handleChange}
-                  min={today} // Asegurar que la fecha mínima sea el día actual
-                  max={maxVencimiento.toISOString().split("T")[0]} // Limitar a 20 años más
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-
-          <Row className="mb-3">
-            <Col>
               <Form.Check
-                type="switch"
+                type="checkbox"
                 name="esClabe"
                 label="Es Clabe"
                 checked={formData.esClabe}
@@ -374,7 +403,7 @@ const FormOnlineCharge = ({ handleClose }) => {
                   setFormData({
                     ...formData,
                     esClabe: !formData.esClabe, // Alternar el estado de "esClabe"
-                    domiciliado: formData.esClabe ? false : formData.domiciliado, // Si se desactiva "esClabe", habilitar ambos
+                    domiciliado: formData.esClabe ? formData.domiciliado : false, // Deshabilitar "domiciliado" si "esClabe" se activa
                   })
                 }
                 disabled={formData.domiciliado} // Deshabilitar si "domiciliado" está activo
@@ -382,7 +411,7 @@ const FormOnlineCharge = ({ handleClose }) => {
             </Col>
             <Col>
               <Form.Check
-                type="switch"
+                type="checkbox"
                 name="domiciliado"
                 label="Domiciliado"
                 checked={formData.domiciliado}
@@ -390,7 +419,7 @@ const FormOnlineCharge = ({ handleClose }) => {
                   setFormData({
                     ...formData,
                     domiciliado: !formData.domiciliado, // Alternar el estado de "domiciliado"
-                    esClabe: formData.domiciliado ? false : formData.esClabe, // Si se desactiva "domiciliado", habilitar ambos
+                    esClabe: formData.domiciliado ? formData.esClabe : false, // Deshabilitar "esClabe" si "domiciliado" se activa
                   })
                 }
                 disabled={formData.esClabe} // Deshabilitar si "esClabe" está activo
@@ -417,15 +446,15 @@ const FormOnlineCharge = ({ handleClose }) => {
               </Form.Group>
             </Col>
             <Col className="d-flex align-items-end">
-            <Button
-            variant="primary"
-            type="submit"
-            className="w-100"
-            disabled={loading} // Deshabilita el botón si está cargando
-          >
-            {loading ? "Guardando..." : "Guardar"} 
-            {/* // Cambia el texto del botón según el estado de carga */}
-          </Button>
+              <Button
+                variant="primary"
+                type="submit"
+                className="w-100"
+                disabled={loading} // Deshabilita el botón si está cargando
+              >
+                {loading ? "Guardando..." : "Guardar"} 
+                {/* // Cambia el texto del botón según el estado de carga */}
+              </Button>
             </Col>
           </Row>
         </>
