@@ -967,7 +967,7 @@ namespace NoriAPI.Services
             };
                 dtnegociaciones.DefaultView.Sort = "FechaHora DESC";
 
-                // Crear nuevo DataTable solo con las columnas que quieres                
+                // Crear nuevo DataTable solo con las columnas que quieres
                 dtFiltrado.Columns.Add("Fecha_Insert", typeof(DateTime));
                 dtFiltrado.Columns.Add("Segundo_Insert", typeof(string));
                 dtFiltrado.Columns.Add("Herramienta", typeof(string));
@@ -1311,7 +1311,7 @@ namespace NoriAPI.Services
             tblsaldo = await _ejecutivoRepository.InfoCuenta(idcartera, nocuenta);
             double saldo = Convert.ToDouble(tblsaldo.Rows[0]["Saldo"].ToString());
 
-            //tblCuenta = await _ejecutivoRepository.ObtieneProducto(nocuenta);
+            tblCuenta = await _ejecutivoRepository.ObtieneProducto(nocuenta);
 
             //------------------------------------Herramientas------------------------------------------//
 
@@ -3150,7 +3150,7 @@ namespace NoriAPI.Services
                 {
                     numeroTarjetaLong = parsedTarjeta;
                     Debug.WriteLine($"cargoData.Tarjeta: {cargoData.Tarjeta}, numeroTarjetaLong: {numeroTarjetaLong}");
-                   
+
 
 
                     using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Piso2Amex")))
@@ -3206,7 +3206,7 @@ namespace NoriAPI.Services
                 return $"Error al guardar el cargo en línea: {ex.Message}";
             }
         }
-        
+
 
         private dynamic ObtenerDatosCargoEnLinea(int idCartera, string idCuenta)
         {

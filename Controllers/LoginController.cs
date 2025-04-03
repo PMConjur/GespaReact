@@ -89,7 +89,7 @@ namespace NoriAPI.Controllers
                 return BadRequest(new { token = "", mensaje = validationResult.Item1 });
             }
 
-            string newToken = GenerateJwtToken(new AuthRequest { Usuario = renewTokenInfo.Usuario});
+            string newToken = GenerateJwtToken(new AuthRequest { Usuario = renewTokenInfo.Usuario });
 
             return Ok(new { token = newToken, mensaje = "Éxito" });
         }
@@ -111,7 +111,7 @@ namespace NoriAPI.Controllers
 
                 // Serializamos la lista a JSON
                 string jsonCierre = JsonSerializer.Serialize(listaCierre, new JsonSerializerOptions { WriteIndented = true });
-               
+
 
                 /*------------------------------------------------------------------------*/
 
