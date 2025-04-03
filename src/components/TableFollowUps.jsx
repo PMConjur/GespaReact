@@ -107,7 +107,8 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
                 className="scroll-container" 
                 style={{ 
                     width: '100%', 
-                    maxHeight: '500px', 
+                    maxHeight: '500px',
+                    maxWidth: 'auto', 
                     overflowY: 'auto', 
                     display: 'flex', 
                     backgroundColor: '#343a40', // Fondo oscuro

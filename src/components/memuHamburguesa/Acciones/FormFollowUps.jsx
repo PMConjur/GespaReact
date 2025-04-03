@@ -31,150 +31,6 @@ const FormFollowUps = ({ handleClose }) => {
         idMotivoS: "0",
     });
 
-    // Componente personalizado para selección de hora
-    const TimePicker = () => {
-        const [hour, minute] = formData.segundo.split(":");
-        const period = parseInt(hour) >= 12 ? 'PM' : 'AM';
-        const displayHour = period === 'AM' 
-            ? (parseInt(hour) === 0 ? 12 : parseInt(hour))
-            : (parseInt(hour) === 12 ? 12 : parseInt(hour) - 12);
-
-        const [minuteInput, setMinuteInput] = useState(minute);
-        const [showMinuteSelect, setShowMinuteSelect] = useState(false);
-
-        const handleHourChange = (e) => {
-            let newHour = parseInt(e.target.value);
-            if (period === 'PM') {
-                newHour = newHour === 12 ? 12 : newHour + 12;
-            } else {
-                newHour = newHour === 12 ? 0 : newHour;
-            }
-            
-            setFormData({
-                ...formData,
-                segundo: `${newHour.toString().padStart(2, '0')}:${minuteInput.padStart(2, '0')}:00`
-            });
-        };
-
-        const handleMinuteSelectChange = (e) => {
-            const newMinute = e.target.value;
-            setMinuteInput(newMinute);
-            setFormData({
-                ...formData,
-                segundo: `${hour}:${newMinute}:00`
-            });
-        };
-
-        const handleMinuteInputChange = (e) => {
-            const value = e.target.value.replace(/\D/g, "").slice(0, 2);
-            setMinuteInput(value);
-            
-            if (value.length === 2 && parseInt(value) <= 59) {
-                setFormData({
-                    ...formData,
-                    segundo: `${hour}:${value.padStart(2, '0')}:00`
-                });
-            }
-        };
-
-        const handlePeriodChange = (e) => {
-            const newPeriod = e.target.value;
-            let newHour = parseInt(hour);
-            
-            if (newPeriod === 'PM' && period === 'AM') {
-                newHour = newHour === 0 ? 12 : newHour + 12;
-            } else if (newPeriod === 'AM' && period === 'PM') {
-                newHour = newHour === 12 ? 0 : newHour - 12;
-            }
-            
-            // Ajustar a los límites permitidos
-            if (newPeriod === 'AM' && newHour < 7) newHour = 7;
-            if (newPeriod === 'AM' && newHour > 11) newHour = 11;
-            if (newPeriod === 'PM' && newHour < 12) newHour = 12;
-            if (newPeriod === 'PM' && newHour > 22) newHour = 22;
-            
-            setFormData({
-                ...formData,
-                segundo: `${newHour.toString().padStart(2, '0')}:${minuteInput.padStart(2, '0')}:00`
-            });
-        };
-
-        return (
-            <Row className="g-2">
-                <Col md={4}>
-                    <Form.Select
-                        value={displayHour}
-                        onChange={handleHourChange}
-                        aria-label="Seleccionar hora"
-                    >
-                        {period === 'AM' ? (
-                            [7, 8, 9, 10, 11].map(h => (
-                                <option key={h} value={h}>
-                                    {h.toString().padStart(2, '0')}
-                                </option>
-                            ))
-                        ) : (
-                            [12, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(h => (
-                                <option key={h} value={h}>
-                                    {h.toString().padStart(2, '0')}
-                                </option>
-                            ))
-                        )}
-                    </Form.Select>
-                </Col>
-                <Col md={4}>
-                    {showMinuteSelect ? (
-                        <Form.Select
-                            value={minuteInput}
-                            onChange={handleMinuteSelectChange}
-                            aria-label="Seleccionar minutos"
-                        >
-                            {['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'].map(m => (
-                                <option key={m} value={m}>{m}</option>
-                            ))}
-                        </Form.Select>
-                    ) : (
-                        <Form.Control
-                            type="text"
-                            value={minuteInput}
-                            onChange={handleMinuteInputChange}
-                            placeholder="MM"
-                            maxLength={2}
-                            pattern="[0-5][0-9]"
-                        />
-                    )}
-
-                </Col>
-                <Col md={4}>
-                    <Form.Select
-                        value={period}
-                        onChange={handlePeriodChange}
-                        aria-label="Seleccionar AM/PM"
-                    >
-                        <option value="AM">AM</option>
-                        <option value="PM">PM</option>
-                    </Form.Select>
-                </Col>
-            </Row>
-        );
-    };
-
-    // Validación mejorada del horario
-    const validateTimeRange = () => {
-        const [hours, minutes] = formData.segundo.split(":").map(Number);
-        const period = hours >= 12 ? 'PM' : 'AM';
-        
-        // Validar minutos (00-59)
-        if (minutes < 0 || minutes > 59) return false;
-        
-        // Validar rango AM/PM
-        if (period === 'AM') {
-            return hours >= 7 && hours <= 11;
-        } else { // PM
-            return hours >= 12 && hours <= 22;
-        }
-    };
-
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
 
@@ -290,49 +146,117 @@ const FormFollowUps = ({ handleClose }) => {
     return (
         <div className="p-3">
             <Form>
-                <Form.Group className="mb-3">
-                    <Form.Label>Acercamiento *</Form.Label>
-                    <Form.Control
-                        as="select"
-                        name="idAcercamiento"
-                        value={formData.idAcercamiento}
-                        onChange={handleChange}
-                        required
-                    >
-                        <option value="1601">Telefónico</option>
-                    </Form.Control>
-                </Form.Group>
+                <Row className="mb-3">
+                    <Col md={6}>
+                        <Form.Group>
+                            <Form.Label>Acercamiento *</Form.Label>
+                            <Form.Control
+                                as="select"
+                                name="idAcercamiento"
+                                value={formData.idAcercamiento}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="1601">Telefónico</option>
+                            </Form.Control>
+                        </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                        <Form.Group>
+                            <Form.Label>Teléfono *</Form.Label>
+                            <Form.Control
+                                type="tel"
+                                name="numeroTelefonico"
+                                value={formData.numeroTelefonico}
+                                onChange={handleChange}
+                                placeholder="Ej: 5512345678"
+                                pattern="[0-9]{10,13}"
+                                title="Debe contener entre 10 y 13 dígitos numéricos"
+                                required
+                            />
+                        </Form.Group>
+                    </Col>
+                </Row>
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Teléfono *</Form.Label>
-                    <Form.Control
-                        type="tel"
-                        name="numeroTelefonico"
-                        value={formData.numeroTelefonico}
-                        onChange={handleChange}
-                        placeholder="Ej: 5512345678"
-                        pattern="[0-9]{10,13}"
-                        title="Debe contener entre 10 y 13 dígitos numéricos"
-                        required
-                    />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                    <Form.Label>Fecha *</Form.Label>
-                    <Form.Control
-                        type="date"
-                        name="fecha"
-                        value={formData.fecha}
-                        onChange={handleChange}
-                        min={new Date().toISOString().split("T")[0]}
-                        required
-                    />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                    <Form.Label>Hora *</Form.Label>
-                    <TimePicker />
-                </Form.Group>
+                <Row className="mb-3">
+                    <Col md={4}>
+                        <Form.Group>
+                            <Form.Label>Fecha *</Form.Label>
+                            <Form.Control
+                                type="date"
+                                name="fecha"
+                                value={formData.fecha}
+                                onChange={handleChange}
+                                min={new Date().toISOString().split("T")[0]}
+                                required
+                            />
+                        </Form.Group>
+                    </Col>
+                    <Col md={8}>
+                        <Form.Group>
+                            <Form.Label>Hora *</Form.Label>
+                            <Row className="g-2">
+                                <Col md={4}>
+                                    <Form.Select
+                                        value={formData.segundo.split(":")[0]}
+                                        onChange={(e) => {
+                                            const hour = e.target.value;
+                                            const [_, minute, second] = formData.segundo.split(":");
+                                            setFormData({
+                                                ...formData,
+                                                segundo: `${hour}:${minute}:${second}`,
+                                            });
+                                        }}
+                                        aria-label="Seleccionar hora"
+                                    >
+                                        {[...Array(12).keys()].map((h) => (
+                                            <option key={h} value={h + 1}>
+                                                {(h + 1).toString().padStart(2, "0")}
+                                            </option>
+                                        ))}
+                                    </Form.Select>
+                                </Col>
+                                <Col md={4}>
+                                    <Form.Control
+                                        type="text"
+                                        value={formData.segundo.split(":")[1]}
+                                        onChange={(e) => {
+                                            const minute = e.target.value.replace(/\D/g, "").slice(0, 2);
+                                            const [hour, _, second] = formData.segundo.split(":");
+                                            setFormData({
+                                                ...formData,
+                                                segundo: `${hour}:${minute}:${second}`,
+                                            });
+                                        }}
+                                        placeholder="MM"
+                                        maxLength={2}
+                                        pattern="[0-5][0-9]"
+                                    />
+                                </Col>
+                                <Col md={4}>
+                                    <Form.Select
+                                        value={parseInt(formData.segundo.split(":")[0]) >= 12 ? "PM" : "AM"}
+                                        onChange={(e) => {
+                                            const period = e.target.value;
+                                            let [hour, minute, second] = formData.segundo.split(":");
+                                            hour = parseInt(hour);
+                                            if (period === "PM" && hour < 12) hour += 12;
+                                            if (period === "AM" && hour >= 12) hour -= 12;
+                                            setFormData({
+                                                ...formData,
+                                                segundo: `${hour.toString().padStart(2, "0")}:${minute}:${second}`,
+                                            });
+                                        }}
+                                        aria-label="Seleccionar AM/PM"
+                                    >
+                                        <option value="AM">AM</option>
+                                        <option value="PM">PM</option>
+                                    </Form.Select>
+                                </Col>
+                            </Row>
+                        </Form.Group>
+                    </Col>
+                </Row>
 
                 <Form.Group className="mb-3">
                     <Form.Check
