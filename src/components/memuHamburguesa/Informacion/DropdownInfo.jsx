@@ -93,7 +93,9 @@ function DropdownInfo() {
             Correos
           </Dropdown.Item>
           <Dropdown.Item
-            onClick={handleShowPayments}
+            onClick={
+              setShowPayments(true 
+              )}
             className="custom-dropdown-item"
           >
             Pagos
@@ -107,6 +109,7 @@ function DropdownInfo() {
         handleClose={handleClosePayments}
         data={paymentsData}
         loadingPayments={loadingPayments}
+        isPaymentActive={true}
       />
 
       {/* Renderizar el modal de Addresses */}
