@@ -76,7 +76,7 @@ const InformationClient = () => {
     return rows;
   };
   return (
-    <Card className="overflow-auto">
+    <Card className="overflow-auto informations-container">
       <Card.Header className="text-white">
         <i className="h5 card-title">
           <InfoCircleFill></InfoCircleFill> Información
