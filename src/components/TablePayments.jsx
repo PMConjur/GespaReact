@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useContext } from "react";
-import { Table, Form, Spinner } from "react-bootstrap"; // Importa Spinner para la animación de carga
+import { Table, Spinner } from "react-bootstrap"; // Importa Spinner para la animación de carga
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
 import { getPaymentsData } from "../services/gespawebServices";
@@ -113,14 +113,7 @@ const TablePayments = ({ customColumnNames = {} }) => {
 
   return (
     <>
-      <Form.Check
-        type="checkbox"
-        id="sortByOldest"
-        label="Más antiguo"
-        className="mb-2"
-        checked={sortByOldest}
-        onChange={handleSortChange}
-      />
+     
 
       <div
         className="scroll-container"

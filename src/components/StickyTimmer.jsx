@@ -20,7 +20,7 @@ const StickyTimmer = () => {
 
   const handleCaptureTime = (time) => {
     setStoppedTimeSticky(time); // Actualiza el tiempo actual en el contexto
-    console.log("Tiempo capturado en StickyTimmer:", time); // Imprime el tiempo capturado
+    // console.log("Tiempo capturado en StickyTimmer:", time); // Imprime el tiempo capturado
   };
 
   return (
