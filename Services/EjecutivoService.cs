@@ -140,6 +140,8 @@ namespace NoriAPI.Services
         Task<string> CreaSeguimientoAsync(SeguimientoCompletoModel seguimiento, DataRow _drInfo, int idEjecutivo);
         Task ObtenerUsoHorario(DataRow drDatos, DataSet dsTablas);
 
+        Task<object> ObtenerDetallesCuenta(string idCuenta, int idCartera);
+
 
         #endregion
     }
@@ -179,7 +181,9 @@ namespace NoriAPI.Services
             _searchService = searchService;
             _busquedaRepository = busquedaRepository;
             _catalogos = catalogos;
-
+            _searchRepository = searchRepository; // ¡Esta línea faltaba!
+            _correos = correos;                 // Asigna también los otros parámetros DataTable si los usas
+            _enviados = enviados;
         }
 
         private DataTable CreaTablaEnviados()
@@ -4842,6 +4846,34 @@ namespace NoriAPI.Services
                 return ValidEmailRegex.IsMatch(DirecciónCorreo);
             }
         }
+        #endregion
+
+        #region BusquedaGrande
+        public async Task<object> ObtenerDetallesCuenta(string idCuenta, int idCartera)
+        {
+            var busquedaPrincipalTask = _searchRepository.ValidateBusqueda("Cuenta", idCuenta);
+            var telefonosTask = _searchRepository.GetPhones(idCuenta, idCartera); // Usar el idCartera correcto
+            var domiciliosTask = _searchRepository.GetDomicilios(idCuenta, idCartera);
+            var adicionalesTask = GetAdiccionalesAsync(idCartera, idCuenta);
+            var correosTask = GetCorreosCargaAsync(idCartera, idCuenta);
+            var fuentesDropTask = GetDropDFuentesAsync();
+            var datosDropTask = GetDropDDatosAsync();
+
+
+            await Task.WhenAll(busquedaPrincipalTask, telefonosTask, domiciliosTask, adicionalesTask, correosTask, fuentesDropTask, datosDropTask);
+
+            return new
+            {
+                CuentaPrincipal = await busquedaPrincipalTask,
+                NumerosDeTelefono = await telefonosTask,
+                Direcciones = await domiciliosTask,
+                InformacionAdicional = await adicionalesTask,
+                CorreosElectronicos = await correosTask,
+                DropdownFuentes = await fuentesDropTask,
+                DropdownDatos = await datosDropTask
+            };
+        }
+
         #endregion
 
         #region NegociacionesEjecutivo
