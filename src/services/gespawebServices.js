@@ -103,7 +103,7 @@ export async function userNegotiations(idEjecutivo) {
 export async function searchCustomer(filter, value) {
   try {
     const response = await servicio.get("/search-customer/busqueda-cuenta", {
-      params: { filtro: filter, ValorBusqueda: value }
+      params: { filtro: filter, ValorBusqueda: value },
     });
     return response.data;
   } catch (error) {
@@ -593,8 +593,8 @@ export const fetchNotes = async (numEmpleado, token) => {
       `http://192.168.7.33/api/ejecutivo/recordatorios/${numEmpleado}`,
       {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
 
@@ -604,7 +604,7 @@ export const fetchNotes = async (numEmpleado, token) => {
       id: item.idCuenta,
       title: item.Nombre,
       content: `Saldo: ${item.Saldo}\nTeléfono: ${item.NúmeroTelefónico}\nSituación: ${item.idSituación}\nFecha Seguimiento: ${item.FechaSeguimiento}\nHora Seguimiento: ${item.SegundoSeguimiento}`,
-      date: item.FechaHoraSeguimiento
+      date: item.FechaHoraSeguimiento,
     }));
 
     return formattedNotes;
@@ -640,14 +640,14 @@ export const fetchViewComplaints = async ({ idCartera, idCuenta }) => {
   try {
     console.log("Enviando solicitud a /ejecutivo/viewQuejas con:", {
       idCartera,
-      idCuenta
+      idCuenta,
     });
 
     const response = await servicio.get(`/ejecutivo/viewQuejas`, {
       params: {
         idCartera,
-        idCuenta
-      }
+        idCuenta,
+      },
     });
 
     console.log("Respuesta recibida:", response);
@@ -752,7 +752,7 @@ export const fetchProcessesWLP = async (proceso, idCuenta) => {
     const url = `/ejecutivo/ProcesosWLP`;
     const params = {
       proceso,
-      idCuenta: idCuenta.toString().trim()
+      idCuenta: idCuenta.toString().trim(),
     };
 
     console.log("Realizando solicitud a:", url, "con parámetros:", params);
@@ -780,12 +780,12 @@ export const fetchProcessesWLP = async (proceso, idCuenta) => {
   } catch (error) {
     console.error("Error en fetchProcessesWLP:", {
       error: error.message,
-      stack: error.stack
+      stack: error.stack,
     });
 
     toast.error(`Error al obtener procesos WLP: ${error.message}`, {
       position: "top-right",
-      duration: 5000
+      duration: 5000,
     });
 
     throw error;
@@ -797,7 +797,7 @@ export const fetchCalFirtsPart = async (Cartera, NoCuenta, idHerr) => {
   try {
     console.log("Llamando al endpoint /ejecutivo/Calculadora-1erParte");
     const response = await servicio.get(`/ejecutivo/Calculadora-1erParte`, {
-      params: { Cartera, NoCuenta, idHerr }
+      params: { Cartera, NoCuenta, idHerr },
     });
 
     console.log("Respuesta recibida:", response);
@@ -856,7 +856,7 @@ export const fetchCalSecondPart = async (
       Descuento,
       iMeses,
       dtpFecha,
-      periodos
+      periodos,
     });
 
     const response = await servicio.get(`/ejecutivo/Calculadora-2daParte`, {
@@ -868,8 +868,8 @@ export const fetchCalSecondPart = async (
         Descuento,
         iMeses,
         dtpFecha,
-        periodos
-      }
+        periodos,
+      },
     });
 
     console.log("Respuesta recibida:", response);
@@ -943,7 +943,7 @@ export const fetchCalSecondPartModify = async (
       montoMod,
       fechaPagoMod,
       agregarPagos,
-      filaMod
+      filaMod,
     });
 
     const response = await servicio.get(`/ejecutivo/Calculadora-2daParte`, {
@@ -960,8 +960,8 @@ export const fetchCalSecondPartModify = async (
         montoMod,
         fechaPagoMod,
         agregarPagos,
-        filaMod
-      }
+        filaMod,
+      },
     });
 
     console.log("Respuesta recibida:", response);
@@ -983,7 +983,7 @@ export const fetchCalSecondPartModify = async (
 export async function userTimes(numEmpleado) {
   try {
     const response = await servicio.get(`/ejecutivo/tiempos-ejecutivo`, {
-      params: { numEmpleado }
+      params: { numEmpleado },
     });
 
     if (!response.data) {
@@ -1005,7 +1005,7 @@ export async function userTimes(numEmpleado) {
 export async function userTimesPromedio(numEmpleado) {
   try {
     const response = await servicio.get(`/ejecutivo/promedios-ejecutivo`, {
-      params: { numEmpleado }
+      params: { numEmpleado },
     });
 
     if (!response.data) {
@@ -1135,7 +1135,104 @@ export const fetchMultideudores = async (idCuenta) => {
 };
 
 //EndPoint MultiDeptors
+// Método para validar el huso horario
+export const validateTimeZone = async (
+  idCuenta,
+  numeroTelefonico,
+  idEjecutivo
+) => {
+  try {
+    const cleanIdCuenta = String(idCuenta).trim();
+    const cleanNumeroTelefonico = String(numeroTelefonico).trim();
+    const cleanIdEjecutivo = String(idEjecutivo).trim();
 
+    const token = responseData?.ejecutivo?.token;
+
+    // Verificar si el token está disponible
+    if (!token) {
+      throw new Error(
+        "Error: No se encontró un token válido para la autenticación."
+      );
+    }
+
+    // Construcción de la URL con los parámetros de consulta
+    const baseURL = "http://192.168.7.33/api"; // Asegúrate de que esta URL sea correcta
+    const url = `${baseURL}/ejecutivo/UsosHorarios/1/${cleanIdCuenta}/${cleanNumeroTelefonico}/${cleanIdEjecutivo}`;
+    console.log("URL solicitada:", url); // Imprimir la URL completa
+
+    // Realizar la solicitud al servidor utilizando el token en la cabecera
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    });
+
+    // Verificar la respuesta
+    if (response.headers["content-type"]?.includes("application/json")) {
+      const data = response.data;
+      console.log("Respuesta completa de la API:", data);
+
+      if (data[0]?.Mensaje === "La marcación es válida") {
+        toast.info(`Llame a : ${numeroTelefonico}`, {
+          position: "top-center", // Cambia la posición al centro superior
+          style: {
+            top: "50%", // Centrado vertical
+            transform: "translateY(-50%)", // Ajuste para centrar completamente
+          },
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          style: {
+            fontSize: "40px", // Aumenta el tamaño de la fuente
+            fontWeight: "bold", // Aplica negrita
+            top: "50%", // Centrado vertical
+            transform: "translateY(-50%)", // Ajuste para centrar completamente
+          },
+        });
+        return { isValid: true, mensaje: data[0].Mensaje };
+      } else {
+        console.error("Respuesta inesperada: La marcación no es válida.");
+        return {
+          isValid: false,
+          mensaje: data[0]?.Mensaje || "La marcación no es válida.",
+        };
+      }
+    } else {
+      console.error(
+        "Respuesta inesperada del servidor (no es JSON):",
+        response.data
+      );
+      return {
+        isValid: false,
+        mensaje: "El servidor devolvió un contenido no válido.",
+      };
+    }
+  } catch (error) {
+    console.error("Error al realizar la solicitud:", error);
+    if (error.response) {
+      return {
+        isValid: false,
+        mensaje: `Error ${error.response.status}: ${
+          error.response.data?.message || "Error desconocido en el servidor"
+        }`,
+      };
+    } else if (error.request) {
+      return {
+        isValid: false,
+        mensaje: "No se recibió respuesta del servidor.",
+      };
+    } else {
+      return { isValid: false, mensaje: `Error: ${error.message}` };
+    }
+  }
+};
+
+// METODO DE HORARIO
 //End point Fernando
 
 export const createFollows = async (data) => {
@@ -1163,7 +1260,7 @@ export const fetchValidators = async (idProducto, idEjecutivo, Contraseña) => {
   try {
     console.log("Llamando al endpoint /ejecutivo/validador");
     const response = await servicio.get(`/ejecutivo/validador`, {
-      params: { idProducto, idEjecutivo, Contraseña }
+      params: { idProducto, idEjecutivo, Contraseña },
     });
 
     console.log("Respuesta recibida:", response);
@@ -1188,7 +1285,7 @@ export const fetchListValidators = async (idProducto) => {
   try {
     console.log("Llamando al endpoint /ejecutivo/validadores");
     const response = await servicio.get(`/ejecutivo/validadores`, {
-      params: { idProducto }
+      params: { idProducto },
     });
 
     console.log("Respuesta recibida:", response);
@@ -1347,8 +1444,8 @@ export const fetchSaveNegotiationDeadlines = async (requestData) => {
       requestData, // Enviar datos directamente sin serializar
       {
         headers: {
-          "Content-Type": "application/json" // Asegurar el tipo de contenido
-        }
+          "Content-Type": "application/json", // Asegurar el tipo de contenido
+        },
       }
     );
 

@@ -8,18 +8,18 @@ import {
   Placeholder,
   DropdownButton,
   Dropdown,
-  Row,
-  Col
 } from "react-bootstrap";
 import {
   fetchPhones,
   fetchValidationTel,
-  fetchNewTel
+  fetchNewTel,
+  validateTimeZone,
 } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 import "../scss/styles.scss";
 import { TelephoneFill } from "react-bootstrap-icons";
+import axios from "axios"; // Asegúrate de tener axios instalado
 
 const Telephones = () => {
   const [data, setData] = useState([]);
@@ -41,12 +41,13 @@ const Telephones = () => {
       setPhoneNumber(input);
     }
   };
+  const token = responseData?.ejecutivo?.token;
 
   const handleValidatePhone = async () => {
     if (!phoneNumber.trim()) {
       toast.warning("Ingrese un número de teléfono", {
         position: "top-right",
-        style: { transform: "translateY(80vh)" }
+        style: { transform: "translateY(80vh)" },
       });
       return;
     }
@@ -54,14 +55,14 @@ const Telephones = () => {
       toast.warning(
         "Error 400: El número de teléfono debe tener 10 o 11 dígitos",
         {
-          position: "top-right"
+          position: "top-right",
         }
       );
       return;
     }
     if (searchResults.length === 0 || !searchResults[0].idCuenta) {
       toast.warning("Error 404: No hay una cuenta válida seleccionada", {
-        position: "top-right"
+        position: "top-right",
       });
       return;
     }
@@ -71,19 +72,19 @@ const Telephones = () => {
     try {
       const response = await fetchValidationTel({
         telefono: phoneNumber,
-        idCuenta
+        idCuenta,
       });
 
       if (response.exists) {
         toast.success(" El número de teléfono existe en la cuenta", {
           position: "top-right",
-          style: { transform: "translateY(80vh)" }
+          style: { transform: "translateY(80vh)" },
         });
         setIsPhoneNew(false); // El teléfono existe, no es nuevo
       } else {
         toast.error("Error 404: El número de telefono no existe en la cuenta", {
           position: "center-right",
-          style: { transform: "translateY(80vh)" }
+          style: { transform: "translateY(80vh)" },
         });
         setIsPhoneNew(true); // El teléfono no existe, es nuevo
       }
@@ -91,7 +92,7 @@ const Telephones = () => {
       console.error("Error al validar el teléfono:", error);
       toast.error("Error 404: El número de teléfono no existe en la cuenta", {
         position: "top-right",
-        style: { transform: "translateY(80vh)" }
+        style: { transform: "translateY(80vh)" },
       });
       setIsPhoneNew(true); // En caso de error, considerar el teléfono como nuevo
     }
@@ -101,7 +102,7 @@ const Telephones = () => {
     if (!phoneNumber.trim()) {
       toast.warning("Error 400: Ingrese un número de teléfono", {
         position: "top-right",
-        style: { transform: "translateY(80vh)" }
+        style: { transform: "translateY(80vh)" },
       });
       return;
     }
@@ -109,14 +110,14 @@ const Telephones = () => {
       toast.warning(
         "Error 400: El número de teléfono debe tener 10 o 11 dígitos",
         {
-          position: "top-right"
+          position: "top-right",
         }
       );
       return;
     }
     if (searchResults.length === 0 || !searchResults[0].idCuenta) {
       toast.warning("Error 400: No hay una cuenta válida seleccionada", {
-        position: "top-right"
+        position: "top-right",
       });
       return;
     }
@@ -131,7 +132,7 @@ const Telephones = () => {
       telefonia: "fija", // Ajusta estos valores según sea necesario
       claseTelefono: selectedClaseTelefono,
       horarioContacto: horarioContacto,
-      extension: 0
+      extension: 0,
     };
 
     console.log("Horario de contacto:", horarioContacto);
@@ -141,7 +142,7 @@ const Telephones = () => {
       await fetchNewTel(newPhoneData);
       toast.success("Nuevo número de teléfono guardado", {
         position: "top-right",
-        style: { transform: "translateY(80vh)" }
+        style: { transform: "translateY(80vh)" },
       });
       setIsPhoneNew(false); // Restablecer el estado del teléfono nuevo
       setPhoneNumber(""); // Limpiar el campo de entrada
@@ -150,7 +151,7 @@ const Telephones = () => {
       console.error("Error al guardar el nuevo teléfono:", error);
       toast.error("Error 408: Error al guardar el nuevo teléfono", {
         position: "top-right",
-        style: { transform: "translateY(80vh)" }
+        style: { transform: "translateY(80vh)" },
       });
     }
   };
@@ -181,15 +182,14 @@ const Telephones = () => {
           fecha_Insert: foundRow.fecha_Insert,
           calificacion: foundRow.calificacion,
           activo: foundRow.activo,
-          idModo: 2202
-        }
+        },
       });
       toast.success(`Número encontrado: ${phoneNumber}`, {
-        position: "top-right"
+        position: "top-right",
       });
     } else {
       toast.error(`Número no encontrado: ${phoneNumber}`, {
-        position: "top-right"
+        position: "top-right",
       });
     }
   };
@@ -212,7 +212,7 @@ const Telephones = () => {
       setData(flatPhones);
       if (flatPhones.length === 0 && !toastShown) {
         toast.error("Error 404: No hay carga de teléfonos", {
-          position: "top-right"
+          position: "top-right",
         });
         setToastShown(true);
       }
@@ -232,136 +232,158 @@ const Telephones = () => {
   }, [searchResults]);
 
   return (
-    <Card className="overflow-auto card-phones widgets-container">
+    <Card className="overflow-auto card-phones">
       <Card.Body className="card-body-phones">
-        <Row>
-          <Col xs={2}>
-            <h5 className="card-title text-white">
-              <TelephoneFill /> Teléfonos
-            </h5>
-          </Col>
-          <Col xs={10}>
-            <Table hover variant="dark" className="table" responsive="sm">
-              <thead>
-                <tr>
-                  <th colSpan="3">
-                    <div className="button-phones">
-                      <Button
-                        variant="primary"
-                        className="me-2 input-phone"
-                        style={{ width: "25%" }}
-                        onClick={() => {
-                          if (!searchResults || searchResults.length === 0) {
-                            toast.warning(
-                              "Primero debes seleccionar una cuenta.",
-                              {
-                                position: "top-right"
-                              }
-                            );
-                            return;
+        <h5 className="card-title text-white">
+          <TelephoneFill /> Teléfonos
+        </h5>
+        <Table hover variant="dark" className="table" responsive="sm">
+          <thead>
+            <tr>
+              <th colSpan="3">
+                <div className="button-phones">
+                  <Button
+                    variant="primary"
+                    className="me-2 input-phone"
+                    style={{ width: "25%" }}
+                    onClick={async () => {
+                      const idCuenta = searchResults[0]?.idCuenta; // Obtén el idCuenta del contexto
+                      const idEjecutivo =
+                        responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo; // Obtén el idEjecutivo
+                      const numeroTelefonico = phoneNumber; // Número telefónico seleccionado
+
+                      // Agregar logs para depuración
+                      console.log("idCuenta:", idCuenta);
+                      console.log("idEjecutivo:", idEjecutivo);
+                      console.log("numeroTelefonico:", numeroTelefonico);
+
+                      // Validación específica para numeroTelefonico
+                      if (!numeroTelefonico || numeroTelefonico.trim() === "") {
+                        toast.error(
+                          "Error: Ingrese un número telefónico válido.",
+                          {
+                            position: "top-center",
                           }
-                          setSelectedAnswer({
-                            value: 10,
-                            dataPhone: {
-                              idClase: 0,
-                              titulares: 0,
-                              conocidos: 0,
-                              desconocidos: 0,
-                              sinContacto: 0,
-                              intentosViciDial: 0,
-                              id: 0,
-                              númeroTelefónico: 0,
-                              idTelefonía: 0,
-                              idOrigen: 0,
-                              estado: 0,
-                              municipio: 0,
-                              husoHorario: 0,
-                              segHorarioContacto: 0,
-                              extensión: 0,
-                              _Confirmado: 0,
-                              fecha_Insert: 0,
-                              calificacion: 0,
-                              activo: 0,
-                              idModo: 2201
-                            }
-                          }); // Enviar valor 10 al Form.Check en Flow.jsx
+                        );
+                        return;
+                      }
+
+                      if (!idCuenta || !idEjecutivo) {
+                        toast.error(
+                          "Error: Información incompleta para validar el huso horario.",
+                          {
+                            position: "top-center",
+                          }
+                        );
+                        return;
+                      }
+
+                      const { isValid, mensaje } = await validateTimeZone(
+                        idCuenta,
+                        numeroTelefonico,
+                        idEjecutivo
+                      );
+
+                      if (isValid) {
+                        setSelectedAnswer({
+                          value: 10,
+                          dataPhone: {
+                            idClase: 0,
+                            titulares: 0,
+                            conocidos: 0,
+                            desconocidos: 0,
+                            sinContacto: 0,
+                            intentosViciDial: 0,
+                            id: 0,
+                            númeroTelefónico: numeroTelefonico,
+                            idTelefonía: 0,
+                            idOrigen: 0,
+                            estado: 0,
+                            municipio: 0,
+                            husoHorario: 0,
+                            segHorarioContacto: 0,
+                            extensión: 0,
+                            _Confirmado: 0,
+                            fecha_Insert: 0,
+                            calificacion: 0,
+                            activo: 0,
+                          },
+                        }); // Enviar valor 10 al Form.Check en Flow.jsx
+                      } else {
+                        toast.error(mensaje, {
+                          position: "top-center",
+                        });
+                      }
+                    }}
+                  >
+                    Llamada de entrada
+                  </Button>
+
+                  {isPhoneNew && (
+                    <>
+                      <input
+                        type="time"
+                        step="2"
+                        value={horarioContacto}
+                        onChange={(e) => {
+                          const [h, m, s] = e.target.value.split(":");
+                          setHorarioContacto(
+                            `${h.padStart(2, "0")}:${m.padStart(2, "0")}:${
+                              s || "00"
+                            }`
+                          );
                         }}
+                        className="time-input"
+                      />
+
+                      <DropdownButton
+                        id="dropdown-basic-button"
+                        title={selectedClaseTelefono || "Clase de telefono"}
+                        onSelect={setSelectedClaseTelefono}
+                        className="custom-dropdown-menu"
                       >
-                        Llamada de entrada
-                      </Button>
+                        {[
+                          "Hogar",
+                          "Tercero",
+                          "Familiar",
+                          "Empresa Trabajo",
+                          "Celular",
+                          "Recados",
+                          "Oficina",
+                          "Baja",
+                        ].map((item) => (
+                          <Dropdown.Item key={item} eventKey={item}>
+                            {item}
+                          </Dropdown.Item>
+                        ))}
+                      </DropdownButton>
+                    </>
+                  )}
 
-                      {isPhoneNew && (
-                        <>
-                          <input
-                            type="time"
-                            step="2"
-                            value={horarioContacto}
-                            onChange={(e) => {
-                              const [h, m, s] = e.target.value.split(":");
-                              setHorarioContacto(
-                                `${h.padStart(2, "0")}:${m.padStart(2, "0")}:${
-                                  s || "00"
-                                }`
-                              );
-                            }}
-                            className="time-input"
-                          />
-
-                          <DropdownButton
-                            id="dropdown-basic-button"
-                            title={selectedClaseTelefono || "Clase de telefono"}
-                            onSelect={setSelectedClaseTelefono}
-                            className="custom-dropdown-menu"
-                          >
-                            {[
-                              "Hogar",
-                              "Tercero",
-                              "Familiar",
-                              "Empresa Trabajo",
-                              "Celular",
-                              "Recados",
-                              "Oficina",
-                              "Baja"
-                            ].map((item) => (
-                              <Dropdown.Item key={item} eventKey={item}>
-                                {item}
-                              </Dropdown.Item>
-                            ))}
-                          </DropdownButton>
-                        </>
-                      )}
-
-                      <InputGroup
-                        style={{ width: "35%" }}
-                        className="input-phone"
-                      >
-                        <FormControl
-                          placeholder="Número de teléfono"
-                          value={phoneNumber}
-                          onChange={handlePhoneNumberChange}
-                          className="input-validation"
-                        />
-                        <Button
-                          variant="secondary"
-                          onClick={
-                            isPhoneNew
-                              ? handleSaveNewPhone
-                              : handleValidatePhone
-                          }
-                        >
-                          {isPhoneNew ? "Nuevo" : "Validar"}
-                        </Button>
-                      </InputGroup>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-            </Table>
-          </Col>
-        </Row>
+                  <InputGroup style={{ width: "35%" }} className="input-phone">
+                    <FormControl
+                      placeholder="Número de teléfono"
+                      value={phoneNumber}
+                      onChange={handlePhoneNumberChange}
+                      className="input-validation"
+                    />
+                    <Button
+                      variant="secondary"
+                      onClick={
+                        isPhoneNew ? handleSaveNewPhone : handleValidatePhone
+                      }
+                    >
+                      {isPhoneNew ? "Nuevo" : "Validar"}
+                    </Button>
+                  </InputGroup>
+                </div>
+              </th>
+            </tr>
+          </thead>
+        </Table>
 
         <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-          <Table  hover variant="dark">
+          <Table striped bordered hover variant="dark">
             <thead>
               <tr>
                 <th>T</th>
@@ -406,35 +428,116 @@ const Telephones = () => {
                         <a
                           href="#"
                           className="text-info"
-                          onClick={() =>
-                            setSelectedAnswer({
-                              value: 2,
-                              dataPhone: {
-                                idClase: row.idClase,
-                                titulares: row.titulares,
-                                conocidos: row.conocidos,
-                                desconocidos: row.desconocidos,
-                                sinContacto: row.sinContacto,
-                                intentosViciDial: row.intentosViciDial,
-                                id: row.id,
-                                númeroTelefónico: row.númeroTelefónico,
-                                idTelefonía: row.idTelefonía,
-                                idOrigen: row.idOrigen,
-                                estado: row.estado,
-                                municipio: row.municipio,
-                                husoHorario: row.husoHorario,
-                                segHorarioContacto: row.segHorarioContacto,
-                                extensión: row.extensión,
-                                _Confirmado: row._Confirmado,
-                                fecha_Insert: row.fecha_Insert,
-                                calificacion: row.calificacion,
-                                activo: row.activo,
-                                idModo: 2202
+                          onClick={async () => {
+                            const idCuenta = searchResults[0]?.idCuenta; // Obtén el idCuenta del contexto
+                            const idEjecutivo =
+                              responseData?.ejecutivo?.infoEjecutivo
+                                ?.idEjecutivo; // Obtén el idEjecutivo
+                            const numeroTelefonico = row.númeroTelefónico; // Número seleccionado
+
+                            // Depuración: Verificar los valores antes de la validación
+                            console.log("idCuenta:", idCuenta);
+                            console.log("idEjecutivo:", idEjecutivo);
+                            console.log("numeroTelefonico:", numeroTelefonico);
+
+                            // Validación específica para numeroTelefonico
+                            if (
+                              !numeroTelefonico ||
+                              numeroTelefonico.trim() === ""
+                            ) {
+                              toast.error(
+                                "Error: Ingrese un número telefónico válido.",
+                                {
+                                  position: "top-center",
+                                }
+                              );
+                              return; // Salir si el número no es válido
+                            }
+
+                            if (!idCuenta || !idEjecutivo) {
+                              toast.error(
+                                "Error: Información incompleta para validar el huso horario.",
+                                {
+                                  position: "top-center",
+                                }
+                              );
+                              return; // Salir si falta alguna de las variables necesarias
+                            }
+
+                            // Llamada a la validación del huso horario
+                            try {
+                              console.log(
+                                "Iniciando validación de zona horaria..."
+                              );
+                              const { isValid, mensaje } =
+                                await validateTimeZone(
+                                  idCuenta,
+                                  numeroTelefonico,
+                                  idEjecutivo
+                                );
+
+                              // Depuración: Mostrar los resultados de la validación
+                              console.log(
+                                "Resultado de validateTimeZone:",
+                                isValid,
+                                mensaje
+                              );
+
+                              if (!isValid) {
+                                toast.error(
+                                  mensaje ||
+                                    "Error en la validación del huso horario.",
+                                  {
+                                    position: "top-center",
+                                  }
+                                );
+                                return; // Si la validación falla, detener la ejecución
                               }
-                            })
-                          }
+
+                              // Si la validación es correcta, proceder con el siguiente paso
+                              console.log("Validación exitosa.");
+
+                              setSelectedAnswer({
+                                value: 2,
+                                dataPhone: {
+                                  idClase: row.idClase,
+                                  titulares: row.titulares,
+                                  conocidos: row.conocidos,
+                                  desconocidos: row.desconocidos,
+                                  sinContacto: row.sinContacto,
+                                  intentosViciDial: row.intentosViciDial,
+                                  id: row.id,
+                                  númeroTelefónico: row.númeroTelefónico,
+                                  idTelefonía: row.idTelefonía,
+                                  idOrigen: row.idOrigen,
+                                  estado: row.estado,
+                                  municipio: row.municipio,
+                                  husoHorario: row.husoHorario,
+                                  segHorarioContacto: row.segHorarioContacto,
+                                  extensión: row.extensión,
+                                  _Confirmado: row._Confirmado,
+                                  fecha_Insert: row.fecha_Insert,
+                                  calificacion: row.calificacion,
+                                  activo: row.activo,
+                                },
+                              });
+                            } catch (error) {
+                              // Manejar cualquier error que ocurra durante la validación
+                              console.error(
+                                "Error al validar la zona horaria:",
+                                error
+                              );
+                              toast.error(
+                                "Error en la validación del huso horario.",
+                                {
+                                  position: "top-center",
+                                }
+                              );
+                            }
+                          }}
                         >
-                          {"XXXXXX" + row.númeroTelefónico.slice(6)}
+                          {"XXXXXX" + row.númeroTelefónico.slice(6)}{" "}
+                          {/* Solo muestra los últimos 4 dígitos */}
                         </a>
                       </td>
                       <td>{row.telefonia || "--"}</td>{" "}
