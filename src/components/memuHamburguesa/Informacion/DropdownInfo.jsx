@@ -105,8 +105,7 @@ function DropdownInfo() {
       <Payments
         show={showPayments}
         handleClose={handleClosePayments}
-        data={paymentsData}
-        loadingPayments={loadingPayments}
+    
       />
 
       {/* Renderizar el modal de Addresses */}

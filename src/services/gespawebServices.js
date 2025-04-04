@@ -1286,3 +1286,25 @@ export const fetchSearchAddDate = async () => {
     throw error;
   }
 };
+
+
+
+export const createPayments = async (data) => {
+  try {
+    const response = await servicio.post(`/ejecutivo/GuardarPagos`, data);
+
+    if (response.status !== 200) {
+      throw new Error(`Error en la respuesta. Estado: ${response.status}`);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error en createPayments:", error);
+    if (error.response) {
+      const errorMessage =
+        error.response.data?.mensaje || "Error al crear Pago";
+      throw new Error(errorMessage);
+    }
+    throw error;
+  }
+};

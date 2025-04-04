@@ -12,9 +12,6 @@ const FollowUps = ({
       show={show} 
       onHide={handleClose} 
       size="xl"
-      style={{
-        maxHeight: "880px",
-      }}
       backdrop="static"
       keyboard={true}
       contentClassName="d-flex flex-column"
