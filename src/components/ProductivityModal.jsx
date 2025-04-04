@@ -11,9 +11,7 @@ const ProductivityModal = ({ show, onHide }) => {
         <Productivity />
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
-          Cerrar
-        </Button>
+      
       </Modal.Footer>
     </Modal>
   );

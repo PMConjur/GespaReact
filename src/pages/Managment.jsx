@@ -3,7 +3,7 @@ import { createContext, useState, useEffect } from "react";
 import Flow from "../components/Flow";
 import Telephones from "../components/Telephones";
 import InformationClient from "../components/InformationClient";
-import { Row, Col, Container } from "react-bootstrap";
+import { Row, Col, Container, Card } from "react-bootstrap";
 import DebtorInformation from "../components/DebtorInformation";
 import Calculator from "../components/Calculator";
 import DatePickerComponent from "../components/Calendar";
@@ -244,45 +244,52 @@ const Managment = () => {
               <Col xs={12} md={12}>
                 <DataCard />
               </Col>
+              <Container fluid>
+                <Row className="d-flex" xs={12} md={12}>
+                  <Col xs={12} md={12} lg={8}>
+                    <Row className="recent-sales">
+                      <Col xs={12}>
+                        <InformationClient />
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col xs={12} md={12} lg={12}>
+                        <Telephones />
+                      </Col>
+                    </Row>
+                  </Col>
+                  <Col xs={12} md={12} lg={4}>
+                    <Row>
+                      <Col xs={12} md={12}>
+                        <Flow />
+                      </Col>
+                    </Row>
+                    <Card className="widgets-container bg-transparent">
+                      <Row>
+                        <Col xs={6} md={6} xl={6}>
+                          <Calculator /> {/* Componente con la calculadora */}
+                          <br />
+                        </Col>
+                        <Col xs={6} md={6} xl={6}>
+                          <DatePickerComponent />{" "}
+                          {/* Componente con el calendario */}
+                          <br />
+                        </Col>
 
-              <Row className="d-flex" xs={12} md={12}>
-                <Col xs={12} md={6} lg={8}>
-                  <Row className="recent-sales">
-                    <Col xs={12}>
-                      <InformationClient />
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col xs={12}>
-                      <Telephones />
-                    </Col>
-                  </Row>
+                        {/* Componente de gestiones */}
+                        <Col xs={12} md={12} xl={12}>
+                          <NotesWidget />
+                        </Col>
+                      </Row>
+                    </Card>
+                  </Col>
+                </Row>
+                <Row>
                   <Col xs={12}>
                     <Managments />
                   </Col>
-                </Col>
-                <Col xs={12} md={6} lg={4}>
-                  <Row>
-                    <Col xs={12} md={12}>
-                      <Flow />
-                    </Col>
-                    <Col xs={6} md={6}>
-                      <Calculator /> {/* Componente con la calculadora */}
-                      <br />
-                    </Col>
-                    <Col xs={6} md={6}>
-                      <DatePickerComponent />{" "}
-                      {/* Componente con el calendario */}
-                      <br />
-                    </Col>
-
-                    {/* Componente de gestiones */}
-                    <Col xs={12} md={12}>
-                      <NotesWidget />
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
+                </Row>
+              </Container>
             </Row>
           </Container>
         </section>

@@ -8,7 +8,7 @@ import {
   ChatLeftDotsFill,
   EnvelopePaperFill,
   TelephoneInboundFill,
-  EnvelopeAtFill,
+  EnvelopeAtFill
 } from "react-bootstrap-icons";
 import { AppContext } from "../pages/Managment";
 import { fetchDrives } from "../services/gespawebServices";
@@ -20,7 +20,7 @@ const DataCard = () => {
     SMS: 0,
     Carta: 0,
     Blaster: 0,
-    Email: 0,
+    Email: 0
   });
 
   // Datos predeterminados en caso de que no haya resultados
@@ -28,7 +28,7 @@ const DataCard = () => {
     nombreDeudor: "-",
     saldo: "-",
     minimoAtrasado: "-",
-    idCuenta: null,
+    idCuenta: null
   };
 
   // Usar el primer resultado o los datos predeterminados
@@ -75,19 +75,19 @@ const DataCard = () => {
       <Col xxl={3} xl={6} md={6}>
         <Card className="warning-card text-light">
           <Card.Body>
-            <Card.Title>Nombre:</Card.Title>
+            <Card.Title >Nombre:</Card.Title>
             <div className="d-flex align-items-center">
               <div className="card-icon rounded-circle d-flex align-items-center justify-content-center">
                 <PersonFill style={{ fontSize: "32px", color: "#6dd6ff" }} />
               </div>
               <div className="ps-3">
                 <h6
-                  style={{ fontSize: "1.2rem", color: "#6dd6ff" }}
+                  style={{ fontSize: "1.3rem", color: "#6dd6ff" }}
                   id="nombreDeudor"
                 >
                   {nombreDeudor}
                 </h6>
-                <span className="small pt-1 fw-bold">Deudor</span>
+               
               </div>
             </div>
           </Card.Body>
@@ -108,18 +108,18 @@ const DataCard = () => {
                     ? "$" +
                       parseFloat(saldo).toLocaleString("es-MX", {
                         minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
+                        maximumFractionDigits: 2
                       })
                     : "-"}
                 </h6>
-                <span className="small pt-1 fw-bold">Saldo registrado</span>
+             
               </div>
             </div>
           </Card.Body>
         </Card>
       </Col>
 
-      <Col xxl={6} xl={6} md={6}>
+      <Col xxl={6} xl={12} md={12}>
         <Card className="warning-card text-light">
           <Card.Body>
             <Card.Title>Accionamiento:</Card.Title>
@@ -146,7 +146,7 @@ const DataCard = () => {
                     <span> Correo : {actionCounts.Email}</span>
                   </div>
                 </Stack>
-                <span className="small pt-1 fw-bold">Conteo</span>
+             
               </div>
             </div>
           </Card.Body>

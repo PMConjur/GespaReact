@@ -7,7 +7,9 @@ import {
   FormControl,
   Placeholder,
   DropdownButton,
-  Dropdown
+  Dropdown,
+  Row,
+  Col
 } from "react-bootstrap";
 import {
   fetchPhones,
@@ -230,122 +232,136 @@ const Telephones = () => {
   }, [searchResults]);
 
   return (
-    <Card className="overflow-auto card-phones">
+    <Card className="overflow-auto card-phones widgets-container">
       <Card.Body className="card-body-phones">
-        <h5 className="card-title text-white">
-          <TelephoneFill /> Teléfonos
-        </h5>
-        <Table hover variant="dark" className="table" responsive="sm">
-          <thead>
-            <tr>
-              <th colSpan="3">
-                <div className="button-phones">
-                  <Button
-                    variant="primary"
-                    className="me-2 input-phone"
-                    style={{ width: "25%" }}
-                    onClick={() => {
-                      if (!searchResults || searchResults.length === 0) {
-                        toast.warning("Primero debes seleccionar una cuenta.", {
-                          position: "top-right"
-                        });
-                        return;
-                      }
-                      setSelectedAnswer({
-                        value: 10,
-                        dataPhone: {
-                          idClase: 0,
-                          titulares: 0,
-                          conocidos: 0,
-                          desconocidos: 0,
-                          sinContacto: 0,
-                          intentosViciDial: 0,
-                          id: 0,
-                          númeroTelefónico: 0,
-                          idTelefonía: 0,
-                          idOrigen: 0,
-                          estado: 0,
-                          municipio: 0,
-                          husoHorario: 0,
-                          segHorarioContacto: 0,
-                          extensión: 0,
-                          _Confirmado: 0,
-                          fecha_Insert: 0,
-                          calificacion: 0,
-                          activo: 0,
-                          idModo: 2201
-                        }
-                      }); // Enviar valor 10 al Form.Check en Flow.jsx
-                    }}
-                  >
-                    Llamada de entrada
-                  </Button>
-
-                  {isPhoneNew && (
-                    <>
-                      <input
-                        type="time"
-                        step="2"
-                        value={horarioContacto}
-                        onChange={(e) => {
-                          const [h, m, s] = e.target.value.split(":");
-                          setHorarioContacto(
-                            `${h.padStart(2, "0")}:${m.padStart(2, "0")}:${
-                              s || "00"
-                            }`
-                          );
+        <Row>
+          <Col xs={2}>
+            <h5 className="card-title text-white">
+              <TelephoneFill /> Teléfonos
+            </h5>
+          </Col>
+          <Col xs={10}>
+            <Table hover variant="dark" className="table" responsive="sm">
+              <thead>
+                <tr>
+                  <th colSpan="3">
+                    <div className="button-phones">
+                      <Button
+                        variant="primary"
+                        className="me-2 input-phone"
+                        style={{ width: "25%" }}
+                        onClick={() => {
+                          if (!searchResults || searchResults.length === 0) {
+                            toast.warning(
+                              "Primero debes seleccionar una cuenta.",
+                              {
+                                position: "top-right"
+                              }
+                            );
+                            return;
+                          }
+                          setSelectedAnswer({
+                            value: 10,
+                            dataPhone: {
+                              idClase: 0,
+                              titulares: 0,
+                              conocidos: 0,
+                              desconocidos: 0,
+                              sinContacto: 0,
+                              intentosViciDial: 0,
+                              id: 0,
+                              númeroTelefónico: 0,
+                              idTelefonía: 0,
+                              idOrigen: 0,
+                              estado: 0,
+                              municipio: 0,
+                              husoHorario: 0,
+                              segHorarioContacto: 0,
+                              extensión: 0,
+                              _Confirmado: 0,
+                              fecha_Insert: 0,
+                              calificacion: 0,
+                              activo: 0,
+                              idModo: 2201
+                            }
+                          }); // Enviar valor 10 al Form.Check en Flow.jsx
                         }}
-                        className="time-input"
-                      />
-
-                      <DropdownButton
-                        id="dropdown-basic-button"
-                        title={selectedClaseTelefono || "Clase de telefono"}
-                        onSelect={setSelectedClaseTelefono}
-                        className="custom-dropdown-menu"
                       >
-                        {[
-                          "Hogar",
-                          "Tercero",
-                          "Familiar",
-                          "Empresa Trabajo",
-                          "Celular",
-                          "Recados",
-                          "Oficina",
-                          "Baja"
-                        ].map((item) => (
-                          <Dropdown.Item key={item} eventKey={item}>
-                            {item}
-                          </Dropdown.Item>
-                        ))}
-                      </DropdownButton>
-                    </>
-                  )}
+                        Llamada de entrada
+                      </Button>
 
-                  <InputGroup style={{ width: "35%" }} className="input-phone">
-                    <FormControl
-                      placeholder="Número de teléfono"
-                      value={phoneNumber}
-                      onChange={handlePhoneNumberChange}
-                      className="input-validation"
-                    />
-                    <Button
-                      variant="secondary"
-                      onClick={
-                        isPhoneNew ? handleSaveNewPhone : handleValidatePhone
-                      }
-                    >
-                      {isPhoneNew ? "Nuevo" : "Validar"}
-                    </Button>
-                  </InputGroup>
-                </div>
-              </th>
-            </tr>
-          </thead>
-        </Table>
+                      {isPhoneNew && (
+                        <>
+                          <input
+                            type="time"
+                            step="2"
+                            value={horarioContacto}
+                            onChange={(e) => {
+                              const [h, m, s] = e.target.value.split(":");
+                              setHorarioContacto(
+                                `${h.padStart(2, "0")}:${m.padStart(2, "0")}:${
+                                  s || "00"
+                                }`
+                              );
+                            }}
+                            className="time-input"
+                          />
+
+                          <DropdownButton
+                            id="dropdown-basic-button"
+                            title={selectedClaseTelefono || "Clase de telefono"}
+                            onSelect={setSelectedClaseTelefono}
+                            className="custom-dropdown-menu"
+                          >
+                            {[
+                              "Hogar",
+                              "Tercero",
+                              "Familiar",
+                              "Empresa Trabajo",
+                              "Celular",
+                              "Recados",
+                              "Oficina",
+                              "Baja"
+                            ].map((item) => (
+                              <Dropdown.Item key={item} eventKey={item}>
+                                {item}
+                              </Dropdown.Item>
+                            ))}
+                          </DropdownButton>
+                        </>
+                      )}
+
+                      <InputGroup
+                        style={{ width: "35%" }}
+                        className="input-phone"
+                      >
+                        <FormControl
+                          placeholder="Número de teléfono"
+                          value={phoneNumber}
+                          onChange={handlePhoneNumberChange}
+                          className="input-validation"
+                        />
+                        <Button
+                          variant="secondary"
+                          onClick={
+                            isPhoneNew
+                              ? handleSaveNewPhone
+                              : handleValidatePhone
+                          }
+                        >
+                          {isPhoneNew ? "Nuevo" : "Validar"}
+                        </Button>
+                      </InputGroup>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+            </Table>
+          </Col>
+        </Row>
 
         <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-          <Table striped bordered hover variant="dark">
+          <Table  hover variant="dark">
             <thead>
               <tr>
                 <th>T</th>
