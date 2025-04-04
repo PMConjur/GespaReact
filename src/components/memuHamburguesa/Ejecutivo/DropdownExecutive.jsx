@@ -1,3 +1,4 @@
+
 import { useState, useContext } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import { AppContext } from "../../../pages/Managment"; // Ajusta la ruta según tu estructura de archivos
@@ -21,6 +22,7 @@ function DropdownExecutive() {
   const handleShowScripts = async () => {
     setLoadingScripts(true);
     try {
+      //const scripts = await fetchScripts(28916, 1,1, "370700000000004");
       const scripts = await fetchScripts(1); // Obtener los datos de scripts
       setScriptsData(scripts); // Establece los datos recibidos
       setShowScripts(true);

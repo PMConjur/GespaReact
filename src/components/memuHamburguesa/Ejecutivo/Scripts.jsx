@@ -26,4 +26,4 @@ const Scripts = ({ show, handleCloseScripts, data, loadingScripts }) => {
     );
 };
 
-export default Scripts;
+export default Scripts; //revisado

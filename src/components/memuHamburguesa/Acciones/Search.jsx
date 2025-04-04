@@ -36,6 +36,9 @@ const Search = ({ show, handleClose }) => {
         const isValid = searchData.dato && searchData.fuente && searchData.nombre &&
             searchData.puesto && phoneNumbers.length > 0 &&
             searchData.lugar && searchData.link;
+            console.log("Validacion del formulario", isValid);
+            console.log("Datos del formulario", searchData);
+            console.log("Números de telefonos", phoneNumbers);
         setIsFormValid(isValid);
     }, [searchData, phoneNumbers]);
 
@@ -43,47 +46,35 @@ const Search = ({ show, handleClose }) => {
         setShowForm(searchData.encontrado)
     },[searchData.encontrado])
 
-    useEffect(() => {
-        const fetchSearchData = async () => {
+    
+        const fetchData = async (idCuenta) => {
+            setLoading(true);
             try {
-                console.log("Llamando a fetchSearchAddDate");
-                const result = await fetchSearchAddDate();
-                console.log("Datos recibidos de fetchSearchAddDate:", result);
-
-                // Validar que la respuesta sea un array
-                if (Array.isArray(result)) {
-                    // Mapear los datos para el dropdown
-                    const mappedDatos = result.map((item) => ({
-                        id: item.idValor,
-                        descripcion: item.Valor,
-                    }));
-
-                    setValorOptions(mappedDatos); // Guardar los datos en el estado valorOptions
-                } else {
-                    throw new Error("La respuesta del endpoint no es un array.");
-                }
+                const response = await fetchSearchAddDate(idCuenta);
+                const mappedData = mapResponseToTableData(response);
+                setTableData(mappedData);
             } catch (error) {
-                toast.error("Error al cargar los datos del dropdown.");
-                console.error("Error al cargar los datos del dropdown:", error);
+                console.error('Error al obtener los datos:', error);
+                toast.error("Hubo un error al cargar los datos.");
+            } finally {
+                setLoading(false);
             }
         };
 
-        fetchSearchData();
-    }, []);
-
-    const fetchData = async (idCuenta) => {
-        setLoading(true);
-        try {
-            const response = await fetchActionsSearch(idCuenta);
-            const mappedData = mapResponseToTableData(response);
-            setTableData(mappedData);
-        } catch (error) {
-            console.error('Error al obtener los datos:', error);
-            toast.error("Hubo un error al cargar los datos.");
-        } finally {
-            setLoading(false);
-        }
-    };
+     
+    // const fetchData = async (idCuenta) => {
+    //     setLoading(true);
+    //     try {
+    //         const response = await fetchActionsSearch(idCuenta);
+    //         const mappedData = mapResponseToTableData(response);
+    //         setTableData(mappedData);
+    //     } catch (error) {
+    //         console.error('Error al obtener los datos:', error);
+    //         toast.error("Hubo un error al cargar los datos.");
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
     const mapResponseToTableData = (response) => {
         return response.map((item) => ({
