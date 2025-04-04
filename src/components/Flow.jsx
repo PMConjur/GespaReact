@@ -29,8 +29,10 @@ const Flow = () => {
     stoppedTime,
     communicationData,
     setStoppedTime,
-    stoppedTimeSticky
+    stoppedTimeSticky,
+    userActiveFlow
   } = useContext(AppContext); // Agrega funciones del contexto para manejar estados
+ 
   const [userFlowData, setUserFlowData] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
   const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -271,11 +273,11 @@ const Flow = () => {
     }
   };
 
-  //No modificar
+  //No modificar aqui se inicia el flujo para todos los estados de llamada
   useEffect(() => {
     // Limpiar estados antes de comenzar nuevamente
     clearStates();
-
+    
     userFlow()
       .then((response) => {
         if (response && response.length > 0) {
