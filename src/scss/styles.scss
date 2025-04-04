@@ -559,7 +559,7 @@ $table-border-radius: 8px;
 
   tbody {
     font-size: 14px;
-    font-weight: 400;
+
     text-align: center;
     border-radius: 5px;
 
@@ -572,16 +572,17 @@ $table-border-radius: 8px;
         color: #0dcaf0;
 
         td {
-          color: #c2c2c2;
+          color: #ffffff;
           background-color: #000000;
         }
       }
 
       td {
-        color: #bfcddb;
-        text-align: center;
+        color: #ffffff;
+        text-align: left;
         border-right: #6c757d;
         transition: all 0.3s ease;
+        font-size: 14px;
       }
 
       a {
