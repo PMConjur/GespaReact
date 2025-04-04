@@ -66,7 +66,8 @@ const Validators = ({ show, handleClose, handleValidate }) => {
   }, [show, searchResults]); // Solo se ejecuta cuando se abre el modal o cambia searchResults
 
   const handleCheckboxChange = (e) => {
-    setShowEmailsSelect(e.target.checked); // Muestra u oculta el select según el estado del checkbox
+    const isChecked = e.target.checked;
+    setShowEmailsSelect(isChecked); // Muestra u oculta el select según el estado del checkbox
   };
 
   const handleSubmit = async () => {
@@ -89,7 +90,7 @@ const Validators = ({ show, handleClose, handleValidate }) => {
       });
 
       if (handleValidate) {
-        handleValidate(validator, password); // Llama a la función de validación externa si está definida
+        handleValidate(validator, password, showEmailsSelect ? 1 : 0, emails || ""); // Pasa el correo seleccionado o "" si no hay correo
       }
       setValidator("");
       setPassword("");

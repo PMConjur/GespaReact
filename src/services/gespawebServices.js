@@ -1307,11 +1307,23 @@ export const fetchEmailsCharging = async (idCartera, idCuenta) => {
 };
 
 // endpoint Guarda Negociacion Plazos
-export const fetchSaveNegotiationDeadlines = async () => {
+export const fetchSaveNegotiationDeadlines = async (requestData) => {
   try {
-    console.log("Enviando datos al endpoint:");
+    console.log("Enviando datos al endpoint GuardaNegociacionPlazos:", requestData);
+
+    // Validar datos antes de enviarlos
+    if (!requestData.idCuenta || !requestData.idHerramienta || !requestData.montoNegociado) {
+      throw new Error("Faltan datos requeridos en la solicitud.");
+    }
+
     const response = await servicio.post(
-      `/ejecutivo/GuardaNegociacionPlazos`
+      `/ejecutivo/GuardaNegociacionPlazos`,
+      requestData, // Enviar datos directamente sin serializar
+      {
+        headers: {
+          "Content-Type": "application/json", // Asegurar el tipo de contenido
+        },
+      }
     );
 
     if (response.status !== 200) {
@@ -1321,7 +1333,7 @@ export const fetchSaveNegotiationDeadlines = async () => {
     }
 
     const result = response.data;
-    console.log("Respuesta del endpoint:", result);
+    console.log("Respuesta del endpoint GuardaNegociacionPlazos:", result);
     return result;
   } catch (error) {
     console.error("Error en fetchSaveNegotiationDeadlines:", error);
@@ -1330,11 +1342,12 @@ export const fetchSaveNegotiationDeadlines = async () => {
 };
 
 // endpoint incrementa negociacion 
-export const fetchIncreasesNegotiation = async () => {
+export const fetchIncreasesNegotiation = async (data) => {
   try {
-    console.log("Enviando datos al endpoint:");
+    console.log("Enviando datos al endpoint IncrementaNegociacion:", data);
     const response = await servicio.post(
-      `/ejecutivo/IncrementaNegociacion`
+      `/ejecutivo/IncrementaNegociacion`,
+      data // Envía los datos al endpoint
     );
 
     if (response.status !== 200) {
