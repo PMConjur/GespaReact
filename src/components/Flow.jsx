@@ -17,8 +17,7 @@ import SaveButton from "./flowComponents/SaveButton"; // Importa el nuevo compon
 import CalculatorSimulator from "./CalculatorSimulator"; // Importa el componente CalculatorSimulator
 import Payments from "./memuHamburguesa/Informacion/Payments"; // Importa el componente Payments
 import OnlineCharge from "./memuHamburguesa/Acciones/OnlineCharge"; // Importa el componente OnlineCharge
-import FlowEnded from "./flowComponents/FlowEnded";
-
+import Validators from "./fragments/Validators";
 const Flow = () => {
   const {
     searchResults,
@@ -125,7 +124,6 @@ const Flow = () => {
     setIsNegotiationActive(false);
     setIsFollowUpActive(false);
     setStartTimer(false);
-    
   };
   const clearStatesManagment = () => {
     setCurrentQuestionId(null);
@@ -156,8 +154,8 @@ const Flow = () => {
         show={showCalculator}
         handleClose={handleCloseCalculator} // Asegura el cierre correcto
       />
-      <Payments show={showPayments} handleClose={handleClosePayments} />
-      <OnlineCharge
+      <Validators show={showPayments} handleClose={handleClosePayments} />
+      <Validators
         show={showOnlineCharge}
         handleClose={handleCloseOnlineCharge}
       />
