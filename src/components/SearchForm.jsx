@@ -7,7 +7,7 @@ import {
   InputGroup
 } from "react-bootstrap";
 import { Search, ArrowRepeat, FunnelFill } from "react-bootstrap-icons";
-import React, { useContext } from "react";
+import  { useContext } from "react";
 import { AppContext } from "../pages/Managment"; // Importa el contexto
 
 const SearchForm = () => {
@@ -113,8 +113,8 @@ const SearchForm = () => {
       <span>Busqueda de información:</span>
 
       <div className="mx-auto ">
-        <InputGroup className="col-5">
-          <InputGroup.Text id="btnGroupAddon">
+        <InputGroup className="col-5 " variant="dark">
+          <InputGroup.Text id="btnGroupAddon" className="bg-dark text-white border-0">
             <Search />
           </InputGroup.Text>
           <FormControl

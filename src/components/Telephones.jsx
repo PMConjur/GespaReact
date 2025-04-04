@@ -361,7 +361,7 @@ const Telephones = () => {
         </Row>
 
         <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-          <Table striped bordered hover variant="dark">
+          <Table  hover variant="dark">
             <thead>
               <tr>
                 <th>T</th>
