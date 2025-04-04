@@ -177,6 +177,31 @@ const FormOnlineCharge = ({ handleClose }) => {
     }
   };
 
+  const validarNombre = (nombre) => {
+    // Longitud mínima para considerar
+    if (nombre.length < 5) return true;
+    
+    // 1. Verificar proporción de vocales/consonantes
+    const vocales = nombre.match(/[aeiouáéíóú]/gi) || [];
+    const proporcionVocales = vocales.length / nombre.length;
+    
+    // Textos normales suelen tener al menos 30% de vocales
+    if (proporcionVocales < 0.3) return false;
+    
+    // 2. Verificar secuencias repetidas de caracteres
+    const tieneSecuenciasRepetidas = /([^aeiou]{4,})/gi.test(nombre);
+    if (tieneSecuenciasRepetidas) return false;
+    
+    // 3. Verificar distribución de caracteres (entropía)
+    const caracteresUnicos = new Set(nombre.toLowerCase()).size;
+    const proporcionUnicos = caracteresUnicos / nombre.length;
+    
+    // Textos aleatorios suelen tener alta proporción de caracteres únicos
+    if (proporcionUnicos > 0.7 && nombre.length > 10) return false;
+    
+    return true;
+  };
+
   // Función para manejar el envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault(); // Previene el comportamiento por defecto del formulario
@@ -186,6 +211,19 @@ const FormOnlineCharge = ({ handleClose }) => {
         !formData.vencimiento || !formData.monto || !formData.idBanco || 
         !formData.autorizacion) {
       toast.error("Todos los campos son obligatorios."); // Muestra un error si falta algún campo
+      return;
+    }
+      
+        // Validar que el nombre tenga al menos 6 letras (sin contar espacios)
+    const nombreSinEspacios = formData.nombre.replace(/\s/g, '');
+    if (nombreSinEspacios.length < 6) {
+      toast.error("El nombre debe contener al menos 6 letras (sin contar espacios).");
+      return;
+    }
+    
+        // Validar que el nombre no sea un texto aleatorio
+    if (!validarNombre(formData.nombre)) {
+      toast.error("El nombre ingresado no parece válido. Por favor ingrese un nombre real.");
       return;
     }
   
