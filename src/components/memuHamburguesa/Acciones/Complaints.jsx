@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import "../../../scss/styles.scss";
 
 const Complaints = ({ show, handleClose }) => {
-  const { searchResults, idEjecutivo, nombreEjecutivo } = useContext(AppContext);
+  const { searchResults, idEjecutivo} = useContext(AppContext);
 
   const [formData, setFormData] = useState({
     idQueja: '',
@@ -101,11 +101,12 @@ const Complaints = ({ show, handleClose }) => {
 
   // Manejar cambios en el formulario
   const handleChange = (name, value) => {
+    const nombreDeudor = searchResults?.[0]?.nombreDeudor || "";
     console.log(`Cambio detectado en ${name}:`, value);
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-      ...(name === "titular" && { solicitante: value ? nombreEjecutivo : "" }),
+      ...(name === "titular" && { solicitante: value ? nombreDeudor : "" }),
     }));
   };
 
@@ -184,175 +185,185 @@ const Complaints = ({ show, handleClose }) => {
       </Modal.Header>
       <Modal.Body className="d-block d-lg-flex gap-1">
         <Col>
-          <div
-            className="scroll-container"
-            style={{ maxHeight: "70vh", overflowY: "auto" }}
-          >
-            <Form>
-              <div className="mb-3">
-                <Form.Group className="mb-3">
-                  <Dropdown
-                    onSelect={(value) => {
-                      const selectedComplaint = ddComplaints.find(
-                        (complaint) => complaint.id === parseInt(value)
-                      );
-                      handleChange("idQueja", value); // Actualizar el idQueja
-                      handleChange(
-                        "tipoQuejaDescripcion",
-                        selectedComplaint?.descripcion || ""
-                      ); // Actualizar el texto seleccionado
-                    }}
-                  >
-                    <Dropdown.Toggle
-                      className="w-100"
-                      variant="primary"
-                      id="dropdown-queja"
+          {complaints.length > 0 ? ( // Verifica si hay datos en la tabla
+            <div
+              className="scroll-container"
+              style={{ maxHeight: "70vh", overflowY: "auto"}}
+            >
+              <Form className='w-100'>
+                <div className="">
+                  <Form.Group className="mb-4">
+                    <Dropdown
+                      onSelect={(value) => {
+                        const selectedComplaint = ddComplaints.find(
+                          (complaint) => complaint.id === parseInt(value)
+                        );
+                        handleChange("idQueja", value); // Actualizar el idQueja
+                        handleChange(
+                          "tipoQuejaDescripcion",
+                          selectedComplaint?.descripcion || ""
+                        ); // Actualizar el texto seleccionado
+                      }}
                     >
-                      {formData.tipoQuejaDescripcion || "Tipo de queja"}
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu className="dropdown-menu">
-                      {ddComplaints.length > 0 ? (
-                        ddComplaints.map((complaint) => (
-                          <Dropdown.Item
-                            key={complaint.id}
-                            eventKey={complaint.id}
-                          >
-                            {complaint.descripcion}
+                      <Dropdown.Toggle
+                        className="w-100"
+                        variant="primary"
+                        id="dropdown-queja"
+                      >
+                        {formData.tipoQuejaDescripcion || "Tipo de queja"}
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu className="dropdown-menu">
+                        {ddComplaints.length > 0 ? (
+                          ddComplaints.map((complaint) => (
+                            <Dropdown.Item
+                              key={complaint.id}
+                              eventKey={complaint.id}
+                            >
+                              {complaint.descripcion}
+                            </Dropdown.Item>
+                          ))
+                        ) : (
+                          <Dropdown.Item disabled>
+                            No hay datos disponibles
                           </Dropdown.Item>
-                        ))
-                      ) : (
-                        <Dropdown.Item disabled>
-                          No hay datos disponibles
-                        </Dropdown.Item>
-                      )}
-                    </Dropdown.Menu>
-                  </Dropdown>
-                </Form.Group>
-                <Form.Group className="mb-1 full-width">
-                  <Dropdown
-                    onSelect={(value) => {
-                      const selectedOrigin = originComplaints.find(
-                        (origin) => origin.id === parseInt(value)
-                      );
-                      handleChange("idInstitucion", value); // Actualizar el idInstitucion
-                      handleChange(
-                        "institucionDescripcion",
-                        selectedOrigin?.descripcion || ""
-                      ); // Actualizar el texto seleccionado
-                    }}
-                  >
-                    <Dropdown.Toggle
-                      className="w-100"
-                      variant="primary"
-                      id="dropdown-institucion"
+                        )}
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </Form.Group>
+                  <Form.Group className="mb-4 full-width">
+                    <Dropdown
+                      onSelect={(value) => {
+                        const selectedOrigin = originComplaints.find(
+                          (origin) => origin.id === parseInt(value)
+                        );
+                        handleChange("idInstitucion", value); // Actualizar el idInstitucion
+                        handleChange(
+                          "institucionDescripcion",
+                          selectedOrigin?.descripcion || ""
+                        ); // Actualizar el texto seleccionado
+                      }}
                     >
-                      {formData.institucionDescripcion || "Origen"}
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu className="dropdown-menu">
-                      {originComplaints.length > 0 ? (
-                        originComplaints.map((origin) => (
-                          <Dropdown.Item key={origin.id} eventKey={origin.id}>
-                            {origin.descripcion}
+                      <Dropdown.Toggle
+                        className="w-100"
+                        variant="primary"
+                        id="dropdown-institucion"
+                      >
+                        {formData.institucionDescripcion || "Origen"}
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu className="dropdown-menu">
+                        {originComplaints.length > 0 ? (
+                          originComplaints.map((origin) => (
+                            <Dropdown.Item key={origin.id} eventKey={origin.id}>
+                              {origin.descripcion}
+                            </Dropdown.Item>
+                          ))
+                        ) : (
+                          <Dropdown.Item disabled>
+                            No hay datos disponibles
                           </Dropdown.Item>
-                        ))
-                      ) : (
-                        <Dropdown.Item disabled>
-                          No hay datos disponibles
-                        </Dropdown.Item>
-                      )}
-                    </Dropdown.Menu>
-                  </Dropdown>
-                </Form.Group>
-              </div>
-              <Form.Group className="mb-1">
+                        )}
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </Form.Group>
+                </div>
+                <Form.Group className="mb-4">
 
-                <Form.Control
-                  type="text"
-                  name="folio"
-                  placeholder='Folio'
-                  value={formData.folio}
-                  onChange={handleFolioChange} // Usa la función específica para manejar el cambio
-                />
-              </Form.Group>
-              <Form.Group className="mb-2">
-                <Form.Check
-                  key={formData.llamadaEntrada} // Fuerza el re-renderizado cuando cambia el estado
-                  type="checkbox"
-                  label="Llamada de entrada"
-                  name="llamadaEntrada"
-                  checked={formData.llamadaEntrada}
-                  onChange={(e) =>
-                    handleChange(e.target.name, e.target.checked)
-                  }
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <textarea
-                  className="form-control"
-                  rows={3}
-                  name="comentarios"
-                  placeholder="Escribir comentario"
-                  value={formData.comentarios}
-                  onChange={(e) => {
-                    console.log("Valor del textarea:", e.target.value); // Verifica el valor en tiempo real
-                    handleChange(e.target.name, e.target.value); // Pasa el valor sin modificaciones
-                  }}
-                  onKeyDown={(e) => e.key === ' ' && e.stopPropagation()}
-                />
-              </Form.Group>
-              <div className="">
-                <Form.Group className="mb-1 mt-2 half-width">
+                  <Form.Control
+                    type="text"
+                    name="folio"
+                    placeholder='Folio'
+                    value={formData.folio}
+                    onChange={handleFolioChange} // Usa la función específica para manejar el cambio
+                  />
+                </Form.Group>
+                <Form.Group className="mb-4">
                   <Form.Check
-                    key={formData.titular} // Fuerza el re-renderizado cuando cambia el estado
+                    key={formData.llamadaEntrada} // Fuerza el re-renderizado cuando cambia el estado
                     type="checkbox"
-                    label="Titular"
-                    name="titular"
-                    checked={formData.titular}
+                    label="Llamada de entrada"
+                    name="llamadaEntrada"
+                    checked={formData.llamadaEntrada}
                     onChange={(e) =>
                       handleChange(e.target.name, e.target.checked)
                     }
                   />
                 </Form.Group>
-                <Form.Group className="mb-3 w-100 half-width">
-                  <Form.Control
-                    className="w-100"
-                    type="text"
-                    name="solicitante"
-                    placeholder="Solicitante"
-                    value={formData.solicitante}
-                    onChange={(e) =>
-                      handleChange(e.target.name, e.target.value)
-                    }
+                <Form.Group className="mb-4">
+                  <textarea
+                    className="form-control"
+                    rows={3}
+                    name="comentarios"
+                    placeholder="Escribir comentario"
+                    value={formData.comentarios}
+                    onChange={(e) => {
+                      console.log("Valor del textarea:", e.target.value); // Verifica el valor en tiempo real
+                      handleChange(e.target.name, e.target.value); // Pasa el valor sin modificaciones
+                    }}
+                    onKeyDown={(e) => e.key === ' ' && e.stopPropagation()}
                   />
                 </Form.Group>
-              </div>
-              <Button
-                className="mt-3 full-width"
-                variant="danger"
-                onClick={handleReport}
-                disabled={!isFormValid || isLoading} // Deshabilita el botón mientras carga
-              >
-                {isLoading ? "Guardando..." : "Reportar"}{" "}
-                {/* Cambia el texto durante la carga */}
-              </Button>
-            </Form>
-            <style jsx>{`
-              .form-row {
-                display: flex;
-                justify-content: space-between;
-              }
-              .full-width {
-                width: 100%;
-              }
-              .half-width {
-                width: 48%;
-              }
-              .dropdown-menu {
-                max-height: 300px;
-                overflow-y: auto;
-              }
-            `}</style>
-          </div>
+                <div className="">
+                  <Form.Group className="mb-4 mt-2 half-width">
+                    <Form.Check
+                      key={formData.titular} // Fuerza el re-renderizado cuando cambia el estado
+                      type="checkbox"
+                      label="Titular"
+                      name="titular"
+                      checked={formData.titular}
+                      onChange={(e) =>
+                        handleChange(e.target.name, e.target.checked)
+                      }
+                    />
+                  </Form.Group>
+                  <Form.Group className="mb-3 w-100 half-width">
+                    <Form.Control
+                      className="w-100"
+                      type="text"
+                      name="solicitante"
+                      placeholder="Nombre"
+                      value={formData.solicitante}
+                      onChange={(e) =>
+                        handleChange(e.target.name, e.target.value)
+                      }
+                    />
+                  </Form.Group>
+                </div>
+                <div className='boton-reportar'>
+                <Button
+                  className="mt-4 full-width"
+                  variant="danger"
+                  onClick={handleReport}
+                  disabled={!isFormValid || isLoading} // Deshabilita el botón mientras carga
+                >
+                  {isLoading ? "Guardando..." : "Reportar"}{" "}
+                  {/* Cambia el texto durante la carga */}
+                </Button>
+                </div>
+              </Form>
+              <style jsx>{`
+                .form-row {
+                  display: flex;
+                  justify-content: space-between;
+                }
+                .full-width {
+                  width: 100%;
+                }
+                .half-width {
+                  width: 48%;
+                }
+                .dropdown-menu {
+                  max-height: 300px;
+                  overflow-y: auto;
+                }
+                  .boton-reportar{
+                  margin-top: auto;
+                  margin-bottom: 3rem;
+                  }
+              `}</style>
+            </div>
+          ) : (
+            <p className="text-center">No hay cuenta gestionada</p>
+          )}
         </Col>
         <div
           className="table-responsive custom-scrollbar"

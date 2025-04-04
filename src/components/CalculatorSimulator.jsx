@@ -1,13 +1,13 @@
 import { useState, useEffect, useContext } from "react";
 import { Modal, Button, Form, Table, Card, Row, Col } from "react-bootstrap";
 import "../scss/styles.scss";
-import { fetchCalFirtsPart, fetchCalSecondPart, fetchCalSecondPartModify, fetchSaveDeleteDeadlines } from "../services/gespawebServices";
+import { fetchCalFirtsPart, fetchCalSecondPart, fetchCalSecondPartModify, fetchSaveDeleteDeadlines, fetchSaveNegotiationDeadlines } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 import Validators from "./fragments/Validators"; // Importa el modal de Validators
 
 const CalculatorSimulator = ({show, handleClose}) => {
-  const { searchResults,  } = useContext(AppContext); // Obtiene searchResults desde AppContext
+  const { searchResults, idEjecutivo  } = useContext(AppContext); // Obtiene searchResults desde AppContext
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [tableData, setTableData] = useState([]);
   const [summaryData, setSummaryData] = useState({
@@ -26,6 +26,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
     montoNegociado: 0,
     descuento: 0,
     calculos: [],
+    tasaMensual: 0, // Agregar tasa mensual al estado
   });
   const [formValues, setFormValues] = useState({
     montoRequerido: "",
@@ -53,6 +54,10 @@ const CalculatorSimulator = ({show, handleClose}) => {
   const [showCalculator, setShowCalculator] = useState(false); // Estado para controlar la visibilidad del Col
   const [showValidators, setShowValidators] = useState(false); // Estado para controlar el modal
   const [isValidated, setIsValidated] = useState(false); // Estado para controlar la validación
+  const [idEjecutivoValidador, setIdEjecutivoValidador] = useState(0); // Estado para almacenar el idEjecutivoValidador
+  const [validatorPassword, setValidatorPassword] = useState(""); // Estado para almacenar la contraseña del validador
+  const [cartaConvenio, setCartaConvenio] = useState(0); // Estado para almacenar el valor del checkbox
+  const [selectedEmail, setSelectedEmail] = useState(""); // Estado para almacenar el correo seleccionado
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -193,6 +198,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
         montoNegociado: response.montoNegociado,
         descuento: response.descuento,
         calculos: response.calculos,
+        tasaMensual: response.tasaMensual, // Agregar la tasa mensual al estado
       });
 
       setShowDetails(true); // Muestra el contenido del Row
@@ -340,15 +346,86 @@ const CalculatorSimulator = ({show, handleClose}) => {
     try {
       console.log("Enviando datos al endpoint:", requestData);
       const response = await fetchSaveDeleteDeadlines(requestData);
-      toast.success("Datos enviados correctamente.");
       console.log("Respuesta del endpoint:", response);
+  
+      if (response?.mensaje) {
+        const diasASumar = parseInt(response.mensaje, 10); // Convierte el mensaje a número
+        const fechaPago = new Date(formInputs.fechaPago);
+        fechaPago.setDate(fechaPago.getDate() + diasASumar); // Suma los días al valor de fechaPago
+        const nuevaFechaFinNegociacion = fechaPago.toISOString().split("T")[0]; // Formatea la nueva fecha
+  
+        console.log("Nueva fechaFinNegociacion calculada:", nuevaFechaFinNegociacion);
+  
+        // Actualiza el estado o usa la nueva fecha en el siguiente request
+        setFormInputs((prev) => ({
+          ...prev,
+          fechaFinNegociacion: nuevaFechaFinNegociacion,
+        }));
+      }
+  
+      toast.success("Datos enviados correctamente.");
     } catch (error) {
       console.error("Error al enviar los datos:", error);
       toast.error("Error al enviar los datos al endpoint.");
     }
   };
+  
 
   const handleValidateSuccess = () => {
+    setIsValidated(true); // Cambia el estado a validado
+    setShowValidators(false); // Cierra el modal de validación
+  };
+
+  const handleSaveNegotiation = async () => {
+    try {
+      const idCuenta = searchResults?.[0]?.idCuenta?.trim();
+      const fechaActual = new Date().toISOString();
+      const horaActual = new Date().toLocaleTimeString("en-GB", { hour12: false });
+  
+      // Validar datos antes de enviarlos
+      if (!idCuenta || !selectedHerramienta || !calculosData.montoNegociado) {
+        toast.error("Faltan datos requeridos para guardar la negociación.");
+        console.error("Datos faltantes:", { idCuenta, selectedHerramienta, montoNegociado: calculosData.montoNegociado });
+        return;
+      }
+  
+      const requestData = {
+        idCartera: 1,
+        idCuenta: idCuenta,
+        idEjecutivo: idEjecutivo,
+        idHerramienta: selectedHerramienta,
+        montoNegociado: parseFloat(calculosData.montoNegociado),
+        plazos: parseInt(calculosData.plazos, 10), // Asegura que plazos sea un número entero
+        cartaConvenio: cartaConvenio, // Usa el valor del estado
+        correo: selectedEmail || "", // Usa el correo seleccionado o vacío
+        fechaPago: formInputs.fechaPago || "",
+        fechaFinNegociacion: formInputs.fechaFinNegociacion, // Usa la nueva fecha calculada
+        idEjecutivoValidador: parseInt(idEjecutivoValidador, 10), // Asegura que sea un número entero
+        contrasena: validatorPassword || "", // Usa la contraseña del validador o vacío
+        fechaInsert: "2025-04-03",
+        segundoInsert: "12:34:59",
+        reestructura: 0,
+        condonacion: 0,
+        idGrabacion: "", // Cambiar si es necesario
+      };
+  
+      console.log("Datos enviados al endpoint fetchSaveNegotiationDeadlines:", requestData);
+  
+      const response = await fetchSaveNegotiationDeadlines(requestData);
+      toast.success("Negociación guardada correctamente.");
+      console.log("Respuesta del endpoint fetchSaveNegotiationDeadlines:", response);
+    } catch (error) {
+      console.error("Error al guardar la negociación:", error);
+      toast.error("Error al guardar la negociación.");
+    }
+  };
+
+  const handleValidate = (validator, password, cartaConvenioValue, email) => {
+    console.log("Validación exitosa con validador:", validator, "contraseña:", password, "cartaConvenio:", cartaConvenioValue, "correo:", email);
+    setIdEjecutivoValidador(validator); // Almacena el idEjecutivo seleccionado
+    setValidatorPassword(password); // Almacena la contraseña del validador
+    setCartaConvenio(cartaConvenioValue); // Almacena el valor del checkbox
+    setSelectedEmail(email || ""); // Almacena el correo seleccionado o "" si no hay correo
     setIsValidated(true); // Cambia el estado a validado
     setShowValidators(false); // Cierra el modal de validación
   };
@@ -493,6 +570,16 @@ const CalculatorSimulator = ({show, handleClose}) => {
                             Calcular
                           </Button>
                         </div>
+
+                        <div>
+                          <Button
+                            variant="primary"
+                            onClick={handleOpenValidators} // Abre el modal
+                          >
+                            Validación
+                          </Button>
+                        </div>
+                        
                       </Col>
                       <Col>
                         <div className="d-flex">
@@ -827,7 +914,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
                 )}
               </Col>
               <Row>
-                {showDetails && ( // Muestra el contenido solo si showDetails es true
+                {showDetails && ( 
                   <>
                     {/* Resumen */}
                     <Col>
@@ -856,7 +943,8 @@ const CalculatorSimulator = ({show, handleClose}) => {
                                   Saldo
                                 </span>
                                 <h5 style={{ color: "#ffc400" }}>
-                                  ${(calculosData.saldo || 0).toFixed(2)}
+                                  ${(summaryData.saldo || 0).toFixed(2)}
+                            
                                 </h5>
                               </Col>
                             </Row>
@@ -1010,6 +1098,21 @@ const CalculatorSimulator = ({show, handleClose}) => {
                               </Button>
                             )}
                           </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-end",
+                              marginTop: "15px",
+                            }}
+                          >
+                            <Button
+                              variant="primary"
+                              onClick={handleSaveNegotiation} // Llama a la función para guardar la negociación
+                              disabled={!isValidated} // Deshabilita el botón si no está validado
+                            >
+                              Guardar Negociación
+                            </Button>
+                          </div>
                         </Card.Body>
                       </Card>
                     </Col>
@@ -1098,15 +1201,11 @@ const CalculatorSimulator = ({show, handleClose}) => {
           </Col>
         </Modal.Body>
       </Modal>
-
-      {/* Modal de Validators */}
       <Validators
         show={showValidators}
         handleClose={handleCloseValidators}
-        handleValidate={(validator, password) => {
-          console.log("Validación exitosa:", validator, password);
-          handleValidateSuccess(); // Llama a la función de éxito al validar
-        }}
+        onValidateSuccess={handleValidateSuccess} // Pasa la función de éxito de validación
+        handleValidate={(validator, password, cartaConvenioValue, email) => handleValidate(validator, password, cartaConvenioValue, email)} // Pasa el correo seleccionado
       />
     </>
   );
