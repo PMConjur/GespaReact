@@ -1,5 +1,5 @@
 import { Modal, Container } from "react-bootstrap";
-import Comment from "../../flowComponents/Comment";
+import CommentN from "../../NewComment";
 
 const CommentsModal = ({ show, handleClose }) => {
   // Define the handleSaveComment function
@@ -15,7 +15,7 @@ const CommentsModal = ({ show, handleClose }) => {
       </Modal.Header>
       <Modal.Body>
         <Container>
-          <Comment comentario="" isValid={true} onSave={handleSaveComment} />
+          <CommentN comentario="" isValid={true} onSave={handleSaveComment} />
         </Container>
       </Modal.Body>
       <Modal.Footer></Modal.Footer>
