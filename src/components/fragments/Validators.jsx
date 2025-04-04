@@ -88,7 +88,9 @@ const Validators = ({ show, handleClose, handleValidate }) => {
         position: "top-center",
       });
 
-      handleValidate(validator, password); // Llama a la función de validación externa
+      if (handleValidate) {
+        handleValidate(validator, password); // Llama a la función de validación externa si está definida
+      }
       setValidator("");
       setPassword("");
       handleClose(); // Cierra el modal

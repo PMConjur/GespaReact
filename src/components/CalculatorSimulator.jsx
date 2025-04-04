@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { Modal, Button, Form, Table, Card, Row, Col } from "react-bootstrap";
 import "../scss/styles.scss";
-import { fetchCalFirtsPart, fetchCalSecondPart, fetchCalSecondPartModify, fetchSaveDeleteDeadlines } from "../services/gespawebServices";
+import { fetchCalFirtsPart, fetchCalSecondPart, fetchCalSecondPartModify, fetchSaveDeleteDeadlines, fetchSaveNegotiationDeadlines } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 import Validators from "./fragments/Validators"; // Importa el modal de Validators
@@ -349,6 +349,50 @@ const CalculatorSimulator = ({show, handleClose}) => {
   };
 
   const handleValidateSuccess = () => {
+    setIsValidated(true); // Cambia el estado a validado
+    setShowValidators(false); // Cierra el modal de validación
+  };
+
+  const handleSaveNegotiation = async () => {
+    try {
+      const idCuenta = searchResults?.[0]?.idCuenta?.trim();
+      const idEjecutivo = searchResults?.[0]?.idEjecutivo || 0;
+      const fechaActual = new Date().toISOString();
+      const horaActual = new Date().toLocaleTimeString("en-GB", { hour12: false });
+  
+      const requestData = {
+        idCartera: 1,
+        idCuenta: idCuenta,
+        idEjecutivo: idEjecutivo,
+        idHerramienta: selectedHerramienta || 0,
+        montoNegociado: parseFloat(calculosData.montoNegociado) || 0,
+        plazos: calculosData.plazos || 0,
+        cartaConvenio: 0,
+        correo:  "",
+        fechaPago: formInputs.fechaPago || "",
+        fechaFinNegociacion: formInputs.fechaPago || "",
+        idEjecutivoValidador: validator || 0,
+        contrasena: password || "",
+        fechaInsert: fechaActual,
+        segundoInsert: horaActual,
+        reestructura: 0,
+        condonacion: 0,
+        idGrabacion: "string", // Cambiar si es necesario
+      };
+  
+      console.log("Datos enviados al endpoint fetchSaveNegotiationDeadlines:", requestData);
+  
+      const response = await fetchSaveNegotiationDeadlines(requestData);
+      toast.success("Negociación guardada correctamente.");
+      console.log("Respuesta del endpoint fetchSaveNegotiationDeadlines:", response);
+    } catch (error) {
+      console.error("Error al guardar la negociación:", error);
+      toast.error("Error al guardar la negociación.");
+    }
+  };
+
+  const handleValidate = (validator, password) => {
+    console.log("Validación exitosa con validador:", validator, "y contraseña:", password);
     setIsValidated(true); // Cambia el estado a validado
     setShowValidators(false); // Cierra el modal de validación
   };
@@ -837,7 +881,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
                 )}
               </Col>
               <Row>
-                {showDetails && ( // Muestra el contenido solo si showDetails es true
+                {showDetails && ( 
                   <>
                     {/* Resumen */}
                     <Col>
@@ -1020,6 +1064,21 @@ const CalculatorSimulator = ({show, handleClose}) => {
                               </Button>
                             )}
                           </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-end",
+                              marginTop: "15px",
+                            }}
+                          >
+                            <Button
+                              variant="primary"
+                              onClick={handleSaveNegotiation} // Llama a la función para guardar la negociación
+                              disabled={!isValidated} // Deshabilita el botón si no está validado
+                            >
+                              Guardar Negociación
+                            </Button>
+                          </div>
                         </Card.Body>
                       </Card>
                     </Col>
@@ -1108,15 +1167,11 @@ const CalculatorSimulator = ({show, handleClose}) => {
           </Col>
         </Modal.Body>
       </Modal>
-
-      {/* Modal de Validators */}
       <Validators
         show={showValidators}
         handleClose={handleCloseValidators}
-        handleValidate={(validator, password) => {
-          console.log("Validación exitosa:", validator, password);
-          handleValidateSuccess(); // Llama a la función de éxito al validar
-        }}
+        onValidateSuccess={handleValidateSuccess} // Pasa la función de éxito de validación
+        handleValidate={handleValidate} // Pasa la función handleValidate como prop
       />
     </>
   );
