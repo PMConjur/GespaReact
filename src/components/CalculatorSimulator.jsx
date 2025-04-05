@@ -59,6 +59,8 @@ const CalculatorSimulator = ({show, handleClose}) => {
   const [cartaConvenio, setCartaConvenio] = useState(0); // Estado para almacenar el valor del checkbox
   const [selectedEmail, setSelectedEmail] = useState(""); // Estado para almacenar el correo seleccionado
   const [duracion, setDuracion] = useState(""); // Estado para almacenar el valor de duración
+  const [isSaveDeadlinesClicked, setIsSaveDeadlinesClicked] = useState(false); // Nuevo estado para controlar la visibilidad de los botones
+  const [isNegotiationSaved, setIsNegotiationSaved] = useState(false); // Nuevo estado para controlar la visibilidad del botón "Finalizar"
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -365,6 +367,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
       }
   
       toast.success("Datos enviados correctamente.");
+      setIsSaveDeadlinesClicked(true); // Cambia el estado para alternar los botones
     } catch (error) {
       console.error("Error al enviar los datos:", error);
       toast.error("Error al enviar los datos al endpoint.");
@@ -417,6 +420,9 @@ const CalculatorSimulator = ({show, handleClose}) => {
       const duracionObtenida = response?.duración || "";
       console.log("Duración obtenida de la respuesta:", duracionObtenida);
       setDuracion(duracionObtenida); // Almacena la duración en el estado
+  
+      // Cambia el estado para mostrar el botón "Finalizar"
+      setIsNegotiationSaved(true);
     } catch (error) {
       console.error("Error al guardar la negociación:", error);
       toast.error("Error al guardar la negociación.");
@@ -570,7 +576,12 @@ const sendIncreaseNegotiation = async () => {
                     >
                       <Col>
                         <Form.Group className="mb-3">
-                          <Form.Select onChange={handleHerramientaChange}>
+                          <Form.Select
+                            onChange={(e) => {
+                              handleHerramientaChange(e); // Maneja el cambio de herramienta
+                              handleSetFormValues(); // Llama a handleSetFormValues al seleccionar una herramienta
+                            }}
+                          >
                             <option value="">Seleccionar Herramienta</option>
                             {herramientas.map((herramienta) => (
                               <option
@@ -582,20 +593,7 @@ const sendIncreaseNegotiation = async () => {
                             ))}
                           </Form.Select>
                         </Form.Group>
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "flex-end",
-                          }}
-                        >
-                          <Button
-                            variant="primary"
-                            onClick={handleSetFormValues}
-                            disabled={!isCalculateButtonEnabled} // Deshabilita el botón si no es válido
-                          >
-                            Calcular
-                          </Button>
-                        </div>
+                        {/* Elimina el botón */}
                       </Col>
                       <Col>
                         <div className="d-flex">
@@ -649,157 +647,146 @@ const sendIncreaseNegotiation = async () => {
               </Col>
             </Col>
             <Col className="">
-              <Row className="d-flex gap-4">
-                <Col>
-                  <Card>
-                    <Card.Body className="p-0">
-                      <Card.Title className="pt-0">
-                        Acuerdo con el cliente
-                      </Card.Title>
-                      <Form>
-                        <Form.Group
-                          className="d-flex w-100"
-                          style={{ opacity: areFieldsEnabled ? 1 : 0.5 }}
-                        >
-                          <Form.Control
-                            className="w-100"
-                            type="text"
-                            placeholder="Monto Pago"
-                            value={montoPago}
-                            onKeyPress={(e) => {
-                              if (!/^\d*\.?\d*$/.test(e.key)) {
-                                e.preventDefault(); // Evita que se ingresen caracteres no numéricos
-                              }
-                            }}
-                            onChange={handleMontoPagoChange} // Actualiza el estado de "Monto Pago"
-                            disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
-                          />
-                        </Form.Group>
-                        <div
-                          className="d-flex gap-3 w-100"
-                          style={{ opacity: areFieldsEnabled ? 1 : 0.5 }}
-                        >
-                          <Form.Group className="mt-3 w-100">
+              {areFieldsEnabled && ( // Muestra el Row solo si la herramienta seleccionada es válida
+                <Row className="d-flex gap-4">
+                  <Col>
+                    <Card>
+                      <Card.Body className="p-0">
+                        <Card.Title className="pt-0">Acuerdo con el cliente</Card.Title>
+                        <Form>
+                          <Form.Group className="d-flex w-100">
                             <Form.Control
+                              className="w-100"
                               type="text"
-                              placeholder="Monto Negociado"
-                              value={montoNegociado ? `$${montoNegociado}` : ""} // Agrega un '$' al inicio del valor
-                              readOnly // Hace que el campo no sea editable
+                              placeholder="Monto Pago"
+                              value={montoPago}
+                              onKeyPress={(e) => {
+                                if (!/^\d*\.?\d*$/.test(e.key)) {
+                                  e.preventDefault(); // Evita que se ingresen caracteres no numéricos
+                                }
+                              }}
+                              onChange={handleMontoPagoChange} // Actualiza el estado de "Monto Pago"
                               disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
                             />
                           </Form.Group>
-                          <Form.Group className="mt-3 w-100">
-                            <Form.Control
-                              type="date"
-                              name="fechaPago"
-                              value={formInputs.fechaPago}
-                              onChange={handleInputChange} // Actualiza el estado de "Fecha Pago"
-                              disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
-                            />
-                            <Form.Label>Máximo 15 días</Form.Label>
-                          </Form.Group>
-                        </div>
-                        <div
+                          <div className="d-flex gap-3 w-100">
+                            <Form.Group className="mt-3 w-100">
+                              <Form.Control
+                                type="text"
+                                placeholder="Monto Negociado"
+                                value={montoNegociado ? `$${montoNegociado}` : ""} // Agrega un '$' al inicio del valor
+                                readOnly // Hace que el campo no sea editable
+                                disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
+                              />
+                            </Form.Group>
+                            <Form.Group className="mt-3 w-100">
+                              <Form.Control
+                                type="date"
+                                name="fechaPago"
+                                value={formInputs.fechaPago}
+                                onChange={handleInputChange} // Actualiza el estado de "Fecha Pago"
+                                disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
+                              />
+                              <Form.Label>Máximo 15 días</Form.Label>
+                            </Form.Group>
+                          </div>
+                          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                            <Button
+                              variant="primary"
+                              onClick={handleAgregarPago} // Llama a la función para agregar el pago
+                              disabled={!isAddButtonEnabled} // Deshabilita el botón si no es válido
+                            >
+                              Agregar
+                            </Button>
+                          </div>
+                        </Form>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col className="mt-5">
+                    <div
+                      className="table-responsive w-100"
+                      style={{
+                        maxHeight: "300px",
+                        overflowY: "auto",
+                        scrollbarColor: "#343a40 #1a1a1a", // Color de la barra de scroll y el fondo
+                        scrollbarWidth: "thin", // Ancho de la barra de scroll
+                      }}
+                    >
+                      <Table
+                        striped
+                        bordered
+                        hover
+                        variant="dark"
+                        style={{ tableLayout: "fixed" }}
+                      >
+                        <thead
                           style={{
-                            display: "flex",
-                            justifyContent: "flex-end",
+                            position: "sticky",
+                            top: 0,
+                            backgroundColor: "#343a40", // Color de fondo para que coincida con el tema oscuro
+                            zIndex: 1,
                           }}
                         >
-                          <Button
-                            variant="primary"
-                            onClick={handleAgregarPago} // Llama a la función para agregar el pago
-                            disabled={!isAddButtonEnabled} // Deshabilita el botón si no es válido
-                          >
-                            Agregar
-                          </Button>
-                        </div>
-                      </Form>
-                    </Card.Body>
-                  </Card>
-                </Col>
-                <Col className="mt-5">
-                  <div
-                    className="table-responsive w-100"
-                    style={{
-                      maxHeight: "300px",
-                      overflowY: "auto",
-                      scrollbarColor: "#343a40 #1a1a1a", // Color de la barra de scroll y el fondo
-                      scrollbarWidth: "thin", // Ancho de la barra de scroll
-                    }}
-                  >
-                    <Table
-                      striped
-                      bordered
-                      hover
-                      variant="dark"
-                      style={{ tableLayout: "fixed" }}
-                    >
-                      <thead
-                        style={{
-                          position: "sticky",
-                          top: 0,
-                          backgroundColor: "#343a40", // Color de fondo para que coincida con el tema oscuro
-                          zIndex: 1,
-                        }}
-                      >
-                        <tr>
-                          <th>Fecha</th>
-                          <th>Pago</th>
-                          <th>Eliminar</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {tablaPagos.length > 0 ? (
-                          tablaPagos.map((pago, index) => (
-                            <tr key={index}>
-                              <td
-                                style={{
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {`${new Date(pago.fecha).toLocaleDateString()}`}
-                              </td>
-                              <td
-                                style={{
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                ${parseFloat(pago.pago).toFixed(2)}
-                              </td>
-                              <td
-                                style={{
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                <Button
-                                  style={{ padding: "1px 5px" }}
-                                  variant="danger"
-                                  size="sm"
-                                  onClick={() => handleEliminarPago(index)}
+                          <tr>
+                            <th>Fecha</th>
+                            <th>Pago</th>
+                            <th>Eliminar</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tablaPagos.length > 0 ? (
+                            tablaPagos.map((pago, index) => (
+                              <tr key={index}>
+                                <td
+                                  style={{
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                  }}
                                 >
-                                  X
-                                </Button>
+                                  {`${new Date(pago.fecha).toLocaleDateString()}`}
+                                </td>
+                                <td
+                                  style={{
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  ${parseFloat(pago.pago).toFixed(2)}
+                                </td>
+                                <td
+                                  style={{
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  <Button
+                                    style={{ padding: "1px 5px" }}
+                                    variant="danger"
+                                    size="sm"
+                                    onClick={() => handleEliminarPago(index)}
+                                  >
+                                    X
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="3" className="text-center">
+                                No hay datos
                               </td>
                             </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan="3" className="text-center">
-                              No hay datos
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </Table>
-                  </div>
-                </Col>
-              </Row>
+                          )}
+                        </tbody>
+                      </Table>
+                    </div>
+                  </Col>
+                </Row>
+              )}
               <Col className="p-0">
                 {showScrollIndicator && (
                   <div
@@ -820,7 +807,7 @@ const sendIncreaseNegotiation = async () => {
                   </div>
                 )}
 
-                {showCalculator && ( // Muestra el contenido solo si showCalculator es true
+                {showCalculator && !areFieldsEnabled && ( // Oculta la calculadora si los campos están habilitados
                   <>
                     {/* Calculadora AMEX */}
                     <h5 style={{ textAlign: "center", color: "#20c997" }}>
@@ -1076,7 +1063,10 @@ const sendIncreaseNegotiation = async () => {
                                     modificar: 1,
                                   }));
                                   handleModifyPayment();
+                                  setIsValidated(false); // Asegura que el botón "Validación" se muestre después de modificar
                                 }}
+                                disabled={isValidated} // Deshabilita el botón si ya está validado
+                                style={{ display: isValidated ? "none" : "inline-block" }} // Oculta el botón si está validado
                               >
                                 Modificar
                               </Button>
@@ -1089,10 +1079,16 @@ const sendIncreaseNegotiation = async () => {
                               marginTop: "15px",
                             }}
                           >
-                            {!isValidated && ( // Oculta el botón "Validar" si está validado
+                            {!isValidated && (
                               <Button
                                 variant="primary"
-                                onClick={handleOpenValidators} // Abre el modal
+                                onClick={() => {
+                                  handleOpenValidators(); // Abre el modal de validación
+                                  setModifyForm((prev) => ({
+                                    ...prev,
+                                    modificar: 0, // Oculta el botón "Modificar" después de la validación
+                                  }));
+                                }}
                               >
                                 Validación
                               </Button>
@@ -1102,10 +1098,10 @@ const sendIncreaseNegotiation = async () => {
                             style={{
                               display: "flex",
                               justifyContent: "flex-end",
-                              marginTop: "15px",
+                              marginTop: "",
                             }}
                           >
-                            {isValidated && ( // Muestra el botón "Guardar Plazos" solo si está validado
+                            {!isSaveDeadlinesClicked && isValidated && ( // Muestra el botón "Guardar Plazos" solo si no se ha hecho clic
                               <Button
                                 variant="primary"
                                 onClick={handleSaveDeadlines}
@@ -1118,21 +1114,34 @@ const sendIncreaseNegotiation = async () => {
                             style={{
                               display: "flex",
                               justifyContent: "flex-end",
-                              marginTop: "15px",
+                              marginTop: "",
                             }}
                           >
-                            <Button
-                              variant="primary"
-                              onClick={handleSaveNegotiation} // Llama a la función para guardar la negociación
-                              disabled={!isValidated} // Deshabilita el botón si no está validado
-                            >
-                              Guardar Negociación
-                            </Button>
+                            {isSaveDeadlinesClicked && !isNegotiationSaved && ( // Muestra el botón "Guardar Negociación" solo si no se ha guardado
+                              <Button
+                                variant="primary"
+                                onClick={handleSaveNegotiation} // Llama a la función para guardar la negociación
+                                disabled={!isValidated} // Deshabilita el botón si no está validado
+                              >
+                                Guardar Negociación
+                              </Button>
+                            )}
                           </div>
-                          <div>
-                            <Button onClick={sendIncreaseNegotiation}>
-                              Finalizar
-                            </Button>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-end",
+                              marginTop: "",
+                            }}
+                          >
+                            {isNegotiationSaved && ( // Muestra el botón "Finalizar" después de guardar la negociación
+                              <Button
+                                variant="success"
+                                onClick={sendIncreaseNegotiation} // Llama a la función para finalizar
+                              >
+                                Finalizar
+                              </Button>
+                            )}
                           </div>
                         </Card.Body>
                       </Card>
