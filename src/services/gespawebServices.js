@@ -1337,17 +1337,27 @@ export const fetchSaveNegotiationDeadlines = async (requestData) => {
     return result;
   } catch (error) {
     console.error("Error en fetchSaveNegotiationDeadlines:", error);
+
+    // Agregar más detalles sobre el error
+    if (error.response) {
+      console.error("Detalles del error de respuesta:", error.response.data);
+    } else if (error.request) {
+      console.error("No se recibió respuesta del servidor:", error.request);
+    } else {
+      console.error("Error al configurar la solicitud:", error.message);
+    }
+
     throw error;
   }
 };
 
 // endpoint incrementa negociacion 
-export const fetchIncreasesNegotiation = async (data) => {
+export const fetchIncreasesNegotiation = async (increaseRequestData) => {
   try {
-    console.log("Enviando datos al endpoint IncrementaNegociacion:", data);
+    console.log("Enviando datos al endpoint IncrementaNegociacion:", increaseRequestData);
     const response = await servicio.post(
       `/ejecutivo/IncrementaNegociacion`,
-      data // Envía los datos al endpoint
+      increaseRequestData // Envía los datos al endpoint
     );
 
     if (response.status !== 200) {

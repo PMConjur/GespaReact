@@ -1,13 +1,13 @@
 import { useState, useEffect, useContext } from "react";
 import { Modal, Button, Form, Table, Card, Row, Col } from "react-bootstrap";
 import "../scss/styles.scss";
-import { fetchCalFirtsPart, fetchCalSecondPart, fetchCalSecondPartModify, fetchSaveDeleteDeadlines, fetchSaveNegotiationDeadlines } from "../services/gespawebServices";
+import { fetchCalFirtsPart, fetchCalSecondPart, fetchCalSecondPartModify, fetchSaveDeleteDeadlines, fetchSaveNegotiationDeadlines, fetchIncreasesNegotiation } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 import Validators from "./fragments/Validators"; // Importa el modal de Validators
 
 const CalculatorSimulator = ({show, handleClose}) => {
-  const { searchResults, idEjecutivo  } = useContext(AppContext); // Obtiene searchResults desde AppContext
+  const { searchResults, idEjecutivo} = useContext(AppContext); // Obtiene searchResults desde AppContext
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [tableData, setTableData] = useState([]);
   const [summaryData, setSummaryData] = useState({
@@ -58,6 +58,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
   const [validatorPassword, setValidatorPassword] = useState(""); // Estado para almacenar la contraseña del validador
   const [cartaConvenio, setCartaConvenio] = useState(0); // Estado para almacenar el valor del checkbox
   const [selectedEmail, setSelectedEmail] = useState(""); // Estado para almacenar el correo seleccionado
+  const [duracion, setDuracion] = useState(""); // Estado para almacenar el valor de duración
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -379,9 +380,6 @@ const CalculatorSimulator = ({show, handleClose}) => {
   const handleSaveNegotiation = async () => {
     try {
       const idCuenta = searchResults?.[0]?.idCuenta?.trim();
-      const fechaActual = new Date().toISOString();
-      const horaActual = new Date().toLocaleTimeString("en-GB", { hour12: false });
-  
       // Validar datos antes de enviarlos
       if (!idCuenta || !selectedHerramienta || !calculosData.montoNegociado) {
         toast.error("Faltan datos requeridos para guardar la negociación.");
@@ -414,12 +412,17 @@ const CalculatorSimulator = ({show, handleClose}) => {
       const response = await fetchSaveNegotiationDeadlines(requestData);
       toast.success("Negociación guardada correctamente.");
       console.log("Respuesta del endpoint fetchSaveNegotiationDeadlines:", response);
+  
+      // Extraer el campo duración de la respuesta y almacenarlo en el estado
+      const duracionObtenida = response?.duración || "";
+      console.log("Duración obtenida de la respuesta:", duracionObtenida);
+      setDuracion(duracionObtenida); // Almacena la duración en el estado
     } catch (error) {
       console.error("Error al guardar la negociación:", error);
       toast.error("Error al guardar la negociación.");
     }
   };
-
+  
   const handleValidate = (validator, password, cartaConvenioValue, email) => {
     console.log("Validación exitosa con validador:", validator, "contraseña:", password, "cartaConvenio:", cartaConvenioValue, "correo:", email);
     setIdEjecutivoValidador(validator); // Almacena el idEjecutivo seleccionado
@@ -429,6 +432,29 @@ const CalculatorSimulator = ({show, handleClose}) => {
     setIsValidated(true); // Cambia el estado a validado
     setShowValidators(false); // Cierra el modal de validación
   };
+
+  
+const sendIncreaseNegotiation = async () => {
+  try {
+    // Enviar datos al endpoint IncrementaNegociacion
+    const increaseRequestData = {
+      idEjecutivo: idEjecutivo,
+      monto: parseFloat(calculosData.montoNegociado), // Usar el valor de Monto Negociado
+      saldo: summaryData.saldo,
+      duracion: duracion, // Usar el valor de duración obtenido
+    };
+
+    console.log("Enviando datos al endpoint IncrementaNegociacion:", increaseRequestData);
+    const increaseResponse = await fetchIncreasesNegotiation(increaseRequestData);
+
+    console.log("Respuesta del endpoint IncrementaNegociacion:", increaseResponse);
+    return increaseResponse;
+  } catch (error) {
+    console.error("Error al enviar los datos al endpoint IncrementaNegociacion:", error);
+    toast.error("Error al procesar la negociación.");
+    throw error;
+  }
+};
 
   return (
     <>
@@ -570,16 +596,6 @@ const CalculatorSimulator = ({show, handleClose}) => {
                             Calcular
                           </Button>
                         </div>
-
-                        <div>
-                          <Button
-                            variant="primary"
-                            onClick={handleOpenValidators} // Abre el modal
-                          >
-                            Validación
-                          </Button>
-                        </div>
-                        
                       </Col>
                       <Col>
                         <div className="d-flex">
@@ -903,7 +919,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
                                 variant="primary"
                                 onClick={handleCalculateSecondPart}
                               >
-                                Terminar
+                                Calcular Plazos
                               </Button>
                             </div>
                           </Row>
@@ -1111,6 +1127,11 @@ const CalculatorSimulator = ({show, handleClose}) => {
                               disabled={!isValidated} // Deshabilita el botón si no está validado
                             >
                               Guardar Negociación
+                            </Button>
+                          </div>
+                          <div>
+                            <Button onClick={sendIncreaseNegotiation}>
+                              Finalizar
                             </Button>
                           </div>
                         </Card.Body>
