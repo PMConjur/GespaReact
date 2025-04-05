@@ -520,14 +520,17 @@ export const getPaymentsData = async (idCartera, idCuenta) => {
 // Nueva función para obtener datos de scripts
 export async function fetchScripts(Ejecutivo, idProducto, idCartera, cuenta) {
   try {
+    console.log("Iniciando la llamada a ña API para obtener scripts...");
 
-    console.log ("Iniciando la llamada a ña API para obtener scripts...");
-  
-    console.log("URL de la API scripts-full :", `${apiUrl}/ejecutivo/scripts-full/${Ejecutivo}/1/1/${cuenta}`);
-   
-    const response = await servicio.get(`/ejecutivo/scripts-full/${Ejecutivo}/1/1/${cuenta}`, {
-     
-    });
+    console.log(
+      "URL de la API scripts-full :",
+      `${apiUrl}/ejecutivo/scripts-full/${Ejecutivo}/1/1/${cuenta}`
+    );
+
+    const response = await servicio.get(
+      `/ejecutivo/scripts-full/${Ejecutivo}/1/1/${cuenta}`,
+      {}
+    );
 
     const message = getErrorStatus(response.status);
 
@@ -1039,6 +1042,30 @@ export const userTimesUpdate = async (data) => {
 };
 
 //End point Fernando
+export const postAccionesComentarios = async (data) => {
+  try {
+    const response = await servicio.post(
+      "/ejecutivo/accionesComentarios",
+      data
+    );
+
+    if (response.status !== 200) {
+      throw new Error(`Error en la respuesta. Estado: ${response.status}`);
+    }
+
+    return response.data; // Devuelve la respuesta del servidor
+  } catch (error) {
+    console.error("Error al realizar la solicitud:", error);
+
+    if (error.response) {
+      const errorMessage =
+        error.response.data?.mensaje || "Error al realizar la solicitud";
+      throw new Error(errorMessage);
+    }
+
+    throw error; // Lanza el error para manejarlo en el componente
+  }
+};
 
 //EndPoint - ActivitiesDay
 export const fetchGestionesDelDia = async (idEjecutivo, setErrorMessage) => {
