@@ -274,6 +274,7 @@ const FormOnlineCharge = ({ handleClose }) => {
 
   // Renderiza el formulario
   return (
+    
     <Form onSubmit={handleSubmit} className="p-3">
       <Row className="mb-3">
         <Col>

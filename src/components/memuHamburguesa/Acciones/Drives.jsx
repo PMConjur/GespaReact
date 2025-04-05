@@ -36,7 +36,12 @@ const AccionamientosTable = ({ data }) => {
 
 const AccionamientosModal = ({ show, handleClose, data }) => {
   return (
-    <Modal show={show} onHide={handleClose} size="xl" dialogClassName="dark-modal">
+    <Modal 
+    show={show} 
+    onHide={handleClose} 
+    size="xl" 
+    backdrop="static"
+    dialogClassName="dark-modal">
       <Modal.Header closeButton>
         <Modal.Title>Accionamientos</Modal.Title>
       </Modal.Header>

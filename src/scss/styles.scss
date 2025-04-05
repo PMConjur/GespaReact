@@ -504,6 +504,13 @@ $table-border-radius: 8px;
     }
   }
 }
+
+.table-hover tbody tr:hover {
+  background-color: black !important;
+  color: limegreen !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 .button-phones {
   justify-content: flex-end;
   width: auto;

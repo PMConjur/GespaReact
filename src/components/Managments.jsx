@@ -3,6 +3,7 @@ import { Row, Col, Card, Toast, Pagination } from "react-bootstrap";
 import { AppContext } from "../pages/Managment"; // Importar el contexto
 import { getGestionTeData } from "../services/gespawebServices"; // Importar el endpoint
 import { ClockHistory } from "react-bootstrap-icons";
+
 const Managments = () => {
   const { searchResults } = useContext(AppContext); // Consumir el contexto
   const [sortedData, setSortedData] = useState([]); // Estado para los datos ordenados
@@ -14,6 +15,7 @@ const Managments = () => {
   const [itemsPerPage] = useState(200); // Número de registros por página
   const [currentTablePage, setCurrentTablePage] = useState(1); // Página actual de la tabla
   const [paginationGroup, setPaginationGroup] = useState(0); // Grupo actual de 10 páginas
+  const [totalResults, setTotalResults] = useState(3000); // Total de resultados requeridos (puede ser dinámico)
 
   // Hook para obtener los datos
   useEffect(() => {
@@ -60,7 +62,7 @@ const Managments = () => {
       return "--";
     }
     if (typeof field === "object") {
-      return JSON.stringify(field); // Convertir objetos a string
+      return Object.keys(field).length === 0 ? "--" : JSON.stringify(field); // Reemplazar {} por --
     }
     return field;
   };
@@ -70,55 +72,64 @@ const Managments = () => {
     setSelectedGestion(gestion); // Establecer el registro seleccionado
   };
 
-  // Manejar el cambio de página
-  const handlePageChange = async (pageNumber) => {
-    if (pageNumber > 0) {
-      setCurrentTablePage(pageNumber);
+  // Calcular el número total de páginas basado en los resultados totales y los elementos por página
+  const totalPages = Math.ceil(totalResults / itemsPerPage);
 
-      try {
-        setIsLoading(true); // Iniciar carga
-        const idCuenta = searchResults[0]?.idCuenta; // Obtener el idCuenta actual
-        const gestionData = await getGestionTeData(pageNumber, idCuenta); // Solicitar datos para la página seleccionada
-        setSortedData(gestionData); // Actualizar los datos con los nuevos elementos
-        setIsLoading(false); // Finalizar carga
-      } catch (error) {
-        console.error("Error al obtener los datos de la página:", error);
-        setToastMessage(
-          "❌ Error al obtener los datos de la página. Intente nuevamente."
-        );
-        setShowToast(true);
-        setIsLoading(false); // Finalizar carga en caso de error
-      }
-    }
-  };
-
-  // Calcular el número total de páginas
-  const totalPages = Math.ceil(10530 / itemsPerPage); // Cambiar 10530 por el total dinámico de la DB
-
-  // Calcular los datos a mostrar en la página actual
-  const paginatedData = sortedData.slice(
-    (currentTablePage - 1) * itemsPerPage,
-    currentTablePage * itemsPerPage
-  );
-
-  // Calcular las páginas visibles en el grupo actual
+  // Configuración del paginador
+  const pagesPerGroup = 10;
+  const totalGroups = Math.ceil(totalPages / pagesPerGroup);
+  const startPage = paginationGroup * pagesPerGroup + 1;
+  const endPage = Math.min((paginationGroup + 1) * pagesPerGroup, totalPages);
   const visiblePages = Array.from(
-    { length: Math.min(10, totalPages - paginationGroup * 10) },
-    (_, index) => paginationGroup * 10 + index + 1
+    { length: endPage - startPage + 1 },
+    (_, i) => startPage + i
   );
 
   // Manejar el cambio de grupo de páginas
   const handleNextGroup = () => {
-    if ((paginationGroup + 1) * 10 < totalPages) {
+    if (paginationGroup < totalGroups - 1) {
       setPaginationGroup(paginationGroup + 1);
+      setCurrentTablePage((paginationGroup + 1) * pagesPerGroup + 1);
     }
   };
 
   const handlePrevGroup = () => {
     if (paginationGroup > 0) {
       setPaginationGroup(paginationGroup - 1);
+      setCurrentTablePage((paginationGroup - 1) * pagesPerGroup + 1);
     }
   };
+
+  // Manejar el cambio de página
+  const handlePageChange = async (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= totalPages) {
+      setCurrentTablePage(pageNumber);
+      // Actualizar el grupo si la página seleccionada está fuera del grupo actual
+      const newGroup = Math.floor((pageNumber - 1) / pagesPerGroup);
+      if (newGroup !== paginationGroup) {
+        setPaginationGroup(newGroup);
+      }
+      
+      try {
+        setIsLoading(true);
+        const idCuenta = searchResults[0]?.idCuenta;
+        const gestionData = await getGestionTeData(pageNumber, idCuenta);
+        setSortedData(gestionData);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error al obtener los datos de la página:", error);
+        setToastMessage("❌ Error al obtener los datos de la página. Intente nuevamente.");
+        setShowToast(true);
+        setIsLoading(false);
+      }
+    }
+  };
+
+  // Calcular los datos a mostrar en la página actual
+  const paginatedData = sortedData.slice(
+    (currentTablePage - 1) * itemsPerPage,
+    currentTablePage * itemsPerPage
+  );
 
   return (
     <>
@@ -148,11 +159,11 @@ const Managments = () => {
               </i>
 
               <table
-                className="table table-dark"
+                className="table table-dark table-hover"
                 style={{
-                  maxHeight: "300px", // Ajuste de altura a 300px
-                  overflowY: "auto", // Habilitar scroll vertical dentro de la tabla
-                  display: "block" // Necesario para que funcione el scroll en tablas
+                  maxHeight: "300px",
+                  overflowY: "auto",
+                  display: "block"
                 }}
               >
                 <thead>
@@ -160,10 +171,10 @@ const Managments = () => {
                     <th
                       scope="col"
                       style={{
-                        position: "sticky", // Fijar posición
-                        top: -10, // Mantener en la parte superior
-                        zIndex: 2, // Asegurar que esté por encima del contenido
-                        backgroundColor: "#343a40" // Fondo para que no se mezcle con el contenido
+                        position: "sticky",
+                        top: -10,
+                        zIndex: 2,
+                        backgroundColor: "#343a40"
                       }}
                     >
                       Fecha
@@ -366,11 +377,11 @@ const Managments = () => {
                     paginatedData.map((gestion, index) => (
                       <tr
                         key={index}
-                        onClick={() => handleRowClick(gestion)} // Manejar clic en la fila
+                        onClick={() => handleRowClick(gestion)}
                         style={{
                           cursor: "pointer",
                           backgroundColor:
-                            selectedGestion === gestion ? "#343a40" : "inherit" // Resaltar la fila seleccionada
+                            selectedGestion === gestion ? "#343a40" : "inherit"
                         }}
                       >
                         <td>
@@ -380,16 +391,12 @@ const Managments = () => {
                         </td>
                         <td>{validateField(gestion.Segundo_Insert)}</td>
                         <td>{validateField(gestion.NúmeroTelefónico)}</td>
-                        <td>{validateField(gestion.Contacto)}</td>{" "}
-                        {/* Muestra Contacto */}
-                        <td>{validateField(gestion.Situación)}</td>{" "}
-                        {/* Muestra Situación */}
+                        <td>{validateField(gestion.Contacto)}</td>
+                        <td>{validateField(gestion.Situación)}</td>
                         <td>{validateField(gestion.NombreContacto)}</td>
                         <td>{validateField(gestion.Parentesco)}</td>
-                        <td>{validateField(gestion.CausaNoPago)}</td>{" "}
-                        {/* Muestra CausaNoPago */}
-                        <td>{validateField(gestion.Modo)}</td>{" "}
-                        {/* Muestra Modo */}
+                        <td>{validateField(gestion.CausaNoPago)}</td>
+                        <td>{validateField(gestion.Modo)}</td>
                         <td>{validateField(gestion.idAcercamiento)}</td>
                         <td>{validateField(gestion.idEtapa)}</td>
                         <td>{validateField(gestion.Seguimiento)}</td>
@@ -446,11 +453,22 @@ const Managments = () => {
                           key={page}
                           active={page === currentTablePage}
                           onClick={() => handlePageChange(page)}
+                          style={{
+                            cursor: "pointer",
+                            backgroundColor: page === currentTablePage ? "#343a40" : "inherit",
+                            color: page === currentTablePage ? "white" : "inherit",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (page !== currentTablePage) e.target.style.backgroundColor = "#495057";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (page !== currentTablePage) e.target.style.backgroundColor = "inherit";
+                          }}
                         >
                           {page}
                         </Pagination.Item>
                       ))}
-                      {(paginationGroup + 1) * 10 < totalPages && (
+                      {(paginationGroup + 1) * pagesPerGroup < totalPages && (
                         <Pagination.Ellipsis
                           onClick={handleNextGroup}
                           title="Siguientes páginas"

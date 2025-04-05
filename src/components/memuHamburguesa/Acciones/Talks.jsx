@@ -6,7 +6,7 @@ import TableTalks from "../../TableTalks";
 
 const Talks = ({ show, handleClose }) => {
     return (
-        <Modal show={show} onHide={handleClose} size="xl">
+        <Modal show={show} onHide={handleClose} backdrop="static" size="xl">
             <Modal.Header closeButton>
                 <Modal.Title>
                     <i className="bi bi-bank me-2"></i> {/* Ícono con margen derecho */}
