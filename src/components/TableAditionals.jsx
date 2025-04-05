@@ -112,14 +112,6 @@ const TableAditionals = ({ customColumnNames = {} }) => {
 
   return (
     <>
-      <Form.Check
-        type="checkbox"
-        id="sortByOldest"
-        label="Más antiguo"
-        className="mb-2"
-        checked={sortByOldest}
-        onChange={handleSortChange}
-      />
 
       <div
         className="scroll-container"

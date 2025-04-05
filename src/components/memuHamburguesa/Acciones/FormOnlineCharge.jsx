@@ -420,7 +420,7 @@ const FormOnlineCharge = ({ handleClose }) => {
           </Row>
 
           <Form.Group className="mb-3">
-            <Form.Label>Nombre</Form.Label>
+            <Form.Label>Nombre del Titular</Form.Label>
             <Form.Control
               type="text"
               name="nombre"

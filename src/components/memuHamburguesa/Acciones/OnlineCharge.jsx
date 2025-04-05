@@ -9,7 +9,7 @@ const OnlineCharge = ({
 }) => {
   return (
     <Modal 
-      show={show} 
+      show={show && isOnlineChargeActive} 
       onHide={handleClose} 
       size="xl"
       backdrop="static"
