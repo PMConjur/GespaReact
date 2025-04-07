@@ -4,7 +4,7 @@ import { ShieldFill, KeyFill, EnvelopeAtFill } from "react-bootstrap-icons";
 import {
   fetchListValidators,
   fetchValidators,
-  fetchEmailsCharging,
+  fetchEmailsCharging, getErrorStatus
 } from "../../services/gespawebServices"; // Importa el servicio
 import { toast } from "sonner"; // Importa Sonner para los toasts
 import { AppContext } from "../../pages/Managment";
@@ -96,10 +96,10 @@ const Validators = ({ show, handleClose, handleValidate }) => {
       setPassword("");
       handleClose(); // Cierra el modal
     } catch (error) {
-      console.error("Error al validar:", error);
+      console.error("Datos incorrectos, vuelva intentarlo:", error);
 
       // Muestra un toast de error si ocurre un problema
-      toast.error(`Error al validar: ${error.message}`, {
+      toast.error(`Datos incorrectos, vuelva intentarlo:${error.status}`, {
         position: "top-center",
       });
     } finally {
@@ -116,7 +116,7 @@ const Validators = ({ show, handleClose, handleValidate }) => {
   };
 
   return (
-    <Modal show={show} onHide={handleCloseModal} size="md">
+    <Modal show={show} onHide={handleCloseModal} size="md" backdrop="static">
       <Modal.Header closeButton className="bg-dark text-light">
         <Modal.Title>Validación</Modal.Title>
       </Modal.Header>

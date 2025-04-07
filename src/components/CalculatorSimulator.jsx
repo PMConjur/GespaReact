@@ -1,10 +1,11 @@
 import { useState, useEffect, useContext } from "react";
 import { Modal, Button, Form, Table, Card, Row, Col } from "react-bootstrap";
 import "../scss/styles.scss";
-import { fetchCalFirtsPart, fetchCalSecondPart, fetchCalSecondPartModify, fetchSaveDeleteDeadlines, fetchSaveNegotiationDeadlines, fetchIncreasesNegotiation } from "../services/gespawebServices";
+import { fetchCalFirtsPart, fetchCalSecondPart, fetchCalSecondPartModify, fetchSaveDeleteDeadlines, fetchSaveNegotiationDeadlines, fetchIncreasesNegotiation, fetchSaveOffering } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 import Validators from "./fragments/Validators"; // Importa el modal de Validators
+
 
 const CalculatorSimulator = ({show, handleClose}) => {
   const { searchResults, idEjecutivo} = useContext(AppContext); // Obtiene searchResults desde AppContext
@@ -229,11 +230,13 @@ const CalculatorSimulator = ({show, handleClose}) => {
         pago: montoNegociado,
       };
       setTablaPagos((prev) => [...prev, nuevoPago]); // Agrega el nuevo pago a la tabla
+      setIsAddButtonEnabled(false); // Inhabilita el botón después de agregar un pago
     }
   };
 
   const handleEliminarPago = (index) => {
     setTablaPagos((prev) => prev.filter((_, i) => i !== index)); // Elimina el registro por índice
+    setIsAddButtonEnabled(true); // Habilita el botón "Agregar" después de eliminar un pago
   };
 
   const handleModifyFormChange = (e) => {
@@ -462,9 +465,64 @@ const sendIncreaseNegotiation = async () => {
   }
 };
 
+const handleSaveOffering = async () => {
+  try {
+    const idCuenta = searchResults?.[0]?.idCuenta?.trim();
+    const producto = 1;   
+    console.log("idCuenta:", idCuenta);
+    console.log("idProducto:", producto);
+    console.log("selectedHerramienta:", selectedHerramienta);
+    console.log("calculosData.montoNegociado:", montoNegociado);
+
+    // Corrige la condición de validación
+    if (!idCuenta || !selectedHerramienta || !montoNegociado) {
+      toast.error("Faltan datos requeridos para guardar el ofrecimiento.");
+      return;
+    }
+
+    const requestData = {
+      idCartera: 1,
+      idCuenta: idCuenta,
+      idProducto: producto, 
+      idEjecutivo: idEjecutivo,
+      idHerramienta: selectedHerramienta,
+      montoRequerido: summaryData.montoRequerido, // Respetar decimales
+      montoNegociado: parseFloat(montoNegociado), // Convertir a número respetando decimales
+      descuento: summaryData.montoDescuento, // Respetar decimales
+      saldo: summaryData.saldo, // Respetar decimales
+      plazos: tablaPagos.map((pago) => ({
+        monto: parseFloat(pago.pago), // Convertir a número respetando decimales
+        fecha: new Date(pago.fecha).toLocaleDateString(),
+        referencia: "string",
+        sucursal: "string",
+      })),
+      dias1erPago: 1,
+      fechaCorte: summaryData.fechaCorte.split(" ")[0], // Extrae solo la fecha
+      fechaInsert: "2025-04-03",
+      segundoInsert: {}, // Cambia el valor a un objeto vacío
+      cartaConvenio: cartaConvenio,
+      correo: selectedEmail || "",
+      idEjecutivoValidador: parseInt(idEjecutivoValidador, 10),
+    };
+
+    console.log("Datos enviados al endpoint fetchSaveOffering:", requestData);
+
+    const response = await fetchSaveOffering(requestData);
+    toast.success("Ofrecimiento guardado correctamente.");
+    console.log("Respuesta del endpoint fetchSaveOffering:", response);
+
+    // Actualiza el modal llamando a fetchData
+    const idCartera = 1; // Ejemplo de valor
+    fetchData(idCartera, idCuenta, selectedHerramienta || 136); // Llama a fetchData para actualizar los datos del modal
+  } catch (error) {
+    console.error("Error al guardar el ofrecimiento:", error);
+    toast.error("Error al guardar el ofrecimiento.");
+  }
+};
+
   return (
     <>
-      <Modal show={show} onHide={handleClose} size="xl">
+      <Modal show={show} onHide={handleClose} size="xl" backdrop="static">
         <Modal.Header closeButton>
           <Modal.Title style={{ color: "#0dcaf0" }} className="ms-3">
             Calculadora
@@ -558,7 +616,15 @@ const sendIncreaseNegotiation = async () => {
                         ) : (
                           <tr>
                             <td colSpan="5" className="text-center">
-                              No hay cuenta seleccionada
+                              {tableData.length === 0 ? (
+                                "No hay cuenta seleccionada"
+                              ) : (
+                                <div className="d-flex justify-content-center align-items-center">
+                                  <div className="spinner-border text-primary" role="status">
+                                    <span className="visually-hidden">Cargando...</span>
+                                  </div>
+                                </div>
+                              )}
                             </td>
                           </tr>
                         )}
@@ -652,7 +718,9 @@ const sendIncreaseNegotiation = async () => {
                   <Col>
                     <Card>
                       <Card.Body className="p-0">
-                        <Card.Title className="pt-0">Acuerdo con el cliente</Card.Title>
+                        <Card.Title className="pt-0">
+                          Acuerdo con el cliente
+                        </Card.Title>
                         <Form>
                           <Form.Group className="d-flex w-100">
                             <Form.Control
@@ -674,7 +742,9 @@ const sendIncreaseNegotiation = async () => {
                               <Form.Control
                                 type="text"
                                 placeholder="Monto Negociado"
-                                value={montoNegociado ? `$${montoNegociado}` : ""} // Agrega un '$' al inicio del valor
+                                value={
+                                  montoNegociado ? `$${montoNegociado}` : ""
+                                } // Agrega un '$' al inicio del valor
                                 readOnly // Hace que el campo no sea editable
                                 disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
                               />
@@ -686,11 +756,20 @@ const sendIncreaseNegotiation = async () => {
                                 value={formInputs.fechaPago}
                                 onChange={handleInputChange} // Actualiza el estado de "Fecha Pago"
                                 disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
+                                min={new Date().toISOString().split("T")[0]} // Fecha mínima: hoy
+                                max={new Date(new Date().setDate(new Date().getDate() + 15))
+                                  .toISOString()
+                                  .split("T")[0]} // Fecha máxima: 15 días después de hoy
                               />
                               <Form.Label>Máximo 15 días</Form.Label>
                             </Form.Group>
                           </div>
-                          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-end",
+                            }}
+                          >
                             <Button
                               variant="primary"
                               onClick={handleAgregarPago} // Llama a la función para agregar el pago
@@ -745,7 +824,9 @@ const sendIncreaseNegotiation = async () => {
                                     whiteSpace: "nowrap",
                                   }}
                                 >
-                                  {`${new Date(pago.fecha).toLocaleDateString()}`}
+                                  {`${new Date(
+                                    pago.fecha
+                                  ).toLocaleDateString()}`}
                                 </td>
                                 <td
                                   style={{
@@ -784,6 +865,27 @@ const sendIncreaseNegotiation = async () => {
                         </tbody>
                       </Table>
                     </div>
+                    <div className="justify-content-end d-flex mt-2">
+                      {!isValidated && ( // Muestra el botón "Validar" solo si no está validado
+                        <Button
+                          variant="primary"
+                          onClick={() => {
+                            setShowValidators(true); // Abre el modal de validación
+                          }}
+                          disabled={tablaPagos.length === 0} // Deshabilita el botón si no hay registros en la tabla
+                        >
+                          Validar
+                        </Button>
+                      )}
+                      {isValidated && ( // Muestra el botón "Ofrecer" solo si está validado
+                        <Button 
+                          onClick={handleSaveOffering} 
+                          disabled={tablaPagos.length === 0} // Deshabilita el botón si no hay registros en la tabla
+                        >
+                          Ofrecer
+                        </Button>
+                      )}
+                    </div>
                   </Col>
                 </Row>
               )}
@@ -807,117 +909,122 @@ const sendIncreaseNegotiation = async () => {
                   </div>
                 )}
 
-                {showCalculator && !areFieldsEnabled && ( // Oculta la calculadora si los campos están habilitados
-                  <>
-                    {/* Calculadora AMEX */}
-                    <h5 style={{ textAlign: "center", color: "#20c997" }}>
-                      Calculadora AMEX
-                    </h5>
-                    <Card className="p-3 mb-0">
-                      <Card.Body className="p-0">
-                        <Card.Title className="pt-0 ms-3">Datos</Card.Title>
-                        <Form className="d-flex gap-4 w-100">
-                          <Row className="d-flex w-100">
-                            <Form.Group>
-                              <Form.Control
-                                placeholder="Monto Requerido"
-                                name="montoRequerido"
-                                value={
-                                  formValues.montoRequerido
-                                    ? `$${formValues.montoRequerido}`
-                                    : ""
-                                }
-                                onChange={(e) =>
-                                  setFormValues((prev) => ({
-                                    ...prev,
-                                    montoRequerido: e.target.value.replace(
-                                      /^\$/,
-                                      ""
-                                    ), // Elimina el '$' antes de actualizar el estado
-                                  }))
-                                }
-                                readOnly // Hace que el campo sea de solo lectura
-                                style={{
-                                  backgroundColor: "#e9ecef", // Color de fondo para indicar que es no editable
-                                  cursor: "not-allowed", // Cambia el cursor para indicar que no es editable
-                                }}
-                              />
-                            </Form.Group>
-                            <Form.Group className="mt-3">
-                              <Form.Control
-                                placeholder="Descuento"
-                                name="descuento"
-                                value={
-                                  formValues.descuento
-                                    ? `${parseInt(formValues.descuento, 10)}%`
-                                    : ""
-                                }
-                                onChange={(e) =>
-                                  setFormValues((prev) => ({
-                                    ...prev,
-                                    descuento: e.target.value.replace(/%$/, ""), // Elimina el '%' antes de actualizar el estado
-                                  }))
-                                }
-                                readOnly // Hace que el campo sea de solo lectura
-                                style={{
-                                  backgroundColor: "#e9ecef", // Color de fondo para indicar que es no editable
-                                  cursor: "not-allowed", // Cambia el cursor para indicar que no es editable
-                                }}
-                              />
-                            </Form.Group>
-                            <Form.Group className="mt-3">
-                              <Form.Select
-                                name="periodos"
-                                value={formInputs.periodos || 1} // Valor por defecto: 1 (Mes)
-                                onChange={handleInputChange} // Actualiza el estado formInputs
-                              >
-                                <option value="1">Mensual</option>
-                                <option value="2">Quincenal</option>
-                                <option value="4">Semanal</option>
-                              </Form.Select>
-                            </Form.Group>
-                          </Row>
-                          <Row className="d-flex w-100">
-                            <Form.Group className="mt-3">
-                              <Form.Control
-                                type="text"
-                                placeholder="Meses"
-                                name="meses"
-                                value={formInputs.meses}
-                                onChange={handleInputChange} // Actualiza el estado formInputs
-                                onKeyPress={(e) => {
-                                  if (!/^\d*$/.test(e.key)) {
-                                    e.preventDefault(); // Evita que se ingresen caracteres no numéricos
+                {showCalculator &&
+                  !areFieldsEnabled && ( // Oculta la calculadora si los campos están habilitados
+                    <>
+                      {/* Calculadora AMEX */}
+                      <h5 style={{ textAlign: "center", color: "#20c997" }}>
+                        Calculadora AMEX
+                      </h5>
+                      <Card className="p-3 mb-0">
+                        <Card.Body className="p-0">
+                          <Card.Title className="pt-0 ms-3">Datos</Card.Title>
+                          <Form className="d-flex gap-4 w-100">
+                            <Row className="d-flex w-100">
+                              <Form.Group>
+                                <Form.Control
+                                  placeholder="Monto Requerido"
+                                  name="montoRequerido"
+                                  value={
+                                    formValues.montoRequerido
+                                      ? `$${formValues.montoRequerido}`
+                                      : ""
                                   }
-                                }}
-                              />
-                            </Form.Group>
-                            <Form.Group className="mt-3">
-                              <Form.Control
-                                type="date"
-                                placeholder="Fecha Pago"
-                                name="fechaPago"
-                                value={formInputs.fechaPago}
-                                onChange={handleInputChange} // Actualiza el estado formInputs
-                              />
-                            </Form.Group>
-                            <div className="mt-4">
-                              <Button
-                                variant="primary"
-                                onClick={handleCalculateSecondPart}
-                              >
-                                Calcular Plazos
-                              </Button>
-                            </div>
-                          </Row>
-                        </Form>
-                      </Card.Body>
-                    </Card>
-                  </>
-                )}
+                                  onChange={(e) =>
+                                    setFormValues((prev) => ({
+                                      ...prev,
+                                      montoRequerido: e.target.value.replace(
+                                        /^\$/,
+                                        ""
+                                      ), // Elimina el '$' antes de actualizar el estado
+                                    }))
+                                  }
+                                  readOnly // Hace que el campo sea de solo lectura
+                                  style={{
+                                    backgroundColor: "#e9ecef", // Color de fondo para indicar que es no editable
+                                    cursor: "not-allowed", // Cambia el cursor para indicar que no es editable
+                                  }}
+                                />
+                              </Form.Group>
+                              <Form.Group className="mt-3">
+                                <Form.Control
+                                  placeholder="Descuento"
+                                  name="descuento"
+                                  value={
+                                    formValues.descuento
+                                      ? `${parseInt(formValues.descuento, 10)}%`
+                                      : ""
+                                  }
+                                  onChange={(e) =>
+                                    setFormValues((prev) => ({
+                                      ...prev,
+                                      descuento: e.target.value.replace(
+                                        /%$/,
+                                        ""
+                                      ), // Elimina el '%' antes de actualizar el estado
+                                    }))
+                                  }
+                                  readOnly // Hace que el campo sea de solo lectura
+                                  style={{
+                                    backgroundColor: "#e9ecef", // Color de fondo para indicar que es no editable
+                                    cursor: "not-allowed", // Cambia el cursor para indicar que no es editable
+                                  }}
+                                />
+                              </Form.Group>
+                              <Form.Group className="mt-3">
+                                <Form.Select
+                                  name="periodos"
+                                  value={formInputs.periodos || 1} // Valor por defecto: 1 (Mes)
+                                  onChange={handleInputChange} // Actualiza el estado formInputs
+                                >
+                                  <option value="1">Mensual</option>
+                                  <option value="2">Quincenal</option>
+                                  <option value="4">Semanal</option>
+                                </Form.Select>
+                              </Form.Group>
+                            </Row>
+                            <Row className="d-flex w-100">
+                              <Form.Group className="mt-3">
+                                <Form.Control
+                                  type="text"
+                                  placeholder="Meses"
+                                  name="meses"
+                                  value={formInputs.meses}
+                                  onChange={handleInputChange} // Actualiza el estado formInputs
+                                  onKeyPress={(e) => {
+                                    if (!/^\d*$/.test(e.key)) {
+                                      e.preventDefault(); // Evita que se ingresen caracteres no numéricos
+                                    }
+                                  }}
+                                />
+                              </Form.Group>
+                              <Form.Group className="mt-3">
+                                <Form.Control
+                                  type="date"
+                                  placeholder="Fecha Pago"
+                                  name="fechaPago"
+                                  value={formInputs.fechaPago}
+                                  onChange={handleInputChange} // Actualiza el estado formInputs
+                                  min={new Date().toISOString().split("T")[0]} // Fecha mínima: hoy
+                                />
+                              </Form.Group>
+                              <div className="mt-4">
+                                <Button
+                                  variant="primary"
+                                  onClick={handleCalculateSecondPart}
+                                >
+                                  Calcular Plazos
+                                </Button>
+                              </div>
+                            </Row>
+                          </Form>
+                        </Card.Body>
+                      </Card>
+                    </>
+                  )}
               </Col>
               <Row>
-                {showDetails && ( 
+                {showDetails && (
                   <>
                     {/* Resumen */}
                     <Col>
@@ -947,7 +1054,6 @@ const sendIncreaseNegotiation = async () => {
                                 </span>
                                 <h5 style={{ color: "#ffc400" }}>
                                   ${(summaryData.saldo || 0).toFixed(2)}
-                            
                                 </h5>
                               </Col>
                             </Row>
@@ -1051,6 +1157,7 @@ const sendIncreaseNegotiation = async () => {
                                 name="fechaPagoMod"
                                 value={modifyForm.fechaPagoMod}
                                 onChange={handleModifyFormChange}
+                                max={formInputs.fechaPago || new Date().toISOString().split("T")[0]} // Fecha máxima: la seleccionada en "fechaPago" o la fecha actual
                               />
                             </Form.Group>
 
@@ -1066,7 +1173,11 @@ const sendIncreaseNegotiation = async () => {
                                   setIsValidated(false); // Asegura que el botón "Validación" se muestre después de modificar
                                 }}
                                 disabled={isValidated} // Deshabilita el botón si ya está validado
-                                style={{ display: isValidated ? "none" : "inline-block" }} // Oculta el botón si está validado
+                                style={{
+                                  display: isValidated
+                                    ? "none"
+                                    : "inline-block",
+                                }} // Oculta el botón si está validado
                               >
                                 Modificar
                               </Button>
@@ -1101,14 +1212,15 @@ const sendIncreaseNegotiation = async () => {
                               marginTop: "",
                             }}
                           >
-                            {!isSaveDeadlinesClicked && isValidated && ( // Muestra el botón "Guardar Plazos" solo si no se ha hecho clic
-                              <Button
-                                variant="primary"
-                                onClick={handleSaveDeadlines}
-                              >
-                                Guardar Plazos
-                              </Button>
-                            )}
+                            {!isSaveDeadlinesClicked &&
+                              isValidated && ( // Muestra el botón "Guardar Plazos" solo si no se ha hecho clic
+                                <Button
+                                  variant="primary"
+                                  onClick={handleSaveDeadlines}
+                                >
+                                  Guardar Plazos
+                                </Button>
+                              )}
                           </div>
                           <div
                             style={{
@@ -1117,15 +1229,16 @@ const sendIncreaseNegotiation = async () => {
                               marginTop: "",
                             }}
                           >
-                            {isSaveDeadlinesClicked && !isNegotiationSaved && ( // Muestra el botón "Guardar Negociación" solo si no se ha guardado
-                              <Button
-                                variant="primary"
-                                onClick={handleSaveNegotiation} // Llama a la función para guardar la negociación
-                                disabled={!isValidated} // Deshabilita el botón si no está validado
-                              >
-                                Guardar Negociación
-                              </Button>
-                            )}
+                            {isSaveDeadlinesClicked &&
+                              !isNegotiationSaved && ( // Muestra el botón "Guardar Negociación" solo si no se ha guardado
+                                <Button
+                                  variant="primary"
+                                  onClick={handleSaveNegotiation} // Llama a la función para guardar la negociación
+                                  disabled={!isValidated} // Deshabilita el botón si no está validado
+                                >
+                                  Guardar Negociación
+                                </Button>
+                              )}
                           </div>
                           <div
                             style={{
@@ -1235,7 +1348,9 @@ const sendIncreaseNegotiation = async () => {
         show={showValidators}
         handleClose={handleCloseValidators}
         onValidateSuccess={handleValidateSuccess} // Pasa la función de éxito de validación
-        handleValidate={(validator, password, cartaConvenioValue, email) => handleValidate(validator, password, cartaConvenioValue, email)} // Pasa el correo seleccionado
+        handleValidate={(validator, password, cartaConvenioValue, email) =>
+          handleValidate(validator, password, cartaConvenioValue, email)
+        } // Pasa los datos ingresados en el modal
       />
     </>
   );

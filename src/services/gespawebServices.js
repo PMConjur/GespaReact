@@ -156,7 +156,7 @@ export const fetchInformation = async (idCuenta) => {
     }
 
     const data = response.data;
-    //console.log("Datos obtenidos de la API:", data);
+    console.log("Datos obtenidos de la fetch informacion:", data);
 
     return data;
   } catch (error) {
@@ -428,7 +428,7 @@ export const fetchSaveExecutive = async (data) => {
 };
 
 //Error status global
-const getErrorStatus = (status) => {
+export const getErrorStatus = (status) => {
   switch (status) {
     case 200:
       return "Solicitud exitosa (200): La operación se realizó correctamente.";
@@ -1155,7 +1155,7 @@ export const fetchValidators = async (idProducto, idEjecutivo, Contraseña) => {
 
     if (response.status !== 200) {
       throw new Error(
-        `Error en la respuesta de la API. Estado: ${response.status}`
+        `Error en la respuesta de la API. Estado: ${response.getErrorStatus}`
       );
     }
 
@@ -1371,6 +1371,30 @@ export const fetchIncreasesNegotiation = async (increaseRequestData) => {
     return result;
   } catch (error) {
     console.error("Error en fetchIncreasesNegotiation:", error);
+    throw error;
+  }
+};
+
+// endpoint incrementa negociacion 
+export const fetchSaveOffering = async (requestData) => {
+  try {
+    console.log("Enviando datos al endpoint Guarda ofrecimiento:", requestData);
+    const response = await servicio.post(
+      `/ejecutivo/save-ofrecimiento`,
+      requestData
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Respuesta del endpoint guardar ofrecimiento:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchSaveOffering:", error);
     throw error;
   }
 };
