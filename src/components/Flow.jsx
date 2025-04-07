@@ -15,8 +15,7 @@ import CommunicationPhone from "./flowComponents/CommunicationPhone"; // Importa
 import Timmer from "./flowComponents/Timmer";
 import SaveButton from "./flowComponents/SaveButton"; // Importa el nuevo componente SaveButton
 import CalculatorSimulator from "./CalculatorSimulator"; // Importa el componente CalculatorSimulator
-import Payments from "./memuHamburguesa/Informacion/Payments"; // Importa el componente Payments
-import OnlineCharge from "./memuHamburguesa/Acciones/OnlineCharge"; // Importa el componente OnlineCharge
+
 import Validators from "./fragments/Validators";
 const Flow = () => {
   const {
@@ -30,7 +29,7 @@ const Flow = () => {
     communicationData,
     setStoppedTime,
     stoppedTimeSticky,
-    userActiveFlow
+    setUserActiveFlow // Agregar función del contexto para actualizar userActiveFlow
   } = useContext(AppContext); // Agrega funciones del contexto para manejar estados
  
   const [userFlowData, setUserFlowData] = useState([]);
@@ -129,6 +128,7 @@ const Flow = () => {
   };
   const clearStatesManagment = () => {
     setCurrentQuestionId(null);
+    setUserActiveFlow(false); // Establecer userActiveFlow en false al iniciar el flujo
   };
 
   const renderMainContent = () => (
@@ -291,6 +291,7 @@ const Flow = () => {
               );
               if (firstQuestions.length > 0) {
                 setCurrentQuestionId(firstQuestions[0].idPregunta);
+                setUserActiveFlow(true); // Establece userActiveFlow en true al iniciar el flujo
                 console.log(
                   "First Questions:",
                   firstQuestions.map((q) => q.idPregunta)
@@ -307,6 +308,8 @@ const Flow = () => {
       .catch((error) => {
         console.error("Error fetching user flow data:", error);
       });
+
+ 
   }, [selectedAnswer]); //Aqui se recibe el flujo por defecto y se maneja el selectedAnswer.value el cual equivale a la llamada manual o de entrada
 
   //Accion de boton de regreso

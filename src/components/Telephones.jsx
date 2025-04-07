@@ -22,12 +22,12 @@ import "../scss/styles.scss";
 import { TelephoneFill } from "react-bootstrap-icons";
 
 const Telephones = () => {
+  const { userActiveFlow, setSelectedAnswer } = useContext(AppContext);
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isPhoneNew, setIsPhoneNew] = useState(false);
-  const { searchResults, setSelectedAnswer, lastPhoneNumberFromToast } =
-    useContext(AppContext);
+  const { searchResults, lastPhoneNumberFromToast } = useContext(AppContext);
 
   const [toastShown, setToastShown] = useState(false);
   const [selectedClaseTelefono, setSelectedClaseTelefono] = useState("");
@@ -231,6 +231,74 @@ const Telephones = () => {
     }
   }, [searchResults]);
 
+  const handleIncomingCallClick = () => {
+    if (userActiveFlow) {
+      toast.warning(
+        "No puedes realizar esta acción mientras el flujo está activo."
+      );
+      return; // Bloquear la acción si el flujo está activo
+    }
+    setSelectedAnswer({
+      value: 10,
+      dataPhone: {
+        idClase: 0,
+        titulares: 0,
+        conocidos: 0,
+        desconocidos: 0,
+        sinContacto: 0,
+        intentosViciDial: 0,
+        id: 0,
+        númeroTelefónico: 0,
+        idTelefonía: 0,
+        idOrigen: 0,
+        estado: 0,
+        municipio: 0,
+        husoHorario: 0,
+        segHorarioContacto: 0,
+        extensión: 0,
+        _Confirmado: 0,
+        fecha_Insert: 0,
+        calificacion: 0,
+        activo: 0,
+        idModo: 2201
+      }
+    });
+  };
+
+  const handleRowClick = (row) => {
+    if (userActiveFlow) {
+      toast.warning(
+        "No puedes realizar esta acción mientras el flujo está activo."
+      );
+      return; // Bloquear la acción si el flujo está activo
+    }
+    setSelectedAnswer({
+      value: 2,
+      dataPhone: {
+        idClase: row.idClase,
+        titulares: row.titulares,
+        conocidos: row.conocidos,
+        desconocidos: row.desconocidos,
+        sinContacto: row.sinContacto,
+        intentosViciDial: row.intentosViciDial,
+        id: row.id,
+        númeroTelefónico: row.númeroTelefónico,
+        idTelefonía: row.idTelefonía,
+        idOrigen: row.idOrigen,
+        estado: row.estado,
+        municipio: row.municipio,
+        husoHorario: row.husoHorario,
+        segHorarioContacto: row.segHorarioContacto,
+        extensión: row.extensión,
+        _Confirmado: row._Confirmado,
+        fecha_Insert: row.fecha_Insert,
+        calificacion: row.calificacion,
+        activo: row.activo,
+        idModo: 2202
+      }
+    });
+  };
+
   return (
     <Card className="overflow-auto card-phones widgets-container">
       <Card.Body className="card-body-phones">
@@ -250,42 +318,7 @@ const Telephones = () => {
                         variant="primary"
                         className="me-2 input-phone"
                         style={{ width: "25%" }}
-                        onClick={() => {
-                          if (!searchResults || searchResults.length === 0) {
-                            toast.warning(
-                              "Primero debes seleccionar una cuenta.",
-                              {
-                                position: "top-right"
-                              }
-                            );
-                            return;
-                          }
-                          setSelectedAnswer({
-                            value: 10,
-                            dataPhone: {
-                              idClase: 0,
-                              titulares: 0,
-                              conocidos: 0,
-                              desconocidos: 0,
-                              sinContacto: 0,
-                              intentosViciDial: 0,
-                              id: 0,
-                              númeroTelefónico: 0,
-                              idTelefonía: 0,
-                              idOrigen: 0,
-                              estado: 0,
-                              municipio: 0,
-                              husoHorario: 0,
-                              segHorarioContacto: 0,
-                              extensión: 0,
-                              _Confirmado: 0,
-                              fecha_Insert: 0,
-                              calificacion: 0,
-                              activo: 0,
-                              idModo: 2201
-                            }
-                          }); // Enviar valor 10 al Form.Check en Flow.jsx
-                        }}
+                        onClick={handleIncomingCallClick}
                       >
                         Llamada de entrada
                       </Button>
@@ -361,7 +394,7 @@ const Telephones = () => {
         </Row>
 
         <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-          <Table  hover variant="dark">
+          <Table hover variant="dark">
             <thead>
               <tr>
                 <th>T</th>
@@ -375,10 +408,10 @@ const Telephones = () => {
                 <th>Estado</th>
                 <th>Municipio</th>
                 <th>Huso Horario</th>
-                <th>SEG Horario Contacto</th>
+                {/* <th>SEG Horario Contacto</th> */}
                 <th>Extensión</th>
                 <th>Confirmado</th>
-                <th>Fecha INSERT</th>
+                {/* <th>Fecha INSERT</th> */}
                 <th>Calificación</th>
                 <th>Activo</th>
               </tr>
@@ -406,33 +439,7 @@ const Telephones = () => {
                         <a
                           href="#"
                           className="text-info"
-                          onClick={() =>
-                            setSelectedAnswer({
-                              value: 2,
-                              dataPhone: {
-                                idClase: row.idClase,
-                                titulares: row.titulares,
-                                conocidos: row.conocidos,
-                                desconocidos: row.desconocidos,
-                                sinContacto: row.sinContacto,
-                                intentosViciDial: row.intentosViciDial,
-                                id: row.id,
-                                númeroTelefónico: row.númeroTelefónico,
-                                idTelefonía: row.idTelefonía,
-                                idOrigen: row.idOrigen,
-                                estado: row.estado,
-                                municipio: row.municipio,
-                                husoHorario: row.husoHorario,
-                                segHorarioContacto: row.segHorarioContacto,
-                                extensión: row.extensión,
-                                _Confirmado: row._Confirmado,
-                                fecha_Insert: row.fecha_Insert,
-                                calificacion: row.calificacion,
-                                activo: row.activo,
-                                idModo: 2202
-                              }
-                            })
-                          }
+                          onClick={() => handleRowClick(row)}
                         >
                           {"XXXXXX" + row.númeroTelefónico.slice(6)}
                         </a>
@@ -446,13 +453,13 @@ const Telephones = () => {
                       <td>{row.estado || "--"}</td>
                       <td>{row.municipio || "--"}</td>
                       <td>{row.husoHorario || "--"}</td>
-                      <td>{row.segHorarioContacto || "--"}</td>
+                      {/* <td>{row.segHorarioContacto || "--"}</td> */}
                       <td>{row.extensión || "--"}</td>
                       <td>{row._Confirmado ? "Sí" : "No" || "--"}</td>
-                      <td>
+                      {/* <td>
                         {new Date(row.fecha_Insert).toLocaleDateString() ||
                           "--"}
-                      </td>
+                      </td> */}
                       <td>{row.calificacion || "--"}</td>
                       <td>{row.activo ? "Activo" : "Inactivo" || "--"}</td>
                     </tr>

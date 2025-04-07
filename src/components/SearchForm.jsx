@@ -7,8 +7,9 @@ import {
   InputGroup
 } from "react-bootstrap";
 import { Search, ArrowRepeat, FunnelFill } from "react-bootstrap-icons";
-import  { useContext } from "react";
+import { useContext } from "react";
 import { AppContext } from "../pages/Managment"; // Importa el contexto
+import { toast } from "sonner"; // Importar toast
 
 const SearchForm = () => {
   const {
@@ -26,9 +27,10 @@ const SearchForm = () => {
     handleFilterSelect,
     handleInputChange,
     handleSuggestionClick,
-    handleAutomaticSearch
+    handleAutomaticSearch,
+    userActiveFlow // Obtener userActiveFlow del contexto
   } = useContext(AppContext);
-
+  console.log(userActiveFlow); // Verifica el valor de userActiveFlow
   const [inputError, setInputError] = useState(""); // Estado para el mensaje de error
 
   // Limpiar el mensaje de error cuando el filtro cambie
@@ -97,10 +99,26 @@ const SearchForm = () => {
 
   // Función para manejar el cambio en el input
   const handleChange = (e) => {
+    if (userActiveFlow === true) {
+      toast.warning(
+        "No puedes realizar esta acción mientras el flujo está activo."
+      );
+      return; // Bloquear la acción si el flujo está activo
+    }
     const value = e.target.value;
     if (validateInput(value)) {
       handleInputChange(e); // Solo actualiza el estado si la validación es correcta
     }
+  };
+
+  const handleButtonClick = () => {
+    if (userActiveFlow) {
+      toast.warning(
+        "No puedes realizar esta acción mientras el flujo está activo."
+      );
+      return; // Bloquear la acción si el flujo está activo
+    }
+    handleAutomaticSearch(); // Ejecutar la búsqueda automática si el flujo no está activo
   };
 
   return (
@@ -114,7 +132,10 @@ const SearchForm = () => {
 
       <div className="mx-auto ">
         <InputGroup className="col-5 " variant="dark">
-          <InputGroup.Text id="btnGroupAddon" className="bg-dark text-white border-0">
+          <InputGroup.Text
+            id="btnGroupAddon"
+            className="bg-dark text-white border-0"
+          >
             <Search />
           </InputGroup.Text>
           <FormControl
@@ -122,9 +143,14 @@ const SearchForm = () => {
             placeholder="Buscar"
             aria-label="Search"
             value={searchTerm}
-            onChange={handleChange} // Usar handleChange en lugar de handleInputChange
-            onFocus={() => setShowSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            onChange={handleChange} // Usar la nueva función handleChange
+            onFocus={() => {
+              if (!userActiveFlow) setShowSuggestions(true); // Evitar acción si el flujo está activo
+            }}
+            onBlur={() => {
+              if (!userActiveFlow)
+                setTimeout(() => setShowSuggestions(false), 200); // Evitar acción si el flujo está activo
+            }}
             style={{
               backgroundColor: "white",
               color: "black"
@@ -175,7 +201,7 @@ const SearchForm = () => {
               ))}
             </div>
           )}
-          <Dropdown onSelect={handleFilterSelect}>
+          <Dropdown onSelect={handleFilterSelect} disabled={!userActiveFlow}>
             <Dropdown.Toggle variant="success" id="filter-dropdown">
               <FunnelFill className="d-block d-md-none"></FunnelFill>
               <span className="d-none d-md-inline">Filtro: {filter}</span>
@@ -199,7 +225,7 @@ const SearchForm = () => {
             className="align-center"
             variant="primary"
             type="button"
-            onClick={handleAutomaticSearch}
+            onClick={handleButtonClick} // Usar la nueva función handleButtonClick
           >
             <ArrowRepeat className="d-block d-md-none"></ArrowRepeat>
             <span className="d-none d-md-inline">Automático</span>
