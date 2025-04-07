@@ -59,6 +59,12 @@ namespace NoriAPI.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<ResultadoLogin>> Login([FromBody] AuthRequest request)
         {
+            // Capture the client's IP address from the HttpContext
+            string? clientIP = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+            // Update the request object with the server-determined IP
+            request.IP = clientIP;
+
             var ejecutivo = await _userService.ValidateUser(request);
 
             if (!string.IsNullOrEmpty(ejecutivo.Mensaje) || ejecutivo.Expiro == true || ejecutivo.Sesion == true)

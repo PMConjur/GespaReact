@@ -372,7 +372,7 @@ namespace NoriAPI.Controllers
         }
 
 
-        [HttpPost ("GuardaNegociacionPlazos")]
+        [HttpPost("GuardaNegociacionPlazos")]
         public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] NegociacionPlazosInput input)
         {
             var result = await _ejecutivoService.GuardaNegociacionPlazos(input);
@@ -393,12 +393,11 @@ namespace NoriAPI.Controllers
 
         }
 
-        [HttpPost ("IncrementaNegociacion")]
-
+        [HttpPost("IncrementaNegociacion")]
         public async Task<IActionResult> IncrementaNegociacion([FromBody] IncrementoNegociacion incrementaNegInfo)
         {
             var result = await _ejecutivoService.IncrementaNegociacion(incrementaNegInfo);
-            if(result == "")
+            if (result == "")
             {
                 return Ok("Correcto");
             }
@@ -407,10 +406,7 @@ namespace NoriAPI.Controllers
                 return Ok(result);
             }
 
-
-
         }
-
 
 
 
@@ -531,7 +527,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost("SaveCargoEnlinea")]
-        public async Task<IActionResult> SaveCargoEnlinea( CargoEnLinea newCargoEn)
+        public async Task<IActionResult> SaveCargoEnlinea(CargoEnLinea newCargoEn)
         {
             if (newCargoEn == null)
             {
@@ -720,7 +716,7 @@ namespace NoriAPI.Controllers
         {
             if (pago == null)
             {
-                return BadRequest(new { Result = "Datos de Pago no válidos."});
+                return BadRequest(new { Result = "Datos de Pago no válidos." });
             }
 
             if (await _ejecutivoService.GuardaPagos(pago))
