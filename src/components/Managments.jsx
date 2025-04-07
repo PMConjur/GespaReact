@@ -3,6 +3,7 @@ import { Row, Col, Card, Toast, Pagination } from "react-bootstrap";
 import { AppContext } from "../pages/Managment"; // Importar el contexto
 import { getGestionTeData } from "../services/gespawebServices"; // Importar el endpoint
 import { ClockHistory } from "react-bootstrap-icons";
+import { toast } from "sonner"; // Importar la librería sonner
 
 const Managments = () => {
   const { searchResults } = useContext(AppContext); // Consumir el contexto
@@ -15,7 +16,7 @@ const Managments = () => {
   const [itemsPerPage] = useState(200); // Número de registros por página
   const [currentTablePage, setCurrentTablePage] = useState(1); // Página actual de la tabla
   const [paginationGroup, setPaginationGroup] = useState(0); // Grupo actual de 10 páginas
-  const [totalResults, setTotalResults] = useState(3000); // Total de resultados requeridos (puede ser dinámico)
+  const [totalResults, setTotalResults] = useState(4001); // Total de resultados requeridos (puede ser dinámico)
 
   // Hook para obtener los datos
   useEffect(() => {
@@ -41,11 +42,7 @@ const Managments = () => {
         ); // Reemplazar o agregar datos
         setIsLoading(false); // Finalizar carga
       } catch (error) {
-        console.error("Error al obtener los datos de gestión:", error);
-        setToastMessage(
-          "❌ Error al obtener los datos de gestión. Intente nuevamente."
-        );
-        setShowToast(true);
+        toast.error("Error al obtener los datos de gestión. Intente nuevamente."); // Mostrar toast de error
         setIsLoading(false); // Finalizar carga en caso de error
       }
     };
@@ -86,10 +83,25 @@ const Managments = () => {
   );
 
   // Manejar el cambio de grupo de páginas
-  const handleNextGroup = () => {
+  const handleNextGroup = async () => {
     if (paginationGroup < totalGroups - 1) {
       setPaginationGroup(paginationGroup + 1);
       setCurrentTablePage((paginationGroup + 1) * pagesPerGroup + 1);
+
+      // Cargar los siguientes 2000 resultados
+      try {
+        setIsLoading(true);
+        const idCuenta = searchResults[0]?.idCuenta;
+        const nextGroupData = await getGestionTeData(currentPage + 10, idCuenta); // Ajustar la página base
+        setSortedData((prevData) => [...prevData, ...nextGroupData]);
+        setTotalResults(totalResults + nextGroupData.length); // Actualizar el total dinámicamente
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error al cargar el siguiente grupo de datos:", error);
+        setToastMessage("❌ Error al cargar el siguiente grupo de datos. Intente nuevamente.");
+        setShowToast(true);
+        setIsLoading(false);
+      }
     }
   };
 
@@ -108,19 +120,21 @@ const Managments = () => {
       const newGroup = Math.floor((pageNumber - 1) / pagesPerGroup);
       if (newGroup !== paginationGroup) {
         setPaginationGroup(newGroup);
-      }
-      
-      try {
-        setIsLoading(true);
-        const idCuenta = searchResults[0]?.idCuenta;
-        const gestionData = await getGestionTeData(pageNumber, idCuenta);
-        setSortedData(gestionData);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error al obtener los datos de la página:", error);
-        setToastMessage("❌ Error al obtener los datos de la página. Intente nuevamente.");
-        setShowToast(true);
-        setIsLoading(false);
+
+        // Cargar los datos del nuevo grupo si es necesario
+        try {
+          setIsLoading(true);
+          const idCuenta = searchResults[0]?.idCuenta;
+          const newGroupData = await getGestionTeData(pageNumber, idCuenta);
+          setSortedData((prevData) => [...prevData, ...newGroupData]);
+          setTotalResults(totalResults + newGroupData.length); // Actualizar el total dinámicamente
+          setIsLoading(false);
+        } catch (error) {
+          console.error("Error al cargar los datos del nuevo grupo:", error);
+          setToastMessage("❌ Error al cargar los datos del nuevo grupo. Intente nuevamente.");
+          setShowToast(true);
+          setIsLoading(false);
+        }
       }
     }
   };

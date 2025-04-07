@@ -1405,3 +1405,28 @@ export const createPayments = async (data) => {
     throw error;
   }
 };
+
+
+export const getRelaciones = async () => {
+  try {
+  
+    const url = `/ejecutivo/relaciones`;
+    console.log("Solicitando datos de Relaciones a:", url); // Depurar URL"
+
+    const response = await servicio.get(url);
+    const message = getErrorStatus(response.status);
+
+    if (response.status !== 200) {
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error en getRelaciones:", error);
+    toast.error(
+      "No se pudo obtener los datos de Relaciones. Verifica la conexión o los parámetros."
+    );
+    throw error;
+  }
+};
