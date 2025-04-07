@@ -561,7 +561,7 @@ export const getGestionTeData = async (idCartera, idCuenta) => {
       throw new Error("idCartera o idCuenta no son válidos.");
     }
 
-    const Top = 2000;
+    const Top = 10000;
     const url = `/ejecutivo/gestionTe/${idCartera}/${idCuenta}/${Top}`;
     console.log("Solicitando datos de gestion Telefonica a:", url); // Depurar URL
 

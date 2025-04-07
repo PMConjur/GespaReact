@@ -16,13 +16,19 @@ const Managments = () => {
   const [itemsPerPage] = useState(200); // Número de registros por página
   const [currentTablePage, setCurrentTablePage] = useState(1); // Página actual de la tabla
   const [paginationGroup, setPaginationGroup] = useState(0); // Grupo actual de 10 páginas
-  const [totalResults, setTotalResults] = useState(4001); // Total de resultados requeridos (puede ser dinámico)
+  const [totalResults, setTotalResults] = useState(10000); // Total de resultados requeridos (puede ser dinámico)
+
+  // Función para calcular el número total de páginas basado en los resultados obtenidos
+  const calculateTotalPages = (dataLength, itemsPerPage) => {
+    return Math.ceil(dataLength / itemsPerPage);
+  };
 
   // Hook para obtener los datos
   useEffect(() => {
     const fetchData = async () => {
       if (!searchResults || searchResults.length === 0) {
         setSortedData([]); // Limpiar datos si no hay resultados
+        setTotalResults(0); // Ajustar totalResults a 0 si no hay datos
         return;
       }
 
@@ -32,6 +38,7 @@ const Managments = () => {
           setToastMessage("No se encontró un idCuenta válido.");
           setShowToast(true);
           setSortedData([]); // Limpiar datos si no hay idCuenta válido
+          setTotalResults(0); // Ajustar totalResults a 0 si no hay idCuenta válido
           return;
         }
 
@@ -40,6 +47,7 @@ const Managments = () => {
         setSortedData((prevData) =>
           currentPage === 1 ? gestionData : [...prevData, ...gestionData]
         ); // Reemplazar o agregar datos
+        setTotalResults(gestionData.length); // Ajustar totalResults dinámicamente
         setIsLoading(false); // Finalizar carga
       } catch (error) {
         toast.error("Error al obtener los datos de gestión. Intente nuevamente."); // Mostrar toast de error
@@ -69,8 +77,8 @@ const Managments = () => {
     setSelectedGestion(gestion); // Establecer el registro seleccionado
   };
 
-  // Calcular el número total de páginas basado en los resultados totales y los elementos por página
-  const totalPages = Math.ceil(totalResults / itemsPerPage);
+  // Calcular el número total de páginas basado en los resultados obtenidos
+  const totalPages = calculateTotalPages(totalResults, itemsPerPage);
 
   // Configuración del paginador
   const pagesPerGroup = 10;
