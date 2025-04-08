@@ -71,10 +71,12 @@ namespace NoriAPI.Controllers
             {
                 return Ok(new { ejecutivo });
             }
+            else
+            {
+                ejecutivo.Token = GenerateJwtToken(request);
+                return Ok(new { ejecutivo });
+            }
 
-            ejecutivo.Token = GenerateJwtToken(request);
-
-            return Ok(new { ejecutivo });
         }
 
 
