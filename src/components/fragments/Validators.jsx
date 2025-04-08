@@ -99,7 +99,8 @@ const Validators = ({ show, handleClose, handleValidate }) => {
       console.error("Datos incorrectos, vuelva intentarlo:", error);
 
       // Muestra un toast de error si ocurre un problema
-      toast.error(`Datos incorrectos, vuelva intentarlo:${error.status}`, {
+      const message = error.response ? getErrorStatus(error.response.status) : "Error desconocido";
+      toast.error(`${message}`, {
         position: "top-center",
       });
     } finally {

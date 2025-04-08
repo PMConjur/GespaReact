@@ -451,7 +451,7 @@ export const getErrorStatus = (status) => {
     case 429:
       return "Demasiadas solicitudes (429): Intenta de nuevo más tarde.";
     case 500:
-      return "Error interno del servidor (500): Intenta nuevamente más tarde.";
+      return "Datos incorrectos (500):o falla en el servidor.";
     default:
       return `Error inesperado (${status}): Contacta con soporte.`;
   }
