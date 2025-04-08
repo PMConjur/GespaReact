@@ -129,25 +129,25 @@ const Managments = () => {
   const handlePageChange = async (pageNumber) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
       setCurrentTablePage(pageNumber);
+
       // Actualizar el grupo si la página seleccionada está fuera del grupo actual
       const newGroup = Math.floor((pageNumber - 1) / pagesPerGroup);
       if (newGroup !== paginationGroup) {
         setPaginationGroup(newGroup);
+      }
 
-        // Cargar los datos del nuevo grupo si es necesario
-        try {
-          setIsLoading(true);
-          const idCuenta = searchResults[0]?.idCuenta;
-          const newGroupData = await getGestionTeData(pageNumber, idCuenta);
-          setSortedData((prevData) => [...prevData, ...newGroupData]);
-          setTotalResults(totalResults + newGroupData.length); // Actualizar el total dinámicamente
-          setIsLoading(false);
-        } catch (error) {
-          console.error("Error al cargar los datos del nuevo grupo:", error);
-          setToastMessage("❌ Error al cargar los datos del nuevo grupo. Intente nuevamente.");
-          setShowToast(true);
-          setIsLoading(false);
-        }
+      // Cargar los datos de la página seleccionada
+      try {
+        setIsLoading(true);
+        const idCuenta = searchResults[0]?.idCuenta;
+        const pageData = await getGestionTeData(pageNumber, idCuenta);
+        setSortedData(pageData); // Reemplazar los datos en lugar de concatenarlos
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error al cargar los datos de la página:", error);
+        setToastMessage("❌ Error al cargar los datos de la página. Intente nuevamente.");
+        setShowToast(true);
+        setIsLoading(false);
       }
     }
   };
