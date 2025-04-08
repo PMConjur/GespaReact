@@ -5,11 +5,12 @@ import FormOnlineCharge from "./FormOnlineCharge";
 const OnlineCharge = ({ 
   show, 
   handleClose, 
-  isOnlineChargeActive = false 
+  isOnlineChargeActive = false,
 }) => {
+
   return (
     <Modal 
-      show={show && isOnlineChargeActive} 
+      show={show} 
       onHide={handleClose} 
       size="xl"
       backdrop="static"

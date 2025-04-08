@@ -41,6 +41,7 @@ const TablePayments = ({ customColumnNames = {} }) => {
 
     fetchData();
   }, [searchResults]);
+  
 
   // Hook 7: useCallback para manejar el ordenamiento
   const handleSortChange = useCallback(() => {
@@ -69,7 +70,7 @@ const TablePayments = ({ customColumnNames = {} }) => {
   if (loading) {
     return (
       <div style={{ textAlign: "center", marginTop: "20px" }}>
-        <Spinner animation="border" variant="primary" />
+        
         <span className="ms-2">Cargando datos...</span>
       </div>
     );
