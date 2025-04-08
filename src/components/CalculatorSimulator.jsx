@@ -6,7 +6,6 @@ import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 import Validators from "./fragments/Validators"; // Importa el modal de Validators
 
-
 const CalculatorSimulator = ({show, handleClose}) => {
   const { searchResults, idEjecutivo} = useContext(AppContext); // Obtiene searchResults desde AppContext
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
@@ -270,7 +269,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
         montoMod: parseFloat(modifyForm.montoMod) || 0,
         fechaPagoMod: modifyForm.fechaPagoMod,
         agregarPagos: modifyForm.agregarPagos ? 1 : 0, // 1 si el checkbox está marcado, 0 si no
-        filaMod: modifyForm.filaMod,
+        filaMod: modifyForm.filaMod
       };
   
       console.log("Datos enviados al endpoint fetchCalSecondPartModify:", requestData);
@@ -492,14 +491,16 @@ const handleSaveOffering = async () => {
       saldo: summaryData.saldo, // Respetar decimales
       plazos: tablaPagos.map((pago) => ({
         monto: parseFloat(pago.pago), // Convertir a número respetando decimales
-        fecha: new Date(pago.fecha).toLocaleDateString(),
-        referencia: "string",
-        sucursal: "string",
-      })),
+        fecha: new Date(pago.fecha).toISOString().split("T")[0], // Formato YYYY-MM-DD
+    })),
       dias1erPago: 1,
-      fechaCorte: summaryData.fechaCorte.split(" ")[0], // Extrae solo la fecha
+      fechaCorte: (() => {
+        const [datePart] = summaryData.fechaCorte.split(" "); // Extrae solo la parte de la fecha antes del espacio
+        const [day, month, year] = datePart.split("/"); // Divide la fecha en día, mes y año
+        return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`; // Reorganiza en formato YYYY-MM-DD
+      })(),
       fechaInsert: "2025-04-03",
-      segundoInsert: {}, // Cambia el valor a un objeto vacío
+      segundoInsert: "12:34:59", // Cambia el valor a un objeto vacío
       cartaConvenio: cartaConvenio,
       correo: selectedEmail || "",
       idEjecutivoValidador: parseInt(idEjecutivoValidador, 10),
@@ -620,8 +621,13 @@ const handleSaveOffering = async () => {
                                 "No hay cuenta seleccionada"
                               ) : (
                                 <div className="d-flex justify-content-center align-items-center">
-                                  <div className="spinner-border text-primary" role="status">
-                                    <span className="visually-hidden">Cargando...</span>
+                                  <div
+                                    className="spinner-border text-primary"
+                                    role="status"
+                                  >
+                                    <span className="visually-hidden">
+                                      Cargando...
+                                    </span>
                                   </div>
                                 </div>
                               )}
@@ -757,9 +763,15 @@ const handleSaveOffering = async () => {
                                 onChange={handleInputChange} // Actualiza el estado de "Fecha Pago"
                                 disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
                                 min={new Date().toISOString().split("T")[0]} // Fecha mínima: hoy
-                                max={new Date(new Date().setDate(new Date().getDate() + 15))
-                                  .toISOString()
-                                  .split("T")[0]} // Fecha máxima: 15 días después de hoy
+                                max={
+                                  new Date(
+                                    new Date().setDate(
+                                      new Date().getDate() + 15
+                                    )
+                                  )
+                                    .toISOString()
+                                    .split("T")[0]
+                                } // Fecha máxima: 15 días después de hoy
                               />
                               <Form.Label>Máximo 15 días</Form.Label>
                             </Form.Group>
@@ -878,8 +890,8 @@ const handleSaveOffering = async () => {
                         </Button>
                       )}
                       {isValidated && ( // Muestra el botón "Ofrecer" solo si está validado
-                        <Button 
-                          onClick={handleSaveOffering} 
+                        <Button
+                          onClick={handleSaveOffering}
                           disabled={tablaPagos.length === 0} // Deshabilita el botón si no hay registros en la tabla
                         >
                           Ofrecer
@@ -1157,7 +1169,10 @@ const handleSaveOffering = async () => {
                                 name="fechaPagoMod"
                                 value={modifyForm.fechaPagoMod}
                                 onChange={handleModifyFormChange}
-                                max={formInputs.fechaPago || new Date().toISOString().split("T")[0]} // Fecha máxima: la seleccionada en "fechaPago" o la fecha actual
+                                max={
+                                  formInputs.fechaPago ||
+                                  new Date().toISOString().split("T")[0]
+                                } // Fecha máxima: la seleccionada en "fechaPago" o la fecha actual
                               />
                             </Form.Group>
 
