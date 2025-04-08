@@ -15,8 +15,7 @@ import CommunicationPhone from "./flowComponents/CommunicationPhone"; // Importa
 import Timmer from "./flowComponents/Timmer";
 import SaveButton from "./flowComponents/SaveButton"; // Importa el nuevo componente SaveButton
 import CalculatorSimulator from "./CalculatorSimulator"; // Importa el componente CalculatorSimulator
-import Payments from "./memuHamburguesa/Informacion/Payments"; // Importa el componente Payments
-import OnlineCharge from "./memuHamburguesa/Acciones/OnlineCharge"; // Importa el componente OnlineCharge
+
 import Validators from "./fragments/Validators";
 const Flow = () => {
   const {
@@ -29,8 +28,10 @@ const Flow = () => {
     stoppedTime,
     communicationData,
     setStoppedTime,
-    stoppedTimeSticky
+    stoppedTimeSticky,
+    setUserActiveFlow // Agregar función del contexto para actualizar userActiveFlow
   } = useContext(AppContext); // Agrega funciones del contexto para manejar estados
+
   const [userFlowData, setUserFlowData] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
   const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -127,6 +128,7 @@ const Flow = () => {
   };
   const clearStatesManagment = () => {
     setCurrentQuestionId(null);
+    setUserActiveFlow(false); // Establecer userActiveFlow en false al iniciar el flujo
   };
 
   const renderMainContent = () => (
@@ -233,7 +235,7 @@ const Flow = () => {
   //console.log(stoppedTimeSticky);
   const handleSave = async (comment) => {
     const tiempoEnCuenta = stoppedTimeSticky || "00:00:00"; // Usa el tiempo capturado por TimmerAccount
-    const duracion = stoppedTime || "00:00:02"; // Usa el tiempo detenido del cronómetro interno de Flow.jsx
+    const duracion = stoppedTime || "00:00:00"; // Usa el tiempo detenido del cronómetro interno de Flow.jsx
 
     const dataManagment = {
       idCartera: searchResults?.[0].idCartera,
@@ -257,21 +259,26 @@ const Flow = () => {
     };
 
     console.log("Datos de gestión a guardar:", dataManagment);
-    try {
-      const response = await saveManagment(dataManagment); // Llama al servicio saveManagment
-      if (response) {
-        toast.success("Gestión guardada correctamente.");
-        handleLastAnswerActions(); // Ejecuta las acciones según las condiciones
-      } else {
-        toast.error("Error al guardar la gestión.");
+    if (dataManagment.numeroTelefonico === 0 && dataManagment.idModo === 2201) {
+      toast.error("El número telefónico no puede quedar vacío.");
+      return;
+    } else {
+      try {
+        const response = await saveManagment(dataManagment); // Llama al servicio saveManagment
+        if (response) {
+          toast.success("Gestión guardada correctamente.");
+          handleLastAnswerActions(); // Ejecuta las acciones según las condiciones
+        } else {
+          toast.error("Error al guardar la gestión.");
+        }
+      } catch (error) {
+        console.error("Error al guardar la gestión:", error);
+        toast.error("Ocurrió un error al guardar la gestión.");
       }
-    } catch (error) {
-      console.error("Error al guardar la gestión:", error);
-      toast.error("Ocurrió un error al guardar la gestión.");
     }
   };
 
-  //No modificar
+  //No modificar aqui se inicia el flujo para todos los estados de llamada
   useEffect(() => {
     // Limpiar estados antes de comenzar nuevamente
     clearStates();
@@ -289,6 +296,7 @@ const Flow = () => {
               );
               if (firstQuestions.length > 0) {
                 setCurrentQuestionId(firstQuestions[0].idPregunta);
+                setUserActiveFlow(true); // Establece userActiveFlow en true al iniciar el flujo
                 console.log(
                   "First Questions:",
                   firstQuestions.map((q) => q.idPregunta)

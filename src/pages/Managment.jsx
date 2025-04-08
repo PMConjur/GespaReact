@@ -43,6 +43,7 @@ const Managment = () => {
   const [isOnlineChargeActive, setOnlineChargeActive] = useState(false); // Estado para cargos en línea
   const [stoppedTimeSticky, setStoppedTimeSticky] = useState(null); // Estado para el tiempo actual del StickyTimmer
   const [triggerUpdateStickyTime, setTriggerUpdateStickyTime] = useState(false); // Estado para accionar la actualización del tiempo
+  const [userActiveFlow, setUserActiveFlow] = useState(false); // Asegurar que el estado inicial sea false
   const token = responseData?.ejecutivo?.token;
   const nombreEjecutivo =
     responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
@@ -205,7 +206,9 @@ const Managment = () => {
     stoppedTimeSticky,
     setStoppedTimeSticky,
     triggerUpdateStickyTime,
-    setTriggerUpdateStickyTime
+    setTriggerUpdateStickyTime,
+    userActiveFlow, // Enviar estado userActiveFlow al contexto
+    setUserActiveFlow // Enviar función para actualizar userActiveFlow al contexto
   };
 
   return (
