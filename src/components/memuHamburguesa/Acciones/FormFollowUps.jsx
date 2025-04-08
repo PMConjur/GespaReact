@@ -25,7 +25,7 @@ const FormFollowUps = ({ handleClose }) => {
         idCuenta: idCuenta[0].trim(),
         idEjecutivo: idEjecutivo,
         fecha: new Date().toISOString().split("T")[0],
-        segundo: "10:00:00",
+        segundo: "07:00:00",
         idAcercamiento: "1601",
         recordatorio: false,
         numeroTelefonico: "",
@@ -123,6 +123,8 @@ const FormFollowUps = ({ handleClose }) => {
                 dataToSend.datoContacto = null;
             }
 
+            console.log("Datos a enviar al endpoint:", dataToSend); // Agregado para depuración
+
             const response = await createFollows(dataToSend);
             toast.success(response.mensaje || "Seguimiento guardado exitosamente.");
 
@@ -132,7 +134,7 @@ const FormFollowUps = ({ handleClose }) => {
                 idCuenta: idCuenta[0].trim(),
                 idEjecutivo: idEjecutivo,
                 fecha: new Date().toISOString().split("T")[0],
-                segundo: "10:00:00",
+                segundo: "07:00:00",
                 idAcercamiento: "1601",
                 recordatorio: false,
                 numeroTelefonico: "",

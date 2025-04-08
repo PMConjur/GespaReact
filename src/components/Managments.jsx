@@ -450,7 +450,7 @@ const Managments = () => {
               <div>
                 <Row>
                   <Col className="elemento">
-                    <strong>Comentario:</strong>
+                    <strong>Comentario: </strong>
                     {selectedGestion ? (
                       <span>{validateField(selectedGestion.Comentario)}</span>
                     ) : (
