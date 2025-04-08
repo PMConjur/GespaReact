@@ -259,15 +259,12 @@ const Flow = () => {
     };
 
     console.log("Datos de gestión a guardar:", dataManagment);
-    if (
-      communicationData.telephone === "" &&
-      selectedAnswer.dataPhone.idModo === 2201
-    ) {
-      toast.error("El número telefónico no puede estar vacío.");
+    if (dataManagment.numeroTelefonico === 0 && dataManagment.idModo === 2201) {
+      toast.error("El número telefónico no puede quedar vacío.");
       return;
     } else {
       try {
-        //const response = await saveManagment(dataManagment); // Llama al servicio saveManagment
+        const response = await saveManagment(dataManagment); // Llama al servicio saveManagment
         if (response) {
           toast.success("Gestión guardada correctamente.");
           handleLastAnswerActions(); // Ejecuta las acciones según las condiciones
