@@ -113,7 +113,9 @@ const Managment = () => {
       const numeroTelefonico = responseEjecutivo.data.numeroTelefonico;
 
       if (!idCuenta) {
-        toast.warning("idCuenta es nulo, solicita cargar a tu administrador");
+        toast.warning(
+          "No cuentas con cuentas asignadas, por favor verifica con tu supervisor"
+        );
         setSearchResults([]);
         return;
       }
