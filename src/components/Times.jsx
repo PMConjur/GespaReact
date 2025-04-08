@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext, useRef } from "react";
-import { Modal, Button, Form, Container, Row } from "react-bootstrap";
+import { Modal, Button, Form, Container, Row, Col } from "react-bootstrap";
 import TableTimes from "./TableTimes";
 import { toast } from "sonner";
 import { userTimesUpdate } from "../services/gespawebServices";
@@ -32,9 +32,8 @@ const Times = ({ show, handleClose }) => {
     const [currentTimer, setCurrentTimer] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
     const [contrasenia, setContrasenia] = useState("");
-    const [updatedTimesForTable, setUpdatedTimesForTable] = useState({}); // Nuevo estado para la tabla
+    const [updatedTimesForTable, setUpdatedTimesForTable] = useState({});
 
-    // Limpieza del intervalo al desmontar
     useEffect(() => {
         return () => {
             if (intervalRef.current) {
@@ -84,14 +83,12 @@ const Times = ({ show, handleClose }) => {
                 duracion
             });
 
-            // Actualizar el estado local
             const updatedTimers = {
                 ...timers,
                 [selectedReason]: timers[selectedReason] + currentTimer
             };
             setTimers(updatedTimers);
 
-            // Pasar solo el valor del conteo actual a la tabla
             setUpdatedTimesForTable({ [selectedReason]: currentTimer });
 
             setCurrentTimer(0);
@@ -101,7 +98,7 @@ const Times = ({ show, handleClose }) => {
             toast.success("Tiempo registrado correctamente");
         } catch (error) {
             toast.error(`Error al registrar tiempo: ${error.message}`);
-            setIsPaused(true); // Mantener en pausa para reintentar
+            setIsPaused(true);
         }
     };
 
@@ -120,59 +117,85 @@ const Times = ({ show, handleClose }) => {
             </Modal.Header>
             <Modal.Body>
                 <Container>
+                    {/* Sección de selección de razón */}
                     <Row className="mb-3">
-                        <Form.Group className="input-group">
+                        <Col xs={12}>
+                            <Form.Group>
+                                <Form.Label>Seleccione razón</Form.Label>
+                                <Form.Select
+                                    value={selectedReason}
+                                    onChange={(e) => setSelectedReason(e.target.value)}
+                                    disabled={isPaused}
+                                >
+                                    <option value="">Seleccione razón</option>
+                                    {Object.keys(REASONS).map(reason => (
+                                        <option key={reason} value={reason}>{reason}</option>
+                                    ))}
+                                </Form.Select>
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                    
+                    {/* Sección de botones */}
+                    <Row className="mb-3">
+                        <Col xs={12} md={6} className="mb-2">
                             <Button
-                                className="btn-iniciar"
+                                variant="primary"
                                 onClick={handleStartTimer}
                                 disabled={isPaused || !selectedReason}
+                                className="w-100"
                             >
-                                Iniciar
+                                Iniciar Temporizador
                             </Button>
-                            <Form.Select
-                                className="form-select"
-                                value={selectedReason}
-                                onChange={(e) => setSelectedReason(e.target.value)}
-                                disabled={isPaused}
-                            >
-                                <option value="">Seleccione razón</option>
-                                {Object.keys(REASONS).map(reason => (
-                                    <option key={reason} value={reason}>{reason}</option>
-                                ))}
-                            </Form.Select>
-                        </Form.Group>
-                    </Row>
-                    
-                    <Row className="mb-3">
-                        <Form.Group className="input-group">
+                        </Col>
+                        <Col xs={12} md={6} className="mb-2">
                             <Button
-                                className="form-detener"
+                                variant="danger"
                                 onClick={handleStopTimer}
                                 disabled={!isPaused}
+                                className="w-100"
                             >
-                                Detener
+                                Detener Temporizador
                             </Button>
-                            <Form.Control
-                                type="password"
-                                placeholder="Contraseña"
-                                value={contrasenia}
-                                onChange={(e) => setContrasenia(e.target.value)}
-                                disabled={!isPaused}
-                            />
-                        </Form.Group>
+                        </Col>
                     </Row>
                     
+                    {/* Sección de contraseña */}
+                    <Row className="mb-3">
+                        <Col xs={12}>
+                            <Form.Group>
+                                <Form.Label>Contraseña</Form.Label>
+                                <Form.Control
+                                    type="password"
+                                    placeholder="Ingrese su contraseña"
+                                    value={contrasenia}
+                                    onChange={(e) => setContrasenia(e.target.value)}
+                                    disabled={!isPaused}
+                                />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                    
+                    {/* Temporizador actual */}
                     <Row className="mb-3 text-center">
-                        <h5>
-                            {selectedReason ? (
-                                `${selectedReason}: ${formatTime(currentTimer)}`
-                            ) : (
-                                "Seleccione una razón"
-                            )}
-                        </h5>
+                        <Col xs={12}>
+                            <h4>
+                                {selectedReason ? (
+                                    `${selectedReason}: ${formatTime(currentTimer)}`
+                                ) : (
+                                    "Seleccione una razón para comenzar"
+                                )}
+                            </h4>
+                        </Col>
+                    </Row>
+                    
+                    {/* Tabla de tiempos */}
+                    <Row className="mb-3">
+                        <Col xs={12}>
+                            <TableTimes updatedTimes={updatedTimesForTable} />
+                        </Col>
                     </Row>
                 </Container>
-                <TableTimes updatedTimes={updatedTimesForTable} />
             </Modal.Body>
         </Modal>
     );
