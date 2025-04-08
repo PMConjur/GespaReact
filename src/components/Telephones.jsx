@@ -22,7 +22,6 @@ import { toast } from "sonner";
 import "../scss/styles.scss";
 import { TelephoneFill } from "react-bootstrap-icons";
 
-
 const Telephones = () => {
   const { userActiveFlow, setSelectedAnswer } = useContext(AppContext);
   const [data, setData] = useState([]);
@@ -248,7 +247,7 @@ const Telephones = () => {
 
     // Validaciones iniciales
     if (!numeroTelefonico || numeroTelefonico.trim() === "") {
-      toast.error("Error: Ingrese un número telefónico válido.", {
+      toast.warning("Advertencia: Ingrese un número telefónico válido.", {
         position: "top-center"
       });
       return;
