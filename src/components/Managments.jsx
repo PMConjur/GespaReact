@@ -29,6 +29,7 @@ const Managments = () => {
       if (!searchResults || searchResults.length === 0) {
         setSortedData([]); // Limpiar datos si no hay resultados
         setTotalResults(0); // Ajustar totalResults a 0 si no hay datos
+        setSelectedGestion(null); // Limpiar selección previa
         return;
       }
 
@@ -39,14 +40,19 @@ const Managments = () => {
           setShowToast(true);
           setSortedData([]); // Limpiar datos si no hay idCuenta válido
           setTotalResults(0); // Ajustar totalResults a 0 si no hay idCuenta válido
+          setSelectedGestion(null); // Limpiar selección previa
           return;
         }
 
-        setIsLoading(true); // Iniciar carga
-        const gestionData = await getGestionTeData(currentPage, idCuenta); // Usar currentPage para la paginación
-        setSortedData((prevData) =>
-          currentPage === 1 ? gestionData : [...prevData, ...gestionData]
-        ); // Reemplazar o agregar datos
+        // Limpiar estados antes de realizar la llamada
+        setSortedData([]);
+        setSelectedGestion(null);
+        setCurrentTablePage(1); // Reiniciar la página actual de la tabla
+        setPaginationGroup(0); // Reiniciar el grupo de paginación
+        setIsLoading(true);
+
+        const gestionData = await getGestionTeData(1, idCuenta); // Reiniciar a la página 1
+        setSortedData(gestionData); // Actualizar datos con los nuevos resultados
         setTotalResults(gestionData.length); // Ajustar totalResults dinámicamente
         setIsLoading(false); // Finalizar carga
       } catch (error) {
@@ -57,9 +63,8 @@ const Managments = () => {
 
     // Reiniciar el estado cuando cambie searchResults
     setCurrentPage(1); // Reiniciar la página actual
-    setSortedData([]); // Limpiar los datos actuales
     fetchData(); // Llamar a fetchData para cargar los nuevos datos
-  }, [searchResults, currentPage]);
+  }, [searchResults]);
 
   // Validar campos para evitar errores al renderizar
   const validateField = (field) => {
