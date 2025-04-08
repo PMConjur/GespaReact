@@ -14,7 +14,7 @@ const CommunicationPhone = ({ idComunico, selectedAnswerValue }) => {
     const regex = /^[0-9]*$/; // Solo permite números
     if (regex.test(value)) {
       setTelephone(value);
-      setIsTelephoneValid(value.length === 10); // Valida que tenga exactamente 10 dígitos
+      setIsTelephoneValid(value.length >= 10); // Valida que tenga exactamente 10 dígitos
     } else {
       setIsTelephoneValid(false);
     }
@@ -61,7 +61,7 @@ const CommunicationPhone = ({ idComunico, selectedAnswerValue }) => {
   return (
     <>
       {selectedAnswerValue === 10 && (
-        <Stack gap={2} className="col-md-8 mx-auto">
+        <Stack gap={2} className="col-md-12 mx-auto">
           <div className="p-2">
             <Form.Group className="mb-2">
               <Form.Label>Teléfono del que se comunicó</Form.Label>
@@ -72,9 +72,10 @@ const CommunicationPhone = ({ idComunico, selectedAnswerValue }) => {
                 value={telephone}
                 onChange={handleTelephoneChange}
                 isInvalid={!isTelephoneValid}
+                maxLength={13}
               />
               <Form.Control.Feedback type="invalid">
-                El teléfono debe contener exactamente 10 dígitos.
+                El teléfono debe contener almenos 10 dígitos, 13 dígitos internacional.
               </Form.Control.Feedback>
             </Form.Group>
           </div>

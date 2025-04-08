@@ -238,6 +238,12 @@ const Telephones = () => {
       );
       return; // Bloquear la acción si el flujo está activo
     }
+    if (searchResults.length === 0 || !searchResults[0].idCuenta) {
+      toast.warning("Error 400: No hay una cuenta válida seleccionada", {
+        position: "top-right"
+      });
+      return;
+    }
     setSelectedAnswer({
       value: 10,
       dataPhone: {
@@ -260,7 +266,7 @@ const Telephones = () => {
         fecha_Insert: 0,
         calificacion: 0,
         activo: 0,
-        idModo: 2201
+        idModo: 2201 //Llamada de entrada
       }
     });
   };
@@ -294,7 +300,7 @@ const Telephones = () => {
         fecha_Insert: row.fecha_Insert,
         calificacion: row.calificacion,
         activo: row.activo,
-        idModo: 2202
+        idModo: 2202 //Llamada manual
       }
     });
   };

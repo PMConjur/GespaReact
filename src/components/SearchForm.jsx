@@ -30,7 +30,7 @@ const SearchForm = () => {
     handleAutomaticSearch,
     userActiveFlow // Obtener userActiveFlow del contexto
   } = useContext(AppContext);
-  console.log(userActiveFlow); // Verifica el valor de userActiveFlow
+  //console.log(userActiveFlow); // Verifica el valor de userActiveFlow
   const [inputError, setInputError] = useState(""); // Estado para el mensaje de error
 
   // Limpiar el mensaje de error cuando el filtro cambie

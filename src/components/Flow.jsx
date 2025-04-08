@@ -31,7 +31,7 @@ const Flow = () => {
     stoppedTimeSticky,
     setUserActiveFlow // Agregar función del contexto para actualizar userActiveFlow
   } = useContext(AppContext); // Agrega funciones del contexto para manejar estados
- 
+
   const [userFlowData, setUserFlowData] = useState([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(null);
   const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -235,7 +235,7 @@ const Flow = () => {
   //console.log(stoppedTimeSticky);
   const handleSave = async (comment) => {
     const tiempoEnCuenta = stoppedTimeSticky || "00:00:00"; // Usa el tiempo capturado por TimmerAccount
-    const duracion = stoppedTime || "00:00:02"; // Usa el tiempo detenido del cronómetro interno de Flow.jsx
+    const duracion = stoppedTime || "00:00:00"; // Usa el tiempo detenido del cronómetro interno de Flow.jsx
 
     const dataManagment = {
       idCartera: searchResults?.[0].idCartera,
@@ -259,17 +259,25 @@ const Flow = () => {
     };
 
     console.log("Datos de gestión a guardar:", dataManagment);
-    try {
-      const response = await saveManagment(dataManagment); // Llama al servicio saveManagment
-      if (response) {
-        toast.success("Gestión guardada correctamente.");
-        handleLastAnswerActions(); // Ejecuta las acciones según las condiciones
-      } else {
-        toast.error("Error al guardar la gestión.");
+    if (
+      communicationData.telephone === "" &&
+      selectedAnswer.dataPhone.idModo === 2201
+    ) {
+      toast.error("El número telefónico no puede estar vacío.");
+      return;
+    } else {
+      try {
+        //const response = await saveManagment(dataManagment); // Llama al servicio saveManagment
+        if (response) {
+          toast.success("Gestión guardada correctamente.");
+          handleLastAnswerActions(); // Ejecuta las acciones según las condiciones
+        } else {
+          toast.error("Error al guardar la gestión.");
+        }
+      } catch (error) {
+        console.error("Error al guardar la gestión:", error);
+        toast.error("Ocurrió un error al guardar la gestión.");
       }
-    } catch (error) {
-      console.error("Error al guardar la gestión:", error);
-      toast.error("Ocurrió un error al guardar la gestión.");
     }
   };
 
@@ -277,7 +285,7 @@ const Flow = () => {
   useEffect(() => {
     // Limpiar estados antes de comenzar nuevamente
     clearStates();
-    
+
     userFlow()
       .then((response) => {
         if (response && response.length > 0) {
@@ -308,8 +316,6 @@ const Flow = () => {
       .catch((error) => {
         console.error("Error fetching user flow data:", error);
       });
-
- 
   }, [selectedAnswer]); //Aqui se recibe el flujo por defecto y se maneja el selectedAnswer.value el cual equivale a la llamada manual o de entrada
 
   //Accion de boton de regreso
