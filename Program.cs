@@ -116,6 +116,16 @@ builder.Services.AddScoped<IEjecutivoService, EjecutivoService>(provider =>
     var connectionString = configuration.GetConnectionString("Piso2Amex");
     return new EjecutivoService(configuration, ejecutivoRepository, busquedaRepository, searchRepository, searchService, new Catalogos(), new DataTable(), new DataTable());
 });
+builder.Services.AddScoped<IEjecutivoService, EjecutivoService>(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    var ejecutivoRepository = provider.GetRequiredService<IEjecutivoRepository>();
+    var busquedaRepository = provider.GetRequiredService<IBusquedaRepository>();
+    var searchRepository = provider.GetRequiredService<ISearchRepository>();
+    var searchService = provider.GetRequiredService<ISearchService>();
+    var connectionString = configuration.GetConnectionString("Piso2Amex");
+    return new EjecutivoService(configuration, ejecutivoRepository, busquedaRepository, searchRepository, searchService, new Catalogos(), new DataTable(), new DataTable());
+});
 
 
 var app = builder.Build();

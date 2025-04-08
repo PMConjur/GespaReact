@@ -1597,6 +1597,27 @@ namespace NoriAPI.Controllers
         }
         #endregion
 
+        #region Todo
+        [HttpGet("detalles-cuenta/{idCuenta}/{idCartera}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetDetallesCuenta(string idCuenta, int idCartera)
+        {
+            if (string.IsNullOrEmpty(idCuenta) || idCartera <= 0)
+            {
+                return BadRequest("Los parámetros 'idCuenta' y 'idCartera' son obligatorios y deben ser válidos.");
+            }
+
+            var detalles = await _ejecutivoService.ObtenerDetallesCuenta(idCuenta, idCartera);
+
+            if (detalles == null)
+            {
+                return NotFound($"No se encontraron detalles para la cuenta '{idCuenta}' y cartera '{idCartera}'.");
+            }
+
+            return Ok(detalles);
+        }
+        #endregion
+
         #region Adicionales
         [HttpGet("Adicionales{idCartera}/{idCuenta}")]
 
