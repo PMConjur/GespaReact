@@ -77,6 +77,14 @@ const Validators = ({ show, handleClose, handleValidate }) => {
       const idEjecutivo = validator; // idEjecutivo seleccionado por el usuario
       const Contraseña = password; // Contraseña ingresada por el usuario
 
+         // Imprime los datos que se enviarán al endpoint
+    console.log("Datos enviados a fetchValidators:", {
+      idProducto,
+      idEjecutivo,
+      Contraseña,
+    });
+
+
       const response = await fetchValidators(
         idProducto,
         idEjecutivo,

@@ -94,7 +94,8 @@ const CalculatorSimulator = ({show, handleClose}) => {
             montoDescuento: data.montoDescuento,
             saldo: data.saldo,
             fechaCorte: data.fechaCorte,
-            descuento: data.descuento
+            descuento: data.descuento,
+            dias1ErPago: data.dias1erPago
           });
         } else {
           console.error("La respuesta del endpoint no contiene los datos esperados:", data);
@@ -493,7 +494,7 @@ const handleSaveOffering = async () => {
         monto: parseFloat(pago.pago), // Convertir a número respetando decimales
         fecha: new Date(pago.fecha).toISOString().split("T")[0], // Formato YYYY-MM-DD
     })),
-      dias1erPago: 1,
+    dias1erPago: summaryData.dias1ErPago, // Asigna el valor de data.maxDias
       fechaCorte: (() => {
         const [datePart] = summaryData.fechaCorte.split(" "); // Extrae solo la parte de la fecha antes del espacio
         const [day, month, year] = datePart.split("/"); // Divide la fecha en día, mes y año
@@ -512,9 +513,13 @@ const handleSaveOffering = async () => {
     toast.success("Ofrecimiento guardado correctamente.");
     console.log("Respuesta del endpoint fetchSaveOffering:", response);
 
-    // Actualiza el modal llamando a fetchData
-    const idCartera = 1; // Ejemplo de valor
-    fetchData(idCartera, idCuenta, selectedHerramienta || 136); // Llama a fetchData para actualizar los datos del modal
+    // Verifica si fetchData está definida antes de llamarla
+    if (typeof fetchData === "function") {
+      const idCartera = 1; // Ejemplo de valor
+      fetchData(idCartera, idCuenta, selectedHerramienta || 136); // Llama a fetchData para actualizar los datos del modal
+    } else {
+      console.warn("fetchData no está definida. No se actualizarán los datos del modal.");
+    }
   } catch (error) {
     console.error("Error al guardar el ofrecimiento:", error);
     toast.error("Error al guardar el ofrecimiento.");
@@ -773,7 +778,7 @@ const handleSaveOffering = async () => {
                                     .split("T")[0]
                                 } // Fecha máxima: 15 días después de hoy
                               />
-                              <Form.Label>Máximo 15 días</Form.Label>
+                              <Form.Label>Máximo 28 días</Form.Label>
                             </Form.Group>
                           </div>
                           <div
@@ -836,9 +841,7 @@ const handleSaveOffering = async () => {
                                     whiteSpace: "nowrap",
                                   }}
                                 >
-                                  {`${new Date(
-                                    pago.fecha
-                                  ).toLocaleDateString()}`}
+                                  {pago.fecha} {/* Usa la fecha directamente sin convertirla */}
                                 </td>
                                 <td
                                   style={{
@@ -1025,7 +1028,7 @@ const handleSaveOffering = async () => {
                                   variant="primary"
                                   onClick={handleCalculateSecondPart}
                                 >
-                                  Calcular Plazos
+                                  Calcular
                                 </Button>
                               </div>
                             </Row>
