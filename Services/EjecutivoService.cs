@@ -944,7 +944,7 @@ namespace NoriAPI.Services
         public async Task<ResultadoCalculadora> ValidateInfoCalculadora1(int Cartera, string NoCuenta, int idHerr)
         {
             string mensaje = null;
-            int MaxDescuento = 0, MinDescuento, _iMensualidades = 1;
+            int MaxDescuento = 0, MinDescuento, _iMensualidades = 1, negociacionVigente = 0;
             DataTable dtnegociaciones = new DataTable();
             DataTable dtfiltrado = new DataTable();
             DataTable dtPlazos = new DataTable();
@@ -964,11 +964,12 @@ namespace NoriAPI.Services
             DataTable dtFiltrado = new DataTable();
             if (dtnegociaciones != null)
             {
-                dtnegociaciones.PrimaryKey = new DataColumn[] {
+                dtnegociaciones.PrimaryKey = new DataColumn[] 
+                {
                 dtnegociaciones.Columns["Fecha_Insert"],
                 dtnegociaciones.Columns["Segundo_Insert"],
                 dtnegociaciones.Columns["idHerramienta"]
-            };
+                };
                 dtnegociaciones.DefaultView.Sort = "FechaHora DESC";
 
                 // Crear nuevo DataTable solo con las columnas que quieres
@@ -1014,266 +1015,291 @@ namespace NoriAPI.Services
                     dtFiltrado.Rows.Add(fechaInsert, segundoInsert, herramienta, estado, vencimiento, saldo);
                     dtFiltrado.DefaultView.Sort = "Fecha_Insert DESC";
                     dtFiltrado = dtFiltrado.DefaultView.ToTable();
-
+                }
+                if (dtnegociaciones.Select("idEstado IN ( 2901, 2908) ").Length > 0)
+                {
+                    negociacionVigente ++;
+                    mensaje = "La cuenta tiene una negociación vigente.";
                 }
             }
-            //-----------------------------------Plazos------------------------------------------//
-
-            dtPlazos = await _ejecutivoRepository.ObtienePlazos(Cartera, NoCuenta);
-            if (dtPlazos != null)
+            if (negociacionVigente == 0)
             {
-                DataColumn dcFechaHora = new DataColumn("FechaHora_Insert", typeof(DateTime));
-                dtPlazos.Columns.Add(dcFechaHora);
-                for (int i = 0; i < dtPlazos.Rows.Count; i++)
-                {
-                    DateTime dtFecha = Convert.ToDateTime(dtPlazos.Rows[i]["Fecha_Insert"]);
+                //-----------------------------------Plazos------------------------------------------//
 
-                    // Intentar convertir "Segundo_Insert" a un TimeSpan
-                    if (TimeSpan.TryParse(dtPlazos.Rows[i]["Segundo_Insert"].ToString(), out TimeSpan tsSegundo))
+                dtPlazos = await _ejecutivoRepository.ObtienePlazos(Cartera, NoCuenta);
+                if (dtPlazos != null)
+                {
+                    DataColumn dcFechaHora = new DataColumn("FechaHora_Insert", typeof(DateTime));
+                    dtPlazos.Columns.Add(dcFechaHora);
+                    for (int i = 0; i < dtPlazos.Rows.Count; i++)
                     {
-                        dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.Add(tsSegundo);
+                        DateTime dtFecha = Convert.ToDateTime(dtPlazos.Rows[i]["Fecha_Insert"]);
+
+                        // Intentar convertir "Segundo_Insert" a un TimeSpan
+                        if (TimeSpan.TryParse(dtPlazos.Rows[i]["Segundo_Insert"].ToString(), out TimeSpan tsSegundo))
+                        {
+                            dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.Add(tsSegundo);
+                        }
+                        else if (double.TryParse(dtPlazos.Rows[i]["Segundo_Insert"].ToString(), out double segundos))
+                        {
+                            dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.AddSeconds(segundos);
+                        }
+                        else
+                        {
+                            throw new InvalidCastException($"No se pudo convertir 'Segundo_Insert' en la fila {i} a TimeSpan.");
+                        }
+                        //DateTime dtFecha = Convert.ToDateTime(dtPlazos.Rows[i]["Fecha_Insert"]);
+                        //TimeSpan tsSegundo = (TimeSpan)dtPlazos.Rows[i]["Segundo_Insert"];
+                        //dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.Add(tsSegundo);
                     }
-                    else if (double.TryParse(dtPlazos.Rows[i]["Segundo_Insert"].ToString(), out double segundos))
+                }
+
+                //----------------------------------------Pagos----------------------------------------------//
+
+                dtPagos = await _ejecutivoRepository.ObtienePagos(Cartera, NoCuenta);
+                if (dtPagos != null)
+                {
+                    dtPagos.DefaultView.Sort = "FechaPago DESC";
+                }
+
+                //------------------------------------Herramientas------------------------------------------//
+
+                dtHerramientas = await _ejecutivoRepository.ObtieneHerramientas(NoCuenta);
+
+                //----------------------------------Herramientas completas ---------------------------------//
+
+                HerramientasC = await _ejecutivoRepository.ObtieneHerramientasCompletas();
+                HerramientasC.PrimaryKey = new DataColumn[] { HerramientasC.Columns["idHerramienta"] };
+
+                //----------------------------------------Saldo y producto----------------------------------------------//
+
+                tblCuenta = await _ejecutivoRepository.InfoCuenta(Cartera, NoCuenta);
+                //-----------------------------------------------------------------------------------------//
+
+                dtDescuentos.Columns.Add("idHerramienta");
+                dtDescuentos.Columns.Add("Descuento");
+                dtDescuentos.Columns.Add("MáxDescuento");
+                dtDescuentos.Columns.Add("MaxDías");
+
+                string sHerramientas = "idHerramienta IN (0";
+                double fDescuento = 0, fMaxDesc = 0;
+                int iMaxDias = 0, idHerramienta_ = 0;
+
+                for (int i = 0; i < dtHerramientas.Columns.Count; i++)
+                {
+                    //Herramientas que no aplica (0 en idHerramienta)
+                    if (dtHerramientas.Rows[0][i].ToString().Equals("0") || dtHerramientas.Columns[i].ColumnName.Contains("Tasa"))
+                    {  // Convenios
+                        if (dtHerramientas.Columns[i].ColumnName.Contains("136") || dtHerramientas.Columns[i].ColumnName.Contains("144"))
+                            i += 2;
+                        continue;
+                    }
+
+                    // Agrega idHerramienta para filtro y días
+                    if (int.TryParse(dtHerramientas.Columns[i].ColumnName, out idHerramienta_))
                     {
-                        dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.AddSeconds(segundos);
+                        sHerramientas += "," + dtHerramientas.Columns[i].ColumnName;
+                        iMaxDias = Convert.ToInt16(dtHerramientas.Rows[0][i].ToString());
                     }
-                    else
+
+                    //Solo si tiene descuento.
+                    if (dtHerramientas.Columns[i + 1].ColumnName.Contains("Descuento"))
                     {
-                        throw new InvalidCastException($"No se pudo convertir 'Segundo_Insert' en la fila {i} a TimeSpan.");
+                        i++;
+                        fDescuento = Convert.ToDouble(dtHerramientas.Rows[0][i].ToString());
                     }
-                    //DateTime dtFecha = Convert.ToDateTime(dtPlazos.Rows[i]["Fecha_Insert"]);
-                    //TimeSpan tsSegundo = (TimeSpan)dtPlazos.Rows[i]["Segundo_Insert"];
-                    //dtPlazos.Rows[i]["FechaHora_Insert"] = dtFecha.Add(tsSegundo);
+
+                    if (dtHerramientas.Columns[i + 1].ColumnName.Contains("Máximo"))
+                    {
+                        i++;
+                        fMaxDesc = Convert.ToDouble(dtHerramientas.Rows[0][i].ToString());
+                    }
+
+                    DataRow drDescuento = dtDescuentos.NewRow();
+                    drDescuento["idHerramienta"] = idHerramienta_;
+                    drDescuento["Descuento"] = fDescuento;
+                    drDescuento["MáxDescuento"] = fMaxDesc;
+                    drDescuento["MaxDías"] = iMaxDias;
+                    dtDescuentos.Rows.Add(drDescuento);
+
+                    fDescuento = fMaxDesc = iMaxDias = idHerramienta_ = 0;
+                    dtDescuentos.PrimaryKey = new DataColumn[] { dtDescuentos.Columns["idHerramienta"] };
                 }
-            }
+                sHerramientas = sHerramientas.TrimEnd(',') + ")";
+                // IDs que quieres filtrar para mostrar en el combox
+                string idsString = sHerramientas.Substring(sHerramientas.IndexOf("(") + 1, sHerramientas.IndexOf(")") - sHerramientas.IndexOf("(") - 1);
+                string[] idsArray = idsString.Split(',');
+                List<int> idsFiltrar = new List<int>();
 
-            //----------------------------------------Pagos----------------------------------------------//
-
-            dtPagos = await _ejecutivoRepository.ObtienePagos(Cartera, NoCuenta);
-            if (dtPagos != null)
-            {
-                dtPagos.DefaultView.Sort = "FechaPago DESC";
-            }
-
-            //------------------------------------Herramientas------------------------------------------//
-
-            dtHerramientas = await _ejecutivoRepository.ObtieneHerramientas(NoCuenta);
-
-            //----------------------------------Herramientas completas ---------------------------------//
-
-            HerramientasC = await _ejecutivoRepository.ObtieneHerramientasCompletas();
-            HerramientasC.PrimaryKey = new DataColumn[] { HerramientasC.Columns["idHerramienta"] };
-
-            //----------------------------------------Saldo y producto----------------------------------------------//
-
-            tblCuenta = await _ejecutivoRepository.InfoCuenta(Cartera, NoCuenta);
-            //-----------------------------------------------------------------------------------------//
-
-            dtDescuentos.Columns.Add("idHerramienta");
-            dtDescuentos.Columns.Add("Descuento");
-            dtDescuentos.Columns.Add("MáxDescuento");
-            dtDescuentos.Columns.Add("MaxDías");
-
-            string sHerramientas = "idHerramienta IN (0";
-            double fDescuento = 0, fMaxDesc = 0;
-            int iMaxDias = 0, idHerramienta_ = 0;
-
-            for (int i = 0; i < dtHerramientas.Columns.Count; i++)
-            {
-                //Herramientas que no aplica (0 en idHerramienta)
-                if (dtHerramientas.Rows[0][i].ToString().Equals("0") || dtHerramientas.Columns[i].ColumnName.Contains("Tasa"))
-                {  // Convenios
-                    if (dtHerramientas.Columns[i].ColumnName.Contains("136") || dtHerramientas.Columns[i].ColumnName.Contains("144"))
-                        i += 2;
-                    continue;
-                }
-
-                // Agrega idHerramienta para filtro y días
-                if (int.TryParse(dtHerramientas.Columns[i].ColumnName, out idHerramienta_))
+                foreach (string id in idsArray)
                 {
-                    sHerramientas += "," + dtHerramientas.Columns[i].ColumnName;
-                    iMaxDias = Convert.ToInt16(dtHerramientas.Rows[0][i].ToString());
+                    if (int.TryParse(id.Trim(), out int idInt))
+                    {
+                        idsFiltrar.Add(idInt);
+                    }
                 }
 
-                //Solo si tiene descuento.
-                if (dtHerramientas.Columns[i + 1].ColumnName.Contains("Descuento"))
+                dtHerrFiltradas.Columns.Add("idHerramienta", typeof(int));
+                dtHerrFiltradas.Columns.Add("Nombre", typeof(string));
+
+                // Recorrer las filas y filtrar
+                foreach (DataRow row in HerramientasC.Rows)
                 {
-                    i++;
-                    fDescuento = Convert.ToDouble(dtHerramientas.Rows[0][i].ToString());
+                    int idHerramienta = Convert.ToInt32(row["idHerramienta"]);
+                    if (idsFiltrar.Contains(idHerramienta))
+                    {
+                        DataRow newRow = dtHerrFiltradas.NewRow();
+                        newRow["idHerramienta"] = idHerramienta;
+                        newRow["Nombre"] = row["Nombre"].ToString();
+                        dtHerrFiltradas.Rows.Add(newRow);
+                    }
                 }
+                //----------------------------------------Producto Y ---------------------------------//
+                produc = await _ejecutivoRepository.ObtieneProducto(NoCuenta);
 
-                if (dtHerramientas.Columns[i + 1].ColumnName.Contains("Máximo"))
+                //------------------------------------------------------------------------------------//
+
+                DateTime fechaReferencia = DateTime.Now;
+
+                if (InfoProducto.Columns.Contains("Fechacorte") && InfoProducto.Columns["Fechacorte"].ToString() != "")
                 {
-                    i++;
-                    fMaxDesc = Convert.ToDouble(dtHerramientas.Rows[0][i].ToString());
+                    DateTime FechaCorte = FechaCorte_(InfoProducto.Rows[0]["Fechacorte"].ToString().Replace("00:00:00:000", ""));
+                    FechaCorte = new DateTime(fechaReferencia.Year, fechaReferencia.Month, FechaCorte.Day);
+                    if (FechaCorte >= DateTime.Today)
+                        FechaCorte = FechaCorte.AddMonths(-1);
+
+                    int DíasRes = 0, DíasSum = 3;
+
+                    //Aumenta fecha corte.
+                    for (int i = 1; i <= DíasSum; i++)
+                        if (FechaCorte.AddDays(i).DayOfWeek == DayOfWeek.Sunday || FechaCorte.AddDays(i).DayOfWeek == DayOfWeek.Saturday)
+                            DíasSum++;
+
+                    if (FechaCorte.AddDays(DíasSum) < DateTime.Today)
+                        FechaCorte = FechaCorte.AddMonths(1);
+
+                    DíasRes = 3;// 5;
+                    DíasSum = 2;// 3;
+                    for (int i = 1; i <= DíasSum; i++)
+                        if (FechaCorte.AddDays(i).DayOfWeek == DayOfWeek.Sunday || FechaCorte.AddDays(i).DayOfWeek == DayOfWeek.Saturday)
+                            DíasSum++;
+
+                    for (int i = 1; i <= DíasRes; i++)
+                        if (FechaCorte.AddDays(-i).DayOfWeek == DayOfWeek.Sunday || FechaCorte.AddDays(-i).DayOfWeek == DayOfWeek.Saturday)
+                            DíasRes++;
+
+                    if (DateTime.Today >= FechaCorte.AddDays(-DíasRes) && DateTime.Today <= FechaCorte.AddDays(DíasSum))
+                        sHerramientas = sHerramientas.Replace("142", "0");
+
                 }
+                HerramientasC.DefaultView.RowFilter = sHerramientas;
 
-                DataRow drDescuento = dtDescuentos.NewRow();
-                drDescuento["idHerramienta"] = idHerramienta_;
-                drDescuento["Descuento"] = fDescuento;
-                drDescuento["MáxDescuento"] = fMaxDesc;
-                drDescuento["MaxDías"] = iMaxDias;
-                dtDescuentos.Rows.Add(drDescuento);
+                //aqui se busca dependiendo de lo que escoja///////////////////////////
+                DataRow drHerramienta = HerramientasC.Rows.Find(idHerr);//convenio
 
-                fDescuento = fMaxDesc = iMaxDias = idHerramienta_ = 0;
-                dtDescuentos.PrimaryKey = new DataColumn[] { dtDescuentos.Columns["idHerramienta"] };
-            }
-            sHerramientas = sHerramientas.TrimEnd(',') + ")";
-            // IDs que quieres filtrar para mostrar en el combox
-            string idsString = sHerramientas.Substring(sHerramientas.IndexOf("(") + 1, sHerramientas.IndexOf(")") - sHerramientas.IndexOf("(") - 1);
-            string[] idsArray = idsString.Split(',');
-            List<int> idsFiltrar = new List<int>();
+                DataRow drHerramientaAmex = dtDescuentos.Rows.Find(idHerr);//convenio 136
 
-            foreach (string id in idsArray)
-            {
-                if (int.TryParse(id.Trim(), out int idInt))
+                //////////////Metodo EstableceHerramienta/////////////////////
+
+
+                string Herramienta = drHerramienta["Nombre"].ToString();
+                double Saldo, MontoRequerido, Montodescuento;
+                int días1erPago = 0, días1erPago_;
+
+                //Falta validar el saldo
+                if (!double.TryParse(tblCuenta.Rows[0]["Saldo"].ToString(), out Saldo))
                 {
-                    idsFiltrar.Add(idInt);
+                    //mandar error
                 }
-            }
-
-            dtHerrFiltradas.Columns.Add("idHerramienta", typeof(int));
-            dtHerrFiltradas.Columns.Add("Nombre", typeof(string));
-
-            // Recorrer las filas y filtrar
-            foreach (DataRow row in HerramientasC.Rows)
-            {
-                int idHerramienta = Convert.ToInt32(row["idHerramienta"]);
-                if (idsFiltrar.Contains(idHerramienta))
+                if (Saldo <= 0)
                 {
-                    DataRow newRow = dtHerrFiltradas.NewRow();
-                    newRow["idHerramienta"] = idHerramienta;
-                    newRow["Nombre"] = row["Nombre"].ToString();
-                    dtHerrFiltradas.Rows.Add(newRow);
+                    //mandar error
                 }
-            }
-            //----------------------------------------Producto Y ---------------------------------//
-            produc = await _ejecutivoRepository.ObtieneProducto(NoCuenta);
 
-            //------------------------------------------------------------------------------------//
+                // Cálculo del descuento.
+                MaxDescuento = Convert.ToInt16(drHerramientaAmex["MáxDescuento"].ToString());
+                MinDescuento = Convert.ToInt16(drHerramientaAmex["Descuento"].ToString());
 
-            DateTime fechaReferencia = DateTime.Now;
+                //  Cálculo de días de corte
+                DateTime Fecha_Corte = new DateTime();
+                if (drHerramienta["CampoFechaCorte"].ToString() != "")
+                {
+                    Fecha_Corte = FechaCorte_(_ejecutivoRepository.CampoCalculado(drHerramienta["CampoFechaCorte"].ToString()).ToString().Replace("00:00:00:000", ""));
+                    días1erPago = Math.Min(días1erPago, (int)Math.Abs((Fecha_Corte - DateTime.Today).TotalDays));
 
-            if (InfoProducto.Columns.Contains("Fechacorte") && InfoProducto.Columns["Fechacorte"].ToString() != "")
-            {
-                DateTime FechaCorte = FechaCorte_(InfoProducto.Rows[0]["Fechacorte"].ToString().Replace("00:00:00:000", ""));
-                FechaCorte = new DateTime(fechaReferencia.Year, fechaReferencia.Month, FechaCorte.Day);
-                if (FechaCorte >= DateTime.Today)
-                    FechaCorte = FechaCorte.AddMonths(-1);
+                    if (!Fecha_Corte.ToString().Contains("01/01/0001") && Fecha_Corte <= DateTime.Today)
+                        Fecha_Corte = Fecha_Corte.AddMonths(1);
+                }
 
-                int DíasRes = 0, DíasSum = 3;
+                // Cálculo de monto requerido.
+                if (double.TryParse(
+                   _ejecutivoRepository.CampoCalculado(drHerramienta["CálculoMontoRequerido"].ToString()).ToString(),
+                   out MontoRequerido) || MontoRequerido == 0)
+                {
+                    MontoRequerido = MontoRequerido * (1 - MinDescuento / (float)100);
+                }
+                else
+                {
+                    //Mandar error
+                }
 
-                //Aumenta fecha corte.
-                for (int i = 1; i <= DíasSum; i++)
-                    if (FechaCorte.AddDays(i).DayOfWeek == DayOfWeek.Sunday || FechaCorte.AddDays(i).DayOfWeek == DayOfWeek.Saturday)
-                        DíasSum++;
+                //  Días primer pago
+                MontoRequerido = Math.Round(MontoRequerido, 2);
+                Montodescuento = (Saldo * (MinDescuento / (float)100));
+                Montodescuento = Math.Round(Montodescuento, 2);
 
-                if (FechaCorte.AddDays(DíasSum) < DateTime.Today)
-                    FechaCorte = FechaCorte.AddMonths(1);
+                //Math.Ceiling(MontoRequerido * 100) / 100;
+                días1erPago = Convert.ToInt32(drHerramienta["Días1erPago"]);
+                días1erPago_ = Convert.ToInt32(drHerramienta["Días1erPago"]);
 
-                DíasRes = 3;// 5;
-                DíasSum = 2;// 3;
-                for (int i = 1; i <= DíasSum; i++)
-                    if (FechaCorte.AddDays(i).DayOfWeek == DayOfWeek.Sunday || FechaCorte.AddDays(i).DayOfWeek == DayOfWeek.Saturday)
-                        DíasSum++;
+                if (dtnegociaciones != null)
+                {
+                    DataRow[] drParcial = dtnegociaciones.Select("idHerramienta IN (145,137) AND Fecha_Insert > '" + DateTime.Today.AddMonths(-1).ToShortDateString() + "'");
+                    if (drParcial.Length > 0)
+                        días1erPago = 28;
+                }
 
-                for (int i = 1; i <= DíasRes; i++)
-                    if (FechaCorte.AddDays(-i).DayOfWeek == DayOfWeek.Sunday || FechaCorte.AddDays(-i).DayOfWeek == DayOfWeek.Saturday)
-                        DíasRes++;
+                _iMensualidades = Convert.ToInt16(drHerramienta["Mensualidades"]);
 
-                if (DateTime.Today >= FechaCorte.AddDays(-DíasRes) && DateTime.Today <= FechaCorte.AddDays(DíasSum))
-                    sHerramientas = sHerramientas.Replace("142", "0");
+                //Días Máximos
+                iMaxDias = Convert.ToInt32(drHerramientaAmex["MaxDías"]);
 
-            }
-            HerramientasC.DefaultView.RowFilter = sHerramientas;
+                /////////////////////////////Aqui termina el metodo///////////////////////////////////////////
 
-            //aqui se busca dependiendo de lo que escoja///////////////////////////
-            DataRow drHerramienta = HerramientasC.Rows.Find(idHerr);//convenio
-            DataRow drHerramientaAmex = dtDescuentos.Rows.Find(idHerr);//convenio 136
+                //Convierte datatable a list
 
-            //////////////Metodo EstableceHerramienta/////////////////////
+                List<OfrecimientosInfo> listaOfrecimientos = _ejecutivoRepository.ConvertirDataTableALista(dtFiltrado);
+                List<HerramientasInfo> listaHerramientas = _ejecutivoRepository.ConvertirDataTableALista_(dtHerrFiltradas);
 
-
-            string Herramienta = drHerramienta["Nombre"].ToString();
-            double Saldo, MontoRequerido, Montodescuento;
-            int días1erPago = 0;
-
-            //Falta validar el saldo
-            if (!double.TryParse(tblCuenta.Rows[0]["Saldo"].ToString(), out Saldo))
-            {
-                //mandar error
-            }
-            if (Saldo <= 0)
-            {
-                //mandar error
-            }
-
-            // Cálculo del descuento.
-            MaxDescuento = Convert.ToInt16(drHerramientaAmex["MáxDescuento"].ToString());
-            MinDescuento = Convert.ToInt16(drHerramientaAmex["Descuento"].ToString());
-
-            //  Cálculo de días de corte
-            DateTime Fecha_Corte = new DateTime();
-            if (drHerramienta["CampoFechaCorte"].ToString() != "")
-            {
-                Fecha_Corte = FechaCorte_(_ejecutivoRepository.CampoCalculado(drHerramienta["CampoFechaCorte"].ToString()).ToString().Replace("00:00:00:000", ""));
-                días1erPago = Math.Min(días1erPago, (int)Math.Abs((Fecha_Corte - DateTime.Today).TotalDays));
-
-                if (!Fecha_Corte.ToString().Contains("01/01/0001") && Fecha_Corte <= DateTime.Today)
-                    Fecha_Corte = Fecha_Corte.AddMonths(1);
-            }
-
-            // Cálculo de monto requerido.
-            if (double.TryParse(
-               _ejecutivoRepository.CampoCalculado(drHerramienta["CálculoMontoRequerido"].ToString()).ToString(),
-               out MontoRequerido) || MontoRequerido == 0)
-            {
-                MontoRequerido = MontoRequerido * (1 - MinDescuento / (float)100);
+                var resultadoCalculadora = new ResultadoCalculadora
+                {
+                    Ofrecimientos = listaOfrecimientos,
+                    Herramientas = listaHerramientas,
+                    MontoRequerido = MontoRequerido,
+                    Descuento = MinDescuento,
+                    MaxDias = días1erPago,
+                    dias1erpago = días1erPago_,
+                    MontoDescuento = Montodescuento,
+                    Saldo = Saldo,
+                    FechaCorte = Convert.ToString(Fecha_Corte),                    
+                };
+                return resultadoCalculadora;
             }
             else
             {
-                //Mandar error
-            }
+                /////////////////////////////Aqui termina el metodo///////////////////////////////////////////
 
-            //  Días primer pago
-            MontoRequerido = Math.Round(MontoRequerido, 2);
-            Montodescuento = (Saldo * (MinDescuento / (float)100));
-            Montodescuento = Math.Round(Montodescuento, 2);
+                //Convierte datatable a list
 
-            //Math.Ceiling(MontoRequerido * 100) / 100;
-            días1erPago = Convert.ToInt32(drHerramienta["Días1erPago"]);
-
-            if (dtnegociaciones != null)
-            {
-                DataRow[] drParcial = dtnegociaciones.Select("idHerramienta IN (145,137) AND Fecha_Insert > '" + DateTime.Today.AddMonths(-1).ToShortDateString() + "'");
-                if (drParcial.Length > 0)
-                    días1erPago = 28;
-            }
-
-            _iMensualidades = Convert.ToInt16(drHerramienta["Mensualidades"]);
-
-            //Días Máximos
-            iMaxDias = Convert.ToInt32(drHerramientaAmex["MaxDías"]);
-
-            /////////////////////////////Aqui termina el metodo///////////////////////////////////////////
-
-            //Convierte datatable a list
-
-            List<OfrecimientosInfo> listaOfrecimientos = _ejecutivoRepository.ConvertirDataTableALista(dtFiltrado);
-            List<HerramientasInfo> listaHerramientas = _ejecutivoRepository.ConvertirDataTableALista_(dtHerrFiltradas);
-
-            var resultadoCalculadora = new ResultadoCalculadora
-            {
-                Ofrecimientos = listaOfrecimientos,
-                Herramientas = listaHerramientas,
-                MontoRequerido = MontoRequerido,
-                Descuento = MinDescuento,
-                MaxDias = días1erPago,
-                MontoDescuento = Montodescuento,
-                Saldo = Saldo,
-                FechaCorte = Convert.ToString(Fecha_Corte)
-            };
-            return resultadoCalculadora;
+                List<OfrecimientosInfo> listaOfrecimientos = _ejecutivoRepository.ConvertirDataTableALista(dtFiltrado);
+                
+                var resultadoCalculadora = new ResultadoCalculadora
+                {
+                    Ofrecimientos = listaOfrecimientos,                    
+                    Mensaje = mensaje
+                };
+                return resultadoCalculadora;
+            }                        
         }
 
         #endregion
@@ -1534,6 +1560,17 @@ namespace NoriAPI.Services
                     }
                 }
             }
+
+
+
+
+
+
+
+
+
+
+
             //Muestra cálculos
             double MontoRequerido_ = Convert.ToDouble(MontoRequerido.ToString());
             double MontoNegociado_ = Convert.ToDouble(dMontoNegociado.ToString());
@@ -2070,53 +2107,73 @@ namespace NoriAPI.Services
         }
         public async Task<NegociacionPlazosOutput> GuardaNegociacionPlazos(NegociacionPlazosInput input)
         {
+            int correo_correcto = 0;
             using (var connection = new SqlConnection(_connectionString))
             {
-                await connection.OpenAsync();
-                var parameters = new DynamicParameters();
-                parameters.Add("@idCartera", input.IdCartera, DbType.Int16);
-                parameters.Add("@idCuenta", input.IdCuenta, DbType.String);
-                parameters.Add("@idEjecutivo", input.IdEjecutivo, DbType.Int32);
-                parameters.Add("@idHerramienta", input.IdHerramienta, DbType.Int32);
-                parameters.Add("@MontoNegociado", input.MontoNegociado, DbType.Decimal);
-                parameters.Add("@Plazos", input.Plazos, DbType.Int16);
-                parameters.Add("@CartaConvenio", input.CartaConvenio, DbType.Int16);
-                parameters.Add("@Correo", input.Correo, DbType.String);
-                parameters.Add("@FechaPago", input.FechaPago, DbType.String);
-                parameters.Add("@FechaFinNegociacion", input.FechaFinNegociacion, DbType.String);
-                parameters.Add("@idEjecutivoValidador", input.IdEjecutivoValidador, DbType.Int32);
-                parameters.Add("@Contraseña", input.Contrasena, DbType.String);
-                parameters.Add("@Fecha_Insert", input.FechaInsert, DbType.String);
-                parameters.Add("@Segundo_Insert", input.SegundoInsert, DbType.String);
-                parameters.Add("@Reestructura", input.Reestructura, DbType.Int16);
-                parameters.Add("@Condonacion", input.Condonacion, DbType.Int16);
-                parameters.Add("@idGrabacion", input.IdGrabacion, DbType.String);
-
-                try
+                if (input.CartaConvenio == 1)
                 {
-                    var result = await connection.QueryFirstOrDefaultAsync<NegociacionPlazosOutput>(
-                        "[dbo].[3.2.GuardaNegociaciónPlazos]",
-                        parameters,
-                        commandType: CommandType.StoredProcedure);
-
-                    return result;
-                }
-                catch (SqlException ex)
-                {
-                    // Manejar errores específicos de SQL
-                    NegociacionPlazosOutput errorResult = new NegociacionPlazosOutput();
-
-                    if (ex.Number == 50000) // Ejemplo: Error personalizado desde el SP
+                    if (!_ejecutivoRepository.ValidaCorreo(input.Correo))
                     {
-                        errorResult.Mensaje = ex.Message;
+                        correo_correcto++;
                     }
                     else
                     {
-                        // Loggear el error o lanzar una excepción genérica
-                        throw;
-                    }
-                    return errorResult;
+                        correo_correcto = 0;
+                    }                    
                 }
+                if (correo_correcto == 0)
+                {
+                    await connection.OpenAsync();
+                    var parameters = new DynamicParameters();
+                    parameters.Add("@idCartera", input.IdCartera, DbType.Int16);
+                    parameters.Add("@idCuenta", input.IdCuenta, DbType.String);
+                    parameters.Add("@idEjecutivo", input.IdEjecutivo, DbType.Int32);
+                    parameters.Add("@idHerramienta", input.IdHerramienta, DbType.Int32);
+                    parameters.Add("@MontoNegociado", input.MontoNegociado, DbType.Decimal);
+                    parameters.Add("@Plazos", input.Plazos, DbType.Int16);
+                    parameters.Add("@CartaConvenio", input.CartaConvenio, DbType.Int16);
+                    parameters.Add("@Correo", input.Correo, DbType.String);
+                    parameters.Add("@FechaPago", input.FechaPago, DbType.String);
+                    parameters.Add("@FechaFinNegociacion", input.FechaFinNegociacion, DbType.String);
+                    parameters.Add("@idEjecutivoValidador", input.IdEjecutivoValidador, DbType.Int32);
+                    parameters.Add("@Contraseña", input.Contrasena, DbType.String);
+                    parameters.Add("@Fecha_Insert", input.FechaInsert, DbType.String);
+                    parameters.Add("@Segundo_Insert", input.SegundoInsert, DbType.String);
+                    parameters.Add("@Reestructura", input.Reestructura, DbType.Int16);
+                    parameters.Add("@Condonacion", input.Condonacion, DbType.Int16);
+                    parameters.Add("@idGrabacion", input.IdGrabacion, DbType.String);
+                    try
+                    {
+                        var result = await connection.QueryFirstOrDefaultAsync<NegociacionPlazosOutput>(
+                            "[dbo].[3.2.GuardaNegociaciónPlazos]",
+                            parameters,
+                            commandType: CommandType.StoredProcedure);
+
+                        return result;
+                    }
+                    catch (SqlException ex)
+                    {
+                        // Manejar errores específicos de SQL
+                        NegociacionPlazosOutput errorResult = new NegociacionPlazosOutput();
+
+                        if (ex.Number == 50000) // Ejemplo: Error personalizado desde el SP
+                        {
+                            errorResult.Mensaje = ex.Message;
+                        }
+                        else
+                        {
+                            // Loggear el error o lanzar una excepción genérica
+                            throw;
+                        }
+                        return errorResult;
+                    }
+                }
+                else
+                {
+                    NegociacionPlazosOutput errorResult = new NegociacionPlazosOutput();
+                    errorResult.Mensaje = "La dirección de correo electrónica es inválida.";
+                    return errorResult;
+                }                
             }
         }
 

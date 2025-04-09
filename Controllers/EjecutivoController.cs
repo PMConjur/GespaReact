@@ -24,7 +24,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/ejecutivo")]
-    [Authorize]
+    //[Authorize]
     public class EjecutivoController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -342,9 +342,14 @@ namespace NoriAPI.Controllers
         public async Task<ActionResult<ResultadoCalculadora>> Calculadora_Simulador([FromQuery] int Cartera, string NoCuenta, int idHerr)
         {
             var InfoCalculadora = await _ejecutivoService.ValidateInfoCalculadora1(Cartera, NoCuenta, idHerr);
-
-            return Ok(InfoCalculadora); ;
-
+            if (InfoCalculadora.Mensaje != null)
+            {
+                return BadRequest(new { Ofrecimientos = InfoCalculadora.Ofrecimientos, Mensaje = InfoCalculadora.Mensaje });
+            }
+            else
+            {
+                return Ok(InfoCalculadora);                
+            }          
         }
 
         [HttpGet("Calculadora-2daParte")]
@@ -369,21 +374,22 @@ namespace NoriAPI.Controllers
             }
 
             return Ok(result);
-        }
+        }       
 
+        [HttpPost ("GuardaNegociacionPlazos")]
 
-        [HttpPost("GuardaNegociacionPlazos")]
         public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] NegociacionPlazosInput input)
         {
             var result = await _ejecutivoService.GuardaNegociacionPlazos(input);
 
             if (!string.IsNullOrEmpty(result.Mensaje))
             {
-                return BadRequest(result); // Devuelve BadRequest con el mensaje de error
+                return BadRequest(result.Mensaje); // Devuelve BadRequest con el mensaje de error
             }
 
             return Ok(result); // Devuelve el resultado si no hay error
         }
+
         [HttpPost("guarda-Elimina-Plazos")]
         public async Task<IActionResult> GuardaEliminaPlazos([FromBody] EliminaGuardaPlazos PlazosInfo)
         {
@@ -393,7 +399,8 @@ namespace NoriAPI.Controllers
 
         }
 
-        [HttpPost("IncrementaNegociacion")]
+
+        [HttpPost ("IncrementaNegociacion")]
         public async Task<IActionResult> IncrementaNegociacion([FromBody] IncrementoNegociacion incrementaNegInfo)
         {
             var result = await _ejecutivoService.IncrementaNegociacion(incrementaNegInfo);
@@ -408,11 +415,7 @@ namespace NoriAPI.Controllers
 
         }
 
-
-
         #endregion
-
-
 
         #region Busqueda
         [HttpGet("busqueda/{idCartera}/{idCuenta}/{Jerarquia}")]

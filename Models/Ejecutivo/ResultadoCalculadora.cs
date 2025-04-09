@@ -10,9 +10,10 @@ namespace NoriAPI.Models.Ejecutivo
         public double MontoRequerido { get; set; }
         public int Descuento { get; set; }
         public int MaxDias {  get; set; }
+        public int dias1erpago { get; set; }
         public double MontoDescuento { get; set; }
         public double Saldo {  get; set; }
-        public string FechaCorte { get; set; }        
-
+        public string FechaCorte { get; set; } 
+        public string Mensaje {  get; set; }      
     }
 }
