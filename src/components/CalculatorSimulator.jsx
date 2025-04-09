@@ -7,7 +7,11 @@ import { toast } from "sonner";
 import Validators from "./fragments/Validators"; // Importa el modal de Validators
 
 const CalculatorSimulator = ({show, handleClose}) => {
-  const { searchResults, idEjecutivo} = useContext(AppContext); // Obtiene searchResults desde AppContext
+  const { searchResults, idEjecutivo, isManagment} = useContext(AppContext);
+  useEffect(() => {
+    console.log("Contenido de isManagment:", isManagment);
+  }, [isManagment]); // Se ejecutará cada vez que isManagment cambie
+
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [tableData, setTableData] = useState([]);
   const [summaryData, setSummaryData] = useState({
@@ -330,6 +334,8 @@ const CalculatorSimulator = ({show, handleClose}) => {
   };
 
   const handleSaveDeadlines = async () => {
+    const fechaInsert = isManagment?.storeOutput?.Fecha_Insert;
+    const segundoInsert = isManagment?.storeOutput?.Segundo_Insert;
     if (!calculosData.calculos || calculosData.calculos.length === 0) {
       toast.error("No hay plazos disponibles para guardar.");
       return;
@@ -345,8 +351,8 @@ const CalculatorSimulator = ({show, handleClose}) => {
       idCuenta: searchResults?.[0]?.idCuenta?.trim(),
       idHerramienta: selectedHerramienta,
       plazos,
-      fechaInsert: new Date().toISOString(),
-      segundo_Insert: "00:00:01",
+      fechaInsert: fechaInsert,
+      segundo_Insert: segundoInsert,
     };
   
     try {
@@ -386,6 +392,8 @@ const CalculatorSimulator = ({show, handleClose}) => {
   const handleSaveNegotiation = async () => {
     try {
       const idCuenta = searchResults?.[0]?.idCuenta?.trim();
+      const fechaInsert = isManagment?.storeOutput?.Fecha_Insert;
+      const segundoInsert = isManagment?.storeOutput?.Segundo_Insert;
       // Validar datos antes de enviarlos
       if (!idCuenta || !selectedHerramienta || !calculosData.montoNegociado) {
         toast.error("Faltan datos requeridos para guardar la negociación.");
@@ -406,8 +414,8 @@ const CalculatorSimulator = ({show, handleClose}) => {
         fechaFinNegociacion: formInputs.fechaFinNegociacion, // Usa la nueva fecha calculada
         idEjecutivoValidador: parseInt(idEjecutivoValidador, 10), // Asegura que sea un número entero
         contrasena: validatorPassword || "", // Usa la contraseña del validador o vacío
-        fechaInsert: "2025-04-03",
-        segundoInsert: "12:34:59",
+        fechaInsert: fechaInsert,
+        segundoInsert: segundoInsert,
         reestructura: 0,
         condonacion: 0,
         idGrabacion: "", // Cambiar si es necesario
@@ -468,6 +476,8 @@ const sendIncreaseNegotiation = async () => {
 const handleSaveOffering = async () => {
   try {
     const idCuenta = searchResults?.[0]?.idCuenta?.trim();
+    const fechaInsert = isManagment?.storeOutput?.Fecha_Insert;
+    const segundoInsert = isManagment?.storeOutput?.Segundo_Insert;
     const producto = 1;   
     console.log("idCuenta:", idCuenta);
     console.log("idProducto:", producto);
@@ -500,8 +510,8 @@ const handleSaveOffering = async () => {
         const [day, month, year] = datePart.split("/"); // Divide la fecha en día, mes y año
         return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`; // Reorganiza en formato YYYY-MM-DD
       })(),
-      fechaInsert: "2025-04-03",
-      segundoInsert: "12:34:59", // Cambia el valor a un objeto vacío
+      fechaInsert: fechaInsert,
+      segundoInsert: segundoInsert, // Cambia el valor a un objeto vacío
       cartaConvenio: cartaConvenio,
       correo: selectedEmail || "",
       idEjecutivoValidador: parseInt(idEjecutivoValidador, 10),
