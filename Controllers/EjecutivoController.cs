@@ -66,10 +66,27 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost("pause-ejecutivo")]
+        [AllowAnonymous]
         public async Task<ActionResult> ManagePause([FromBody] InfoPausa pauseRequest)
         {
-            Dictionary<string, object> mensaje = await _ejecutivoService.PauseUnpause(pauseRequest);
-            return Ok(new { mensaje });
+            Dictionary<bool, object> mensaje = await _ejecutivoService.PauseUnpause(pauseRequest);
+
+            if (mensaje == null)
+            {
+                return BadRequest(new { Success = false, mensaje = "Error al procesar la solicitud." });
+            }
+            else if (mensaje.Count == 0)
+            {
+                return BadRequest(new { Success = false, mensaje = "Error al procesar la solicitud." });
+            }
+            else if (!mensaje.Keys.First())
+            {
+                return BadRequest(new { Success = false, mensaje = mensaje.Values });
+            }
+            else
+            {
+                return Ok(new { Success = true, mensaje = mensaje.Values });
+            }
         }
 
         #endregion

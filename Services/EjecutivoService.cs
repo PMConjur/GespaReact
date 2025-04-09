@@ -45,7 +45,7 @@ namespace NoriAPI.Services
         #region Tiempos
 
         Task<TiemposEjecutivo> ValidateTimes(int numEmpleado);
-        Task<Dictionary<string, object>> PauseUnpause(InfoPausa pausa);
+        Task<Dictionary<bool, object>> PauseUnpause(InfoPausa pausa);
         Task<Dictionary<string, object>> Promedios(int idEjecutivo);
         #endregion
 
@@ -2244,13 +2244,13 @@ namespace NoriAPI.Services
             return new TiemposEjecutivo(null, tiempos);
         }
 
-        public async Task<Dictionary<string, object>> PauseUnpause(InfoPausa pausa)
+        public async Task<Dictionary<bool, object>> PauseUnpause(InfoPausa pausa)
         {
             try
             {
                 if (!await Despausar(pausa))
                 {
-                    return new Dictionary<string, object> { { "Error", "Contraseña Incorrecta." } };
+                    return new Dictionary<bool, object> { { false, "Contraseña Incorrecta." } };
                 }
 
 
@@ -2265,11 +2265,11 @@ namespace NoriAPI.Services
                 await _ejecutivoRepository.Pausa210(pausa.IdEjecutivo, idPeCausa, pausa.Duracion);
                 await _ejecutivoRepository.IncreaseEjecutivoTime(pausa.IdEjecutivo, pausa.Duracion, pausa.PeCausa);
 
-                return new Dictionary<string, object> { { "Éxito", "Sesión reanudada." } };
+                return new Dictionary<bool, object> { { false, "Sesión reanudada." } };
             }
             catch
             {
-                return new Dictionary<string, object> { { "Error", "Ocurrió un error al reanudar la sesión." } };
+                return new Dictionary<bool, object> { { false, "Ocurrió un error al reanudar la sesión." } };
             }
         }
 
