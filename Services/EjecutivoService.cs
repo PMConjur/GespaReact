@@ -1196,7 +1196,7 @@ namespace NoriAPI.Services
 
             string Herramienta = drHerramienta["Nombre"].ToString();
             double Saldo, MontoRequerido, Montodescuento;
-            int días1erPago = 0;
+            int días1erPago = 0, días1erPago_ = 0;
 
             //Falta validar el saldo
             if (!double.TryParse(tblCuenta.Rows[0]["Saldo"].ToString(), out Saldo))
@@ -1242,6 +1242,7 @@ namespace NoriAPI.Services
 
             //Math.Ceiling(MontoRequerido * 100) / 100;
             días1erPago = Convert.ToInt32(drHerramienta["Días1erPago"]);
+            días1erPago_ = Convert.ToInt32(drHerramienta["Días1erPago"]);
 
             if (dtnegociaciones != null)
             {
@@ -1269,6 +1270,7 @@ namespace NoriAPI.Services
                 MontoRequerido = MontoRequerido,
                 Descuento = MinDescuento,
                 MaxDias = días1erPago,
+                Dias1erPago = días1erPago_,
                 MontoDescuento = Montodescuento,
                 Saldo = Saldo,
                 FechaCorte = Convert.ToString(Fecha_Corte)

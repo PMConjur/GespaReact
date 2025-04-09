@@ -9,10 +9,11 @@ namespace NoriAPI.Models.Ejecutivo
         public List<HerramientasInfo> Herramientas { get; set; }
         public double MontoRequerido { get; set; }
         public int Descuento { get; set; }
-        public int MaxDias {  get; set; }
+        public int MaxDias { get; set; }
+        public int Dias1erPago { get; set; }
         public double MontoDescuento { get; set; }
-        public double Saldo {  get; set; }
-        public string FechaCorte { get; set; }        
+        public double Saldo { get; set; }
+        public string FechaCorte { get; set; }
 
     }
 }

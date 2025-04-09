@@ -339,11 +339,12 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("Calculadora-1erParte")]
+        [AllowAnonymous]
         public async Task<ActionResult<ResultadoCalculadora>> Calculadora_Simulador([FromQuery] int Cartera, string NoCuenta, int idHerr)
         {
             var InfoCalculadora = await _ejecutivoService.ValidateInfoCalculadora1(Cartera, NoCuenta, idHerr);
 
-            return Ok(InfoCalculadora); ;
+            return Ok(InfoCalculadora);
 
         }
 
@@ -1031,6 +1032,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("validador")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetValidador(int idProducto, int idEjecutivo, string Contraseña)
         {
             DataSet dsTablas = new DataSet();
@@ -1564,20 +1566,29 @@ namespace NoriAPI.Controllers
 
 
         [HttpPost("GuardarGestionTe")]
+        [ProducesResponseType(typeof(GuardarGestionResponse), 200)] // Indica la estructura de la respuesta exitosa en Swagger
+        [ProducesResponseType(400)] // Indica una solicitud incorrecta en Swagger
+        [ProducesResponseType(500)] // Indica un error interno del servidor en Swagger
+        [AllowAnonymous]
         public async Task<IActionResult> GuardarGestionTelefonica([FromBody] GestionTelefonica gestion)
         {
             if (gestion == null)
             {
-                return BadRequest("Datos de gestión no válidos.");
+                return BadRequest(new { Message = "Datos de gestión no válidos.", Data = gestion });
             }
 
             if (await _ejecutivoService.GuardaGestionTelefonicaAsync(gestion))
             {
-                return Ok("Gestión guardada exitosamente.");
+                var response = new GuardarGestionResponse
+                {
+                    Data = gestion,
+                    Message = "Gestión guardada exitosamente."
+                };
+                return Ok(response);
             }
             else
             {
-                return BadRequest("Error al guardar la gestión.");
+                return BadRequest(new { Message = "Error al guardar la gestión.", Data = gestion });
             }
         }
 
