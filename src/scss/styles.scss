@@ -2,6 +2,7 @@
 
 body {
   background-color: #000000;
+
 }
 $card-bg: #f8f9fa;
 $card-border-width: 0;
@@ -26,7 +27,7 @@ $hover-bg: #e9ecef; // Color de fondo al pasar el mouse
   background-color: #1d1f20;
 
   .card-title {
-    padding: 20px 0 15px 0;
+    padding: 10px 0 10px 0;
     font-size: 20px;
     font-weight: 500;
     color: #ffffff;
@@ -71,15 +72,23 @@ $hover-bg: #e9ecef; // Color de fondo al pasar el mouse
 .form-select {
   border-radius: "3px";
 }
+.custom-card {
+  background-color: #1d1f20;
 
-.custom-card p {
-  font-size: 15px;
+  padding: 22px;
+
+  color: #fff; /* Texto blanco */
+  font-family: Poppins, sans-serif;
+}
+.custom-card span {
+  font-size: 18px;
   color: #fff; /* Texto blanco */
   font-family: Poppins, sans-serif;
 }
 
 .custom-card strong {
   color: #fce959; /* Resaltado dorado */
+  font-weight: 500;
 }
 
 .custom-placeholder::placeholder {
@@ -98,6 +107,7 @@ $hover-bg: #e9ecef; // Color de fondo al pasar el mouse
   font-weight: 600;
   margin: 0;
   padding: 0;
+  height: 45px;
 }
 
 .dashboard .situation-card h6 {
@@ -424,9 +434,10 @@ $table-border-radius: 8px;
 
 .table {
   // Borde redondeado para la tabla
-  border-collapse: separate;
+  border-collapse: collapse;
   border-spacing: 0;
   padding: 0.2rem 0.2rem;
+  caption-side: bottom;
   thead {
     vertical-align: middle;
     th {
@@ -464,17 +475,36 @@ $table-border-radius: 8px;
 
 .table-dark {
   --bs-table-color: #fff;
-  --bs-table-bg: #212529;
+  --bs-table-bg: #1d1f20;
   --bs-table-border-color: #4d5154;
-  /* --bs-table-striped-bg: #2c3034; */ // Eliminado para evitar conflictos
   --bs-table-striped-color: #fff;
   --bs-table-active-bg: #373b3e;
   --bs-table-active-color: #fff;
-  --bs-table-hover-bg: #323539;
+  --bs-table-hover-bg: #000000;
   --bs-table-hover-color: #fff;
   color: var(--bs-table-color);
-}
+  background-color: var(--bs-table-bg);
+  border-color: var(--bs-table-border-color);
 
+  /* Efecto hover para la tabla completa */
+
+  /* Efecto hover para las filas */
+  tr {
+    &:hover {
+      background-color: var(--bs-table-hover-bg);
+      color: var(--bs-table-hover-color);
+    }
+  }
+
+  /* Efecto hover para elementos interactivos */
+  a,
+  button {
+    &:hover {
+      opacity: 0.8;
+      transform: scale(1.05);
+    }
+  }
+}
 .button-phones {
   justify-content: flex-end;
   width: auto;
@@ -497,7 +527,7 @@ $table-border-radius: 8px;
 }
 //termina telefonos
 
-//estilos de informacion
+/* estilos de informacion */
 .table-container {
   overflow-x: auto;
   white-space: nowrap;
@@ -505,37 +535,64 @@ $table-border-radius: 8px;
 
 .table-custom2 {
   font-family: Poppins;
-
   width: 100%;
   border-collapse: initial;
   border-spacing: 0px px;
   padding: 0.5px;
   border-radius: 5px;
+
   thead {
     background-color: #343a40;
+
     th {
       color: #fff;
       text-align: center;
-      background-color: #2b6bbe;
+      background-color: #99adc7;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background-color: #7d92ab;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
     }
   }
 
   tbody {
     font-size: 14px;
-    font-weight: 400;
+
     text-align: center;
     border-radius: 5px;
+
     tr {
+      // transition: all 0.3s cubic-bezier(0.57, -0.03, 0.18, 1.02);
+
+      &:hover {
+        background-color: #000000;
+
+        color: #0dcaf0;
+
+        td {
+          color: #ffffff;
+          background-color: #000000;
+        }
+      }
+
       td {
-        color: #bfcddb;
-        text-align: center;
+        color: #ffffff;
+        text-align: left;
         border-right: #6c757d;
+        transition: all 0.3s ease;
+        font-size: 14px;
       }
 
       a {
         color: #17a2b8;
+        transition: all 0.3s ease;
+
         &:hover {
-          color: #138496;
+          color: #ffffff;
+          text-decoration: underline;
         }
       }
     }
@@ -555,7 +612,7 @@ $table-border-radius: 8px;
     font-weight: 500;
   }
 }
-//termina informacion
+/* termina informacion */
 
 //calendario
 .calendar-day:hover {
@@ -986,7 +1043,22 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
     }
   }
 }
+.modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  color: var(--bs-modal-color);
+  pointer-events: auto;
+  background-clip: padding-box;
+  border: var(--bs-modal-border-width) solid var(--bs-modal-border-color);
+  border-radius: var(--bs-modal-border-radius);
+  outline: 0;
 
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+
+  background-color: #1d1f20;
+}
 .dark-modal .modal-content {
   background-color: #1d1f20;
   color: #ffffff;
@@ -1818,13 +1890,9 @@ $color-green-secondary: #17ff1f;
     82deg,
     $color-white,
     color.adjust($color-white-secondary, $lightness: -1%),
-  
     color.adjust($color-white, $lightness: 35%),
-  
     color.adjust($color-white, $lightness: 5%),
-   
     color.adjust($color-white-secondary, $saturation: -35%)
- 
   );
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
@@ -1832,10 +1900,11 @@ $color-green-secondary: #17ff1f;
   table-layout: auto; // Permite que las celdas se ajusten al contenido
   word-wrap: break-word; // Evita que el contenido se desborde
   white-space: nowrap; // Evita que el texto se divida en varias líneas
-  td, th {
+  td,
+  th {
     text-align: center; // Centra el contenido
     vertical-align: middle; // Alinea verticalmente el contenido
-    padding: .7rem;
+    padding: 0.7rem;
   }
 }
 
@@ -1850,4 +1919,140 @@ $color-green-secondary: #17ff1f;
 
 .table-responsive::-webkit-scrollbar-track {
   background-color: #1a1a1a; /* Color del fondo */
+}
+//---Estilos para flotante del timer
+// Variables
+
+$btn-width: auto;
+$btn-height: auto;
+$border-radius: 10px;
+$transition-speed: 0.4s;
+$main-color: #191919b3;
+$accent-color: #000000d2;
+
+.sticky-timmer {
+  &-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.2));
+  }
+
+  &-btn {
+    all: unset;
+    width: $btn-width;
+    min-width: 120px;
+    height: $btn-height;
+    min-height: 35px;
+    font-size: 14px;
+    background: transparent;
+    border: none;
+    position: relative;
+    color: #f0f0f0;
+    cursor: pointer;
+    z-index: 1;
+    padding: 5px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+
+    &::after,
+    &::before {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      z-index: -99999;
+      transition: all $transition-speed;
+    }
+
+    &::before {
+      transform: translate(0%, 0%);
+      width: 100%;
+      height: 100%;
+      background: $main-color;
+      border-radius: $border-radius;
+    }
+
+    &::after {
+      transform: translate(10px, 10px);
+      width: 35px;
+      height: 35px;
+      background: $accent-color;
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      border-radius: 50px;
+    }
+
+    &:hover::before {
+      transform: translate(5%, 20%);
+      width: 110%;
+      height: 110%;
+    }
+
+    &:hover::after {
+      border-radius: $border-radius;
+      transform: translate(0, 0);
+      width: 100%;
+      height: 100%;
+    }
+
+    &:active::after {
+      transition: 0s;
+      transform: translate(0, 5%);
+    }
+
+    h6 {
+      margin: 0;
+      padding: 0;
+      font-size: 14px;
+      font-weight: normal;
+      line-height: 1.2;
+      color: inherit;
+    }
+
+    .timmer {
+      font-size: 12px;
+      margin-top: 4px;
+      color: inherit;
+    }
+  }
+}
+//Estilo para contenedores de widgets y Telefonos
+.widgets-container {
+  height: 450px; //!important
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #adadad;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #495057;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: #343a40;
+  }
+}
+.informations-container {
+  height: 355px;
+}
+
+//Para alinear todo lo que quieras al centro y no fallar en el intento
+//Omicron
+.box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

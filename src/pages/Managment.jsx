@@ -3,7 +3,7 @@ import { createContext, useState, useEffect } from "react";
 import Flow from "../components/Flow";
 import Telephones from "../components/Telephones";
 import InformationClient from "../components/InformationClient";
-import { Row, Col, Container } from "react-bootstrap";
+import { Row, Col, Container, Card } from "react-bootstrap";
 import DebtorInformation from "../components/DebtorInformation";
 import Calculator from "../components/Calculator";
 import DatePickerComponent from "../components/Calendar";
@@ -16,7 +16,7 @@ import CustomToast from "../components/CustomToast";
 import Managments from "../components/Managments";
 import NotesWidget from "../components/NotesWidget";
 import { searchCustomer } from "../services/gespawebServices";
-
+import StickyTimmer from "../components/StickyTimmer";
 export const AppContext = createContext();
 
 const Managment = () => {
@@ -41,6 +41,9 @@ const Managment = () => {
   const [stoppedTime, setStoppedTime] = useState(null); // Estado para el tiempo detenido
   const [isPaymentActive, setPaymentActive] = useState(false); // Estado para pagos
   const [isOnlineChargeActive, setOnlineChargeActive] = useState(false); // Estado para cargos en línea
+  const [stoppedTimeSticky, setStoppedTimeSticky] = useState(null); // Estado para el tiempo actual del StickyTimmer
+  const [triggerUpdateStickyTime, setTriggerUpdateStickyTime] = useState(false); // Estado para accionar la actualización del tiempo
+  const [userActiveFlow, setUserActiveFlow] = useState(false); // Asegurar que el estado inicial sea false
   const token = responseData?.ejecutivo?.token;
   const nombreEjecutivo =
     responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
@@ -110,7 +113,9 @@ const Managment = () => {
       const numeroTelefonico = responseEjecutivo.data.numeroTelefonico;
 
       if (!idCuenta) {
-        toast.warning("idCuenta es nulo, solicita cargar a tu administrador");
+        toast.warning(
+          "No cuentas con cuentas asignadas, por favor verifica con tu supervisor"
+        );
         setSearchResults([]);
         return;
       }
@@ -199,7 +204,13 @@ const Managment = () => {
     communicationData,
     setCommunicationData,
     stoppedTime,
-    setStoppedTime
+    setStoppedTime,
+    stoppedTimeSticky,
+    setStoppedTimeSticky,
+    triggerUpdateStickyTime,
+    setTriggerUpdateStickyTime,
+    userActiveFlow, // Enviar estado userActiveFlow al contexto
+    setUserActiveFlow // Enviar función para actualizar userActiveFlow al contexto
   };
 
   return (
@@ -207,7 +218,7 @@ const Managment = () => {
       <AppContext.Provider value={contextValue}>
         <section>
           <NavbarComponent />
-
+          <StickyTimmer />
           <CustomToast
             show={showToast}
             onClose={handleToastClosed} // Usamos la función renombrada
@@ -238,45 +249,52 @@ const Managment = () => {
               <Col xs={12} md={12}>
                 <DataCard />
               </Col>
+              <Container fluid>
+                <Row className="d-flex" xs={12} md={12}>
+                  <Col xs={12} md={12} lg={8}>
+                    <Row className="recent-sales">
+                      <Col xs={12}>
+                        <InformationClient />
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col xs={12} md={12} lg={12}>
+                        <Telephones />
+                      </Col>
+                    </Row>
+                  </Col>
+                  <Col xs={12} md={12} lg={4}>
+                    <Row>
+                      <Col xs={12} md={12}>
+                        <Flow />
+                      </Col>
+                    </Row>
+                    <Card className="widgets-container bg-transparent">
+                      <Row>
+                        <Col xs={6} md={6} xl={6}>
+                          <Calculator /> {/* Componente con la calculadora */}
+                          <br />
+                        </Col>
+                        <Col xs={6} md={6} xl={6}>
+                          <DatePickerComponent />{" "}
+                          {/* Componente con el calendario */}
+                          <br />
+                        </Col>
 
-              <Row className="d-flex" xs={12} md={12}>
-                <Col xs={12} md={6} lg={8}>
-                  <Row className="recent-sales">
-                    <Col xs={12}>
-                      <InformationClient />
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col xs={12}>
-                      <Telephones />
-                    </Col>
-                  </Row>
+                        {/* Componente de gestiones */}
+                        <Col xs={12} md={12} xl={12}>
+                          <NotesWidget />
+                        </Col>
+                      </Row>
+                    </Card>
+                  </Col>
+                </Row>
+                <Row>
                   <Col xs={12}>
                     <Managments />
                   </Col>
-                </Col>
-                <Col xs={12} md={6} lg={4}>
-                  <Row>
-                    <Col xs={12} md={12}>
-                      <Flow />
-                    </Col>
-                    <Col xs={6} md={6}>
-                      <Calculator /> {/* Componente con la calculadora */}
-                      <br />
-                    </Col>
-                    <Col xs={6} md={6}>
-                      <DatePickerComponent />{" "}
-                      {/* Componente con el calendario */}
-                      <br />
-                    </Col>
-
-                    {/* Componente de gestiones */}
-                    <Col xs={12} md={12}>
-                      <NotesWidget />
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
+                </Row>
+              </Container>
             </Row>
           </Container>
         </section>

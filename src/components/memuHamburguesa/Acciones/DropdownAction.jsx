@@ -58,6 +58,7 @@ const DropdownActions = () => {
   const handleShowOnlinecharge = () => setShowOnlinecharge(true); // Solo abre el modal
   const handleCloseOnlinecharge = () => setShowOnlinecharge(false);
 
+
   const handleShowTalks = () => setShowTalks(true);
   const handleCloseTalks = () => setShowTalks(false);
 
@@ -111,7 +112,9 @@ const DropdownActions = () => {
             Busqueda
           </Dropdown.Item>
           <Dropdown.Item
-            onClick={handleShowOnlinecharge}
+            onClick={() => {
+              setShowOnlinecharge(true);
+            }}
             className="custom-dropdown-item"
           >
             Cargos en línea
@@ -159,9 +162,9 @@ const DropdownActions = () => {
       <OnlineCharge
         show={showOnlinecharge}
         handleClose={handleCloseOnlinecharge}
-        data={onlinechargeData}
-        loading={loadingOnlinecharge}
+        isOnlineChargeActive={true} // Cambiar a true para mostrar ambos componentes
       />
+    
       <Drives showModal={showDrives} handleCloseModal={handleCloseDrives} />
       <Search show={showModal} handleClose={handleCloseModal} />
       <Complaints

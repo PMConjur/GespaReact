@@ -14,9 +14,17 @@ const CommunicationPhone = ({ idComunico, selectedAnswerValue }) => {
     const regex = /^[0-9]*$/; // Solo permite números
     if (regex.test(value)) {
       setTelephone(value);
-      setIsTelephoneValid(value.length === 10); // Valida que tenga exactamente 10 dígitos
+      setIsTelephoneValid(value.length >= 10); // Valida que tenga al menos 10 dígitos
+      if (value.length === 0) {
+        setCommunicationData({ telephone: "", name }); // Limpia el contexto si el campo está vacío
+      }
+    } else if (value.length === 0) {
+      setTelephone(""); // Limpia el estado del teléfono
+      setIsTelephoneValid(false); // Marca como inválido
+      setCommunicationData({ telephone: "", name }); // Limpia el contexto
     } else {
-      setIsTelephoneValid(false);
+      setIsTelephoneValid(false); // Marca como inválido
+      setCommunicationData({ telephone: "", name }); // Limpia el contexto
     }
   };
 
@@ -39,8 +47,10 @@ const CommunicationPhone = ({ idComunico, selectedAnswerValue }) => {
       }
     } else if (selectedAnswerValue === 10) {
       if (idComunico) {
-        if (isTelephoneValid && isNameValid) {
+        if (isTelephoneValid === true && isNameValid === true) {
           setCommunicationData({ telephone, name });
+        } else {
+          setCommunicationData({ telephone: "", name });
         }
       } else {
         if (isTelephoneValid) {
@@ -61,7 +71,7 @@ const CommunicationPhone = ({ idComunico, selectedAnswerValue }) => {
   return (
     <>
       {selectedAnswerValue === 10 && (
-        <Stack gap={2} className="col-md-8 mx-auto">
+        <Stack gap={2} className="col-md-12 mx-auto">
           <div className="p-2">
             <Form.Group className="mb-2">
               <Form.Label>Teléfono del que se comunicó</Form.Label>
@@ -70,11 +80,13 @@ const CommunicationPhone = ({ idComunico, selectedAnswerValue }) => {
                 type="text"
                 placeholder="_______-_______-_______"
                 value={telephone}
-                onChange={handleTelephoneChange}
-                isInvalid={!isTelephoneValid}
+                onChange={handleTelephoneChange} // Usar la nueva función de validación
+                isInvalid={!isTelephoneValid} // Mostrar error si no es válido
+                maxLength={13}
               />
               <Form.Control.Feedback type="invalid">
-                El teléfono debe contener exactamente 10 dígitos.
+                El teléfono debe contener al menos 10 dígitos o 13 dígitos
+                internacionales.
               </Form.Control.Feedback>
             </Form.Group>
           </div>

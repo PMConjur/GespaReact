@@ -14,12 +14,11 @@ function DropdownInfo() {
   const [showMultideudores, setShowMultideudores] = useState(false); // Estado para el modal de Multideudores
   const [showMail, setShowMail] = useState(false); // Estado para el modal de Mail
 
-  //payments
   const [showPayments, setShowPayments] = useState(false); // Estado para el modal de Payments
 
   const handleShowPayments = () => setShowPayments(true);
   const handleClosePayments = () => setShowPayments(false);
-  //payments
+
 
   //adicionales
   const [showAditionals, setShowAditionals] = useState(false); // Estado para el modal de Aditionals
@@ -93,7 +92,9 @@ function DropdownInfo() {
             Correos
           </Dropdown.Item>
           <Dropdown.Item
-            onClick={handleShowPayments}
+            onClick={() => {
+              setShowPayments(true);
+            }}
             className="custom-dropdown-item"
           >
             Pagos
@@ -105,8 +106,8 @@ function DropdownInfo() {
       <Payments
         show={showPayments}
         handleClose={handleClosePayments}
-        data={paymentsData}
-        loadingPayments={loadingPayments}
+        isPaymentActive={true} // Cambié el nombre de la prop a isPaymentActive
+    
       />
 
       {/* Renderizar el modal de Addresses */}

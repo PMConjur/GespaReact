@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { Row, Col, Card, Toast, Pagination } from "react-bootstrap";
 import { AppContext } from "../pages/Managment"; // Importar el contexto
 import { getGestionTeData } from "../services/gespawebServices"; // Importar el endpoint
-
+import { ClockHistory } from "react-bootstrap-icons";
 const Managments = () => {
   const { searchResults } = useContext(AppContext); // Consumir el contexto
   const [sortedData, setSortedData] = useState([]); // Estado para los datos ordenados
@@ -131,7 +131,7 @@ const Managments = () => {
           position: "absolute",
           top: 20,
           right: 20,
-          zIndex: 1050,
+          zIndex: 1050
         }}
       >
         <Toast.Header>
@@ -139,17 +139,20 @@ const Managments = () => {
         </Toast.Header>
         <Toast.Body>{toastMessage}</Toast.Body>
       </Toast>
-      <Row xs={12} md="auto" className="g-2">
+      <Row xs={12} md="auto">
         <Col md={12}>
           <Card>
             <Card.Body>
-              <Card.Title>Gestiones</Card.Title>
+              <i className="h5 card-title">
+                <ClockHistory /> Gestiones
+              </i>
+
               <table
                 className="table table-dark"
                 style={{
                   maxHeight: "300px", // Ajuste de altura a 300px
                   overflowY: "auto", // Habilitar scroll vertical dentro de la tabla
-                  display: "block", // Necesario para que funcione el scroll en tablas
+                  display: "block" // Necesario para que funcione el scroll en tablas
                 }}
               >
                 <thead>
@@ -160,7 +163,7 @@ const Managments = () => {
                         position: "sticky", // Fijar posición
                         top: -10, // Mantener en la parte superior
                         zIndex: 2, // Asegurar que esté por encima del contenido
-                        backgroundColor: "#343a40", // Fondo para que no se mezcle con el contenido
+                        backgroundColor: "#343a40" // Fondo para que no se mezcle con el contenido
                       }}
                     >
                       Fecha
@@ -171,7 +174,7 @@ const Managments = () => {
                         position: "sticky",
                         top: -10,
                         zIndex: 2,
-                        backgroundColor: "#343a40",
+                        backgroundColor: "#343a40"
                       }}
                     >
                       Hora
@@ -182,7 +185,7 @@ const Managments = () => {
                         position: "sticky",
                         top: -10,
                         zIndex: 2,
-                        backgroundColor: "#343a40",
+                        backgroundColor: "#343a40"
                       }}
                     >
                       Telefono
@@ -193,7 +196,7 @@ const Managments = () => {
                         position: "sticky",
                         top: -10,
                         zIndex: 2,
-                        backgroundColor: "#343a40",
+                        backgroundColor: "#343a40"
                       }}
                     >
                       Contacto
@@ -204,7 +207,7 @@ const Managments = () => {
                         position: "sticky",
                         top: -10,
                         zIndex: 2,
-                        backgroundColor: "#343a40",
+                        backgroundColor: "#343a40"
                       }}
                     >
                       Situación
@@ -215,7 +218,7 @@ const Managments = () => {
                         position: "sticky",
                         top: -10,
                         zIndex: 2,
-                        backgroundColor: "#343a40",
+                        backgroundColor: "#343a40"
                       }}
                     >
                       Nombre
@@ -226,7 +229,7 @@ const Managments = () => {
                         position: "sticky",
                         top: -10,
                         zIndex: 2,
-                        backgroundColor: "#343a40",
+                        backgroundColor: "#343a40"
                       }}
                     >
                       Parentesco
@@ -237,7 +240,7 @@ const Managments = () => {
                         position: "sticky",
                         top: -10,
                         zIndex: 2,
-                        backgroundColor: "#343a40",
+                        backgroundColor: "#343a40"
                       }}
                     >
                       CausaNoPago
@@ -248,7 +251,7 @@ const Managments = () => {
                         position: "sticky",
                         top: -10,
                         zIndex: 2,
-                        backgroundColor: "#343a40",
+                        backgroundColor: "#343a40"
                       }}
                     >
                       Modo
@@ -259,7 +262,7 @@ const Managments = () => {
                         position: "sticky",
                         top: -10,
                         zIndex: 2,
-                        backgroundColor: "#343a40",
+                        backgroundColor: "#343a40"
                       }}
                     >
                       Acercamiento
@@ -270,7 +273,7 @@ const Managments = () => {
                         position: "sticky",
                         top: -10,
                         zIndex: 2,
-                        backgroundColor: "#343a40",
+                        backgroundColor: "#343a40"
                       }}
                     >
                       Etapa
@@ -281,7 +284,7 @@ const Managments = () => {
                         position: "sticky",
                         top: -10,
                         zIndex: 2,
-                        backgroundColor: "#343a40",
+                        backgroundColor: "#343a40"
                       }}
                     >
                       Seguimiento
@@ -292,7 +295,7 @@ const Managments = () => {
                         position: "sticky",
                         top: -10,
                         zIndex: 2,
-                        backgroundColor: "#343a40",
+                        backgroundColor: "#343a40"
                       }}
                     >
                       Realizado
@@ -303,7 +306,7 @@ const Managments = () => {
                         position: "sticky",
                         top: -10,
                         zIndex: 2,
-                        backgroundColor: "#343a40",
+                        backgroundColor: "#343a40"
                       }}
                     >
                       Duración
@@ -314,7 +317,7 @@ const Managments = () => {
                         position: "sticky",
                         top: -10,
                         zIndex: 2,
-                        backgroundColor: "#343a40",
+                        backgroundColor: "#343a40"
                       }}
                     >
                       Ejecutivo
@@ -325,7 +328,7 @@ const Managments = () => {
                         position: "sticky",
                         top: -10,
                         zIndex: 2,
-                        backgroundColor: "#343a40",
+                        backgroundColor: "#343a40"
                       }}
                     >
                       Usuario
@@ -336,7 +339,7 @@ const Managments = () => {
                         position: "sticky",
                         top: -10,
                         zIndex: 2,
-                        backgroundColor: "#343a40",
+                        backgroundColor: "#343a40"
                       }}
                     >
                       Sucursal
@@ -347,7 +350,7 @@ const Managments = () => {
                         position: "sticky",
                         top: -10,
                         zIndex: 2,
-                        backgroundColor: "#343a40",
+                        backgroundColor: "#343a40"
                       }}
                     >
                       Extensión
@@ -367,10 +370,14 @@ const Managments = () => {
                         style={{
                           cursor: "pointer",
                           backgroundColor:
-                            selectedGestion === gestion ? "#343a40" : "inherit", // Resaltar la fila seleccionada
+                            selectedGestion === gestion ? "#343a40" : "inherit" // Resaltar la fila seleccionada
                         }}
                       >
-                        <td>{validateField(gestion.Fecha_Insert)}</td>
+                        <td>
+                          {validateField(
+                            gestion.Fecha_Insert.replace("12:00:00 a. m.", " ")
+                          )}
+                        </td>
                         <td>{validateField(gestion.Segundo_Insert)}</td>
                         <td>{validateField(gestion.NúmeroTelefónico)}</td>
                         <td>{validateField(gestion.Contacto)}</td>{" "}
@@ -405,71 +412,63 @@ const Managments = () => {
                 </tbody>
               </table>
             </Card.Body>
-            <Card.Body>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "",
-                  marginBottom: "16px",
-                }}
-              >
-                <div
-                  style={{
-                    width: "40%",
-                    display: "flex",
-                    justifyContent: "",
-                    alignItems: "center",
-                    marginRight: "16px",
-                  }}
-                >
-                  <strong style={{ marginRight: "8px" }}>Comentario:</strong>
-                  {selectedGestion ? (
-                    <span>{validateField(selectedGestion.Comentario)}</span>
-                  ) : (
-                    <span>Selecciona un registro.</span>
-                  )}
-                </div>
-                <Pagination variant="dark">
-                  <Pagination.First
-                    onClick={() => handlePageChange(1)}
-                    disabled={currentTablePage === 1}
-                  />
-                  <Pagination.Prev
-                    onClick={() => handlePageChange(currentTablePage - 1)}
-                    disabled={currentTablePage === 1}
-                  />
-                  {paginationGroup > 0 && (
-                    <Pagination.Ellipsis
-                      onClick={handlePrevGroup}
-                      title="Páginas anteriores"
-                    />
-                  )}
-                  {visiblePages.map((page) => (
-                    <Pagination.Item
-                      key={page}
-                      active={page === currentTablePage}
-                      onClick={() => handlePageChange(page)}
-                    >
-                      {page}
-                    </Pagination.Item>
-                  ))}
-                  {(paginationGroup + 1) * 10 < totalPages && (
-                    <Pagination.Ellipsis
-                      onClick={handleNextGroup}
-                      title="Siguientes páginas"
-                    />
-                  )}
-                  <Pagination.Next
-                    onClick={() => handlePageChange(currentTablePage + 1)}
-                    disabled={currentTablePage === totalPages}
-                  />
-                  <Pagination.Last
-                    onClick={() => handlePageChange(totalPages)}
-                    disabled={currentTablePage === totalPages}
-                  />
-                </Pagination>
+            <Card.Footer>
+              <div>
+                <Row>
+                  <Col className="elemento">
+                    <strong>Comentario:</strong>
+                    {selectedGestion ? (
+                      <span>{validateField(selectedGestion.Comentario)}</span>
+                    ) : (
+                      <span>Selecciona un registro.</span>
+                    )}
+                  </Col>
+                </Row>
+                <Row>
+                  <Col className="box">
+                    <Pagination variant="dark">
+                      <Pagination.First
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentTablePage === 1}
+                      />
+                      <Pagination.Prev
+                        onClick={() => handlePageChange(currentTablePage - 1)}
+                        disabled={currentTablePage === 1}
+                      />
+                      {paginationGroup > 0 && (
+                        <Pagination.Ellipsis
+                          onClick={handlePrevGroup}
+                          title="Páginas anteriores"
+                        />
+                      )}
+                      {visiblePages.map((page) => (
+                        <Pagination.Item
+                          key={page}
+                          active={page === currentTablePage}
+                          onClick={() => handlePageChange(page)}
+                        >
+                          {page}
+                        </Pagination.Item>
+                      ))}
+                      {(paginationGroup + 1) * 10 < totalPages && (
+                        <Pagination.Ellipsis
+                          onClick={handleNextGroup}
+                          title="Siguientes páginas"
+                        />
+                      )}
+                      <Pagination.Next
+                        onClick={() => handlePageChange(currentTablePage + 1)}
+                        disabled={currentTablePage === totalPages}
+                      />
+                      <Pagination.Last
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentTablePage === totalPages}
+                      />
+                    </Pagination>
+                  </Col>
+                </Row>
               </div>
-            </Card.Body>
+            </Card.Footer>
           </Card>
         </Col>
       </Row>

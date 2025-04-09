@@ -93,7 +93,7 @@ const Productivity = () => {
   };
 
   return (
-    <div className="w-full flex justify-center">
+    <div className="justify-center container-fluid">
       <Chart options={options} series={series} type="bar" height={350} />
     </div>
   );

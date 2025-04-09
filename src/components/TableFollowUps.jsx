@@ -107,7 +107,7 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
                 className="scroll-container" 
                 style={{ 
                     width: '100%', 
-                    maxHeight: '500px', 
+                    maxHeight: '500px',
                     overflowY: 'auto', 
                     display: 'flex', 
                     backgroundColor: '#343a40', // Fondo oscuro
@@ -116,7 +116,7 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
                     scrollbarWidth: 'thin'    // Scroll más delgado
                 }}
             >
-                <Table striped bordered hover responsive variant="dark" style={{ fontSize: "13px" }}>
+                <Table striped bordered hover responsive variant="dark" style={{ fontSize: "13px", width: "100%" }}> {/* Ajuste de ancho */}
                     <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#343a40" }}> {/* Encabezado fijo */}
                         <tr style={{ height: "55px" }}> {/* Reducimos la altura de los encabezados */}
                             {headers.map((header) => (

@@ -142,7 +142,7 @@ const SearchCustomer = () => {
                   {
                     icon: <FileText />,
                     label: "Expediente",
-                    value: `AMX${result.expediente}` || "--"
+                    value: `${"AMX" + result.expediente}` || "--"
                   },
                   {
                     icon: <Person />,
@@ -156,9 +156,12 @@ const SearchCustomer = () => {
                   }
                 ].map(({ icon, label, value }, i) => (
                   <Col key={i} md={6}>
-                    <p>
-                      {icon} <strong>{label}:</strong> {value}
-                    </p>
+                    <span>
+                      <strong>
+                        {icon} {label}:
+                      </strong>{" "}
+                      {value}
+                    </span>
                   </Col>
                 ))}
               </Row>
@@ -166,7 +169,7 @@ const SearchCustomer = () => {
           </Card.Body>
         </Card>
       </Col>
-      <Col xxl={4} xl={6} md={6} className="dashboard">
+      <Col xxl={4} xl={6} md={12} className="dashboard">
         <Card className="situation-card text-light">
           {renderSituacion(result.situacion)}
         </Card>
