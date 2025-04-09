@@ -334,7 +334,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
   };
 
   const handleSaveDeadlines = async () => {
-    const fechaInsert = isManagment?.storeOutput?.Fecha_Insert;
+    const fechaInsert = isManagment?.storeOutput?.Fecha_Insert?.split("T")[0];
     const segundoInsert = isManagment?.storeOutput?.Segundo_Insert;
     if (!calculosData.calculos || calculosData.calculos.length === 0) {
       toast.error("No hay plazos disponibles para guardar.");
@@ -359,6 +359,13 @@ const CalculatorSimulator = ({show, handleClose}) => {
       console.log("Enviando datos al endpoint:", requestData);
       const response = await fetchSaveDeleteDeadlines(requestData);
       console.log("Respuesta del endpoint:", response);
+
+       // Muestra el mensaje de la respuesta en el toast
+    if (response?.mensaje) {
+      toast.warning(`Respuesta de la solicitud: ${response.mensaje}`);
+    } else {
+      toast.success("Datos enviados.");
+    }
   
       if (response?.mensaje) {
         const diasASumar = parseInt(response.mensaje, 10); // Convierte el mensaje a número
@@ -383,7 +390,6 @@ const CalculatorSimulator = ({show, handleClose}) => {
     }
   };
   
-
   const handleValidateSuccess = () => {
     setIsValidated(true); // Cambia el estado a validado
     setShowValidators(false); // Cierra el modal de validación
@@ -392,7 +398,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
   const handleSaveNegotiation = async () => {
     try {
       const idCuenta = searchResults?.[0]?.idCuenta?.trim();
-      const fechaInsert = isManagment?.storeOutput?.Fecha_Insert;
+      const fechaInsert = isManagment?.storeOutput?.Fecha_Insert?.split("T")[0];
       const segundoInsert = isManagment?.storeOutput?.Segundo_Insert;
       // Validar datos antes de enviarlos
       if (!idCuenta || !selectedHerramienta || !calculosData.montoNegociado) {
@@ -476,13 +482,9 @@ const sendIncreaseNegotiation = async () => {
 const handleSaveOffering = async () => {
   try {
     const idCuenta = searchResults?.[0]?.idCuenta?.trim();
-    const fechaInsert = isManagment?.storeOutput?.Fecha_Insert;
+    const fechaInsert = isManagment?.storeOutput?.Fecha_Insert?.split("T")[0];
     const segundoInsert = isManagment?.storeOutput?.Segundo_Insert;
     const producto = 1;   
-    console.log("idCuenta:", idCuenta);
-    console.log("idProducto:", producto);
-    console.log("selectedHerramienta:", selectedHerramienta);
-    console.log("calculosData.montoNegociado:", montoNegociado);
 
     // Corrige la condición de validación
     if (!idCuenta || !selectedHerramienta || !montoNegociado) {
