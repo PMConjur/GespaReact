@@ -1,9 +1,8 @@
 import { useState, useEffect, useContext, useRef } from "react";
-import { Modal, Button, Form, Container, Row, Col, InputGroup } from "react-bootstrap";
-import { ShieldFill, KeyFill } from "react-bootstrap-icons";
+import { Modal, Button, Form, Container, Row, Col } from "react-bootstrap";
 import TableTimes from "./TableTimes";
 import { toast } from "sonner";
-import { userTimesUpdate, fetchListValidators, fetchValidators } from "../services/gespawebServices";
+import { userTimesUpdate } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 
 const REASONS = {
@@ -32,66 +31,27 @@ const Times = ({ show, handleClose }) => {
     const [timers, setTimers] = useState(REASONS);
     const [currentTimer, setCurrentTimer] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
-    const [password, setPassword] = useState("");
+    const [contrasenia, setContrasenia] = useState("");
     const [updatedTimesForTable, setUpdatedTimesForTable] = useState({});
-    
-    // Nuevos estados para la validación
-    const [validators, setValidators] = useState([]);
-    const [validator, setValidator] = useState("");
-    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const fetchValidatorsList = async () => {
-            try {
-                const idProducto = 1;
-                const response = await fetchListValidators(idProducto);
-                setValidators(response);
-            } catch (error) {
-                console.error("Error al obtener la lista de validadores:", error);
-                toast.error("Error al cargar validadores");
-            }
-        };
-
-        if (show) {
-            fetchValidatorsList();
-        }
-
         return () => {
             if (intervalRef.current) {
                 clearInterval(intervalRef.current);
             }
         };
-    }, [show]);
+    }, []);
 
-    const validateForm = async () => {
+    const validateForm = () => {
         if (!selectedReason) {
             toast.error("Seleccione una razón válida");
             return false;
         }
-        if (!validator) {
-            toast.error("Seleccione un validador");
-            return false;
-        }
-        if (!password.trim()) {
+        if (!contrasenia.trim()) {
             toast.error("Ingrese la contraseña");
             return false;
         }
-        
-        // Validar credenciales con el servidor
-        try {
-            setLoading(true);
-            const idProducto = 1;
-            const idEjecutivo = validator;
-            const Contraseña = password;
-
-            await fetchValidators(idProducto, idEjecutivo, Contraseña);
-            return true;
-        } catch (error) {
-            toast.error(`Error de validación: ${error.message}`);
-            return false;
-        } finally {
-            setLoading(false);
-        }
+        return true;
     };
 
     const handleStartTimer = () => {
@@ -108,8 +68,7 @@ const Times = ({ show, handleClose }) => {
     };      
 
     const handleStopTimer = async () => {
-        const isValid = await validateForm();
-        if (!isValid) return;
+        if (!validateForm()) return;
 
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -119,7 +78,7 @@ const Times = ({ show, handleClose }) => {
             
             await userTimesUpdate({
                 idEjecutivo,
-                contrasenia: password.trim(),
+                contrasenia: contrasenia.trim(),
                 peCausa: selectedReason,
                 duracion
             });
@@ -134,13 +93,24 @@ const Times = ({ show, handleClose }) => {
 
             setCurrentTimer(0);
             setIsPaused(false);
-            setPassword("");
-            setValidator("");
+            setContrasenia("");
+            setSelectedReason("");
 
             toast.success("Tiempo registrado correctamente");
         } catch (error) {
-            toast.error(`Error al registrar tiempo: ${error.message}`);
-            setIsPaused(true);
+            if (error.response && error.response.data && error.response.data.message === "Contraseña incorrecta") {
+                toast.error("Contraseña incorrecta. Por favor, inténtelo de nuevo.");
+                // Mantenemos el estado y reiniciamos el timer
+                setIsPaused(true);
+                intervalRef.current = setInterval(() => {
+                    setCurrentTimer(prev => prev + 1);
+                }, 1000);
+            } else {
+                toast.error(`Error al registrar tiempo: ${error.message}`);
+                setIsPaused(false);
+                setCurrentTimer(0);
+                setContrasenia("");
+            }
         }
     };
 
@@ -197,60 +167,26 @@ const Times = ({ show, handleClose }) => {
                                 disabled={!isPaused}
                                 className="w-100"
                             >
-                                {loading ? "Validando..." : "Detener Temporizador"}
+                                Detener Temporizador
                             </Button>
                         </Col>
                     </Row>
                     
-                    {/* Sección de validación (nueva) */}
-                    {isPaused && (
-                        <>
-                            <Row className="mb-3">
-                                <Col xs={12}>
-                                    <Form.Group>
-                                        <Form.Label>Validador</Form.Label>
-                                        <InputGroup>
-                                            <InputGroup.Text>
-                                                <ShieldFill />
-                                            </InputGroup.Text>
-                                            <Form.Select
-                                                value={validator}
-                                                onChange={(e) => setValidator(e.target.value)}
-                                            >
-                                                <option value="" disabled>
-                                                    Seleccione Validador
-                                                </option>
-                                                {validators.map((val) => (
-                                                    <option key={val.idEjecutivo} value={val.idEjecutivo}>
-                                                        {val.Nombre}
-                                                    </option>
-                                                ))}
-                                            </Form.Select>
-                                        </InputGroup>
-                                    </Form.Group>
-                                </Col>
-                            </Row>
-                            
-                            <Row className="mb-3">
-                                <Col xs={12}>
-                                    <Form.Group>
-                                        <Form.Label>Contraseña</Form.Label>
-                                        <InputGroup>
-                                            <InputGroup.Text>
-                                                <KeyFill />
-                                            </InputGroup.Text>
-                                            <Form.Control
-                                                type="password"
-                                                placeholder="Ingrese contraseña"
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                            />
-                                        </InputGroup>
-                                    </Form.Group>
-                                </Col>
-                            </Row>
-                        </>
-                    )}
+                    {/* Sección de contraseña */}
+                    <Row className="mb-3">
+                        <Col xs={12}>
+                            <Form.Group>
+                                <Form.Label>Contraseña</Form.Label>
+                                <Form.Control
+                                    type="password"
+                                    placeholder="Ingrese su contraseña"
+                                    value={contrasenia}
+                                    onChange={(e) => setContrasenia(e.target.value)}
+                                    disabled={!isPaused}
+                                />
+                            </Form.Group>
+                        </Col>
+                    </Row>
                     
                     {/* Temporizador actual */}
                     <Row className="mb-3 text-center">
