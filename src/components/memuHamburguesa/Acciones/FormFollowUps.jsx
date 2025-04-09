@@ -8,7 +8,9 @@ const FormFollowUps = ({ handleClose }) => {
     const { searchResults } = useContext(AppContext);
 
     if (!searchResults || searchResults.length === 0) {
-        toast.error("No se encontraron resultados de búsqueda. No se puede usar este formulario.");
+        toast.error(
+            "No se encontraron resultados de búsqueda. No se puede usar este formulario."
+        );
         return null;
     }
 
@@ -23,7 +25,7 @@ const FormFollowUps = ({ handleClose }) => {
         idCuenta: idCuenta[0].trim(),
         idEjecutivo: idEjecutivo,
         fecha: new Date().toISOString().split("T")[0],
-        segundo: "10:00:00",
+        segundo: "07:00:00",
         idAcercamiento: "1601",
         recordatorio: false,
         numeroTelefonico: "",
@@ -37,7 +39,7 @@ const FormFollowUps = ({ handleClose }) => {
         if (name === "numeroTelefonico") {
             const numericValue = value.replace(/\D/g, "");
             if (numericValue.length <= 13) {
-                setFormData(prev => ({
+                setFormData((prev) => ({
                     ...prev,
                     [name]: numericValue,
                 }));
@@ -48,7 +50,7 @@ const FormFollowUps = ({ handleClose }) => {
                 return;
             }
             const sanitizedValue = value.replace(/[^a-zA-Z0-9\s]/g, "");
-            setFormData(prev => ({
+            setFormData((prev) => ({
                 ...prev,
                 [name]: sanitizedValue,
             }));
@@ -58,12 +60,12 @@ const FormFollowUps = ({ handleClose }) => {
                 toast.error("La fecha no puede ser anterior al día actual.");
                 return;
             }
-            setFormData(prev => ({
+            setFormData((prev) => ({
                 ...prev,
                 [name]: value,
             }));
         } else {
-            setFormData(prev => ({
+            setFormData((prev) => ({
                 ...prev,
                 [name]: type === "checkbox" ? checked : value,
             }));
@@ -93,20 +95,22 @@ const FormFollowUps = ({ handleClose }) => {
             // Validación de horario
             if (formData.recordatorio) {
                 const [hours, minutes] = formData.segundo.split(":").map(Number);
-                const period = hours >= 12 ? 'PM' : 'AM';
-                
-                if (period === 'AM' && (hours < 7 || hours > 11)) {
+                const period = hours >= 12 ? "PM" : "AM";
+
+                if (period === "AM" && (hours < 7 || hours > 11)) {
                     toast.error("Horario AM inválido. Debe ser entre 7:00 AM y 11:59 AM");
                     setLoading(false);
                     return;
                 }
-                
-                if (period === 'PM' && (hours < 12 || hours > 22)) {
-                    toast.error("Horario PM inválido. Debe ser entre 12:00 PM y 10:00 PM");
+
+                if (period === "PM" && (hours < 12 || hours > 22)) {
+                    toast.error(
+                        "Horario PM inválido. Debe ser entre 12:00 PM y 10:00 PM"
+                    );
                     setLoading(false);
                     return;
                 }
-                
+
                 if (minutes < 0 || minutes > 59) {
                     toast.error("Los minutos deben estar entre 00 y 59");
                     setLoading(false);
@@ -119,6 +123,8 @@ const FormFollowUps = ({ handleClose }) => {
                 dataToSend.datoContacto = null;
             }
 
+            console.log("Datos a enviar al endpoint:", dataToSend); // Agregado para depuración
+
             const response = await createFollows(dataToSend);
             toast.success(response.mensaje || "Seguimiento guardado exitosamente.");
 
@@ -128,17 +134,18 @@ const FormFollowUps = ({ handleClose }) => {
                 idCuenta: idCuenta[0].trim(),
                 idEjecutivo: idEjecutivo,
                 fecha: new Date().toISOString().split("T")[0],
-                segundo: "10:00:00",
+                segundo: "07:00:00",
                 idAcercamiento: "1601",
                 recordatorio: false,
                 numeroTelefonico: "",
                 datoContacto: "",
                 idMotivoS: "0",
             });
-            
         } catch (error) {
             console.error("Error al guardar el seguimiento:", error);
-            toast.error(error.message || "Ocurrió un error al guardar el seguimiento.");
+            toast.error(
+                error.message || "Ocurrió un error al guardar el seguimiento."
+            );
         } finally {
             setLoading(false);
         }
@@ -209,11 +216,17 @@ const FormFollowUps = ({ handleClose }) => {
                                         }}
                                         aria-label="Seleccionar hora"
                                     >
-                                        {[...Array(12).keys()].map((h) => (
-                                            <option key={h} value={h + 1}>
-                                                {(h + 1).toString().padStart(2, "0")}
-                                            </option>
-                                        ))}
+                                        {parseInt(formData.segundo.split(":")[0]) >= 12
+                                            ? [...Array(11).keys()].map((h) => (
+                                                <option key={h} value={h + 12}>
+                                                    {(h + 12).toString().padStart(2, "0")}
+                                                </option>
+                                            ))
+                                            : [...Array(5).keys()].map((h) => (
+                                                <option key={h} value={h + 7}>
+                                                    {(h + 7).toString().padStart(2, "0")}
+                                                </option>
+                                            ))}
                                     </Form.Select>
                                 </Col>
                                 <Col md={4}>
@@ -221,7 +234,9 @@ const FormFollowUps = ({ handleClose }) => {
                                         type="text"
                                         value={formData.segundo.split(":")[1]}
                                         onChange={(e) => {
-                                            const minute = e.target.value.replace(/\D/g, "").slice(0, 2);
+                                            const minute = e.target.value
+                                                .replace(/\D/g, "")
+                                                .slice(0, 2);
                                             const [hour, _, second] = formData.segundo.split(":");
                                             setFormData({
                                                 ...formData,
@@ -235,7 +250,11 @@ const FormFollowUps = ({ handleClose }) => {
                                 </Col>
                                 <Col md={4}>
                                     <Form.Select
-                                        value={parseInt(formData.segundo.split(":")[0]) >= 12 ? "PM" : "AM"}
+                                        value={
+                                            parseInt(formData.segundo.split(":")[0]) >= 12
+                                                ? "PM"
+                                                : "AM"
+                                        }
                                         onChange={(e) => {
                                             const period = e.target.value;
                                             let [hour, minute, second] = formData.segundo.split(":");
@@ -244,7 +263,9 @@ const FormFollowUps = ({ handleClose }) => {
                                             if (period === "AM" && hour >= 12) hour -= 12;
                                             setFormData({
                                                 ...formData,
-                                                segundo: `${hour.toString().padStart(2, "0")}:${minute}:${second}`,
+                                                segundo: `${hour
+                                                    .toString()
+                                                    .padStart(2, "0")}:${minute}:${second}`,
                                             });
                                         }}
                                         aria-label="Seleccionar AM/PM"
@@ -275,10 +296,10 @@ const FormFollowUps = ({ handleClose }) => {
                         name="datoContacto"
                         value={formData.datoContacto}
                         onChange={handleChange}
-                        style={{ 
-                            height: '170px',
-                            resize: 'none',
-                            overflowY: 'auto'
+                        style={{
+                            height: "170px",
+                            resize: "none",
+                            overflowY: "auto",
                         }}
                         placeholder="Detalles adicionales del contacto..."
                         maxLength={280}
@@ -289,9 +310,9 @@ const FormFollowUps = ({ handleClose }) => {
                 </Form.Group>
 
                 <div className="d-flex justify-content-between">
-                    <Button 
-                        variant="danger" 
-                        onClick={handleClose} 
+                    <Button
+                        variant="danger"
+                        onClick={handleClose}
                         disabled={loading}
                         className="px-4"
                     >

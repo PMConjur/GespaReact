@@ -1,19 +1,28 @@
 
-import { Modal, Button } from "react-bootstrap";
+import { Modal } from "react-bootstrap";
 import TableTalks from "../../TableTalks";
 // import 'bootstrap-icons/font/bootstrap-icons.css';
 
 
 const Talks = ({ show, handleClose }) => {
     return (
-        <Modal show={show} onHide={handleClose} size="xl">
+        <Modal 
+        show={show} 
+        onHide={handleClose} 
+        backdrop="static" 
+        size="xl"
+        keyboard={true}
+        contentClassName="d-flex flex-column"
+        dialogClassName="my-custom-modal"
+        >
             <Modal.Header closeButton>
                 <Modal.Title>
                     <i className="bi bi-bank me-2"></i> {/* Ícono con margen derecho */}
                     Historial de Negociaciones
                 </Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body
+            className="flex-grow-1 p-0 d-flex flex-column">
                 <TableTalks/>
             </Modal.Body>
         </Modal>

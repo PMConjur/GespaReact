@@ -228,7 +228,7 @@ const Search = ({ show, handleClose }) => {
 
     return (
         <>
-            <Modal show={show} onHide={handleCloseModal} size="xl">
+            <Modal show={show} onHide={handleCloseModal} backdrop="static" size="xl">
                 <Modal.Header closeButton>
                     <Modal.Title>Búsquedas</Modal.Title>
                 </Modal.Header>

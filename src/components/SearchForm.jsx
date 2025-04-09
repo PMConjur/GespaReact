@@ -7,7 +7,7 @@ import {
   InputGroup
 } from "react-bootstrap";
 import { Search, ArrowRepeat, FunnelFill } from "react-bootstrap-icons";
-import { useContext } from "react";
+import  { useContext } from "react";
 import { AppContext } from "../pages/Managment"; // Importa el contexto
 import { toast } from "sonner"; // Importar toast
 

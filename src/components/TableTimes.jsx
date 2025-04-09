@@ -12,9 +12,14 @@ const TIME_CATEGORIES = [
 ];
 
 const formatTime = (value) => {
-    // Si ya está formateado (HH:MM:SS)
+    // Si ya está formateado correctamente (HH:MM:SS)
     if (typeof value === 'string' && /^\d{2}:\d{2}:\d{2}$/.test(value)) {
         return value;
+    }
+    
+    // Si viene con milisegundos (HH:MM:SS.millis)
+    if (typeof value === 'string' && /^\d{2}:\d{2}:\d{2}\.\d+$/.test(value)) {
+        return value.split('.')[0]; // Tomamos solo la parte antes del punto
     }
     
     // Si es null/undefined o no convertible a número
@@ -22,14 +27,16 @@ const formatTime = (value) => {
         return "--:--:--";
     }
     
-    const seconds = Math.floor(Number(value));
-    const hrs = Math.floor(seconds / 3600).toString().padStart(2, "0");
-    const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, "0");
-    const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
+    // Convertir a segundos (si viene en milisegundos)
+    const numericValue = Number(value);
+    const totalSeconds = numericValue >= 1000 ? Math.floor(numericValue / 1000) : Math.floor(numericValue);
+    
+    const hrs = Math.floor(totalSeconds / 3600).toString().padStart(2, "0");
+    const mins = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, "0");
+    const secs = Math.floor(totalSeconds % 60).toString().padStart(2, "0");
     
     return `${hrs}:${mins}:${secs}`;
 };
-
 // Función para cargar datos totales
 const loadTotalTimes = async (idEjecutivo, formatOrDefault) => {
     try {

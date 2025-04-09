@@ -127,7 +127,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
     .filter((email) => typeof email === "string");
 
   return (
-    <Modal show={show} onHide={handleClose} size="xl">
+    <Modal show={show} onHide={handleClose} backdrop="static" size="xl">
       <Modal.Header closeButton>
         <Modal.Title>Estado de Cuenta</Modal.Title>
       </Modal.Header>

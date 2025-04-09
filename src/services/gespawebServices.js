@@ -518,18 +518,21 @@ export const getPaymentsData = async (idCartera, idCuenta) => {
 };
 
 // Nueva función para obtener datos de scripts
-export async function fetchScripts(Ejecutivo, idProducto, idCartera, cuenta) {
+export async function fetchScripts(
+  idProducto,
+  idCartera,
+  idCuenta,
+  idEjecutivo
+) {
   try {
-    console.log("Iniciando la llamada a ña API para obtener scripts...");
-
+    console.log("Iniciando llamada a la API para obtener scripts...");
     console.log(
-      "URL de la API scripts-full :",
-      `${apiUrl}/ejecutivo/scripts-full/${Ejecutivo}/1/1/${cuenta}`
+      "URL de la API:",
+      `${apiUrl}/ejecutivo/scripts-full/${idProducto}/${idCartera}/${idEjecutivo}/${idCuenta}`
     );
 
     const response = await servicio.get(
-      `/ejecutivo/scripts-full/${Ejecutivo}/1/1/${cuenta}`,
-      {}
+      `/ejecutivo/scripts-full/${idProducto}/${idCartera}/${idEjecutivo}/${idCuenta}`
     );
 
     const message = getErrorStatus(response.status);
@@ -558,7 +561,7 @@ export const getGestionTeData = async (idCartera, idCuenta) => {
       throw new Error("idCartera o idCuenta no son válidos.");
     }
 
-    const Top = 2000;
+    const Top = 10000;
     const url = `/ejecutivo/gestionTe/${idCartera}/${idCuenta}/${Top}`;
     console.log("Solicitando datos de gestion Telefonica a:", url); // Depurar URL
 
@@ -1345,28 +1348,6 @@ export const createOnlineCharge = async (data) => {
   }
 };
 
-// endpoint guardar-Gestion-Telefonica
-export const saveManagment = async (dataManagment) => {
-  try {
-    const response = await servicio.post(
-      `/ejecutivo/GuardarGestionTe`,
-      dataManagment
-    );
-
-    if (response.status !== 200) {
-      throw new Error(
-        `Error en la respuesta de la API. Estado: ${response.status}`
-      );
-    }
-
-    const result = response.data;
-    console.log("Gestion Guardada correctamente:", result);
-    return result;
-  } catch (error) {
-    console.error("Error al guardar la gestión", error);
-    throw error;
-  }
-};
 
 //endpoint buscar-tipo de queja y origen de queja
 export const fetchSearchAddDate = async () => {
@@ -1529,6 +1510,54 @@ export const createPayments = async (data) => {
         error.response.data?.mensaje || "Error al crear Pago";
       throw new Error(errorMessage);
     }
+    throw error;
+  }
+};
+
+
+export const getRelaciones = async () => {
+  try {
+  
+    const url = `/ejecutivo/relaciones`;
+    console.log("Solicitando datos de Relaciones a:", url); // Depurar URL"
+
+    const response = await servicio.get(url);
+    const message = getErrorStatus(response.status);
+
+    if (response.status !== 200) {
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error en getRelaciones:", error);
+    toast.error(
+      "No se pudo obtener los datos de Relaciones. Verifica la conexión o los parámetros."
+    );
+    throw error;
+  }
+};
+
+// endpoint guardar-Gestion-Telefonica
+export const saveManagment = async (dataManagment) => {
+  try {
+    const response = await servicio.post(
+      `/ejecutivo/GuardarGestionTe`,
+      dataManagment
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Gestion Guardada correctamente:", result);
+    return result;
+  } catch (error) {
+    console.error("Error al guardar la gestión", error);
     throw error;
   }
 };

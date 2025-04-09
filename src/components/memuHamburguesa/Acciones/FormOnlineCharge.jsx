@@ -274,6 +274,7 @@ const FormOnlineCharge = ({ handleClose }) => {
 
   // Renderiza el formulario
   return (
+    
     <Form onSubmit={handleSubmit} className="p-3">
       <Row className="mb-3">
         <Col>
@@ -419,7 +420,7 @@ const FormOnlineCharge = ({ handleClose }) => {
           </Row>
 
           <Form.Group className="mb-3">
-            <Form.Label>Nombre</Form.Label>
+            <Form.Label>Nombre del Titular</Form.Label>
             <Form.Control
               type="text"
               name="nombre"
