@@ -53,7 +53,7 @@ servicio.interceptors.request.use(
   (config) => {
     try {
       const responseData = JSON.parse(localStorage.getItem("responseData"));
-      console.log("Contenido de ResponseData:", responseData); // Log the response data to ensure it is set
+      //console.log("Contenido de ResponseData:", responseData); // Log the response data to ensure it is set
 
       const token = responseData?.ejecutivo?.token;
       console.log("Token obtenido", token); // Log the token to ensure it is set
@@ -84,7 +84,7 @@ servicio.interceptors.request.use(
 // Interceptor para manejar respuestas
 servicio.interceptors.response.use(
   (response) => {
-    console.log("Respuesta exitosa:", response);
+    //console.log("Respuesta exitosa:", response);
     return response;
   },
   (error) => {

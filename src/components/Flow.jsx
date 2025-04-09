@@ -29,7 +29,8 @@ const Flow = () => {
     communicationData,
     setStoppedTime,
     stoppedTimeSticky,
-    setUserActiveFlow // Agregar función del contexto para actualizar userActiveFlow
+    setUserActiveFlow, // Agregar función del contexto para actualizar userActiveFlow
+    setManagment // Agregar función del contexto para actualizar la gestión
   } = useContext(AppContext); // Agrega funciones del contexto para manejar estados
 
   const [userFlowData, setUserFlowData] = useState([]);
@@ -52,7 +53,7 @@ const Flow = () => {
   const [showOnlineCharge, setShowOnlineCharge] = useState(false); // Estado para controlar el modal OnlineCharge
   const [isPaymentActive, setIsPaymentActive] = useState(false); // Estado para pagos
   const [isOnlineChargeActive, setIsOnlineChargeActive] = useState(false); // Estado para cargos en línea
-
+  const [isManagment, setManagmentState] = useState([]);
   const handleSaveComment = (comment) => {
     setSavedComment(comment); // Actualiza el comentario guardado
     setTriggerLastAnswerActions(true); // Activa el disparador para ejecutar las acciones
@@ -61,6 +62,7 @@ const Flow = () => {
   const handleCloseFollowUps = () => {
     console.log("Cerrando FollowUps...");
     setShowFollowUps(false); // Cierra el modal FollowUps
+    setFollowUpActive(false); // Asegura que el estado de seguimiento también se desactive
   };
 
   const handleOpenCalculator = () => setShowCalculator(true); // Abre el modal
@@ -232,7 +234,7 @@ const Flow = () => {
   const idCargoLinea = answerHistory.find(
     (item) => item.idPregunta === 8
   )?.idValor;
-  //console.log(stoppedTimeSticky);
+  //Aqui se guarda gestion del ejecutivo
   const handleSave = async (comment) => {
     const tiempoEnCuenta = stoppedTimeSticky || "00:00:00"; // Usa el tiempo capturado por TimmerAccount
     const duracion = stoppedTime || "00:00:00"; // Usa el tiempo detenido del cronómetro interno de Flow.jsx
@@ -267,6 +269,12 @@ const Flow = () => {
         const response = await saveManagment(dataManagment); // Llama al servicio saveManagment
         if (response) {
           toast.success("Gestión guardada correctamente.");
+          const responseData = response.data; // Extrae la información de la respuesta
+          setManagment(responseData); // Actualiza el contexto con los datos de la gestión
+          console.log(
+            "Datos de la gestión guardados en el contexto:",
+            responseData
+          );
           handleLastAnswerActions(); // Ejecuta las acciones según las condiciones
         } else {
           toast.error("Error al guardar la gestión.");
