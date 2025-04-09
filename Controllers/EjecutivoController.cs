@@ -66,18 +66,17 @@ namespace NoriAPI.Controllers
         }
 
         [HttpPost("pause-ejecutivo")]
-        [AllowAnonymous]
         public async Task<ActionResult> ManagePause([FromBody] InfoPausa pauseRequest)
         {
             Dictionary<bool, object> mensaje = await _ejecutivoService.PauseUnpause(pauseRequest);
 
             if (mensaje == null)
             {
-                return BadRequest(new { Success = false, mensaje = "Error al procesar la solicitud." });
+                return BadRequest(new { Success = false, mensaje = "Error al procesar la solicitud. No se devolvió respuesta del servidor." });
             }
             else if (mensaje.Count == 0)
             {
-                return BadRequest(new { Success = false, mensaje = "Error al procesar la solicitud." });
+                return BadRequest(new { Success = false, mensaje = "Error al procesar la solicitud. No se devolvió respuesta del servidor." });
             }
             else if (!mensaje.Keys.First())
             {
@@ -1048,7 +1047,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("validador")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetValidador(int idProducto, int idEjecutivo, string Contraseña)
         {
             DataSet dsTablas = new DataSet();
@@ -1547,19 +1545,19 @@ namespace NoriAPI.Controllers
 
 
         [HttpGet("ObtenerGestiones")]
-        public async Task<IActionResult> ObtenerGestiones([FromQuery] int idCartera, [FromQuery] string idCuenta, [FromQuery] string numeroCliente)
+        [AllowAnonymous]
+        public async Task<IActionResult> ObtenerGestiones([FromQuery] int idCartera, [FromQuery] string idCuenta)
         {
             try
             {
                 DataTable table = new DataTable();
                 table.Columns.Add("idCartera", typeof(int));
                 table.Columns.Add("idCuenta", typeof(string));
-                table.Columns.Add("NúmeroCliente", typeof(string));
+
 
                 DataRow drInfo = table.NewRow();
                 drInfo["idCartera"] = idCartera;
                 drInfo["idCuenta"] = idCuenta;
-                drInfo["NúmeroCliente"] = numeroCliente;
 
                 DataTable gestiones = await _ejecutivoService.ObtieneGestionesAsync(drInfo);
 
@@ -1584,8 +1582,8 @@ namespace NoriAPI.Controllers
         [HttpPost("GuardarGestionTe")]
         [ProducesResponseType(typeof(GuardarGestionResponse), 200)] // Indica la estructura de la respuesta exitosa en Swagger
         [ProducesResponseType(400)] // Indica una solicitud incorrecta en Swagger
-        [ProducesResponseType(500)] // Indica un error interno del servidor en Swagger
-        [AllowAnonymous]
+        [ProducesResponseType(500)]
+        [AllowAnonymous]// Indica un error interno del servidor en Swagger
         public async Task<IActionResult> GuardarGestionTelefonica([FromBody] GestionTelefonica gestion)
         {
             if (gestion == null)
@@ -1593,11 +1591,17 @@ namespace NoriAPI.Controllers
                 return BadRequest(new { Message = "Datos de gestión no válidos.", Data = gestion });
             }
 
-            if (await _ejecutivoService.GuardaGestionTelefonicaAsync(gestion))
+            var resultadoGuardado = await _ejecutivoService.GuardaGestionTelefonicaAsync(gestion);
+
+            if (resultadoGuardado.Item1) // La operación de guardado fue exitosa
             {
                 var response = new GuardarGestionResponse
                 {
-                    Data = gestion,
+                    Data = new
+                    {
+                        Gestion = gestion,
+                        StoreOutput = resultadoGuardado.Item2 // Incluye los valores de salida del Stored Procedure
+                    },
                     Message = "Gestión guardada exitosamente."
                 };
                 return Ok(response);
@@ -1606,6 +1610,13 @@ namespace NoriAPI.Controllers
             {
                 return BadRequest(new { Message = "Error al guardar la gestión.", Data = gestion });
             }
+        }
+
+        // Definición de la clase de respuesta (si no la tienes ya)
+        public class GuardarGestionResponse
+        {
+            public object Data { get; set; }
+            public string Message { get; set; }
         }
 
         [HttpPost("save-gestion-telefonica")]
@@ -1626,7 +1637,6 @@ namespace NoriAPI.Controllers
 
         #region Todo
         [HttpGet("detalles-cuenta/{idCuenta}/{idCartera}")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetDetallesCuenta(string idCuenta, int idCartera)
         {
             if (string.IsNullOrEmpty(idCuenta) || idCartera <= 0)

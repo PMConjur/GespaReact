@@ -106,7 +106,7 @@ namespace NoriAPI.Services
         Task<dynamic> RegisterNewCorreo(CorreosEn newCorreos);
         Task<DataTable> ObtieneGestionesAsync(DataRow drInfo);
         Task<string> AñadeAdicionalAsync(Adicional AdicionalCuenta, DataRow drInfo, Ejecutivo ejecutivo, DataTable Adicionales, Catalogos catalogos);
-        Task<bool> GuardaGestionTelefonicaAsync(GestionTelefonica gestion);
+        Task<Tuple<bool, Dictionary<string, object>>> GuardaGestionTelefonicaAsync(GestionTelefonica gestion);
         Task<GuardaGestionTelefonicaResult> GuardarGestionTelefonica(EndGestionRequest infoEndGestion);
         Task ObtieneRecordatoriosAsync(DataRow drDatos, DataSet dsTablas);
 
@@ -171,6 +171,7 @@ namespace NoriAPI.Services
         private static ArrayList _alNombreId;
         private static Hashtable _htValoresCatálogo;
         private static Hashtable _htNombreId;
+        private int rowsAffected;
         #endregion
 
         public EjecutivoService(IConfiguration configuration, IEjecutivoRepository ejecutivoRepository, IBusquedaRepository busquedaRepository, ISearchRepository searchRepository, ISearchService searchService, Catalogos catalogos, DataTable correos, DataTable enviados)
@@ -2265,7 +2266,7 @@ namespace NoriAPI.Services
                 await _ejecutivoRepository.Pausa210(pausa.IdEjecutivo, idPeCausa, pausa.Duracion);
                 await _ejecutivoRepository.IncreaseEjecutivoTime(pausa.IdEjecutivo, pausa.Duracion, pausa.PeCausa);
 
-                return new Dictionary<bool, object> { { false, "Sesión reanudada." } };
+                return new Dictionary<bool, object> { { true, "Sesión reanudada." } };
             }
             catch
             {
@@ -4658,8 +4659,11 @@ namespace NoriAPI.Services
             }
             return gestiones;
         }
-        public async Task<bool> GuardaGestionTelefonicaAsync(GestionTelefonica gestion)
+        public async Task<Tuple<bool, Dictionary<string, object>>> GuardaGestionTelefonicaAsync(GestionTelefonica gestion)
         {
+            bool success = false;
+            Dictionary<string, object> storeOutput = new Dictionary<string, object>();
+
             try
             {
                 string connectionString = _configuration.GetConnectionString("Piso2Amex");
@@ -4670,7 +4674,7 @@ namespace NoriAPI.Services
                     {
                         command.CommandType = System.Data.CommandType.StoredProcedure;
 
-                        // Parámetros del procedimiento almacenado
+                        // Parámetros del procedimiento almacenado (ENTRADA)
                         command.Parameters.AddWithValue("@idCartera", gestion.IdCartera);
                         command.Parameters.AddWithValue("@idCuenta", gestion.IdCuenta);
                         command.Parameters.AddWithValue("@idEjecutivo", gestion.IdEjecutivo);
@@ -4689,22 +4693,81 @@ namespace NoriAPI.Services
                         command.Parameters.AddWithValue("@Comentario", gestion.Comentario ?? (object)DBNull.Value);
                         command.Parameters.AddWithValue("@TiempoEnCuenta", gestion.TiempoEnCuenta);
 
+                        using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync()) // Lee la primera fila del resultado
+                            {
+                                // Accede a los valores por nombre de columna
+                                storeOutput["Fecha_Insert"] = reader["Fecha_Insert"];
+                                storeOutput["Segundo_Insert"] = reader["Segundo_Insert"];
 
+                                // Lee los campos adicionales
+                                if (reader.GetName(2) == "idSituación")
+                                {
+                                    storeOutput["idSituación"] = reader["idSituación"];
+                                }
+                                if (reader.GetName(3) == "Fechavici")
+                                {
+                                    storeOutput["Fechavici"] = reader["Fechavici"];
+                                }
+                                if (reader.GetName(4) == "Nivel")
+                                {
+                                    storeOutput["Nivel"] = reader["Nivel"];
+                                }
+                                if (reader.GetName(5) == "Situacion")
+                                {
+                                    storeOutput["Situacion"] = reader["Situacion"];
+                                }
+                                if (reader.GetName(6) == "Producto")
+                                {
+                                    storeOutput["Producto"] = reader["Producto"];
+                                }
+                                if (reader.GetName(7) == "Productos")
+                                {
+                                    storeOutput["Productos"] = reader["Productos"];
+                                }
+                                if (reader.GetName(8) == "IdModo")
+                                {
+                                    storeOutput["IdModo"] = reader["IdModo"];
+                                }
+                                if (reader.GetName(9) == "NumeroCliente")
+                                {
+                                    storeOutput["NumeroCliente"] = reader["NumeroCliente"];
+                                }
+                                if (reader.GetName(10) == "Billing")
+                                {
+                                    storeOutput["Billing"] = reader["Billing"];
+                                }
+                                if (reader.GetName(11) == "Contacto")
+                                {
+                                    storeOutput["Contacto"] = reader["Contacto"];
+                                }
+                                if (reader.GetName(12) == "Etiqueta")
+                                {
+                                    storeOutput["Etiqueta"] = reader["Etiqueta"];
+                                }
 
-                        int rowsAffected = await command.ExecuteNonQueryAsync();
-                        return rowsAffected > 0;
+                                success = true; // La inserción y la lectura fueron exitosas
+                            }
+                            else
+                            {
+                                success = rowsAffected > 0; // Si no hay filas en el reader, la success depende del ExecuteNonQuery
+                            }
+                        }
                     }
                 }
+
+                return Tuple.Create(success, storeOutput);
             }
             catch (SqlException ex)
             {
                 Debug.WriteLine($"Error de SQL: {ex.Message}");
-                return false;
+                return Tuple.Create(false, (Dictionary<string, object>)null);
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error al guardar la gestión: {ex.Message}");
-                return false;
+                return Tuple.Create(false, (Dictionary<string, object>)null);
             }
         }
         public async Task<GuardaGestionTelefonicaResult> GuardarGestionTelefonica(EndGestionRequest infoEndGestion)
