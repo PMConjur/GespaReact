@@ -2825,10 +2825,10 @@ namespace NoriAPI.Services
         }
 
         #region Búsqueda
-        public async Task<DataTable> GetBusquedaAsync(int idCartera, string idCuenta, int Jararquia)
+        public async Task<DataTable> GetBusquedaAsync(int idCartera, string idCuenta)
         {
             DataTable busqueda = new DataTable();
-            string query = "SELECT * FROM fn_Búsquedas(@idCartera, @idCuenta, @Jerarquía)";
+            string query = "SELECT * FROM fn_Búsquedas(@idCartera, @idCuenta, NULL)";
 
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -2837,7 +2837,6 @@ namespace NoriAPI.Services
                 {
                     command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
                     command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
-                    command.Parameters.Add("@Jerarquía", SqlDbType.Int).Value = Jararquia;
 
                     using (var adapter = new SqlDataAdapter(command))
                     {
@@ -2862,9 +2861,8 @@ namespace NoriAPI.Services
 
             var idCartera = Convert.ToInt32(drDatos["idCartera"]);
             var idCuenta = Convert.ToString(drDatos["idCuenta"]);
-            var Jerarquia = Convert.ToInt32(drDatos["Jerarquía"]);
 
-            DataTable busquedaGet = await GetBusquedaAsync(idCartera, idCuenta, Jerarquia);
+            DataTable busquedaGet = await GetBusquedaAsync(idCartera, idCuenta);
 
             if (busquedaGet == null || busquedaGet.Rows.Count == 0)
                 return;

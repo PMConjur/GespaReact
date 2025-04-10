@@ -32,6 +32,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("busqueda-cuenta")]//Endpoint Padrino
+        [AllowAnonymous]
         public async Task<ActionResult<ResultadoBusqueda>> Busqueda([FromQuery] string filtro, string ValorBusqueda)
         {
             var Busqueda = await _searchService.ValidateBusqueda(filtro, ValorBusqueda);
@@ -153,7 +154,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("search-postal-code")]
-       
+
         public async Task<ActionResult<List<CodigosPostales>>> FindPostalCode([FromQuery] int codigoPostal)
         {
             var postalCode = await _searchService.FindPostalCodeInfo(codigoPostal);

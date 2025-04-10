@@ -431,20 +431,19 @@ namespace NoriAPI.Controllers
 
 
         #region Busqueda
-        [HttpGet("busqueda/{idCartera}/{idCuenta}/{Jerarquia}")]
-        public async Task<IActionResult> GetBusqueda(int idCartera, string idCuenta, int Jerarquia)
+        [HttpGet("busqueda/{idCartera}/{idCuenta}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetBusqueda(int idCartera, string idCuenta)
         {
 
             DataSet dsTablas = new DataSet();
             DataTable busquedaTable = dsTablas.Tables.Add("Busqueda");
             busquedaTable.Columns.Add("idCartera", typeof(int));
             busquedaTable.Columns.Add("idCuenta", typeof(string));
-            busquedaTable.Columns.Add("Jerarquía", typeof(int));
 
             DataRow drDatos = busquedaTable.NewRow();
             drDatos["idCartera"] = idCartera;
             drDatos["idCuenta"] = idCuenta;
-            drDatos["Jerarquía"] = Jerarquia;
 
             await _ejecutivoService.ObtenerBusquedaEJE(drDatos, dsTablas);
 
@@ -1047,21 +1046,39 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("validador")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetValidador(int idProducto, int idEjecutivo, string Contraseña)
         {
             DataSet dsTablas = new DataSet();
             try
             {
 
-                DataTable Validador = new DataTable();
+                DataTable validador = await _ejecutivoService.GetValidadorAsync(idProducto, idEjecutivo, Contraseña);
 
-                Validador = await _ejecutivoService.GetValidadorAsync(idProducto, idEjecutivo, Contraseña);
+                if (validador == null || validador.Columns.Count != 1 || !validador.Columns.Contains("Mensaje"))
+                {
+                    return BadRequest(new { Error = "No se recibió una respuesta de la base de datos." });
+                }
+
+                //
+                //
+                //
+                // el valor de la primera fila en la columna "Mensaje"
+                string mensajePrimeraFila = validador.AsEnumerable()
+                    .FirstOrDefault() // Obtiene la primera DataRow, o null si no hay filas
+                    ?.Field<string>("Mensaje");
+
+                if (mensajePrimeraFila != "Validado")
+                {
+                    return BadRequest(new { Error = mensajePrimeraFila });
+                }
+
 
                 // Convertimos el DataTable a una lista de diccionarios
-                var Validadores = ConvertDataTableToList(Validador);
+                var validadores = ConvertDataTableToList(validador);
 
                 // Serializamos la lista a JSON
-                string jsonValidadores = JsonSerializer.Serialize(Validadores, new JsonSerializerOptions { WriteIndented = true });
+                string jsonValidadores = JsonSerializer.Serialize(validadores, new JsonSerializerOptions { WriteIndented = true });
 
                 //return Ok(jsonValidadores);
                 return Content(jsonValidadores, "application/json; charset=utf-8");

@@ -68,7 +68,7 @@ namespace NoriAPI.Repositories
                                     "FROM Cuentas C \r\n" +
                                     "    	INNER JOIN Productos P ON P.idProducto = C.idProducto \r\n" +
                                     "    	INNER JOIN Carteras CL ON CL.idCartera = C.idCartera \r\n" +
-                                    "       INNER JOIN ValoresCatálogo V ON V.idValor = C.idSituación \r\n" 
+                                    "       INNER JOIN ValoresCatálogo V ON V.idValor = C.idSituación \r\n"
 
                                     ;
             switch (filtro)
@@ -135,7 +135,7 @@ namespace NoriAPI.Repositories
             }
             else
             {
-                var busqueda = (await connection.QueryFirstOrDefaultAsync<dynamic>(queryBusqueda, commandType: CommandType.Text));
+                var busqueda = (await connection.QueryAsync<dynamic>(queryBusqueda, commandType: CommandType.Text));
                 return busqueda;
             }
 
@@ -329,9 +329,9 @@ namespace NoriAPI.Repositories
         }
 
         public async Task<List<CodigosPostales>> SearchCodigosPostales(int CodigoPostal)
-           
+
         {
-         
+
             using var connection = GetConnection("Piso2Amex");
 
             string codigosPostalesQuery = "SELECT TOP (30) * FROM [dbAllocation].[dbo].[CódigosPostales] WHERE CódigoPostal = @CódigoPostal";
