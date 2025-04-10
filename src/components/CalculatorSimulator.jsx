@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { Modal, Button, Form, Table, Card, Row, Col } from "react-bootstrap";
 import "../scss/styles.scss";
 import { fetchCalFirtsPart, fetchCalSecondPart, fetchCalSecondPartModify, fetchSaveDeleteDeadlines, fetchSaveNegotiationDeadlines, fetchIncreasesNegotiation, fetchSaveOffering } from "../services/gespawebServices";
@@ -7,12 +7,12 @@ import { toast } from "sonner";
 import Validators from "./fragments/Validators"; // Importa el modal de Validators
 
 const CalculatorSimulator = ({show, handleClose}) => {
+
   const { searchResults, idEjecutivo, isManagment} = useContext(AppContext);
   useEffect(() => {
     console.log("Contenido de isManagment:", isManagment);
   }, [isManagment]); // Se ejecutará cada vez que isManagment cambie
 
-  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [tableData, setTableData] = useState([]);
   const [summaryData, setSummaryData] = useState({
     montoRequerido: 0,
@@ -66,6 +66,21 @@ const CalculatorSimulator = ({show, handleClose}) => {
   const [isSaveDeadlinesClicked, setIsSaveDeadlinesClicked] = useState(false); // Nuevo estado para controlar la visibilidad de los botones
   const [isNegotiationSaved, setIsNegotiationSaved] = useState(false); // Nuevo estado para controlar la visibilidad del botón "Finalizar"
 
+  const calculatorRef = useRef(null); // Referencia para la sección de la calculadora
+  const detailsRef = useRef(null); // Referencia para la sección de "Resumen y Plazos"
+
+  useEffect(() => {
+    if (showCalculator && calculatorRef.current) {
+      calculatorRef.current.scrollIntoView({ behavior: "smooth" }); // Scroll automático para la calculadora
+    }
+  }, [showCalculator]);
+
+  useEffect(() => {
+    if (showDetails && detailsRef.current) {
+      detailsRef.current.scrollIntoView({ behavior: "smooth" }); // Scroll automático para "Resumen y Plazos"
+    }
+  }, [showDetails]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormInputs((prev) => ({
@@ -114,13 +129,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
       fetchData(); // Llama a la función solo si searchResults tiene datos
     }
   }, [searchResults, selectedHerramienta]); // Agrega selectedHerramienta como dependencia
-  const handleScroll = (e) => {
-    if (e.target.scrollTop > 10) {
-      setShowScrollIndicator(false);
-    } else {
-      setShowScrollIndicator(true);
-    }
-  };
+ 
   const handleHerramientaChange = (e) => {
     const selectedValue = e.target.value;
     setSelectedHerramienta(Number(selectedValue)); // Actualiza el idHerramienta seleccionado
@@ -536,6 +545,7 @@ const handleSaveOffering = async () => {
     console.error("Error al guardar el ofrecimiento:", error);
     toast.error("Error al guardar el ofrecimiento.");
   }
+
 };
 
   return (
@@ -552,7 +562,7 @@ const handleSaveOffering = async () => {
             overflowY: "auto", // Habilitar scroll vertical
             position: "relative", // Necesario para posicionar el indicador
           }}
-          onScroll={handleScroll}
+
         >
           <Col>
             {/* Ofrecimientos */}
@@ -917,25 +927,6 @@ const handleSaveOffering = async () => {
                 </Row>
               )}
               <Col className="p-0">
-                {showScrollIndicator && (
-                  <div
-                    className="container-scroll-down"
-                    style={{
-                      position: "absolute",
-                      bottom: "80px",
-                      left: "50%",
-                      transform: "translateX(-50%)",
-                      textAlign: "start",
-                      zIndex: 10,
-                    }}
-                  >
-                    <div className="chevron"></div>
-                    <div className="chevron"></div>
-                    <div className="chevron"></div>
-                    <span className="text">Desliza hacia abajo</span>
-                  </div>
-                )}
-
                 {showCalculator &&
                   !areFieldsEnabled && ( // Oculta la calculadora si los campos están habilitados
                     <>
@@ -943,7 +934,7 @@ const handleSaveOffering = async () => {
                       <h5 style={{ textAlign: "center", color: "#20c997" }}>
                         Calculadora AMEX
                       </h5>
-                      <Card className="p-3 mb-0">
+                      <Card className="p-3 mb-0" ref={calculatorRef}>
                         <Card.Body className="p-0">
                           <Card.Title className="pt-0 ms-3">Datos</Card.Title>
                           <Form className="d-flex gap-4 w-100">
@@ -1050,7 +1041,7 @@ const handleSaveOffering = async () => {
                     </>
                   )}
               </Col>
-              <Row>
+              <Row ref={detailsRef}>
                 {showDetails && (
                   <>
                     {/* Resumen */}

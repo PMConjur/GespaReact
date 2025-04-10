@@ -5,6 +5,7 @@ import {
   fetchListValidators,
   fetchValidators,
   fetchEmailsCharging,
+  getErrorStatus
 } from "../../services/gespawebServices";
 import { toast } from "sonner";
 import { AppContext } from "../../pages/Managment";
@@ -130,7 +131,7 @@ const Validators = ({ show, handleClose, handleValidate }) => {
 
       // Muestra un toast de error si ocurre un problema
       const message = error.response ? getErrorStatus(error.response.status) : "Error desconocido";
-      toast.error(`${message}`, {
+      toast.error(`Datos incorrectos, vuelva intentarlo: "${message}"`, {
         position: "top-center",
       });
     } finally {
@@ -158,7 +159,7 @@ const Validators = ({ show, handleClose, handleValidate }) => {
 
   return (
     <>
-      <Modal show={show} onHide={handleCloseModal} size="md">
+      <Modal show={show} onHide={handleCloseModal} size="md" backdrop="static">
         <Modal.Header closeButton className="bg-dark text-light">
           <Modal.Title>Validación</Modal.Title>
         </Modal.Header>
@@ -206,6 +207,7 @@ const Validators = ({ show, handleClose, handleValidate }) => {
                 <Form.Select
                   value={validator}
                   onChange={(e) => setValidator(e.target.value)}
+                  style={{ maxHeight: "150px", overflowY: "auto" }}
                 >
                   <option value="" disabled>
                     Seleccione Validador
