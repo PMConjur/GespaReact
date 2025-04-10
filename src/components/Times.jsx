@@ -117,7 +117,7 @@ const Times = ({ show, handleClose }) => {
     if (!idEjecutivo) {
         return (
             <div className="alert alert-warning text-center" role="alert">
-                ⚠️ No se encontró un ID de ejecutivo válido. Verifica tu sesión.
+                No se encontró un ID de ejecutivo válido. Verifica tu sesión.
             </div>
         );
     }

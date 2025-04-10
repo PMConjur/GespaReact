@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Modal, Row, Col } from "react-bootstrap";
 import TableFollowUps from "../../TableFollowUps";
 import FormFollowUps from "./FormFollowUps";
@@ -7,17 +8,40 @@ const FollowUps = ({
   handleClose,
   isFollowUpActive = false
 }) => {
+  const [hasRegistered, setHasRegistered] = useState(false);
+
+  // Resetear el estado cuando el modal se cierra o cuando isFollowUpActive cambia
+  useEffect(() => {
+    if (!show) {
+      setHasRegistered(false);
+    }
+  }, [show]);
+
+  // También reseteamos cuando  cambia
+  useEffect(() => {
+    setHasRegistered(false);
+  }, [isFollowUpActive]);
+
+  // Función para manejar el cierre condicional
+  const handleConditionalClose = () => {
+    if (isFollowUpActive && !hasRegistered) {
+      // Aquí puedes mostrar un toast o alerta si lo deseas
+      return;
+    }
+    handleClose();
+  };
+
   return (
     <Modal 
       show={show} 
-      onHide={handleClose} 
+      onHide={handleConditionalClose} 
       size="xl"
-      backdrop="static"
-      keyboard={true}
+      backdrop={isFollowUpActive && !hasRegistered ? "static" : true}
+      keyboard={!isFollowUpActive || hasRegistered}
       contentClassName="d-flex flex-column"
       dialogClassName="my-custom-modal"
     >
-      <Modal.Header closeButton>
+      <Modal.Header closeButton={!isFollowUpActive || hasRegistered}>
         <Modal.Title>
           {isFollowUpActive ? "Nuevo Seguimiento" : "Registros de Seguimiento"}
         </Modal.Title>
@@ -33,7 +57,7 @@ const FollowUps = ({
             md={isFollowUpActive ? 6 : 12} 
             className="h-100 d-flex flex-column" 
             style={{ 
-              maxHeight: isFollowUpActive ? "700px" : "100%", // Ajustar altura al 100% si no está activo
+              maxHeight: isFollowUpActive ? "700px" : "100%",
               overflowY: "auto"
             }}
           >
@@ -48,7 +72,11 @@ const FollowUps = ({
                 overflowY: "auto",
               }}
             >
-              <FormFollowUps handleClose={handleClose} />
+              <FormFollowUps 
+                handleClose={handleClose} 
+                isFollowUpsActive={isFollowUpActive}
+                onSuccessfulRegister={() => setHasRegistered(true)}
+              />
             </Col>
           )}
         </Row>

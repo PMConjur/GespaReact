@@ -12,41 +12,85 @@ const TIME_CATEGORIES = [
 ];
 
 const formatTime = (value) => {
-    // Si ya está formateado correctamente (HH:MM:SS)
     if (typeof value === 'string' && /^\d{2}:\d{2}:\d{2}$/.test(value)) {
         return value;
     }
     
-    // Si viene con milisegundos (HH:MM:SS.millis)
-    if (typeof value === 'string' && /^\d{2}:\d{2}:\d{2}\.\d+$/.test(value)) {
-        return value.split('.')[0]; // Tomamos solo la parte antes del punto
-    }
-    
-    // Si es null/undefined o no convertible a número
     if (value == null || isNaN(Number(value))) {
         return "--:--:--";
     }
     
-    // Convertir a segundos (si viene en milisegundos)
-    const numericValue = Number(value);
-    const totalSeconds = numericValue >= 1000 ? Math.floor(numericValue / 1000) : Math.floor(numericValue);
-    
-    const hrs = Math.floor(totalSeconds / 3600).toString().padStart(2, "0");
-    const mins = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, "0");
-    const secs = Math.floor(totalSeconds % 60).toString().padStart(2, "0");
+    const seconds = Math.floor(Number(value));
+    const hrs = Math.floor(seconds / 3600).toString().padStart(2, "0");
+    const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, "0");
+    const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
     
     return `${hrs}:${mins}:${secs}`;
 };
-// Función para cargar datos totales
+
+// Normalización para tiempos totales
+const normalizeTotalTimes = (data) => {
+    const keyMap = {
+        tiempoCuentas: "tiempoCuentas",
+        tiempoNegociaciones: "tiempoNegociaciones",
+        tiempoTitulares: "tiempoTitulares",
+        tiempoConocidos: "tiempoConocidos",
+        tiempoDesconocidos: "tiempoDesconocidos",
+        tiempoSinContacto: "tiempoSinContacto",
+        tiempoPermiso: "tiempoPermiso",
+        tiempoCurso: "tiempoCurso",
+        tiempoCalidad: "tiempoCalidad",
+        tiempoComida: "tiempoComida",
+        tiempoBaño: "tiempoBaño",
+    };
+
+    if (!data || Object.keys(data).length === 0) {
+        return Object.fromEntries(Object.values(keyMap).map(key => [key, null]));
+    }
+
+    return Object.entries(data).reduce((acc, [key, value]) => {
+        const normalizedKey = keyMap[key] || key;
+        acc[normalizedKey] = (value && typeof value === 'object' && Object.keys(value).length === 0) ? null : value;
+        return acc;
+    }, {});
+};
+
+// Normalización para tiempos promedios
+const normalizeAverageTimes = (data) => {
+    const keyMap = {
+        promedioCuentas: "cuentas",
+        promedioNegociaciones: "negociacion",
+        promedioTitulares: "titulares",
+        promedioConocidos: "conocidos",
+        promedioDesconocidos: "desconocidos",
+        promedioSinContacto: "sinContacto",
+        promedioPermiso: "Permiso",
+        promedioCurso: "Curso",
+        promedioCalidad: "Calidad",
+        promedioComida: "Comida",
+        promedioBaño: "Baño",
+    };
+
+    if (!data || Object.keys(data).length === 0) {
+        return Object.fromEntries(Object.values(keyMap).map(key => [key, null]));
+    }
+
+    return Object.entries(data).reduce((acc, [key, value]) => {
+        const normalizedKey = keyMap[key] || key;
+        acc[normalizedKey] = (value && typeof value === 'object' && Object.keys(value).length === 0) ? null : value;
+        return acc;
+    }, {});
+};
+
 const loadTotalTimes = async (idEjecutivo, formatOrDefault) => {
     try {
         const dataTotal = await userTimes(idEjecutivo);
         console.log("Datos totales recibidos:", dataTotal);
 
-        const tiempos = dataTotal?.resultadosTiempos || {};
-        if (Object.keys(tiempos).length === 0) {
+        const tiempos = normalizeTotalTimes(dataTotal?.resultadosTiempos || {});
+        
+        if (Object.values(tiempos).every(val => val === null)) {
             toast.warning("No hay datos totales disponibles");
-            console.warn("No se encontraron datos totales disponibles");
             return {};
         }
 
@@ -70,70 +114,31 @@ const loadTotalTimes = async (idEjecutivo, formatOrDefault) => {
     }
 };
 
-// Función para normalizar claves de PascalCase a camelCase
-const normalizeKeys = (data) => {
-    const keyMap = {
-        TiempoCuentas: "tiempoCuentas",
-        TiempoNegociaciones: "tiempoNegociaciones",
-        TiempoTitulares: "tiempoTitulares",
-        TiempoConocidos: "tiempoConocidos",
-        TiempoDesconocidos: "tiempoDesconocidos",
-        TiempoSinContacto: "tiempoSinContacto",
-        TiempoPermiso: "tiempoPermiso",
-        TiempoCurso: "tiempoCurso",
-        TiempoCalidad: "tiempoCalidad",
-        TiempoComida: "tiempoComida",
-        TiempoBaño: "tiempoBaño",
-    };
-
-    // Si es un objeto vacío, devolver un objeto con todas las claves como null
-    if (!data || Object.keys(data).length === 0) {
-        return Object.fromEntries(Object.values(keyMap).map(key => [key, null]));
-    }
-
-    // Si es un objeto con datos, normalizar las claves
-    return Object.entries(data).reduce((acc, [key, value]) => {
-        const normalizedKey = keyMap[key] || key;
-        // Manejar objetos vacíos como valores
-        acc[normalizedKey] = (value && typeof value === 'object' && Object.keys(value).length === 0) ? null : value;
-        return acc;
-    }, {});
-};
-
-// Función para cargar datos de promedios
 const loadPromedioTimes = async (idEjecutivo, formatOrDefault) => {
     try {
         const dataPromedio = await userTimesPromedio(idEjecutivo);
         console.log("Datos de promedio recibidos:", dataPromedio);
 
-        // Verificar si los datos vienen directamente en la respuesta o en resultadosTiempos
-        const promediosData = dataPromedio.resultadosTiempos || dataPromedio;
+        // Asumimos que los promedios vienen en una estructura diferente
+        const promedios = normalizeAverageTimes(dataPromedio?.resultadosPromedios || dataPromedio || {});
         
-        const promedios = normalizeKeys(promediosData);
-        
-        // Verificar si realmente tenemos datos (no solo objetos vacíos)
-        const hasValidData = Object.values(promedios).some(
-            val => val !== null && val !== undefined && !(typeof val === 'object' && Object.keys(val).length === 0)
-        );
-        
-        if (!hasValidData) {
+        if (Object.values(promedios).every(val => val === null)) {
             toast.warning("No hay datos de promedios disponibles");
-            console.warn("No se encontraron datos de promedios disponibles");
             return {};
         }
 
         return {
-            cuentas: formatOrDefault(promedios.tiempoCuentas),
-            negociacion: formatOrDefault(promedios.tiempoNegociaciones),
-            titulares: formatOrDefault(promedios.tiempoTitulares),
-            conocidos: formatOrDefault(promedios.tiempoConocidos),
-            desconocidos: formatOrDefault(promedios.tiempoDesconocidos),
-            sinContacto: formatOrDefault(promedios.tiempoSinContacto),
-            Permiso: formatOrDefault(promedios.tiempoPermiso),
-            Curso: formatOrDefault(promedios.tiempoCurso),
-            Calidad: formatOrDefault(promedios.tiempoCalidad),
-            Comida: formatOrDefault(promedios.tiempoComida),
-            Baño: formatOrDefault(promedios.tiempoBaño),
+            cuentas: formatOrDefault(promedios.cuentas),
+            negociacion: formatOrDefault(promedios.negociacion),
+            titulares: formatOrDefault(promedios.titulares),
+            conocidos: formatOrDefault(promedios.conocidos),
+            desconocidos: formatOrDefault(promedios.desconocidos),
+            sinContacto: formatOrDefault(promedios.sinContacto),
+            Permiso: formatOrDefault(promedios.Permiso),
+            Curso: formatOrDefault(promedios.Curso),
+            Calidad: formatOrDefault(promedios.Calidad),
+            Comida: formatOrDefault(promedios.Comida),
+            Baño: formatOrDefault(promedios.Baño),
         };
     } catch (error) {
         toast.error(`Error al cargar datos de promedios: ${error.message}`);
@@ -150,40 +155,38 @@ const TableTimes = ({ updatedTimes }) => {
         promedio: Object.fromEntries(TIME_CATEGORIES.map(cat => [cat, "--:--:--"]))
     });
 
-    // Cargar datos iniciales
     useEffect(() => {
         if (!idEjecutivo) return;
 
-        const loadInitialData = async () => {
-            toast.info("Cargando datos iniciales...");
-            console.log("Cargando datos iniciales para el ID de ejecutivo:", idEjecutivo);
+        const loadData = async () => {
+            try {
+                toast.info("Cargando datos...");
+                const formatOrDefault = (time) => time ? formatTime(time) : "--:--:--";
 
-            const formatOrDefault = (time) => time ? formatTime(time) : "--:--:--";
+                const [totalTimes, promedioTimes] = await Promise.all([
+                    loadTotalTimes(idEjecutivo, formatOrDefault),
+                    loadPromedioTimes(idEjecutivo, formatOrDefault)
+                ]);
 
-            const totalTimes = await loadTotalTimes(idEjecutivo, formatOrDefault);
-            const promedioTimes = await loadPromedioTimes(idEjecutivo, formatOrDefault);
-
-            setTimesData({
-                total: totalTimes,
-                promedio: promedioTimes,
-            });
-
-            toast.success("Datos iniciales cargados correctamente");
+                setTimesData({
+                    total: totalTimes,
+                    promedio: promedioTimes
+                });
+                toast.success("Datos cargados correctamente");
+            } catch (error) {
+                toast.error("Error al cargar datos");
+            }
         };
 
-        loadInitialData();
+        loadData();
     }, [idEjecutivo]);
 
-    // Actualizar datos cuando cambia updatedTimes
     useEffect(() => {
         if (!updatedTimes) return;
 
-        toast.info("Actualizando datos con tiempos nuevos...");
-        console.log("Actualizando datos con tiempos nuevos:", updatedTimes);
         setTimesData(prev => {
             const newTotal = { ...prev.total };
 
-            // Actualizar y sumar los campos que vienen en updatedTimes
             Object.entries(updatedTimes).forEach(([key, value]) => {
                 if (TIME_CATEGORIES.includes(key)) {
                     const dbValueInSeconds = prev.total[key] !== "--:--:--"
@@ -193,29 +196,20 @@ const TableTimes = ({ updatedTimes }) => {
                 }
             });
 
-            toast.success("Datos actualizados correctamente");
-            console.log("Datos actualizados:", newTotal);
-            return {
-                ...prev,
-                total: newTotal
-            };
+            return { ...prev, total: newTotal };
         });
     }, [updatedTimes]);
 
-    const renderRows = (type) => {
-        return TIME_CATEGORIES.map((key) => (
-            <td key={`${type}-${key}`} style={{ minWidth: "100px" }}>
-                {timesData[type][key]}
-            </td>
-        ));
-    };
+    const renderRows = (type) => TIME_CATEGORIES.map((key) => (
+        <td key={`${type}-${key}`} style={{ minWidth: "100px" }}>
+            {timesData[type][key]}
+        </td>
+    ));
 
     if (!idEjecutivo) {
-        toast.warning("No se encontró un ID de ejecutivo válido");
-        console.warn("No se encontró un ID de ejecutivo válido");
         return (
             <div className="alert alert-warning text-center" role="alert">
-                ⚠️ No se encontró un ID de ejecutivo válido. Verifica tu sesión.
+                ⚠️ No se encontró un ID de ejecutivo válido
             </div>
         );
     }
@@ -226,9 +220,7 @@ const TableTimes = ({ updatedTimes }) => {
                 <tr>
                     <th>Indicador</th>
                     {TIME_CATEGORIES.map(category => (
-                        <th key={category} style={{ minWidth: "100px" }}>
-                            {category.charAt(0).toUpperCase() + category.slice(1)}
-                        </th>
+                        <th key={category}>{category.charAt(0).toUpperCase() + category.slice(1)}</th>
                     ))}
                 </tr>
             </thead>
@@ -247,13 +239,8 @@ const TableTimes = ({ updatedTimes }) => {
 };
 
 TableTimes.propTypes = {
-    updatedTimes: PropTypes.shape(
-        Object.fromEntries(
-            TIME_CATEGORIES.map(cat => [cat, PropTypes.oneOfType([
-                PropTypes.string,
-                PropTypes.number
-            ])])
-        )
+    updatedTimes: PropTypes.objectOf(
+        PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     )
 };
 

@@ -6,7 +6,7 @@ import { AppContext } from "../../../pages/Managment"; // Importa el contexto de
 import { idBanco } from "../../valoresBanco"; // Importa los valores de los bancos
 
 // Componente principal del formulario para cargos en línea
-const FormOnlineCharge = ({ handleClose }) => {
+const FormOnlineCharge = ({ handleClose, isOnlineChargeActive, onSuccessfulRegister }) => {
   // Obtiene los resultados de búsqueda del contexto
   const { searchResults } = useContext(AppContext);
 
@@ -29,7 +29,9 @@ const FormOnlineCharge = ({ handleClose }) => {
   const maxVencimiento = new Date(); // Fecha máxima de vencimiento
   maxVencimiento.setFullYear(maxVencimiento.getFullYear() + 20); // Se establece a 20 años en el futuro
   const [tipoTarjeta, setTipoTarjeta] = useState("tarjetaCredito"); // Estado para el tipo de tarjeta
-  const [formData, setFormData] = useState({ // Estado para los datos del formulario
+  const [formData, setFormData] = useState({
+    
+    // Estado para los datos del formulario
     idCartera: 1,
     idCuenta: idCuenta[0]?.trim(),
     idEjecutivo: idEjecutivo,
@@ -177,6 +179,8 @@ const FormOnlineCharge = ({ handleClose }) => {
     }
   };
 
+  
+
   const validarNombre = (nombre) => {
     // Longitud mínima para considerar
     if (nombre.length < 5) return true;
@@ -253,25 +257,25 @@ const FormOnlineCharge = ({ handleClose }) => {
     try {
       const dataToSend = {
         ...formData,
-        tarjeta: tarjetaLimpia, // Envía la tarjeta limpia
-        monto: parseInt(formData.monto, 10), // Convierte el monto a número
-        idBanco: parseInt(formData.idBanco, 10) // Convierte el idBanco a número
+        tarjeta: tarjetaLimpia,
+        monto: parseInt(formData.monto, 10),
+        idBanco: parseInt(formData.idBanco, 10)
       };
   
-      const response = await createOnlineCharge(dataToSend); // Llama a la función para crear el cargo en línea
+      const response = await createOnlineCharge(dataToSend);
   
       if (response.success) {
-        toast.success("Cargo registrado exitosamente"); // Muestra un mensaje de éxito
-        resetForm(); // Restablece el formulario
-        if (handleClose) handleClose(); // Cierra el formulario si se proporciona la función 
+        toast.success("Cargo registrado exitosamente");
+        resetForm();
+        if (onSuccessfulRegister) onSuccessfulRegister(); // <-- Esto debe estar aquí
+        //if (handleClose) handleClose();
       }
     } catch (error) {
-      toast.error(error.message); // Muestra el mensaje de error
+      toast.error(error.message);
     } finally {
-      setLoading(false); // Establece el estado de carga a false
+      setLoading(false);
     }
   };
-
   // Renderiza el formulario
   return (
     

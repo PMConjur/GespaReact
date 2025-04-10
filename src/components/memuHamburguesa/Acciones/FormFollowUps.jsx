@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { createFollows } from "../../../services/gespawebServices";
 import { AppContext } from "../../../pages/Managment";
 
-const FormFollowUps = ({ handleClose }) => {
+const FormFollowUps = ({ handleClose,isFollowUpsActive, onSuccessfulRegister }) => {
     const { searchResults } = useContext(AppContext);
 
     if (!searchResults || searchResults.length === 0) {
@@ -35,37 +35,59 @@ const FormFollowUps = ({ handleClose }) => {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-
+    
         if (name === "numeroTelefonico") {
-            const numericValue = value.replace(/\D/g, "");
-            if (numericValue.length <= 13) {
-                setFormData((prev) => ({
-                    ...prev,
-                    [name]: numericValue,
-                }));
+            // 1. Permite números y '+' (para internacionales)
+            const numericValue = value.replace(/[^0-9]/g, "");
+    
+            // 2. Validación anti-números-genéricos (solo si tiene 10+ dígitos)
+            if (numericValue.replace(/\D/g, "").length >= 15) {
+                const digitsOnly = numericValue.replace(/\D/g, "");
+                
+                const isInvalidGenericNumber = (
+                    /^(\d)\1{9,}$/.test(digitsOnly) || // Todos iguales (1111111111)
+                    /^(\d{2,})\1{4,}$/.test(digitsOnly) || // Patrones repetidos (7474747474)
+                    /^0123456789$/.test(digitsOnly) || // Secuencia ascendente
+                    /^9876543210$/.test(digitsOnly) || // Secuencia descendente
+                    /^(\d)\1*(\d)\2*(\d)\3*$/.test(digitsOnly) // Combinaciones sospechosas (444888222)
+                );
+    
+                if (isInvalidGenericNumber) {
+                    toast.error("Número no válido. Evite patrones repetitivos");
+                    return;
+                }
             }
-        } else if (name === "datoContacto") {
+    
+            // 3. Actualiza el estado (máximo 15 caracteres)
+            setFormData(prev => ({
+                ...prev,
+                [name]: numericValue.slice(0, 15)
+            }));
+        }
+        else if (name === "datoContacto") {
             if (value.length > 280) {
                 toast.error("Máximo 280 caracteres permitidos");
                 return;
             }
             const sanitizedValue = value.replace(/[^a-zA-Z0-9\s]/g, "");
-            setFormData((prev) => ({
+            setFormData(prev => ({
                 ...prev,
                 [name]: sanitizedValue,
             }));
-        } else if (name === "fecha") {
+        }
+        else if (name === "fecha") {
             const today = new Date().toISOString().split("T")[0];
             if (value < today) {
                 toast.error("La fecha no puede ser anterior al día actual.");
                 return;
             }
-            setFormData((prev) => ({
+            setFormData(prev => ({
                 ...prev,
                 [name]: value,
             }));
-        } else {
-            setFormData((prev) => ({
+        }
+        else {
+            setFormData(prev => ({
                 ...prev,
                 [name]: type === "checkbox" ? checked : value,
             }));
@@ -92,6 +114,8 @@ const FormFollowUps = ({ handleClose }) => {
                 return;
             }
 
+
+
             // Validación de horario
             if (formData.recordatorio) {
                 const [hours, minutes] = formData.segundo.split(":").map(Number);
@@ -116,6 +140,7 @@ const FormFollowUps = ({ handleClose }) => {
                     setLoading(false);
                     return;
                 }
+                
             }
 
             const dataToSend = { ...formData };
@@ -123,10 +148,15 @@ const FormFollowUps = ({ handleClose }) => {
                 dataToSend.datoContacto = null;
             }
 
+            
+
             console.log("Datos a enviar al endpoint:", dataToSend); // Agregado para depuración
 
             const response = await createFollows(dataToSend);
             toast.success(response.mensaje || "Seguimiento guardado exitosamente.");
+
+             // Notificar al componente padre que se ha realizado un registro
+            onSuccessfulRegister();
 
             // Limpiar los campos del formulario
             setFormData({
@@ -309,15 +339,7 @@ const FormFollowUps = ({ handleClose }) => {
                     </div>
                 </Form.Group>
 
-                <div className="d-flex justify-content-between">
-                    <Button
-                        variant="danger"
-                        onClick={handleClose}
-                        disabled={loading}
-                        className="px-4"
-                    >
-                        Cancelar
-                    </Button>
+                <div className="d-flex justify-content-end">
                     <Button
                         variant="primary"
                         onClick={handleSave}
