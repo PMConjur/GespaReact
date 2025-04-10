@@ -3,7 +3,8 @@ import { useEffect, useState, useContext } from "react";
 import { AppContext } from "../pages/Managment"; // Import AppContext
 
 const StickyTimmer = () => {
-  const { searchResults, setStoppedTimeSticky,handleAutomaticSearch } = useContext(AppContext); // Agrega funciones del contexto para manejar estados
+  const { searchResults, setStoppedTimeSticky, handleAutomaticSearch } =
+    useContext(AppContext); // Agrega funciones del contexto para manejar estados
   const [startTimer, setStartTimer] = useState(false);
 
   // Usar el primer resultado o los datos predeterminados
@@ -13,7 +14,11 @@ const StickyTimmer = () => {
   const result = searchResults[0] || defaultData;
 
   useEffect(() => {
-    if (searchResults.length > 0 || handleAutomaticSearch.length > 0) {
+    if (
+      searchResults.length > 0 ||
+      handleAutomaticSearch.length > 0 ||
+      !handleAutomaticSearch
+    ) {
       setStartTimer(true); // Inicia el cronómetro cuando searchResults cambia
     }
   }, [searchResults]);
