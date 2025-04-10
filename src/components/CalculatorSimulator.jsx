@@ -39,6 +39,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
   const [formInputs, setFormInputs] = useState({
     meses: "",
     fechaPago: "",
+    periodos: 1,
   });
   const [isCalculateButtonEnabled, setIsCalculateButtonEnabled] = useState(false);
   const [isAddButtonEnabled, setIsAddButtonEnabled] = useState(false);
@@ -130,41 +131,86 @@ const CalculatorSimulator = ({show, handleClose}) => {
     }
   }, [searchResults, selectedHerramienta]); // Agrega selectedHerramienta como dependencia
  
+  useEffect(() => {
+    // Sincroniza formValues con summaryData cuando summaryData cambia
+    setFormValues({
+      montoRequerido: summaryData.montoRequerido ? summaryData.montoRequerido.toFixed(2) : 0,
+      descuento: summaryData.descuento ? summaryData.descuento.toFixed(2) : 0,
+    });
+  }, [summaryData]);
+
   const handleHerramientaChange = (e) => {
     const selectedValue = e.target.value;
     setSelectedHerramienta(Number(selectedValue)); // Actualiza el idHerramienta seleccionado
-
+  
     // Limpia los campos al cambiar de herramienta
     setMontoPago("");
     setMontoNegociado("");
-    setFormInputs((prev) => ({
-      ...prev,
+    setFormInputs({
+      meses: "",
       fechaPago: "",
-    }));
-
+      periodos: 1,
+    });
+  
+    // Actualiza formValues con los valores correctos de summaryData
+    setFormValues({
+      montoRequerido: summaryData.montoRequerido ? summaryData.montoRequerido.toFixed(2) : 0,
+      descuento: summaryData.descuento ? summaryData.descuento.toFixed(2) : 0,
+    });
+  
     // Habilita el botón "Calcular" si la herramienta seleccionada es válida
     const validHerramientasCalcular = ["Convenio", "PIF", "PPA", "APR", "PPA+AC"];
     const validHerramientasAgregar = ["Parcial", "Ajuste"];
     const herramientaSeleccionada = herramientas.find(
       (herramienta) => herramienta.idHerramienta === Number(selectedValue)
     );
-
+  
     setIsCalculateButtonEnabled(
       herramientaSeleccionada &&
         validHerramientasCalcular.includes(herramientaSeleccionada.nombre)
     );
-
+  
     setIsAddButtonEnabled(
       herramientaSeleccionada &&
         validHerramientasAgregar.includes(herramientaSeleccionada.nombre)
     );
-
+  
     // Habilita los campos si la herramienta seleccionada es "Parcial" o "Ajuste"
     setAreFieldsEnabled(
       herramientaSeleccionada &&
         validHerramientasAgregar.includes(herramientaSeleccionada.nombre)
     );
+  
+    // Actualiza los formularios dinámicamente según la herramienta seleccionada
+    if (herramientaSeleccionada) {
+      switch (herramientaSeleccionada.nombre) {
+        case "Convenio":
+          setFormInputs((prev) => ({
+            ...prev,
+            meses: "", // Ejemplo: valor predeterminado para "Convenio"
+          }));
+          break;
+        case "PIF":
+          setFormInputs((prev) => ({
+            ...prev,
+            periodos: 0, // Ejemplo: valor predeterminado para "PIF"
+          }));
+          break;
+        case "Parcial":
+          setMontoPago(""); // Ejemplo: valor predeterminado para "Parcial"
+          break;
+        default:
+          // Restablece los valores si no hay configuración específica
+          setFormInputs((prev) => ({
+            ...prev,
+            meses: "",
+            periodos: 0,
+          }));
+          break;
+      }
+    }
   };
+  
 
   const handleMontoPagoChange = (e) => {
     const value = e.target.value;
@@ -229,8 +275,8 @@ const CalculatorSimulator = ({show, handleClose}) => {
 
   const handleSetFormValues = () => {
     setFormValues({
-      montoRequerido: summaryData.montoRequerido.toFixed(2),
-      descuento: summaryData.descuento.toFixed(2),
+      montoRequerido: summaryData.montoRequerido ? summaryData.montoRequerido.toFixed(2) : 0,
+      descuento: summaryData.descuento ? summaryData.descuento.toFixed(2) : 0,
     });
     setShowCalculator(true); // Muestra el contenido del Col
   };
@@ -632,11 +678,9 @@ const handleSaveOffering = async () => {
                                 {/* Muestra "--" si no hay valor */}
                                 <td style={{ textAlign: "left" }}>
                                   {row.saldoInterés !== undefined
-                                    ? `$${parseFloat(row.saldoInterés).toFixed(
-                                        2
-                                      )}`
-                                    : "--"}{" "}
-                                  {/* Muestra "--" si no hay valor */}
+                                    ? `$${parseFloat(row.saldoInterés).toFixed(2)}`
+                                    : 0}{" "}
+                                  {/* Muestra "0.00" si no hay valor */}
                                 </td>
                               </tr>
                             );
@@ -645,7 +689,7 @@ const handleSaveOffering = async () => {
                           <tr>
                             <td colSpan="5" className="text-center">
                               {tableData.length === 0 ? (
-                                "No hay cuenta seleccionada"
+                                "No hay datos disponibles"
                               ) : (
                                 <div className="d-flex justify-content-center align-items-center">
                                   <div
@@ -704,7 +748,7 @@ const handleSaveOffering = async () => {
                               style={{ color: "#ffc400" }}
                               className="warning-modal-money"
                             >
-                              ${summaryData.montoRequerido.toFixed(2)}
+                              ${summaryData.montoRequerido ? summaryData.montoRequerido.toFixed(2) : 0}
                             </h5>
                           </div>
                           <div className="ps-3">
@@ -715,7 +759,7 @@ const handleSaveOffering = async () => {
                               style={{ color: "#07fb70" }}
                               className="success-modal-money"
                             >
-                              ${summaryData.montoDescuento.toFixed(2)}
+                              ${summaryData.montoDescuento ? summaryData.montoDescuento.toFixed(2) : 0}
                             </h5>
                           </div>
                           <div className="ps-3">
@@ -726,7 +770,7 @@ const handleSaveOffering = async () => {
                               style={{ color: "#4a9dff" }}
                               className="info-modal-money"
                             >
-                              ${summaryData.saldo.toFixed(2)}
+                              ${summaryData.saldo ? summaryData.saldo.toFixed(2) : 0}
                             </h5>
                           </div>
                           <div className="ps-3">
@@ -872,7 +916,7 @@ const handleSaveOffering = async () => {
                                     whiteSpace: "nowrap",
                                   }}
                                 >
-                                  ${parseFloat(pago.pago).toFixed(2)}
+                                  ${parseFloat(pago.pago).toFixed(2) || 0}
                                 </td>
                                 <td
                                   style={{
@@ -943,11 +987,7 @@ const handleSaveOffering = async () => {
                                 <Form.Control
                                   placeholder="Monto Requerido"
                                   name="montoRequerido"
-                                  value={
-                                    formValues.montoRequerido
-                                      ? `$${formValues.montoRequerido}`
-                                      : ""
-                                  }
+                                  value={formValues.montoRequerido ? `$${formValues.montoRequerido}` : ""}
                                   onChange={(e) =>
                                     setFormValues((prev) => ({
                                       ...prev,
@@ -1081,10 +1121,7 @@ const handleSaveOffering = async () => {
                                   Monto Negociado
                                 </span>
                                 <h5 style={{ color: "#ffc400" }}>
-                                  $
-                                  {(calculosData.montoNegociado || 0).toFixed(
-                                    2
-                                  )}
+                                  ${calculosData.montoNegociado ? calculosData.montoNegociado.toFixed(2) : 0}
                                 </h5>
                               </Col>
                               <Col>
@@ -1092,7 +1129,7 @@ const handleSaveOffering = async () => {
                                   Descuento
                                 </span>
                                 <h5 style={{ color: "#6dd6ff" }}>
-                                  {(calculosData.descuento || 0).toFixed(2)}
+                                  ${calculosData.descuento ? calculosData.descuento.toFixed(2) : 0}
                                 </h5>
                               </Col>
                               <Col>
@@ -1100,9 +1137,7 @@ const handleSaveOffering = async () => {
                                   Tasa mensual
                                 </span>
                                 <h5 className="text-light">
-                                  {calculosData.tasaMensual
-                                    ? `${calculosData.tasaMensual}%`
-                                    : "N/A"}
+                                  {calculosData.tasaMensual ? `${calculosData.tasaMensual}%` : "N/A"}
                                 </h5>
                               </Col>
                             </Row>
@@ -1333,14 +1368,13 @@ const handleSaveOffering = async () => {
                                           ).toLocaleDateString()}
                                         </td>
                                         <td className="amount-cell">
-                                          ${(calculo.saldo || 0).toFixed(2)}
+                                          ${calculo.saldo ? calculo.saldo.toFixed(2) : 0}
                                         </td>
                                         <td className="amount-cell">
-                                          ${(calculo.pago || 0).toFixed(2)}
+                                          ${calculo.pago ? calculo.pago.toFixed(2) : 0}
                                         </td>
                                         <td className="amount-cell">
-                                          $
-                                          {(calculo.saldoFinal || 0).toFixed(2)}
+                                          ${calculo.saldoFinal ? calculo.saldoFinal.toFixed(2) : 0}
                                         </td>
                                       </tr>
                                     )
