@@ -358,10 +358,16 @@ namespace NoriAPI.Controllers
         public async Task<ActionResult<ResultadoCalculadora>> Calculadora_Simulador([FromQuery] int Cartera, string NoCuenta, int idHerr)
         {
             var InfoCalculadora = await _ejecutivoService.ValidateInfoCalculadora1(Cartera, NoCuenta, idHerr);
-
-            return Ok(InfoCalculadora);
-
+            if (InfoCalculadora.Mensaje != null)
+            {
+                return BadRequest(new { Ofrecimientos = InfoCalculadora.Ofrecimientos, Mensaje = InfoCalculadora.Mensaje });
+            }
+            else
+            {
+                return Ok(InfoCalculadora);
+            }
         }
+
 
         [HttpGet("Calculadora-2daParte")]
         public async Task<ActionResult<ResultadoCalculadora2>> Calculadora([FromQuery] int idHerramienta, string NoCuenta, int IdCartera, double MontoRequerido, int Descuento, int iMeses, string dtpFecha, int periodos, int modificar, double montoMod, string fechaPagoMod, int agregarPagos, int filaMod)
@@ -432,7 +438,6 @@ namespace NoriAPI.Controllers
 
         #region Busqueda
         [HttpGet("busqueda/{idCartera}/{idCuenta}")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetBusqueda(int idCartera, string idCuenta)
         {
 
@@ -1046,49 +1051,34 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("validador")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetValidador(int idProducto, int idEjecutivo, string Contraseña)
         {
-            DataSet dsTablas = new DataSet();
-            try
+            DataTable validador = await _ejecutivoService.GetValidadorAsync(idProducto, idEjecutivo, Contraseña);
+
+            if (validador == null || validador.Columns.Count != 1 || !validador.Columns.Contains("Mensaje"))
             {
-
-                DataTable validador = await _ejecutivoService.GetValidadorAsync(idProducto, idEjecutivo, Contraseña);
-
-                if (validador == null || validador.Columns.Count != 1 || !validador.Columns.Contains("Mensaje"))
-                {
-                    return BadRequest(new { Error = "No se recibió una respuesta de la base de datos." });
-                }
-
-                //
-                //
-                //
-                // el valor de la primera fila en la columna "Mensaje"
-                string mensajePrimeraFila = validador.AsEnumerable()
-                    .FirstOrDefault() // Obtiene la primera DataRow, o null si no hay filas
-                    ?.Field<string>("Mensaje");
-
-                if (mensajePrimeraFila != "Validado")
-                {
-                    return BadRequest(new { Error = mensajePrimeraFila });
-                }
-
-
-                // Convertimos el DataTable a una lista de diccionarios
-                var validadores = ConvertDataTableToList(validador);
-
-                // Serializamos la lista a JSON
-                string jsonValidadores = JsonSerializer.Serialize(validadores, new JsonSerializerOptions { WriteIndented = true });
-
-                //return Ok(jsonValidadores);
-                return Content(jsonValidadores, "application/json; charset=utf-8");
-
-
+                return BadRequest(new { Error = "No se recibió una respuesta de la base de datos." });
             }
-            catch (Exception ex)
+
+            // el valor de la primera fila en la columna "Mensaje"
+            string mensajePrimeraFila = validador.AsEnumerable()
+                .FirstOrDefault() // Obtiene la primera DataRow, o null si no hay filas
+                ?.Field<string>("Mensaje");
+
+            if (mensajePrimeraFila != "Validado")
             {
-                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+                return BadRequest(new { Error = mensajePrimeraFila });
             }
+
+
+            // Convertimos el DataTable a una lista de diccionarios
+            var validadores = ConvertDataTableToList(validador);
+
+            // Serializamos la lista a JSON
+            string jsonValidadores = JsonSerializer.Serialize(validadores, new JsonSerializerOptions { WriteIndented = true });
+
+            return Content(jsonValidadores, "application/json; charset=utf-8");
+
         }
 
         [HttpGet("validadores")]
@@ -1562,7 +1552,6 @@ namespace NoriAPI.Controllers
 
 
         [HttpGet("ObtenerGestiones")]
-        [AllowAnonymous]
         public async Task<IActionResult> ObtenerGestiones([FromQuery] int idCartera, [FromQuery] string idCuenta)
         {
             try
@@ -1600,7 +1589,6 @@ namespace NoriAPI.Controllers
         [ProducesResponseType(typeof(GuardarGestionResponse), 200)] // Indica la estructura de la respuesta exitosa en Swagger
         [ProducesResponseType(400)] // Indica una solicitud incorrecta en Swagger
         [ProducesResponseType(500)]
-        [AllowAnonymous]// Indica un error interno del servidor en Swagger
         public async Task<IActionResult> GuardarGestionTelefonica([FromBody] GestionTelefonica gestion)
         {
             if (gestion == null)

@@ -32,7 +32,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("busqueda-cuenta")]//Endpoint Padrino
-        [AllowAnonymous]
         public async Task<ActionResult<ResultadoBusqueda>> Busqueda([FromQuery] string filtro, string ValorBusqueda)
         {
             var Busqueda = await _searchService.ValidateBusqueda(filtro, ValorBusqueda);
