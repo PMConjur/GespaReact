@@ -3122,6 +3122,47 @@ namespace NoriAPI.Services
             if (cargoGet == null || cargoGet.Rows.Count == 0)
                 return;
 
+            // Función local para convertir valores booleanos a "✓" o "X"
+            void ConvertBooleanColumn(DataTable table, string columnName)
+            {
+                if (table.Columns.Contains(columnName))
+                {
+                    string newColumnName = columnName + "String";
+                    table.Columns.Add(newColumnName, typeof(string));
+
+                    foreach (DataRow row in table.Rows)
+                    {
+                        if (row[columnName] != DBNull.Value)
+                        {
+                            string stringValue = row[columnName].ToString();
+                            if (stringValue == "1")
+                            {
+                                row[newColumnName] = "✓";
+                            }
+                            else if (stringValue == "0")
+                            {
+                                row[newColumnName] = "X";
+                            }
+                            else
+                            {
+                                row[newColumnName] = stringValue; // Mantener el valor original si no es "1" o "0"
+                            }
+                        }
+                        else
+                        {
+                            row[newColumnName] = "";
+                        }
+                    }
+                    table.Columns.Remove(columnName);
+                    table.Columns[newColumnName].ColumnName = columnName;
+                }
+            }
+
+            // Convertir las columnas "esclabe" y "domicilios" si existen y son de tipo booleano
+            ConvertBooleanColumn(cargoGet, "_EsClabe");
+            ConvertBooleanColumn(cargoGet, "_Autorizado");
+            ConvertBooleanColumn(cargoGet, "_Domiciliado");
+
             if (dsTablas.Tables.Contains("Cargos"))
             {
                 dsTablas.Tables.Remove("Cargos");
@@ -3129,7 +3170,7 @@ namespace NoriAPI.Services
 
             cargoGet.TableName = "Cargos";
 
-            // Agregar la columna "Banco" justo después de "idBanco"
+            // Agregar la columna "Banco" justo después de "idBanco" (esta parte se mantiene igual)
             if (cargoGet.Columns.Contains("idBanco"))
             {
                 // Crear e insertar la columna "Banco" después de "idBanco"
@@ -3143,7 +3184,7 @@ namespace NoriAPI.Services
             gespaCargos.CargaCatalogos();
 
 
-            // Llenar los valores de la nueva columna usando la lógica de "traducción"
+            // Llenar los valores de la nueva columna "Banco" usando la lógica de "traducción" (esta parte se mantiene igual)
             foreach (DataRow row in cargoGet.Rows)
             {
                 if (cargoGet.Columns.Contains("idBanco") && row["idBanco"] != DBNull.Value)
@@ -3151,8 +3192,6 @@ namespace NoriAPI.Services
                     row["Banco"] = BuscarEnValoresHashtable(gespaCargos._htValoresCatálogo, Convert.ToString(row["idBanco"]));
                 }
             }
-
-
 
             dsTablas.Tables.Add(cargoGet);
         }

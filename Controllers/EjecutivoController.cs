@@ -360,7 +360,7 @@ namespace NoriAPI.Controllers
             var InfoCalculadora = await _ejecutivoService.ValidateInfoCalculadora1(Cartera, NoCuenta, idHerr);
             if (InfoCalculadora.Mensaje != null)
             {
-                return BadRequest(new { Ofrecimientos = InfoCalculadora.Ofrecimientos, Mensaje = InfoCalculadora.Mensaje });
+                return Ok(new { Ofrecimientos = InfoCalculadora.Ofrecimientos, Mensaje = InfoCalculadora.Mensaje });
             }
             else
             {
@@ -515,6 +515,7 @@ namespace NoriAPI.Controllers
         #region CargoEnLinea
 
         [HttpGet("cargosEnLinea/{idCartera}/{idCuenta}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetCargosEnLinea(int idCartera, string idCuenta)
         {
             try
