@@ -417,7 +417,14 @@ const Managments = () => {
                           )}
                         </td>
                         <td>{validateField(gestion.Segundo_Insert)}</td>
-                        <td>{validateField(gestion.NúmeroTelefónico)}</td>
+                        <td>
+                          {validateField(gestion.NúmeroTelefónico) ? 
+                            (gestion.NúmeroTelefónico.length > 4 ? 
+                              'X'.repeat(gestion.NúmeroTelefónico.length - 4) + gestion.NúmeroTelefónico.slice(-4) : 
+                              gestion.NúmeroTelefónico) : 
+                            '--'
+                          }
+                        </td>
                         <td>{validateField(gestion.Contacto)}</td>
                         <td>{validateField(gestion.Situación)}</td>
                         <td>{validateField(gestion.NombreContacto)}</td>

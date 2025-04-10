@@ -11,6 +11,33 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
   const [sortByOldest, setSortByOldest] = useState(false); // Hook 3
   const [toastShown, setToastShown] = useState(false); // Hook 4
 
+
+    // Función para formatear la hora con AM/PM
+    const formatTimeWithAMPM = (timeString) => {
+      if (!timeString) return '--';
+      
+      try {
+        // Si ya tiene AM/PM, devolver tal cual
+        if (/(AM|PM)/i.test(timeString)) return timeString;
+        
+        // Extraer solo la parte de la hora
+        const timePart = timeString.includes('T') 
+          ? timeString.split('T')[1].split('.')[0] 
+          : timeString;
+        
+        const [hours, minutes] = timePart.split(':');
+        const hourInt = parseInt(hours, 10);
+        
+        const period = hourInt >= 12 ? 'PM' : 'AM';
+        const standardHour = hourInt % 12 || 12;
+        
+        return `${standardHour}:${minutes} ${period}`;
+      } catch (e) {
+        console.error("Error formateando hora:", e);
+        return timeString;
+      }
+    };
+
   // Hook 5: useEffect para obtener datos
   useEffect(() => {
     const fetchData = async () => {
@@ -63,7 +90,7 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
     return <p>No hay datos disponibles.</p>;
   }
   // Campos que NO se mostrarán en la tabla
-  const hiddenFields = ["idBanco", "_Autorizado"];
+  const hiddenFields = ["idBanco"];
 
   // Nombres de columnas por defecto (se pueden sobrescribir con `customColumnNames`)
   const defaultColumnNames = {
@@ -75,9 +102,9 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
     Banco: "Banco",
     MontoCargo: "Cargo",
     "Autorizaci\u00F3n": "Autorización",
+    _Autorizó: "Autorizó",
     Ejecutivo: "Ejecutivo",
     Usuario: "Usuario",
-    "Autoriz\u00F3": "Autorizó",
     _EsClabe: "EsClabe",
     _Domiciliado: "Domiciliado",
     Status: "Status",
@@ -162,7 +189,6 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
           >
             {sortedData.map((item, index) => (
               <tr key={index} style={{ height: "24px" }}>
-                {/* Reducimos la altura de cada fila */}
                 {headers.map((header) => {
                   let value = item[header];
 
@@ -175,17 +201,26 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
                     value = value.split("T")[0];
                   }
 
+                                    // Aplicar formato AM/PM al campo Hora (Segundo_Insert)
+                  if (header === "Segundo_Insert") {
+                    value = formatTimeWithAMPM(value);
+                  }
+
                   // 🔹 Aplicar reemplazarValores para idBanco
                   if (header === "idBanco") {
                     value = reemplazarValores(value);
+                  }
+
+                  // 🔹 Agregar símbolo de dólar al MontoCargo
+                  if (header === "MontoCargo" && value !== "--") {
+                    value = `$${value}`;
                   }
 
                   // 🔹 Manejo de valores nulos o no definidos
                   if (
                     value === null ||
                     value === undefined ||
-                    (typeof value === "object" &&
-                      Object.keys(value).length === 0)
+                    (typeof value === "object" && Object.keys(value).length === 0)
                   ) {
                     value = "--";
                   }
@@ -197,9 +232,9 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
                         padding: ".7rem",
                         minHeight: "20px",
                         textAlign: "center",
-                        whiteSpace: "nowrap", // 🔹 Evita saltos de línea
-                        overflow: "hidden", // 🔹 Oculta contenido desbordado
-                        textOverflow: "ellipsis", // 🔹 Agrega puntos suspensivos si el texto es muy largo
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
                       }}
                     >
                       {value}
