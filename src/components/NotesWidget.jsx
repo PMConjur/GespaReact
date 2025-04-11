@@ -244,6 +244,7 @@ function NotesWidget() {
     <div className="notes-widget card shadow">
       <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
         <h5 className="mb-0">Mis Recordatorios</h5>
+        {/* 
         <button
           className="btn btn-sm btn-light"
           onClick={handleAddNote}
@@ -251,6 +252,7 @@ function NotesWidget() {
         >
           <PlusIcon />
         </button>
+        */}
       </div>
       <div className="card-body">
         {isEditing ? (
@@ -337,11 +339,13 @@ function NotesWidget() {
             {notes.length === 0 ? (
               <div className="text-center text-muted py-5 mb-0 text-white">
                 <p className="text-white">
-                  No hay Recordatorio. ¡Crea uno nuevo!
+                  No hay Recordatorio. 
                 </p>
+                {/* 
                 <button className="btn btn-primary" onClick={handleAddNote}>
-                  <PlusIcon /> <span className="ms-1">Nuevo Recordatorio</span>
-                </button>
+                <PlusIcon /> <span className="ms-1">Nuevo Recordatorio</span>
+                </button> 
+                */}
               </div>
             ) : (
               <div

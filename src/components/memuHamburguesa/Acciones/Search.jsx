@@ -25,6 +25,7 @@ const Search = ({ show, handleClose }) => {
     const [isFormValid, setIsFormValid] = useState(false);
 
     const datosUnicos = [...new Set(tableData.map((item) => item.Dato))];
+    const valoresUnicos = [...new Set(tableData.map((item) => item.DatoBuscado))];
 
     useEffect(() => {
         if (show && searchResults && searchResults.length > 0) {
@@ -36,64 +37,93 @@ const Search = ({ show, handleClose }) => {
         const isValid = searchData.dato && searchData.fuente && searchData.nombre &&
             searchData.puesto && phoneNumbers.length > 0 &&
             searchData.lugar && searchData.link;
-            console.log("Validacion del formulario", isValid);
-            console.log("Datos del formulario", searchData);
-            console.log("Números de telefonos", phoneNumbers);
         setIsFormValid(isValid);
     }, [searchData, phoneNumbers]);
 
-    useEffect(()=>{
-        setShowForm(searchData.encontrado)
-    },[searchData.encontrado])
+    useEffect(() => {
+        setShowForm(searchData.encontrado);
+    }, [searchData.encontrado]);
 
-    
-        const fetchData = async (idCuenta) => {
-            setLoading(true);
+    useEffect(() => {
+        const fetchSearchData = async () => {
             try {
-                const response = await fetchSearchAddDate(idCuenta);
-                const mappedData = mapResponseToTableData(response);
-                setTableData(mappedData);
+                console.log("Llamando a fetchSearchAddDate");
+                const result = await fetchSearchAddDate();
+                console.log("Datos recibidos de fetchSearchAddDate:", result);
+
+                if (Array.isArray(result)) {
+                    const mappedDatos = result.map((item) => ({
+                        id: item.idValor,
+                        descripcion: item.Valor,
+                    }));
+                    setValorOptions(mappedDatos);
+                } else {
+                    throw new Error("La respuesta del endpoint no es un array.");
+                }
             } catch (error) {
-                console.error('Error al obtener los datos:', error);
-                toast.error("Hubo un error al cargar los datos.");
-            } finally {
-                setLoading(false);
+                toast.error("Error al cargar los datos del dropdown.");
+                console.error("Error al cargar los datos del dropdown:", error);
             }
         };
 
-     
-    // const fetchData = async (idCuenta) => {
-    //     setLoading(true);
-    //     try {
-    //         const response = await fetchActionsSearch(idCuenta);
-    //         const mappedData = mapResponseToTableData(response);
-    //         setTableData(mappedData);
-    //     } catch (error) {
-    //         console.error('Error al obtener los datos:', error);
-    //         toast.error("Hubo un error al cargar los datos.");
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
+        fetchSearchData();
+    }, []);
+
+    const fetchData = async (idCuenta) => {
+        setLoading(true);
+        try {
+            const response = await fetchActionsSearch(idCuenta);
+            console.log('Respuesta de fetchActionsSearch:', response);
+            const mappedData = mapResponseToTableData(response);
+            setTableData(mappedData);
+        } catch (error) {
+            console.error('Error al obtener los datos:', error);
+            toast.error("Hubo un error al cargar los datos.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const mapResponseToTableData = (response) => {
         return response.map((item) => ({
-            Fecha: item.Fecha_Insert,
-            Hora: item.Segundo_Insert,
-            Ejecutivo: item.Ejecutivo,
-            Dato: item.Dato,
-            DatoBuscado: item.DatoBuscado,
-            idFuente: item.Fuente,
-            Encontrado: item._Encontrado,
-            Telefonos: item.Teléfonos,
-            Persona: Object.keys(item.Persona).length ? JSON.stringify(item.Persona) : '--',
-            Puesto: Object.keys(item.Puesto).length ? JSON.stringify(item.Puesto) : '--',
-            Lugar: Object.keys(item.Lugar).length ? JSON.stringify(item.Lugar) : '--',
-            idEjecutivo: item.idEjecutivo,
-            InfoEncontrada: Object.keys(item.InfoEncontrada).length ? JSON.stringify(item.InfoEncontrada) : '--',
-            Confirmado: item._Confirmado,
-            Link: item.Link || '--'
+            Fecha: item.Fecha_Insert || '--',
+            Hora: item.Segundo_Insert || '--',
+            Ejecutivo: item.Ejecutivo || '--',
+            Dato: item.Dato || '--',
+            DatoBuscado: item.DatoBuscado || '--',
+            Fuente: item.Fuente || '--',
+            Encontrado: item._Encontrado === "✓" ? 'Sí' : 'No',
+            Telefonos: item.Teléfonos || '--',
+            Persona: typeof item.Persona === 'string' && item.Persona.trim() !== '' ? item.Persona : '--',
+            Puesto: typeof item.Puesto === 'string' && item.Puesto.trim() !== '' ? item.Puesto : '--',
+            Lugar: typeof item.Lugar === 'string' && item.Lugar.trim() !== '' ? item.Lugar : '--',
+            idEjecutivo: item.idEjecutivo || '--',
+            InfoEncontrada: item.InfoEncontrada && Object.keys(item.InfoEncontrada).length > 0 
+                ? JSON.stringify(item.InfoEncontrada) 
+                : '--',
+            Confirmado: item._Confirmado === "✓" ? 'Sí' : 'No',
+            Link: typeof item.Link === 'string' && item.Link.trim() !== '' ? item.Link : '--',
+            idDato: item.idDato || '--'
         }));
+    };
+
+    const FormatInfo = ({ info }) => {
+        if (!info || info === '--') return '--';
+        
+        try {
+            const parsedInfo = typeof info === 'string' ? JSON.parse(info) : info;
+            if (Object.keys(parsedInfo).length === 0) return '--';
+            
+            return (
+                <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                    {Object.entries(parsedInfo).map(([key, value]) => (
+                        <li key={key}>{`${key}: ${value}`}</li>
+                    ))}
+                </ul>
+            );
+        } catch {
+            return '--';
+        }
     };
 
     const limpiarFormulario = () => {
@@ -151,15 +181,10 @@ const Search = ({ show, handleClose }) => {
                 [name]: value,
             }));
             if (name === 'dato') {
-                const selectedValue = Number(value);
                 const filteredValues = tableData
-                    .filter((item) => item.Dato === selectedValue)
+                    .filter((item) => item.Dato === value)
                     .map((item) => item.DatoBuscado);
                 setValorOptions([...new Set(filteredValues)]);
-                const filteredFuentes = tableData
-                    .filter((item) => item.Dato === selectedValue)
-                    .map((item) => item.idFuente);
-                setFuenteOptions([...new Set(filteredFuentes)]);
             }
         }
     };
@@ -194,7 +219,7 @@ const Search = ({ show, handleClose }) => {
             const response = await fetchSaveExecutive(requestData);
             toast.success("Datos guardados correctamente.");
             limpiarFormulario();
-            fetchData(idCuenta); // Vuelve a cargar los datos de la tabla
+            fetchData(idCuenta);
         } catch (error) {
             console.error('Error al guardar los datos:', error);
             toast.error("Hubo un error al guardar los datos.");
@@ -203,7 +228,7 @@ const Search = ({ show, handleClose }) => {
 
     return (
         <>
-            <Modal show={show} onHide={handleCloseModal} size="xl">
+            <Modal show={show} onHide={handleCloseModal} backdrop="static" size="xl">
                 <Modal.Header closeButton>
                     <Modal.Title>Búsquedas</Modal.Title>
                 </Modal.Header>
@@ -233,7 +258,7 @@ const Search = ({ show, handleClose }) => {
                                             {searchData.valor || "Seleccionar"}
                                         </Dropdown.Toggle>
                                         <Dropdown.Menu>
-                                            {valorOptions.map((valor, index) => (
+                                            {valoresUnicos.map((valor, index) => (
                                                 <Dropdown.Item key={index} eventKey={valor}>
                                                     {valor}
                                                 </Dropdown.Item>
@@ -388,15 +413,25 @@ const Search = ({ show, handleClose }) => {
                                             <td>{item.Ejecutivo}</td>
                                             <td>{item.Dato}</td>
                                             <td>{item.DatoBuscado}</td>
-                                            <td>{item.idFuente}</td>
-                                            <td>{item.Encontrado ? 'Sí' : 'No'}</td>
+                                            <td>{item.Fuente}</td>
+                                            <td>{item.Encontrado}</td>
                                             <td>{item.Telefonos}</td>
                                             <td>{item.Persona}</td>
                                             <td>{item.Puesto}</td>
                                             <td>{item.Lugar}</td>
                                             <td>{item.idEjecutivo}</td>
-                                            <td>{item.InfoEncontrada}</td>
-                                            <td>{item.Confirmado ? 'Sí' : 'No'}</td>
+                                            <td>
+                                                {item.InfoEncontrada !== '--' ? (
+                                                    <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                                                        {Object.entries(JSON.parse(item.InfoEncontrada)).map(([key, value]) => (
+                                                            <li key={key}>{`${key}: ${value}`}</li>
+                                                        ))}
+                                                    </ul>
+                                                ) : (
+                                                    '--'
+                                                )}
+                                            </td>
+                                            <td>{item.Confirmado}</td>
                                             <td>{item.Link}</td>
                                         </tr>
                                     ))}

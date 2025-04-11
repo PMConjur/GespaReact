@@ -102,7 +102,7 @@ const TableTalks = ({ customColumnNames = {} }) => {
     
     return (
         <>
-            {/*  Checkbox para ordenar por el registro más antiguo */}
+            {/* Checkbox para ordenar por el registro más antiguo */}
             <Form.Check
                 type="switch"
                 id="sortByOldest"

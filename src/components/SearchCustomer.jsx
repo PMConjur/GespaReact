@@ -1,76 +1,94 @@
 import { useContext, useState, useEffect } from "react";
-import { AppContext } from "../pages/Managment"; // Importa el contexto
+import { AppContext } from "../pages/Managment";
 import { Card, Row, Col, Placeholder } from "react-bootstrap";
-import {
-  CreditCard,
-  Person,
-  FileText,
-  CalendarCheck,
-  Clipboard
-} from "react-bootstrap-icons";
-import CorazonRojo from "../assets/img/CRojo.jpg";
-import CorazonVerde from "../assets/img/CVerde.jpg";
-import CorazonBlanco from "../assets/img/CBlanco.jpg";
+import { CreditCard, Person, FileText, CalendarCheck, Clipboard } from "react-bootstrap-icons";
+import { getRelaciones } from "../services/gespawebServices"; // Importa el servicio
 
 const SearchCustomer = () => {
-  // Consume el contexto
   const { searchResults } = useContext(AppContext);
-  const [isLoading, setIsLoading] = useState(true); // Estado para manejar la carga
+  const [isLoading, setIsLoading] = useState(true);
+  const [relaciones, setRelaciones] = useState([]); // Estado para almacenar los datos del endpoint
+
+  // Mapeo de colores basado en Valor2
+  // const colorMapping = {
+  //   "Localización": { texto: "#FFFFFF", corazon: "#FFFFFF", gradiente: "header-white" },
+  //   "Acuerdo": { texto: "#39fc8d", corazon: "#00FF00", gradiente: "header-green" },
+  //   "Convencimiento": { texto: "#FFD700", corazon: "#FFA500", gradiente: "header-red" },
+  //   "Definición": { texto: "#FF69B4", corazon: "#FF1493", gradiente: "header-pink" },
+  // };
+
+  useEffect(() => {
+    const fetchRelaciones = async () => {
+      try {
+        const data = await getRelaciones();
+        setRelaciones(data);
+      } catch (error) {
+        console.error("Error al obtener relaciones:", error);
+      }
+    };
+
+    fetchRelaciones();
+  }, []);
 
   const renderSituacion = (situacion) => {
-    let iconoCorazon;
-    let colorTexto;
-    let gradientText;
+    const relacion = relaciones.find((r) => r.Valor1 === situacion);
+    let colores = { texto: "#f8f9fa", corazon: "#FFFFFF", gradiente: "header-white" };
 
-    // Asignar la URL de la imagen y el color del texto según la situación
-    switch (situacion) {
-      case "En Proceso":
-      case "Seguimiento":
-      case "Precaución":
-        iconoCorazon = CorazonRojo; // Corazón rojo
-        colorTexto = "#4285F6"; // Texto rojo
-        gradientText = "header-red";
-        break;
-      case "Negociación titular":
-      case "Sondeo":
-      case "Pagada":
-      case "Reporte de pago":
-        iconoCorazon = CorazonVerde; // Corazón verde
-        colorTexto = "#39fc8d"; // Texto verde
-        gradientText = "header-green";
-        break;
-      case "Accionamiento":
-      case "Nueva":
-      case "Recado":
-      case "Búsqueda Datos":
-      case "Localización":
-      default:
-        iconoCorazon = CorazonBlanco; // Corazón blanco
-        colorTexto = "#f8f9fa"; // Texto blanco
-        gradientText = "header-white";
-        break;
+    if (relacion) {
+      const idValor2 = relacion.idValor2; // Usar idValor2 para la comparación
+
+      // Asignar colores según idValor2
+      switch (idValor2) {
+        case 3101: // Localización
+          colores = { texto: "#FFFFFF", corazon: "#FFFFFF", gradiente: "header-white" };
+          break;
+        case 3102: // Convencimiento
+          colores = { texto: "#FF0000", corazon: "#FF0000", gradiente: "header-red" };
+          break;
+        case 3103: // Acuerdo
+          colores = { texto: "#39fc8d", corazon: "#00FF00", gradiente: "header-green" };
+          break;
+        case 3104: // Definición
+          colores = { texto: "#6c5ce7", corazon: "#6c5ce7", gradiente: "header-purple" };
+          break;
+        default:
+          colores = { texto: "#f8f9fa", corazon: "#FFFFFF", gradiente: "header-white" };
+          break;
+      }
     }
 
     return (
       <Card.Body>
         <div className="d-flex align-items-center">
-          <div className="card-icon-situation rounded-circle-situation d-flex align-items-center justify-content-center">
-            <img
-              src={iconoCorazon} // Renderizar la imagen como <img>
-              alt="Situación"
+          <div
+            className="card-icon-situation rounded-circle-situation d-flex align-items-center justify-content-center"
+            style={{ color: colores.corazon }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 500 500"
               style={{
                 width: "90px",
                 height: "75px",
                 marginTop: "3px"
               }}
-            />
+            >
+              <path
+                fill="currentColor"
+                d="M251.7,394.6c11.6-15.9,22.8-32.2,33.2-49,23.9-38.9,56.5-100.1,47-146.8-.2-1.2-1.8-8-2.5-8-6.8,5.4-17.5,8.6-26.1,9.8-27.2,3.8-54.5-11.3-52-41.5s31.5-54.3,58-61.9c50.5-14.4,96.2,11.3,107.5,62.5,19.8,89.8-43.5,161.1-113.2,206.4-16.5,10.7-33.9,20.5-51.9,28.2Z"
+              />
+              <path
+                fill="currentColor"
+                d="M170.3,190.9c-.7,2.3-1.3,4.6-1.8,6.9-9.5,43.3,18.2,99.4,39.7,136.2,12.2,20.9,26,40.9,40,60.6-16.7-7.2-32.9-16.2-48.2-25.9-72.7-46.3-139.1-120.2-115.6-213.4,17.1-67.8,100.6-81.7,146.3-33,18.2,19.4,28.1,50.2,4.2,69.7-17.8,14.5-46.5,11-64.7-1Z"
+              />
+            </svg>
           </div>
           <div className="ps-3 monochromatic-gradient-text">
             <h6
-              style={{ fontSize: "1.8rem", color: colorTexto }}
-              className={gradientText}
+              style={{ fontSize: "1.8rem", color: colores.texto }}
+              className={colores.gradiente}
             >
-              {situacion || "N/A"} {/* Mostrar "N/A" si no hay situación */}
+              {situacion || "N/A"}
             </h6>
             <h5 className=" pt-1">Situación</h5>
           </div>
@@ -79,7 +97,6 @@ const SearchCustomer = () => {
     );
   };
 
-  // Datos por defecto en caso de que no haya resultados de búsqueda
   const defaultData = {
     producto: "--",
     idCuenta: "--",
@@ -90,19 +107,16 @@ const SearchCustomer = () => {
     situacion: "--"
   };
 
-  // Obtener el primer resultado de búsqueda o usar los datos por defecto
   const result = searchResults[0] || defaultData;
 
   useEffect(() => {
-    setIsLoading(true); // Reinicia el estado a "cargando"
-
-    // Simula un tiempo de carga
+    setIsLoading(true);
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 500); // Tiempo de carga simulado
+    }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchResults]); // Se ejecuta cada vez que searchResults cambia
+  }, [searchResults]);
 
   return (
     <Row>
@@ -110,7 +124,6 @@ const SearchCustomer = () => {
         <Card className="mb-3 custom-card">
           <Card.Body>
             {isLoading ? (
-              // Mostrar placeholders mientras se cargan los datos
               <Row style={{ color: "white" }}>
                 {[...Array(6)].map((_, i) => (
                   <Col key={i} md={6}>
@@ -121,7 +134,6 @@ const SearchCustomer = () => {
                 ))}
               </Row>
             ) : (
-              // Mostrar los datos del cliente una vez cargados
               <Row style={{ color: "white" }}>
                 {[
                   {

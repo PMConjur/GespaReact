@@ -179,7 +179,7 @@ const Complaints = ({ show, handleClose }) => {
   };
 
   return (
-    <Modal show={show} onHide={handleClose} size="xl">
+    <Modal show={show} onHide={handleClose} backdrop="static" size="xl">
       <Modal.Header closeButton>
         <Modal.Title>Quejas</Modal.Title>
       </Modal.Header>

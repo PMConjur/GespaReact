@@ -161,7 +161,7 @@ export const fetchInformation = async (idCuenta) => {
     }
 
     const data = response.data;
-    //console.log("Datos obtenidos de la API:", data);
+    console.log("Datos obtenidos de la fetch informacion:", data);
 
     return data;
   } catch (error) {
@@ -433,7 +433,7 @@ export const fetchSaveExecutive = async (data) => {
 };
 
 //Error status global
-const getErrorStatus = (status) => {
+export const getErrorStatus = (status) => {
   switch (status) {
     case 200:
       return "Solicitud exitosa (200): La operación se realizó correctamente.";
@@ -456,7 +456,7 @@ const getErrorStatus = (status) => {
     case 429:
       return "Demasiadas solicitudes (429): Intenta de nuevo más tarde.";
     case 500:
-      return "Error interno del servidor (500): Intenta nuevamente más tarde.";
+      return "Datos incorrectos (500):o falla en el servidor.";
     default:
       return `Error inesperado (${status}): Contacta con soporte.`;
   }
@@ -558,7 +558,7 @@ export const getGestionTeData = async (idCartera, idCuenta) => {
       throw new Error("idCartera o idCuenta no son válidos.");
     }
 
-    const Top = 2000;
+    const Top = 10000;
     const url = `/ejecutivo/gestionTe/${idCartera}/${idCuenta}/${Top}`;
     console.log("Solicitando datos de gestion Telefonica a:", url); // Depurar URL
 
@@ -807,6 +807,7 @@ export const fetchCalFirtsPart = async (Cartera, NoCuenta, idHerr) => {
 
     const result = response.data;
     console.log("Validación recibida:", result);
+    
     return result;
   } catch (error) {
     console.error("Error en fetchCalFirtsPart:", error);
@@ -1263,7 +1264,7 @@ export const fetchValidators = async (idProducto, idEjecutivo, Contraseña) => {
 
     if (response.status !== 200) {
       throw new Error(
-        `Error en la respuesta de la API. Estado: ${response.status}`
+        `Error en la respuesta de la API. Estado: ${response.getErrorStatus}`
       );
     }
 
@@ -1345,28 +1346,6 @@ export const createOnlineCharge = async (data) => {
   }
 };
 
-// endpoint guardar-Gestion-Telefonica
-export const saveManagment = async (dataManagment) => {
-  try {
-    const response = await servicio.post(
-      `/ejecutivo/GuardarGestionTe`,
-      dataManagment
-    );
-
-    if (response.status !== 200) {
-      throw new Error(
-        `Error en la respuesta de la API. Estado: ${response.status}`
-      );
-    }
-
-    const result = response.data;
-    console.log("Gestion Guardada correctamente:", result);
-    return result;
-  } catch (error) {
-    console.error("Error al guardar la gestión", error);
-    throw error;
-  }
-};
 
 //endpoint buscar-tipo de queja y origen de queja
 export const fetchSearchAddDate = async () => {
@@ -1456,17 +1435,27 @@ export const fetchSaveNegotiationDeadlines = async (requestData) => {
     return result;
   } catch (error) {
     console.error("Error en fetchSaveNegotiationDeadlines:", error);
+
+    // Agregar más detalles sobre el error
+    if (error.response) {
+      console.error("Detalles del error de respuesta:", error.response.data);
+    } else if (error.request) {
+      console.error("No se recibió respuesta del servidor:", error.request);
+    } else {
+      console.error("Error al configurar la solicitud:", error.message);
+    }
+
     throw error;
   }
 };
 
-// endpoint incrementa negociacion
-export const fetchIncreasesNegotiation = async (data) => {
+// endpoint incrementa negociacion 
+export const fetchIncreasesNegotiation = async (increaseRequestData) => {
   try {
-    console.log("Enviando datos al endpoint IncrementaNegociacion:", data);
+    console.log("Enviando datos al endpoint IncrementaNegociacion:", increaseRequestData);
     const response = await servicio.post(
       `/ejecutivo/IncrementaNegociacion`,
-      data // Envía los datos al endpoint
+      increaseRequestData // Envía los datos al endpoint
     );
 
     if (response.status !== 200) {
@@ -1483,6 +1472,30 @@ export const fetchIncreasesNegotiation = async (data) => {
     throw error;
   }
 };
+export const fetchSaveOffering = async (requestData) => {
+  try {
+    console.log("Enviando datos al endpoint Guarda ofrecimiento:", requestData);
+    const response = await servicio.post(
+      `/ejecutivo/save-ofrecimiento`,
+      requestData
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Respuesta del endpoint guardar ofrecimiento:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en fetchSaveOffering:", error);
+    throw error;
+  }
+};
+
+
 export const createPayments = async (data) => {
   try {
     const response = await servicio.post(`/ejecutivo/GuardarPagos`, data);
@@ -1495,6 +1508,54 @@ export const createPayments = async (data) => {
         error.response.data?.mensaje || "Error al crear Pago";
       throw new Error(errorMessage);
     }
+    throw error;
+  }
+};
+
+
+export const getRelaciones = async () => {
+  try {
+  
+    const url = `/ejecutivo/relaciones`;
+    console.log("Solicitando datos de Relaciones a:", url); // Depurar URL"
+
+    const response = await servicio.get(url);
+    const message = getErrorStatus(response.status);
+
+    if (response.status !== 200) {
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error en getRelaciones:", error);
+    toast.error(
+      "No se pudo obtener los datos de Relaciones. Verifica la conexión o los parámetros."
+    );
+    throw error;
+  }
+};
+
+// endpoint guardar-Gestion-Telefonica
+export const saveManagment = async (dataManagment) => {
+  try {
+    const response = await servicio.post(
+      `/ejecutivo/GuardarGestionTe`,
+      dataManagment
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Gestion Guardada correctamente:", result);
+    return result;
+  } catch (error) {
+    console.error("Error al guardar la gestión", error);
     throw error;
   }
 };

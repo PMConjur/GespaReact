@@ -3,7 +3,7 @@ import TDropdownProcessesWLP from "../../TDropdownProcessesWLP";
 
 const ProcessesWLP = ({ show, handleCloseProcessesWLP, loadingProcessesWLP }) => {
   return (
-    <Modal show={show} onHide={handleCloseProcessesWLP} size="xl" centered>
+    <Modal show={show} onHide={handleCloseProcessesWLP} backdrop="static" size="xl" centered>
       <Modal.Header closeButton>
         <Modal.Title>Procesos WLP</Modal.Title>
       </Modal.Header>

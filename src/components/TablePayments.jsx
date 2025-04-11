@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useContext } from "react";
-import { Table, Spinner } from "react-bootstrap"; // Importa Spinner para la animación de carga
+import { Table, Spinner, Form } from "react-bootstrap"; // Importa Spinner para la animación de carga
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
 import { getPaymentsData } from "../services/gespawebServices";
@@ -41,39 +41,40 @@ const TablePayments = ({ customColumnNames = {} }) => {
 
     fetchData();
   }, [searchResults]);
+  
 
   // Hook 7: useCallback para manejar el ordenamiento
   const handleSortChange = useCallback(() => {
-    if (!toastShown) {
-      setSortByOldest((prev) => !prev);
+    setSortByOldest((prev) => {
+      const newSortByOldest = !prev; // Invertir el estado del switch
       setSortedData((prevData) => {
-        const sorted = !sortByOldest
+        const sorted = newSortByOldest
           ? [...prevData].sort(
               (a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert)
             )
-          : [...sortedData]; // Restaurar datos originales si se desmarca el checkbox
+          : [...prevData].sort(
+              (a, b) => new Date(b.Fecha_Insert) - new Date(a.Fecha_Insert)
+            ); // Ordenar por fecha más reciente si el switch está desactivado
 
         toast.success(
-          !sortByOldest
+          newSortByOldest
             ? "Datos ordenados por fecha más antigua."
-            : "Orden original restaurado."
+            : "Datos ordenados por fecha más reciente."
         );
-        setToastShown(true);
-        setTimeout(() => setToastShown(false), 2000);
         return sorted;
       });
-    }
-  }, [sortByOldest, sortedData, toastShown]);
+      return newSortByOldest;
+    });
+  }, []);
 
-    if (loading) {
-        return (
-            <div style={{ textAlign: "center", marginTop: "20px" }}>
-                    <Spinner animation="border" variant="primary" />
-                    <span className="ms-2">Cargando datos...</span>
-            </div>
-        );
-    }
-
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", marginTop: "20px" }}>
+        
+        <span className="ms-2">Cargando datos...</span>
+      </div>
+    );
+  }
 
   if (!sortedData || sortedData.length === 0) {
     return <p>No hay datos disponibles.</p>;
@@ -113,7 +114,14 @@ const TablePayments = ({ customColumnNames = {} }) => {
 
   return (
     <>
-     
+      <Form.Check
+        type="switch"
+        id="sortByOldest"
+        label="Más antiguo"
+        className="mb-2"
+        checked={sortByOldest}
+        onChange={handleSortChange}
+      />
 
       <div
         className="scroll-container"
@@ -236,6 +244,5 @@ const TablePayments = ({ customColumnNames = {} }) => {
     </>
   );
 };
-
 
 export default TablePayments;
