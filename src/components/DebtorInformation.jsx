@@ -43,7 +43,7 @@ const DebtorInformation = () => {
           Tiempos
         </Breadcrumb.Item>
         <Breadcrumb.Item href="" onClick={handleShowCalculatorModal}>
-          Calculadora
+          Simulador
         </Breadcrumb.Item>
         <Breadcrumb.Item href="#">
       {/*  */}

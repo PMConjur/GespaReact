@@ -1,6 +1,5 @@
-import { useState, useContext } from "react";
+import { useState} from "react";
 import Dropdown from "react-bootstrap/Dropdown";
-import { AppContext } from "../../../pages/Managment";
 import "../../../scss/styles.scss";
 import EstadoCuentaModal from "./AccountStatements";
 import FollowUps from "./FollowUps";
@@ -11,21 +10,12 @@ import OnlineCharge from "./OnlineCharge";
 import Complaints from "./Complaints"; // Importar el componente Complaints
 import { Back } from "react-bootstrap-icons";
 import Comments from "./Comments"; // Importar el componente Comments
-import Simulators from "./Simulators"; // Importar el componente Simulators
-
 import ProcessesWLP from "./ProcessesWLP";
-import { data } from "react-router-dom";
 
 const DropdownActions = () => {
   const [modalShow, setModalShow] = useState(false);
   const [showFollowUps, setShowFollowUps] = useState(false);
-  const [followUpsData, setFollowUpsData] = useState([]);
-  const [loadingFollow, setLoadingFollow] = useState(false);
-
   const [showTalks, setShowTalks] = useState(false);
-  const [talksData, setTalksData] = useState([]);
-  const [loadingtalks, setLoadingtalks] = useState(false);
-
   const [showDrives, setShowDrives] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showComplaints, setShowComplaints] = useState(false);
@@ -38,27 +28,14 @@ const DropdownActions = () => {
   const handleCloseComplaints = () => setShowComplaints(false);
   const handleOpenComments = () => setShowComments(true); // Función para abrir el modal de comentarios
   const handleCloseComments = () => setShowComments(false); // Función para cerrar el modal de comentarios
-  const handleOpenSimulators = () => setShowSimulators(true); // Función para abrir el modal de simuladores
   const handleCloseSimulators = () => setShowSimulators(false); // Función para cerrar el modal de simuladores
 
   const [showOnlinecharge, setShowOnlinecharge] = useState(false);
-  const [onlinechargeData, setOnlinechargeData] = useState([]);
-  const [loadingOnlinecharge, setLoadingonlinecharge] = useState(false);
-
   const [showProcessesWLP, setShowProcessesWLP] = useState(false);
-  const [processesWLPData, setProcessesWLPData] = useState([]); // Estado para los datos de ProcessesWLP
-  const [loadingProcessesWLP, setLoadingProcessesWLP] = useState(false); // Estado para la carga de ProcessesWLP
-  const [errorProcessesWLP, setErrorProcessesWLP] = useState(null); // Estado para errores al cargar ProcessesWLP
-
-  const { searchResults } = useContext(AppContext);
-
   const handleShowFollowUps = () => setShowFollowUps(true); // Solo abre el modal
   const handleCloseFollowUps = () => setShowFollowUps(false);
-
   const handleShowOnlinecharge = () => setShowOnlinecharge(true); // Solo abre el modal
   const handleCloseOnlinecharge = () => setShowOnlinecharge(false);
-
-
   const handleShowTalks = () => setShowTalks(true);
   const handleCloseTalks = () => setShowTalks(false);
 
@@ -140,12 +117,6 @@ const DropdownActions = () => {
           </Dropdown.Item>{" "}
           {/* Actualizar para abrir el modal de quejas */}
           <Dropdown.Item
-            onClick={handleOpenSimulators} // Actualizar para abrir el modal de simuladores
-            className="custom-dropdown-item"
-          >
-            Simuladores
-          </Dropdown.Item>
-          <Dropdown.Item
             onClick={handleShowProcessesWLP}
             className="custom-dropdown-item"
           >
@@ -179,10 +150,6 @@ const DropdownActions = () => {
       <Comments
         show={showComments} // Pasar el estado al modal
         handleClose={handleCloseComments} // Pasar la función de cierre al modal
-      />
-      <Simulators
-        show={showSimulators} // Pasar el estado al modal
-        handleClose={handleCloseSimulators} // Pasar la función de cierre al modal
       />
     </>
   );
