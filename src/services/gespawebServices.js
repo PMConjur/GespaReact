@@ -810,6 +810,7 @@ export const fetchCalFirtsPart = async (Cartera, NoCuenta, idHerr) => {
 
     const result = response.data;
     console.log("Validación recibida:", result);
+    
     return result;
   } catch (error) {
     console.error("Error en fetchCalFirtsPart:", error);

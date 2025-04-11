@@ -66,6 +66,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
   const [duracion, setDuracion] = useState(""); // Estado para almacenar el valor de duración
   const [isSaveDeadlinesClicked, setIsSaveDeadlinesClicked] = useState(false); // Nuevo estado para controlar la visibilidad de los botones
   const [isNegotiationSaved, setIsNegotiationSaved] = useState(false); // Nuevo estado para controlar la visibilidad del botón "Finalizar"
+  const [validationMessage, setValidationMessage] = useState("");
 
   const calculatorRef = useRef(null); // Referencia para la sección de la calculadora
   const detailsRef = useRef(null); // Referencia para la sección de "Resumen y Plazos"
@@ -91,45 +92,51 @@ const CalculatorSimulator = ({show, handleClose}) => {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const idCartera = 1; // Ejemplo de valor
-        // Obtiene el primer idCuenta de searchResults
-        const idCuenta = searchResults?.[0]?.idCuenta?.trim();
-        if (!idCuenta) {
-          console.error("No se encontró idCuenta en searchResults");
-          return;
+  const fetchData = async () => {
+    try {
+      const idCartera = 1; // Ejemplo de valor
+      const idCuenta = searchResults?.[0]?.idCuenta?.trim();
+      if (!idCuenta) {
+        console.error("No se encontró idCuenta en searchResults");
+        return;
+      }
+      const data = await fetchCalFirtsPart(idCartera, idCuenta, selectedHerramienta || 136);
+
+      if (data) {
+        // Extraer el mensaje de validación
+        if (data.mensaje) {
+          setValidationMessage(data.mensaje); // Actualiza el estado con el mensaje
         }
-        const data = await fetchCalFirtsPart(idCartera, idCuenta, selectedHerramienta || 136); // Usa el idHerramienta seleccionado o un valor por defecto
-        // Extraer datos de ofrecimientos, herramientas y resumen
-        if (data) {
-          if (Array.isArray(data.ofrecimientos)) {
-            setTableData(data.ofrecimientos);
-          }
-          if (Array.isArray(data.herramientas)) {
-            setHerramientas(data.herramientas); // Almacena las herramientas
-          }
-          setSummaryData({
-            montoRequerido: data.montoRequerido,
-            montoDescuento: data.montoDescuento,
-            saldo: data.saldo,
-            fechaCorte: data.fechaCorte,
-            descuento: data.descuento,
-            dias1ErPago: data.dias1erPago
-          });
-        } else {
-          console.error("La respuesta del endpoint no contiene los datos esperados:", data);
-          setTableData([]);
+
+        // Actualizar otros datos
+        if (Array.isArray(data.ofrecimientos)) {
+          setTableData(data.ofrecimientos);
         }
-      } catch (error) {
-        console.error("Error al obtener los datos de la calculadora:", error);
+        if (Array.isArray(data.herramientas)) {
+          setHerramientas(data.herramientas);
+        }
+        setSummaryData({
+          montoRequerido: data.montoRequerido,
+          montoDescuento: data.montoDescuento,
+          saldo: data.saldo,
+          fechaCorte: data.fechaCorte,
+          descuento: data.descuento,
+          dias1ErPago: data.dias1erPago,
+        });
+      } else {
+        console.error("La respuesta del endpoint no contiene los datos esperados:", data);
         setTableData([]);
       }
-    };
-    if (searchResults?.length > 0) {
-      fetchData(); // Llama a la función solo si searchResults tiene datos
+    } catch (error) {
+      console.error("Error al obtener los datos de la calculadora:", error);
+      setTableData([]);
     }
-  }, [searchResults, selectedHerramienta]); // Agrega selectedHerramienta como dependencia
+  };
+
+  if (searchResults?.length > 0) {
+    fetchData();
+  }
+}, [searchResults, selectedHerramienta, show]); // Agrega 'show' como dependencia
  
   useEffect(() => {
     // Sincroniza formValues con summaryData cuando summaryData cambia
@@ -608,7 +615,6 @@ const handleSaveOffering = async () => {
             overflowY: "auto", // Habilitar scroll vertical
             position: "relative", // Necesario para posicionar el indicador
           }}
-
         >
           <Col>
             {/* Ofrecimientos */}
@@ -642,7 +648,7 @@ const handleSaveOffering = async () => {
                         }}
                       >
                         <tr>
-                          <th style={{ textAlign: "center" }}>FechaHora</th>
+                          <th style={{ textAlign: "center" }}>Fecha-Hora</th>
                           <th style={{ textAlign: "center" }}>Herramienta</th>
                           <th style={{ textAlign: "center" }}>Status</th>
                           <th style={{ textAlign: "center" }}>Vencimiento</th>
@@ -678,7 +684,9 @@ const handleSaveOffering = async () => {
                                 {/* Muestra "--" si no hay valor */}
                                 <td style={{ textAlign: "left" }}>
                                   {row.saldoInterés !== undefined
-                                    ? `$${parseFloat(row.saldoInterés).toFixed(2)}`
+                                    ? `$${parseFloat(row.saldoInterés).toFixed(
+                                        2
+                                      )}`
                                     : 0}{" "}
                                   {/* Muestra "0.00" si no hay valor */}
                                 </td>
@@ -710,6 +718,11 @@ const handleSaveOffering = async () => {
                   </div>
                 </Col>
               </Row>
+              {validationMessage && (
+              <h5 className="ms-2 mt-4 text-center" style={{ color: "#dc3545" }}>
+                {validationMessage}
+              </h5>
+            )}
               <Col className="mt-4">
                 <Card className="rounded-lg mb-0">
                   <Card.Body className="d-flex p-0 pb-1 w-100">
@@ -748,7 +761,10 @@ const handleSaveOffering = async () => {
                               style={{ color: "#ffc400" }}
                               className="warning-modal-money"
                             >
-                              ${summaryData.montoRequerido ? summaryData.montoRequerido.toFixed(2) : 0}
+                              $
+                              {summaryData.montoRequerido
+                                ? summaryData.montoRequerido.toFixed(2)
+                                : 0}
                             </h5>
                           </div>
                           <div className="ps-3">
@@ -759,7 +775,10 @@ const handleSaveOffering = async () => {
                               style={{ color: "#07fb70" }}
                               className="success-modal-money"
                             >
-                              ${summaryData.montoDescuento ? summaryData.montoDescuento.toFixed(2) : 0}
+                              $
+                              {summaryData.montoDescuento
+                                ? summaryData.montoDescuento.toFixed(2)
+                                : 0}
                             </h5>
                           </div>
                           <div className="ps-3">
@@ -770,7 +789,10 @@ const handleSaveOffering = async () => {
                               style={{ color: "#4a9dff" }}
                               className="info-modal-money"
                             >
-                              ${summaryData.saldo ? summaryData.saldo.toFixed(2) : 0}
+                              $
+                              {summaryData.saldo
+                                ? summaryData.saldo.toFixed(2)
+                                : 0}
                             </h5>
                           </div>
                           <div className="ps-3">
@@ -778,7 +800,9 @@ const handleSaveOffering = async () => {
                               Corte
                             </span>
                             <h5 className="text-light light-modal-money">
-                              {summaryData.fechaCorte.split(" ")[0]}{" "}
+                              {summaryData.fechaCorte
+                                ? summaryData.fechaCorte.split(" ")[0]
+                                : "--"}
                               {/* Muestra solo la fecha */}
                             </h5>
                           </div>
@@ -789,6 +813,7 @@ const handleSaveOffering = async () => {
                 </Card>
               </Col>
             </Col>
+        
             <Col className="">
               {areFieldsEnabled && ( // Muestra el Row solo si la herramienta seleccionada es válida
                 <Row className="d-flex gap-4">
@@ -907,7 +932,8 @@ const handleSaveOffering = async () => {
                                     whiteSpace: "nowrap",
                                   }}
                                 >
-                                  {pago.fecha} {/* Usa la fecha directamente sin convertirla */}
+                                  {pago.fecha}{" "}
+                                  {/* Usa la fecha directamente sin convertirla */}
                                 </td>
                                 <td
                                   style={{
@@ -987,7 +1013,11 @@ const handleSaveOffering = async () => {
                                 <Form.Control
                                   placeholder="Monto Requerido"
                                   name="montoRequerido"
-                                  value={formValues.montoRequerido ? `$${formValues.montoRequerido}` : ""}
+                                  value={
+                                    formValues.montoRequerido
+                                      ? `$${formValues.montoRequerido}`
+                                      : ""
+                                  }
                                   onChange={(e) =>
                                     setFormValues((prev) => ({
                                       ...prev,
@@ -1121,7 +1151,10 @@ const handleSaveOffering = async () => {
                                   Monto Negociado
                                 </span>
                                 <h5 style={{ color: "#ffc400" }}>
-                                  ${calculosData.montoNegociado ? calculosData.montoNegociado.toFixed(2) : 0}
+                                  $
+                                  {calculosData.montoNegociado
+                                    ? calculosData.montoNegociado.toFixed(2)
+                                    : 0}
                                 </h5>
                               </Col>
                               <Col>
@@ -1129,7 +1162,10 @@ const handleSaveOffering = async () => {
                                   Descuento
                                 </span>
                                 <h5 style={{ color: "#6dd6ff" }}>
-                                  ${calculosData.descuento ? calculosData.descuento.toFixed(2) : 0}
+                                  {calculosData.descuento
+                                    ? calculosData.descuento
+                                    : 0}
+                                  %
                                 </h5>
                               </Col>
                               <Col>
@@ -1137,7 +1173,9 @@ const handleSaveOffering = async () => {
                                   Tasa mensual
                                 </span>
                                 <h5 className="text-light">
-                                  {calculosData.tasaMensual ? `${calculosData.tasaMensual}%` : "N/A"}
+                                  {calculosData.tasaMensual
+                                    ? `${calculosData.tasaMensual}%`
+                                    : "N/A"}
                                 </h5>
                               </Col>
                             </Row>
@@ -1368,13 +1406,22 @@ const handleSaveOffering = async () => {
                                           ).toLocaleDateString()}
                                         </td>
                                         <td className="amount-cell">
-                                          ${calculo.saldo ? calculo.saldo.toFixed(2) : 0}
+                                          $
+                                          {calculo.saldo
+                                            ? calculo.saldo.toFixed(2)
+                                            : 0}
                                         </td>
                                         <td className="amount-cell">
-                                          ${calculo.pago ? calculo.pago.toFixed(2) : 0}
+                                          $
+                                          {calculo.pago
+                                            ? calculo.pago.toFixed(2)
+                                            : 0}
                                         </td>
                                         <td className="amount-cell">
-                                          ${calculo.saldoFinal ? calculo.saldoFinal.toFixed(2) : 0}
+                                          $
+                                          {calculo.saldoFinal
+                                            ? calculo.saldoFinal.toFixed(2)
+                                            : 0}
                                         </td>
                                       </tr>
                                     )
