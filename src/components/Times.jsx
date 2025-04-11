@@ -83,7 +83,6 @@ const Times = ({ show, handleClose }) => {
                 duracion
             });
 
-            // Solo en éxito: detenemos y reseteamos
             if (intervalRef.current) {
                 clearInterval(intervalRef.current);
                 intervalRef.current = null;
@@ -108,8 +107,6 @@ const Times = ({ show, handleClose }) => {
             console.error("Error en handleStopTimer:", error);
             toast.error(`Error al registrar tiempo: ${error.message}`);
             
-            // Para TODOS los errores (incluyendo contraseña incorrecta):
-            // 1. Mantenemos el intervalo activo
             if (!intervalRef.current) {
                 intervalRef.current = setInterval(() => {
                     setCurrentTimer(prev => {
@@ -120,10 +117,7 @@ const Times = ({ show, handleClose }) => {
                 }, 1000);
             }
             
-            // 2. Solo limpiamos la contraseña para nuevo intento
             setContrasenia("");
-            
-            // 3. Mantenemos todos los demás estados (isPaused, currentTimer, etc.)
         }
     };
 
@@ -162,9 +156,24 @@ const Times = ({ show, handleClose }) => {
             </Modal.Header>
             <Modal.Body>
                 <Container>
-                    <Row className="mb-3">
+                    {/* Primera fila: Título y Temporizador */}
+                    <Row className="mb-3 text-center">
                         <Col xs={12}>
-                            <Form.Group>
+                            <h4>
+                                {selectedReason ? (
+                                    `${selectedReason}: ${formatTime(currentTimer)}`
+                                ) : (
+                                    "Seleccione una razón para comenzar"
+                                )}
+                            </h4>
+                        </Col>
+                    </Row>
+
+                    {/* Segunda fila: Controles en 2 columnas */}
+                    <Row className="mb-3">
+                        {/* Columna izquierda: Razón + Iniciar */}
+                        <Col md={6} className="mb-3">
+                            <Form.Group className="mb-3">
                                 <Form.Label>Seleccione razón</Form.Label>
                                 <Form.Select
                                     value={selectedReason}
@@ -177,11 +186,7 @@ const Times = ({ show, handleClose }) => {
                                     ))}
                                 </Form.Select>
                             </Form.Group>
-                        </Col>
-                    </Row>
-                    
-                    <Row className="mb-3">
-                        <Col xs={12} md={6} className="mb-2">
+
                             <Button
                                 variant="primary"
                                 onClick={handleStartTimer}
@@ -191,7 +196,20 @@ const Times = ({ show, handleClose }) => {
                                 Iniciar Temporizador
                             </Button>
                         </Col>
-                        <Col xs={12} md={6} className="mb-2">
+
+                        {/* Columna derecha: Contraseña + Detener */}
+                        <Col md={6} className="mb-3">
+                            <Form.Group className="mb-3">
+                                <Form.Label>Contraseña</Form.Label>
+                                <Form.Control
+                                    type="password"
+                                    placeholder="Ingrese su contraseña"
+                                    value={contrasenia}
+                                    onChange={(e) => setContrasenia(e.target.value)}
+                                    disabled={!isPaused}
+                                />
+                            </Form.Group>
+
                             <Button
                                 variant="danger"
                                 onClick={handleStopTimer}
@@ -202,34 +220,8 @@ const Times = ({ show, handleClose }) => {
                             </Button>
                         </Col>
                     </Row>
-                    
-                    <Row className="mb-3">
-                        <Col xs={12}>
-                            <Form.Group>
-                                <Form.Label>Contraseña</Form.Label>
-                                <Form.Control
-                                    type="password"
-                                    placeholder="Ingrese su contraseña"
-                                    value={contrasenia}
-                                    onChange={(e) => setContrasenia(e.target.value)}
-                                    disabled={!isPaused}
-                                />
-                            </Form.Group>
-                        </Col>
-                    </Row>
-                    
-                    <Row className="mb-3 text-center">
-                        <Col xs={12}>
-                            <h4>
-                                {selectedReason ? (
-                                    `${selectedReason}: ${formatTime(currentTimer)}`
-                                ) : (
-                                    "Seleccione una razón para comenzar"
-                                )}
-                            </h4>
-                        </Col>
-                    </Row>
-                    
+
+                    {/* Tercera fila: Tabla de tiempos */}
                     <Row className="mb-3">
                         <Col xs={12}>
                             <TableTimes updatedTimes={updatedTimesForTable} />
