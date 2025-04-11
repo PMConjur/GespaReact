@@ -1454,8 +1454,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("CorreosCarga/{idCartera}/{idCuenta}")]
-
-
+        [AllowAnonymous]
         public async Task<IActionResult> GetCorreosCarga(int idCartera, string idCuenta)
         {
 

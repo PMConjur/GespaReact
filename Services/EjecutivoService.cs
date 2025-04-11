@@ -4418,9 +4418,9 @@ namespace NoriAPI.Services
             var idCartera = Convert.ToInt32(drDatos["idCartera"]);
             var idCuenta = Convert.ToString(drDatos["idCuenta"]);
 
-            DataTable CorreosGet = await GetCorreosCargaAsync(idCartera, idCuenta);
+            DataTable correosGet = await GetCorreosCargaAsync(idCartera, idCuenta);
 
-            if (CorreosGet == null || CorreosGet.Rows.Count == 0)
+            if (correosGet == null || correosGet.Rows.Count == 0)
                 return;
 
             if (dsTablas.Tables.Contains("Correos"))
@@ -4428,8 +4428,19 @@ namespace NoriAPI.Services
                 dsTablas.Tables.Remove("Correos");
             }
 
-            CorreosGet.TableName = "Correos";
-            dsTablas.Tables.Add(CorreosGet);
+            correosGet.TableName = "Correos";
+
+            AgregarYTraducirColumna();
+
+            ClasesGespaNonStatic gespaCargaEje = new();
+            gespaCargaEje.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            gespaCargaEje.CargaCatalogos();
+
+            AgregarYTraducirColumna(pagosGet, "Sucursal", "SucursalValor", gespaPagos._htValoresCatálogo);
+
+
+
+            dsTablas.Tables.Add(correosGet);
         }
         public async Task<string> NuevoCorreoAsync(CorreosRe nuevoCorreoRe, int idEjecutivo, int idOrigen = 1805, bool ValidarDuplicidad = true)
         {
