@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect } from 'react';
-import { Modal, Button, Form, Table, Dropdown, Col, Spinner} from 'react-bootstrap';
-import { fetchComplaints, fetchViewComplaints, fetchOriginComplaints, fetchDdComplaints} from '../../../services/gespawebServices';
+import { Modal, Button, Form, Table, Dropdown, Col, Spinner, Row} from 'react-bootstrap';
+import { fetchComplaints, fetchViewComplaints, fetchOriginComplaints, fetchDdComplaints, fetchAddress, fetchEmailsCharging } from '../../../services/gespawebServices';
 import { AppContext } from "../../../pages/Managment";
 import { toast } from 'sonner';
 import "../../../scss/styles.scss";
@@ -23,6 +23,11 @@ const Complaints = ({ show, handleClose }) => {
   const [isFormValid, setIsFormValid] = useState(false);
   const [ddComplaints, setDdComplaints] = useState([]);
   const [isLoading, setIsLoading] = useState(false); // Estado para la animación de carga
+  const [showFinancieraSection, setShowFinancieraSection] = useState(false); // Estado para controlar la visibilidad
+  const [addresses, setAddresses] = useState([]); // Estado para almacenar los domicilios
+  const [showAddressTable, setShowAddressTable] = useState(false); // Estado para mostrar la tabla de domicilios
+  const [emails, setEmails] = useState([]); // Estado para almacenar los correos electrónicos
+  const [showEmailTable, setShowEmailTable] = useState(false); // Estado para mostrar la tabla de correos electrónicos
 
   // Validar el formulario
   useEffect(() => {
@@ -99,6 +104,56 @@ const Complaints = ({ show, handleClose }) => {
     fetchDdComplaintsData();
   }, []);
 
+  // Cargar los domicilios
+  useEffect(() => {
+    const fetchAddressData = async () => {
+      if (searchResults.length > 0) {
+        const idCuenta = searchResults[0].idCuenta;
+        const idCartera = 1;
+        try {
+          console.log("Llamando a fetchAddress con idCartera:", idCartera, "idCuenta:", idCuenta);
+          const result = await fetchAddress(idCartera, idCuenta);
+          console.log("Datos recibidos de fetchAddress:", result);
+          setAddresses(result); // Almacena los datos en el estado
+        } catch (error) {
+          if (error.response?.status === 404) {
+            toast.error("No se encontraron domicilios para esta cuenta.");
+          } else {
+            toast.error("Error al cargar los domicilios.");
+          }
+          console.error("Error al cargar los domicilios:", error);
+        }
+      }
+    };
+
+    if (show) {
+      fetchAddressData(); // Llama al endpoint cuando el modal esté visible
+    }
+  }, [show, searchResults]);
+
+  // Cargar los correos electrónicos
+  useEffect(() => {
+    const fetchEmailsData = async () => {
+      if (searchResults.length > 0) {
+        const idCuenta = searchResults[0].idCuenta;
+        const idCartera = 1;
+        try {
+          console.log("Llamando a fetchEmailsCharging con idCartera:", idCartera, "idCuenta:", idCuenta);
+          const result = await fetchEmailsCharging(idCartera, idCuenta);
+          console.log("Datos recibidos de fetchEmailsCharging:", result);
+          setEmails(result); // Almacena los datos en el estado
+        } catch (error) {
+          toast.error("Error al cargar los correos electrónicos.");
+          console.error("Error al cargar los correos electrónicos:", error);
+        }
+      }
+    };
+
+    if (show) {
+      fetchEmailsData(); // Llama al endpoint cuando el modal esté visible
+    }
+  }, [show, searchResults]);
+
   // Manejar cambios en el formulario
   const handleChange = (name, value) => {
     const nombreDeudor = searchResults?.[0]?.nombreDeudor || "";
@@ -118,6 +173,24 @@ const Complaints = ({ show, handleClose }) => {
       handleChange(name, value); // Actualiza el estado si el valor es válido
     } else {
       toast.warning("Solo se permiten números en el folio."); // Muestra un mensaje de advertencia
+    }
+  };
+
+  const handleDropdownSelect = (value) => {
+    const selectedOrigin = originComplaints.find(
+      (origin) => origin.id === parseInt(value)
+    );
+    handleChange("idInstitucion", value); // Actualizar el idInstitucion
+    handleChange(
+      "institucionDescripcion",
+      selectedOrigin?.descripcion || ""
+    ); // Actualizar el texto seleccionado
+
+    // Mostrar la sección si se selecciona "financiera"
+    if (selectedOrigin?.descripcion.toLowerCase() === "financiera") {
+      setShowFinancieraSection(true);
+    } else {
+      setShowFinancieraSection(false);
     }
   };
 
@@ -182,15 +255,18 @@ const Complaints = ({ show, handleClose }) => {
     <Modal show={show} onHide={handleClose} backdrop="static" size="xl">
       <Modal.Header closeButton>
         <Modal.Title>Quejas</Modal.Title>
+        <div className=" ms-auto me-3">
+          <p className="cursor typewriter-animation">Desliza hacia bajo</p>
+        </div>
       </Modal.Header>
-      <Modal.Body className="d-block d-lg-flex gap-1">
-        <Col>
+      <Modal.Body className="d-block gap-1">
+        <Row>
           {complaints.length > 0 ? ( // Verifica si hay datos en la tabla
             <div
-              className="scroll-container"
-              style={{ maxHeight: "70vh", overflowY: "auto"}}
+              className="scroll-container w-50"
+              style={{ maxHeight: "70vh", overflowY: "auto" }}
             >
-              <Form className='w-100'>
+              <Form className=" p-2">
                 <div className="">
                   <Form.Group className="mb-4">
                     <Dropdown
@@ -203,6 +279,26 @@ const Complaints = ({ show, handleClose }) => {
                           "tipoQuejaDescripcion",
                           selectedComplaint?.descripcion || ""
                         ); // Actualizar el texto seleccionado
+
+                        // Mostrar la tabla de domicilios si se selecciona "Domicilio no corresponde"
+                        if (
+                          selectedComplaint?.descripcion ===
+                          "Domicilio no corresponde"
+                        ) {
+                          setShowAddressTable(true);
+                        } else {
+                          setShowAddressTable(false);
+                        }
+
+                        // Mostrar la tabla de correos si se selecciona "Email no corresponde"
+                        if (
+                          selectedComplaint?.descripcion ===
+                          "Email no corresponde"
+                        ) {
+                          setShowEmailTable(true);
+                        } else {
+                          setShowEmailTable(false);
+                        }
                       }}
                     >
                       <Dropdown.Toggle
@@ -231,18 +327,7 @@ const Complaints = ({ show, handleClose }) => {
                     </Dropdown>
                   </Form.Group>
                   <Form.Group className="mb-4 full-width">
-                    <Dropdown
-                      onSelect={(value) => {
-                        const selectedOrigin = originComplaints.find(
-                          (origin) => origin.id === parseInt(value)
-                        );
-                        handleChange("idInstitucion", value); // Actualizar el idInstitucion
-                        handleChange(
-                          "institucionDescripcion",
-                          selectedOrigin?.descripcion || ""
-                        ); // Actualizar el texto seleccionado
-                      }}
-                    >
+                    <Dropdown onSelect={handleDropdownSelect}>
                       <Dropdown.Toggle
                         className="w-100"
                         variant="primary"
@@ -267,11 +352,10 @@ const Complaints = ({ show, handleClose }) => {
                   </Form.Group>
                 </div>
                 <Form.Group className="mb-4">
-
                   <Form.Control
                     type="text"
                     name="folio"
-                    placeholder='Folio'
+                    placeholder="Folio"
                     value={formData.folio}
                     onChange={handleFolioChange} // Usa la función específica para manejar el cambio
                   />
@@ -299,45 +383,47 @@ const Complaints = ({ show, handleClose }) => {
                       console.log("Valor del textarea:", e.target.value); // Verifica el valor en tiempo real
                       handleChange(e.target.name, e.target.value); // Pasa el valor sin modificaciones
                     }}
-                    onKeyDown={(e) => e.key === ' ' && e.stopPropagation()}
+                    onKeyDown={(e) => e.key === " " && e.stopPropagation()}
                   />
                 </Form.Group>
-                <div className="">
-                  <Form.Group className="mb-4 mt-2 half-width">
-                    <Form.Check
-                      key={formData.titular} // Fuerza el re-renderizado cuando cambia el estado
-                      type="checkbox"
-                      label="Titular"
-                      name="titular"
-                      checked={formData.titular}
-                      onChange={(e) =>
-                        handleChange(e.target.name, e.target.checked)
-                      }
-                    />
-                  </Form.Group>
-                  <Form.Group className="mb-3 w-100 half-width">
-                    <Form.Control
-                      className="w-100"
-                      type="text"
-                      name="solicitante"
-                      placeholder="Nombre"
-                      value={formData.solicitante}
-                      onChange={(e) =>
-                        handleChange(e.target.name, e.target.value)
-                      }
-                    />
-                  </Form.Group>
-                </div>
-                <div className='boton-reportar'>
-                <Button
-                  className="mt-4 full-width"
-                  variant="danger"
-                  onClick={handleReport}
-                  disabled={!isFormValid || isLoading} // Deshabilita el botón mientras carga
-                >
-                  {isLoading ? "Guardando..." : "Reportar"}{" "}
-                  {/* Cambia el texto durante la carga */}
-                </Button>
+                {showFinancieraSection && ( // Renderiza la sección solo si showFinancieraSection es true
+                  <div className="">
+                    <Form.Group className="mb-4 mt-2 half-width">
+                      <Form.Check
+                        key={formData.titular} // Fuerza el re-renderizado cuando cambia el estado
+                        type="checkbox"
+                        label="Titular"
+                        name="titular"
+                        checked={formData.titular}
+                        onChange={(e) =>
+                          handleChange(e.target.name, e.target.checked)
+                        }
+                      />
+                    </Form.Group>
+                    <Form.Group className="mb-3 w-100 half-width">
+                      <Form.Control
+                        className="w-100"
+                        type="text"
+                        name="solicitante"
+                        placeholder="Nombre"
+                        value={formData.solicitante}
+                        onChange={(e) =>
+                          handleChange(e.target.name, e.target.value)
+                        }
+                      />
+                    </Form.Group>
+                  </div>
+                )}
+                <div className="boton-reportar">
+                  <Button
+                    className="mt-3 full-width"
+                    variant="danger"
+                    onClick={handleReport}
+                    disabled={!isFormValid || isLoading} // Deshabilita el botón mientras carga
+                  >
+                    {isLoading ? "Guardando..." : "Reportar"}{" "}
+                    {/* Cambia el texto durante la carga */}
+                  </Button>
                 </div>
               </Form>
               <style jsx>{`
@@ -355,23 +441,159 @@ const Complaints = ({ show, handleClose }) => {
                   max-height: 300px;
                   overflow-y: auto;
                 }
-                  .boton-reportar{
+                .boton-reportar {
                   margin-top: auto;
-                  margin-bottom: 3rem;
-                  }
+                  margin-bottom: 2rem;
+                }
               `}</style>
             </div>
           ) : (
             <p className="text-center">No hay cuenta gestionada</p>
           )}
-        </Col>
-        <div
-          className="table-responsive custom-scrollbar"
+          {showAddressTable && ( // Mostrar la tabla de domicilios si showAddressTable es true
+            <Col className="w-50">
+              {addresses.domicilios?.length > 0 && ( // Verifica si hay domicilios
+                <div className="addresses-section">
+                  <h5>Domicilios</h5>
+                  <div
+                    className="table-container custom-scrollbar"
+                    style={{ maxHeight: "50vh", overflowY: "auto" }}
+                  >
+                    <Table
+                      striped
+                      bordered
+                      hover
+                      variant="dark"
+                      style={{ tableLayout: "auto", whiteSpace: "nowrap" }}
+                    >
+                      <thead
+                        style={{
+                          position: "sticky",
+                          top: 0,
+                          backgroundColor: "#343a40",
+                          zIndex: 20,
+                        }}
+                      >
+                        <tr>
+                          <th>Calle</th>
+                          <th>Número Exterior</th>
+                          <th>Número Interior</th>
+                          <th>Colonia</th>
+                          <th>Delegación/Municipio</th>
+                          <th>Estado</th>
+                          <th>Código Postal</th>
+                          <th>Clase</th>
+                          <th>Origen</th>
+                          <th>Información</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {addresses.domicilios.map((address, index) => (
+                          <tr key={index}>
+                            <td style={{ textAlign: "left" }}>
+                              {address.calle || "--"}
+                            </td>
+                            <td style={{ textAlign: "left" }}>
+                              {address.númeroExterior || "--"}
+                            </td>
+                            <td style={{ textAlign: "left" }}>
+                              {address.númeroInterior || "--"}
+                            </td>
+                            <td style={{ textAlign: "left" }}>
+                              {address.coloniaLocalidad || "--"}
+                            </td>
+                            <td style={{ textAlign: "left" }}>
+                              {address.delegaciónMunicipio || "--"}
+                            </td>
+                            <td style={{ textAlign: "left" }}>
+                              {address.estado || "--"}
+                            </td>
+                            <td style={{ textAlign: "left" }}>
+                              {address.códigoPostal || "--"}
+                            </td>
+                            <td style={{ textAlign: "left" }}>
+                              {address.clase || "--"}
+                            </td>
+                            <td style={{ textAlign: "left" }}>
+                              {address.orígen || "--"}
+                            </td>
+                            <td style={{ textAlign: "left" }}>
+                              {address.información || "--"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+                </div>
+              )}
+            </Col>
+          )}
+          {showEmailTable && ( // Mostrar la tabla de correos si showEmailTable es true
+            <Col className='w-50'>
+              {emails.length > 0 ? ( // Verifica si hay correos electrónicos
+                <div className="emails-section">
+                  <h5>Correos Electrónicos</h5>
+                  <div
+                    className="table-responsive custom-scrollbar "
+                    style={{ maxHeight: "50vh", overflowY: "auto" }}
+                  >
+                    <Table
+                      striped
+                      bordered
+                      hover
+                      variant="dark"
+                      style={{ tableLayout: "auto", whiteSpace: "nowrap" }}
+                    >
+                      <thead
+                        style={{
+                          position: "sticky",
+                          top: 0,
+                          backgroundColor: "#343a40",
+                          zIndex: 20,
+                        }}
+                      >
+                        <tr>
+                          <th>Correo Electronico</th>
+                          <th>Origen</th>
+                          <th>Fecha</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {emails.map((email, index) => (
+                          <tr key={index}>
+                            <td style={{ textAlign: "left" }}>
+                              {email.CorreoElectrónico || "--"}
+                            </td>
+                            <td style={{ textAlign: "left" }}>
+                              {email.Origen || "--"}
+                            </td>
+                            <td style={{ textAlign: "left" }}>
+                              {email.Fecha_Insert?.split("T")[0] || "--"}
+                            </td>{" "}
+                            {/* Muestra solo la fecha antes de la "T" */}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-center">
+                  No hay correos electrónicos disponibles
+                </p>
+              )}
+            </Col>
+          )}
+        </Row>
+
+        <Row
+          className="table-responsive custom-scrollbar w-100 p-3"
           style={{
             maxHeight: "70vh",
-            maxWidth: "800px",
+            maxWidth: "1210px",
             minWidth: "250px",
-            overflowY: "auto", // Habilitar scroll vertical
+            overflow: "auto", // Habilitar scroll vertical
           }}
         >
           <Table
@@ -476,7 +698,7 @@ const Complaints = ({ show, handleClose }) => {
               )}
             </tbody>
           </Table>
-        </div>
+        </Row>
       </Modal.Body>
     </Modal>
   );

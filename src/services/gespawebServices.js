@@ -1468,6 +1468,8 @@ export const fetchIncreasesNegotiation = async (increaseRequestData) => {
     throw error;
   }
 };
+
+// endpoint guarda ofrecimiento
 export const fetchSaveOffering = async (requestData) => {
   try {
     console.log("Enviando datos al endpoint Guarda ofrecimiento:", requestData);
@@ -1552,6 +1554,33 @@ export const saveManagment = async (dataManagment) => {
     return result;
   } catch (error) {
     console.error("Error al guardar la gestión", error);
+    throw error;
+  }
+};
+
+//endpoint domicilios
+export const fetchAddress = async (idCartera, idCuenta) => {
+  try {
+    console.log("Llamando al endpoint /api/search-customer/domicilios-visitas");
+    console.log("Parámetros enviados: idCartera:", idCartera, "idCuenta:", idCuenta);
+
+    const response = await servicio.get(`/search-customer/domicilios-visitas`, {
+      params: { idCartera, idCuenta } // Usa parámetros de consulta
+    });
+
+    console.log("Respuesta recibida:", response);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Domicilios: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Validación recibida Domicilios:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en Domicilios:", error);
     throw error;
   }
 };

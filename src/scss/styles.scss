@@ -1249,26 +1249,23 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 .custom-scrollbar {
-  scrollbar-width: thin; /* Para navegadores compatibles con scrollbar-width */
-  scrollbar-color: #343a40 #212529; /* Color del scroll y del fondo */
+  scrollbar-color: #343a40 #1e1e1e; /* Color del thumb y track */
+  scrollbar-width: thin; /* Ancho de la barra de desplazamiento */
 
   &::-webkit-scrollbar {
-    width: 8px; /* Ancho del scroll */
+    width: 8px; /* Ancho de la barra de desplazamiento */
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: #343a40; /* Color del scroll */
+    background-color: #343a40; /* Color del thumb */
     border-radius: 4px; /* Bordes redondeados */
   }
 
-  &::-webkit-scrollbar-thumb:hover {
-    background-color: #495057; /* Color al pasar el mouse */
-  }
-
   &::-webkit-scrollbar-track {
-    background-color: #212529; /* Fondo del track */
+    background-color: #1e1e1e; /* Color del track */
   }
 }
+
 /*------------------Calculadora--------------------*/
 /* Estilo para los botones */
 .calculator {
@@ -2055,4 +2052,33 @@ $accent-color: #000000d2;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Cursor */
+.cursor{
+  position: relative;
+  width: 10em;
+  margin: 0 auto;
+  border-right: 2px solid rgba(248, 244, 6, 0.75);
+  font-size: 15px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  transform: translateY(-50%);    
+}
+/* Animation */
+.typewriter-animation {
+  margin-top: 1rem;
+  color: yellow;
+  animation: 
+  typewriter 2s steps(50) 1s 1 normal both, 
+  blinkingCursor 500ms steps(50) infinite normal;
+}
+@keyframes typewriter {
+from { width: 0; }
+to { width: 100%; }
+}
+@keyframes blinkingCursor{
+from { border-right-color: rgba(248, 244, 6, 0.75)}
+to { border-right-color: transparent; }
 }
