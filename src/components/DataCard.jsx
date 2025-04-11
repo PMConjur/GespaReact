@@ -9,10 +9,11 @@ import {
   EnvelopePaperFill,
   TelephoneInboundFill,
   EnvelopeAtFill,
-  Headset
+  Headset,
 } from "react-bootstrap-icons";
 import { AppContext } from "../pages/Managment";
 import { fetchDrives } from "../services/gespawebServices";
+import PhoneKeypad from "../components/MarcaTelefono";
 
 const DataCard = () => {
   const { searchResults } = useContext(AppContext);
@@ -21,7 +22,7 @@ const DataCard = () => {
     SMS: 0,
     Carta: 0,
     Blaster: 0,
-    Email: 0
+    Email: 0,
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -32,7 +33,7 @@ const DataCard = () => {
     nombreDeudor: "-",
     saldo: "-",
     minimoAtrasado: "-",
-    idCuenta: null
+    idCuenta: null,
   };
 
   const result = useMemo(() => {
@@ -108,7 +109,7 @@ const DataCard = () => {
                       ? "$" +
                         parseFloat(saldo).toLocaleString("es-MX", {
                           minimumFractionDigits: 2,
-                          maximumFractionDigits: 2
+                          maximumFractionDigits: 2,
                         })
                       : "-"}
                   </h6>
@@ -149,7 +150,7 @@ const DataCard = () => {
                         style={{
                           fontSize: "20px",
                           color: "#007bff",
-                          cursor: "pointer"
+                          cursor: "pointer",
                         }}
                       />
                     </div>
@@ -167,7 +168,9 @@ const DataCard = () => {
           <Modal.Title>Mensaje</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>Hola Nuxiba</p>
+          {/* <p>Hola Nuxiba</p> */}
+
+          <PhoneKeypad></PhoneKeypad>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>

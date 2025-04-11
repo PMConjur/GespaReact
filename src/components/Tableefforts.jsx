@@ -6,9 +6,13 @@ import { reemplazarValores } from "./ValoresCatalogos.js"; // Importa el método
 const Tableefforts = ({ gestionesData, handleRowClick, selectedGestion }) => {
   const renderCell = (value) => {
     if (typeof value === "object" && value !== null) {
+      // Verifica si el objeto está vacío
+      if (Object.keys(value).length === 0) {
+        return "";
+      }
       return JSON.stringify(value);
     }
-    return value ?? "N/A";
+    return value ?? "";
   };
 
   return (

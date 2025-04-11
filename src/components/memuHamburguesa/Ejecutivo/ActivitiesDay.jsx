@@ -44,12 +44,18 @@ const ActivityDay = ({ show, handleClose }) => {
         <Modal.Title>Gestiones Diarias</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Tabledailymanagement cuentasData={cuentasData} />
-        <Tableefforts
-          gestionesData={gestionesData}
-          handleRowClick={handleRowClick}
-          selectedGestion={selectedGestion}
-        />
+        <div className="d-flex flex-column">
+          <div className="mb-3">
+            <Tabledailymanagement cuentasData={cuentasData} />
+          </div>
+          <div>
+            <Tableefforts
+              gestionesData={gestionesData}
+              handleRowClick={handleRowClick}
+              selectedGestion={selectedGestion}
+            />
+          </div>
+        </div>
       </Modal.Body>
       <Modal.Footer></Modal.Footer>
     </Modal>

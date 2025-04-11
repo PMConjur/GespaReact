@@ -21,7 +21,7 @@ const Addresses = ({ show, handleClose }) => {
     numInt: "",
     colonia: "",
     municipio: "",
-    estado: "",
+
     origen: "Gestión",
   });
   const [selectedGestion, setSelectedGestion] = useState(null);
@@ -36,6 +36,7 @@ const Addresses = ({ show, handleClose }) => {
   const [selectedDomicilio, setSelectedDomicilio] = useState(null);
   const [clase, setClase] = useState(""); // Agregar esta línea
   const [isEstadoVisible, setIsEstadoVisible] = useState(false); // Agregar esta línea
+  const [estado, setEstado] = useState(""); // Define el estado inicial
   const [tableDomData, setTableDomData] = useState([]); // Asegúrate de que esta línea esté presente
   // Obtener el idCuenta del primer resultado de searchResults
   const idCuenta = searchResults.length > 0 ? searchResults[0].idCuenta : null;
@@ -108,10 +109,15 @@ const Addresses = ({ show, handleClose }) => {
       let message = "No se pudo cargar la tabla.";
       if (error.response) {
         const status = error.response.status;
-        message =
-          status === 404
-            ? "No se encontraron datos para la cuenta especificada."
-            : `Error ${status}: ${error.response.data.message}`;
+        if (status === 400) {
+          // Validación adicional para el error 400
+          toast.error("El código postal ingresado no es válido.");
+        } else {
+          message =
+            status === 404
+              ? "No se encontraron datos para la cuenta especificada."
+              : `Error ${status}: ${error.response.data.message}`;
+        }
       } else if (error.request) {
         message = "Error: No se recibió respuesta del servidor.";
       } else {
@@ -124,7 +130,6 @@ const Addresses = ({ show, handleClose }) => {
       setIsLoading(false);
     }
   };
-
   // Manejar el botón de acción (Nuevo / Identificar)
   const handleAction = async () => {
     if (isNew) {
@@ -277,6 +282,20 @@ const Addresses = ({ show, handleClose }) => {
     }
   };
 
+  const handleDomicilioRowClick = (item) => {
+    setFormData((prev) => ({
+      ...prev,
+      calle: item.calle || "",
+      numExt: item.númeroExterior || "",
+      numInt: item.númeroInterior || "",
+      colonia: item.coloniaLocalidad || "",
+      municipio: item.delegaciónMunicipio || "",
+      estado: item.estado || "",
+      codigoPostal: item.códigoPostal || "",
+    }));
+    toast.info("Datos cargados desde la tabla de domicilios.");
+  };
+
   const renderCell = (value) => {
     if (value === null || value === undefined || typeof value === "object") {
       return ""; // Valor predeterminado
@@ -295,14 +314,34 @@ const Addresses = ({ show, handleClose }) => {
     }));
     toast.info(`Código Postal seleccionado: ${selectedCodigoPostal}`);
 
-    // Llama al endpoint para actualizar la tabla "Postal"
     try {
       setIsLoading(true);
       const response = await servicio.get(
         `/search-customer/search-postal-code?codigoPostal=${selectedCodigoPostal}`
       );
-      setPostalTableData(response.data.codigosPostales || []); // Actualiza los datos de la tabla "Postal"
+
+      const postalData = response.data.codigosPostales || [];
+      setPostalTableData(postalData); // Actualiza los datos de la tabla "Postal"
       setIsPostalTableVisible(true); // Muestra la tabla postal
+
+      // Si hay datos de la tabla postal, actualiza los campos de Calle, Número Ext, Número Int, Colonia, Municipio y Estado
+      if (postalData.length > 0) {
+        const firstResult = postalData[0]; // Toma el primer resultado
+        setFormData((prev) => ({
+          ...prev,
+          calle: firstResult.calle || "",
+          numExt: firstResult.numeroExterior || "",
+          numInt: firstResult.numeroInterior || "",
+          colonia: firstResult.colonia || "",
+          municipio: firstResult.municipio || "",
+          estado: firstResult.estado || "",
+        }));
+      } else {
+        toast.warning(
+          "No se encontraron datos para el código postal ingresado."
+        );
+      }
+
       toast.success("Datos de la tabla Postal actualizados.");
     } catch (error) {
       console.error("Error al actualizar la tabla Postal:", error);
@@ -313,6 +352,10 @@ const Addresses = ({ show, handleClose }) => {
   };
 
   const handleUpdateAddressInformation = (selectedDomicilio) => {
+    console.log(
+      "handleUpdateAddressInformation llamado con:",
+      selectedDomicilio
+    );
     console.log("Domicilio seleccionado:", selectedDomicilio);
     if (selectedDomicilio.información === "Sin verificar") {
       setIsEstadoVisible(true);
@@ -348,6 +391,9 @@ const Addresses = ({ show, handleClose }) => {
       toast.success("Información del domicilio actualizada exitosamente.");
       console.log("Respuesta del servidor:", response.data);
       setIsEstadoVisible(false); // Oculta el formulario después de actualizar
+
+      // Actualiza la tabla de domicilios
+      await fetchTableDomicilioData();
     } catch (error) {
       console.error("Error al actualizar la información del domicilio:", error);
       toast.error("No se pudo actualizar la información del domicilio.");
@@ -355,6 +401,7 @@ const Addresses = ({ show, handleClose }) => {
       setIsLoading(false);
     }
   };
+
   const clearFormFields = () => {
     setFormData({
       calle: "",
@@ -679,10 +726,8 @@ const Addresses = ({ show, handleClose }) => {
                     {tableDomicilioData?.map((item, index) => (
                       <tr
                         key={index}
-                        onClick={() => {
-                          handleDomicilioSelection(item.códigoPostal || "");
-                          handleUpdateAddressInformation(item);
-                        }}
+                        onClick={() => handleDomicilioRowClick(item)} // Llama a la nueva función
+                        style={{ cursor: "pointer" }} // Cambia el cursor para indicar que es clickeable
                       >
                         <td>{renderCell(item.calle)}</td>
                         <td>{renderCell(item.númeroExterior)}</td>

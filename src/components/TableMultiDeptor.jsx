@@ -7,13 +7,6 @@ import {
 } from "./ValoresCatalogos.js"; // Importa el método
 
 const TableMultiDeptor = ({ tableData }) => {
-  const renderCell = (value) => {
-    if (typeof value === "object" && value !== null) {
-      return JSON.stringify(value);
-    }
-    return value ?? "";
-  };
-
   return (
     <div
       style={{
