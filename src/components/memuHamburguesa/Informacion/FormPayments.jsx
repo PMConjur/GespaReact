@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { AppContext } from "../../../pages/Managment";
 import { createPayments } from "../../../services/gespawebServices";
 
-const FormPayments = ({ handleClose, onRegistrationSuccess }) => {
+const FormPayments = ({ onRegistrationSuccess, setPaymentActive }) => {
     const { searchResults } = useContext(AppContext);
     const idCuenta = searchResults?.map((result) => result.idCuenta) || [];
     const responseData = JSON.parse(localStorage.getItem("responseData"));
@@ -80,7 +80,9 @@ try {
             toast.success("Pago registrado exitosamente.");
             resetForm();
             // Notificar al componente padre que hubo un registro exitoso
-            onRegistrationSuccess();
+            onRegistrationSuccess(false);
+            setPaymentActive(false); // Cerrar el modal después de un registro exitoso
+            
         } catch (error) {
             console.error("Error:", error);
             toast.error(error.message || "Error al registrar el pago.");

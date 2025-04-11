@@ -180,25 +180,30 @@ const TableTimes = ({ updatedTimes }) => {
 
         loadData();
     }, [idEjecutivo]);
-
     useEffect(() => {
         if (!updatedTimes) return;
-
+    
         setTimesData(prev => {
             const newTotal = { ...prev.total };
-
+    
             Object.entries(updatedTimes).forEach(([key, value]) => {
                 if (TIME_CATEGORIES.includes(key)) {
-                    const dbValueInSeconds = prev.total[key] !== "--:--:--"
-                        ? Number(prev.total[key].split(":").reduce((acc, time) => (60 * acc) + +time, 0))
+                    const currentValue = prev.total[key] !== "--:--:--" 
+                        ? convertToSeconds(prev.total[key])
                         : 0;
-                    newTotal[key] = formatTime(dbValueInSeconds + Number(value));
+                    newTotal[key] = formatTime(currentValue + Number(value));
                 }
             });
-
+    
             return { ...prev, total: newTotal };
         });
     }, [updatedTimes]);
+    
+    // Función auxiliar para convertir HH:MM:SS a segundos
+    const convertToSeconds = (timeString) => {
+        const [hours, minutes, seconds] = timeString.split(':').map(Number);
+        return hours * 3600 + minutes * 60 + seconds;
+    };
 
     const renderRows = (type) => TIME_CATEGORIES.map((key) => (
         <td key={`${type}-${key}`} style={{ minWidth: "100px" }}>

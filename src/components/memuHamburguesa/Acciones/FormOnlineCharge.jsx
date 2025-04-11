@@ -5,11 +5,12 @@ import { createOnlineCharge } from "../../../services/gespawebServices"; // Impo
 import { AppContext } from "../../../pages/Managment"; // Importa el contexto de la aplicación
 import { idBanco } from "../../valoresBanco"; // Importa los valores de los bancos
 
-// Componente principal del formulario para cargos en línea
-const FormOnlineCharge = ({ handleClose, isOnlineChargeActive, onSuccessfulRegister }) => {
-  // Obtiene los resultados de búsqueda del contexto
-  const { searchResults } = useContext(AppContext);
 
+// Componente principal del formulario para cargos en línea
+const FormOnlineCharge = ({ handleClose, isOnlineChargeActive, onRegistrationSuccess }) => {
+  // Obtiene los resultados de búsqueda del contexto
+  const { searchResults,setOnlineChargeActive } = useContext(AppContext);
+console.log("Estado success:", onRegistrationSuccess); // Muestra los resultados de búsqueda en la consola
   // Verifica si hay resultados de búsqueda, si no, muestra un error y no renderiza el formulario
   if (!searchResults || searchResults.length === 0) {
     toast.error("No se encontraron resultados de búsqueda. No se puede usar este formulario.");
@@ -265,10 +266,13 @@ const FormOnlineCharge = ({ handleClose, isOnlineChargeActive, onSuccessfulRegis
       const response = await createOnlineCharge(dataToSend);
   
       if (response.success) {
+        console.log("Registro exitoso:",onRegistrationSuccess);
         toast.success("Cargo registrado exitosamente");
         resetForm();
-        if (onSuccessfulRegister) onSuccessfulRegister(); // <-- Esto debe estar aquí
+        onRegistrationSuccess(); // Llama a la función de éxito después de un registro exitoso
+        setOnlineChargeActive(false); // Cambia el estado de isOnlineChargeActive a false
         //if (handleClose) handleClose();
+       
       }
     } catch (error) {
       toast.error(error.message);

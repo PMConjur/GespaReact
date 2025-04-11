@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useRef } from "react";
+import { useState, useContext, useRef } from "react";
 import { Modal, Button, Form, Container, Row, Col } from "react-bootstrap";
 import TableTimes from "./TableTimes";
 import { toast } from "sonner";
@@ -26,6 +26,7 @@ const formatTime = (seconds) => {
 const Times = ({ show, handleClose }) => {
     const { idEjecutivo } = useContext(AppContext);
     const intervalRef = useRef(null);
+    const timerSnapshot = useRef(0);
 
     const [selectedReason, setSelectedReason] = useState("");
     const [timers, setTimers] = useState(REASONS);
@@ -33,14 +34,6 @@ const Times = ({ show, handleClose }) => {
     const [isPaused, setIsPaused] = useState(false);
     const [contrasenia, setContrasenia] = useState("");
     const [updatedTimesForTable, setUpdatedTimesForTable] = useState({});
-
-    useEffect(() => {
-        return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-            }
-        };
-    }, []);
 
     const validateForm = () => {
         if (!selectedReason) {
@@ -62,19 +55,26 @@ const Times = ({ show, handleClose }) => {
 
         setIsPaused(true);
         setCurrentTimer(0);
+        timerSnapshot.current = 0;
+        
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+        }
+        
         intervalRef.current = setInterval(() => {
-            setCurrentTimer(prev => prev + 1);
+            setCurrentTimer(prev => {
+                const newTime = prev + 1;
+                timerSnapshot.current = newTime;
+                return newTime;
+            });
         }, 1000);
-    };      
+    };
 
     const handleStopTimer = async () => {
         if (!validateForm()) return;
-
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-
+    
         try {
-            const duracion = new Date(currentTimer * 1000).toISOString().substr(11, 8);
+            const duracion = new Date(timerSnapshot.current * 1000).toISOString().substr(11, 8);
             
             await userTimesUpdate({
                 idEjecutivo,
@@ -83,35 +83,62 @@ const Times = ({ show, handleClose }) => {
                 duracion
             });
 
+            // Solo en éxito: detenemos y reseteamos
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
+            }
+            
             const updatedTimers = {
                 ...timers,
-                [selectedReason]: timers[selectedReason] + currentTimer
+                [selectedReason]: timers[selectedReason] + timerSnapshot.current
             };
+            
             setTimers(updatedTimers);
-
-            setUpdatedTimesForTable({ [selectedReason]: currentTimer });
-
-            setCurrentTimer(0);
+            setUpdatedTimesForTable({ [selectedReason]: timerSnapshot.current });
             setIsPaused(false);
             setContrasenia("");
             setSelectedReason("");
-
+            setCurrentTimer(0);
+            timerSnapshot.current = 0;
+            
             toast.success("Tiempo registrado correctamente");
+            
         } catch (error) {
-            if (error.response && error.response.data && error.response.data.message === "Contraseña incorrecta") {
-                toast.error("Contraseña incorrecta. Por favor, inténtelo de nuevo.");
-                // Mantenemos el estado y reiniciamos el timer
-                setIsPaused(true);
+            console.error("Error en handleStopTimer:", error);
+            toast.error(`Error al registrar tiempo: ${error.message}`);
+            
+            // Para TODOS los errores (incluyendo contraseña incorrecta):
+            // 1. Mantenemos el intervalo activo
+            if (!intervalRef.current) {
                 intervalRef.current = setInterval(() => {
-                    setCurrentTimer(prev => prev + 1);
+                    setCurrentTimer(prev => {
+                        const newTime = prev + 1;
+                        timerSnapshot.current = newTime;
+                        return newTime;
+                    });
                 }, 1000);
-            } else {
-                toast.error(`Error al registrar tiempo: ${error.message}`);
-                setIsPaused(false);
-                setCurrentTimer(0);
-                setContrasenia("");
             }
+            
+            // 2. Solo limpiamos la contraseña para nuevo intento
+            setContrasenia("");
+            
+            // 3. Mantenemos todos los demás estados (isPaused, currentTimer, etc.)
         }
+    };
+
+    const handleModalClose = () => {
+        if (isPaused) {
+            toast.warning("Detenga el temporizador antes de cerrar");
+            return;
+        }
+        
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        }
+        
+        handleClose();
     };
 
     if (!idEjecutivo) {
@@ -123,13 +150,18 @@ const Times = ({ show, handleClose }) => {
     }
 
     return (
-        <Modal show={show} onHide={isPaused ? null : handleClose} size="xl">
+        <Modal 
+            show={show} 
+            onHide={handleModalClose} 
+            size="xl"
+            backdrop={isPaused ? 'static' : true}
+            keyboard={!isPaused}
+        >
             <Modal.Header closeButton={!isPaused}>
                 <Modal.Title>Registro de Tiempos</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Container>
-                    {/* Sección de selección de razón */}
                     <Row className="mb-3">
                         <Col xs={12}>
                             <Form.Group>
@@ -148,7 +180,6 @@ const Times = ({ show, handleClose }) => {
                         </Col>
                     </Row>
                     
-                    {/* Sección de botones */}
                     <Row className="mb-3">
                         <Col xs={12} md={6} className="mb-2">
                             <Button
@@ -172,7 +203,6 @@ const Times = ({ show, handleClose }) => {
                         </Col>
                     </Row>
                     
-                    {/* Sección de contraseña */}
                     <Row className="mb-3">
                         <Col xs={12}>
                             <Form.Group>
@@ -188,7 +218,6 @@ const Times = ({ show, handleClose }) => {
                         </Col>
                     </Row>
                     
-                    {/* Temporizador actual */}
                     <Row className="mb-3 text-center">
                         <Col xs={12}>
                             <h4>
@@ -201,7 +230,6 @@ const Times = ({ show, handleClose }) => {
                         </Col>
                     </Row>
                     
-                    {/* Tabla de tiempos */}
                     <Row className="mb-3">
                         <Col xs={12}>
                             <TableTimes updatedTimes={updatedTimesForTable} />

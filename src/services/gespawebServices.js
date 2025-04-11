@@ -1026,21 +1026,24 @@ export async function userTimesPromedio(numEmpleado) {
 
 export const userTimesUpdate = async (data) => {
   try {
-    const response = await servicio.post(`/ejecutivo/pause-ejecutivo`, data);
+      const response = await servicio.post(`/ejecutivo/pause-ejecutivo`, data);
 
-    if (response.status !== 200) {
-      throw new Error(`Error en la respuesta. Estado: ${response.status}`);
-    }
+      if (response.status !== 200) {
+          throw new Error(`Error en la respuesta. Estado: ${response.status}`);
+      }
 
-    return response.data;
+      if (response.data?.message === "Contraseña incorrecta") {
+          throw new Error("Contraseña incorrecta");
+      }
+
+      return response.data;
   } catch (error) {
-    console.error("Error en userTimesUpdate:", error);
-    if (error.response) {
-      const errorMessage =
-        error.response.data?.mensaje || "Error al actualizar tiempos";
-      throw new Error(errorMessage);
-    }
-    throw error;
+      console.error("Error en userTimesUpdate:", error);
+      if (error.response) {
+          const serverMessage = error.response.data?.mensaje || error.response.data?.message;
+          throw new Error(serverMessage || "Error al actualizar tiempos");
+      }
+      throw error;
   }
 };
 

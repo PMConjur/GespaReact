@@ -3,49 +3,38 @@ import { Modal, Row, Col } from "react-bootstrap";
 import TableOnlineCharge from "../../TableOnlineCharge";
 import FormOnlineCharge from "./FormOnlineCharge";
 import { toast } from "sonner";
+import { AppContext } from "../../../pages/Managment";
+import { useContext } from "react";
 
-const OnlineCharge = ({ 
-  show, 
-  handleClose, 
-  isOnlineChargeActive = false 
-}) => {
-  const [hasRegistered, setHasRegistered] = useState(false);
+const OnlineCharge = ({ show, handleClose }) => {
+  const { isOnlineChargeActive, setOnlineChargeActive } = useContext(AppContext);
+  const [refreshTable, setRefreshTable] = useState(false);
 
   // Resetear estados cuando el modal se cierra
   useEffect(() => {
     if (!show) {
-      setHasRegistered(false);
+      setRefreshTable(false);
     }
   }, [show]);
 
-  const handleConditionalClose = () => {
-    // En modo tabla (isOnlineChargeActive=true) siempre permite cerrar
-    // En modo formulario (isOnlineChargeActive=false) solo permite cerrar después de registro
-    if (!isOnlineChargeActive && !hasRegistered) {
-      toast.warning("Complete al menos un registro antes de cerrar");
-      return;
-    }
-    handleClose();
+  const handleRegistrationSuccess = () => {
+    setRefreshTable(prev => !prev); // Forzar actualización de la tabla
+    toast.success("Operación completada con éxito");
   };
 
   return (
     <Modal 
       show={show} 
-      onHide={handleConditionalClose} 
+      onHide={handleClose} 
       size="xl"
-      backdrop={!isOnlineChargeActive && !hasRegistered ? "static" : true}
-      keyboard={!(!isOnlineChargeActive && !hasRegistered)}
+      backdrop="static"
+      keyboard={false}
       contentClassName="d-flex flex-column bg-dark"
       dialogClassName="my-custom-modal"
     >
-      <Modal.Header 
-        closeButton={isOnlineChargeActive || hasRegistered} // Botón visible solo cuando:
-        // - isOnlineChargeActive=true (modo tabla)
-        // - O hay registro exitoso (hasRegistered=true)
-        className="bg-dark text-white"
-      >
+      <Modal.Header closeButton className="bg-dark text-white">
         <Modal.Title>
-          {isOnlineChargeActive ? "Historial de Cargos" : "Nuevo Cargo en Línea"}
+          {isOnlineChargeActive ? "Nuevo Cargo en Línea" : "Historial de Cargos"}
         </Modal.Title>
       </Modal.Header>
       
@@ -53,18 +42,18 @@ const OnlineCharge = ({
         <Row className="flex-grow-1 g-0 m-0" style={{ height: "100%" }}>
           {/* Tabla - siempre visible */}
           <Col 
-            md={!isOnlineChargeActive ? 8 : 12} 
+            md={isOnlineChargeActive ? 8 : 12} 
             className="h-100 d-flex flex-column p-0" 
             style={{ 
               maxHeight: "700px",
               overflowY: "auto"
             }}
           >
-            <TableOnlineCharge />
+            <TableOnlineCharge refresh={refreshTable} />
           </Col>
           
-          {/* Formulario - solo visible cuando isOnlineChargeActive es false */}
-          {!isOnlineChargeActive && (
+          {/* Formulario - solo visible cuando isOnlineChargeActive es true */}
+          {isOnlineChargeActive && (
             <Col 
               md={4}
               className="h-100 d-flex flex-column p-3 bg-dark text-white"
@@ -75,9 +64,9 @@ const OnlineCharge = ({
               }}
             >
               <FormOnlineCharge 
-                onSuccessfulRegister={() => {
-                  setHasRegistered(true);
-                  toast.success("Registro exitoso. Ahora puede cerrar el modal");
+                handleClose={() => {
+                  handleRegistrationSuccess();
+                  setOnlineChargeActive(false);
                 }}
               />
             </Col>
