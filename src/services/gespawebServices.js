@@ -126,7 +126,7 @@ export const fetchPhones = async (idCuenta) => {
 
     const message = getErrorStatus(response.status);
 
-    console.log("Respuesta de la API recibida. Estado:", response.status);
+    //console.log("Respuesta de la API recibida. Estado:", response.status);
 
     if (response.status !== 200) {
       toast.error(message, { position: "top-right" });
@@ -134,7 +134,7 @@ export const fetchPhones = async (idCuenta) => {
     }
 
     const data = response.data;
-    console.log("estos trae telefonos", response.data);
+    //console.log("estos trae telefonos", response.data);
     return data;
   } catch (error) {
     console.error("Error en fetchPhones:", error);
@@ -216,11 +216,11 @@ export async function userFlow() {
 //Endpoint de accionamientos
 export const fetchDrives = async (idCartera, idCuenta) => {
   try {
-    console.log("Iniciando llamada a la API...");
-    console.log(
-      "URL de la API:",
-      `${apiUrl}/ejecutivo/accionamientos/${idCartera}/${idCuenta}`
-    );
+    //console.log("Iniciando llamada a la API...");
+    // console.log(
+    //   "URL de la API:",
+    //   `${apiUrl}/ejecutivo/accionamientos/${idCartera}/${idCuenta}`
+    // );
 
     const response = await servicio.get(
       `${apiUrl}/ejecutivo/accionamientos/1/${idCuenta}`
@@ -237,7 +237,7 @@ export const fetchDrives = async (idCartera, idCuenta) => {
 
     const data = response.data;
 
-    console.log("Datos obtenidos de la API:", data); // Agrega este console.log para mostrar los datos obtenidos
+    //console.log("Datos obtenidos de la API:", data); // Agrega este console.log para mostrar los datos obtenidos
 
     return data;
   } catch (error) {
@@ -560,16 +560,16 @@ export const getGestionTeData = async (idCartera, idCuenta) => {
 
     const Top = 10000;
     const url = `/ejecutivo/gestionTe/${idCartera}/${idCuenta}/${Top}`;
-    console.log("Solicitando datos de gestion Telefonica a:", url); // Depurar URL
+    //console.log("Solicitando datos de gestion Telefonica a:", url); // Depurar URL
 
     const response = await servicio.get(url);
     const message = getErrorStatus(response.status);
-    console.log("Respuesta de gestiones. Estado:", response.status);
+    //console.log("Respuesta de gestiones. Estado:", response.status);
     if (response.status !== 200) {
       toast.error(message, { position: "top-right" });
       throw new Error(message);
     }
-    console.log("Datos obtenidos de la API:", response.data);
+    //console.log("Datos obtenidos de la API:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error en getGestionTeData:", error);
@@ -656,7 +656,7 @@ export const fetchViewComplaints = async ({ idCartera, idCuenta }) => {
     }
 
     const result = response.data;
-    console.log("Validación recibida:", result);
+    //console.log("Validación recibida:", result);
     return result;
   } catch (error) {
     console.error("Error en fetchViewComplaints:", error);
@@ -690,10 +690,10 @@ export const fetchOriginComplaints = async () => {
 // endpoint tipo de quejas
 export const fetchDdComplaints = async () => {
   try {
-    console.log("Llamando al endpoint /ejecutivo/ddQuejas"); // Confirmar que se llama al endpoint
+    //console.log("Llamando al endpoint /ejecutivo/ddQuejas"); // Confirmar que se llama al endpoint
     const response = await servicio.get(`/ejecutivo/ddQuejas`);
 
-    console.log("Respuesta recibida:", response);
+    // console.log("Respuesta recibida:", response);
 
     if (response.status !== 200) {
       throw new Error(
@@ -718,7 +718,7 @@ export const getAditionalsData = async (idCartera, idCuenta) => {
     }
 
     const url = `/ejecutivo/Adicionales${idCartera}/${idCuenta}`;
-    console.log("Solicitando datos de Adicionales a:", url); // Depurar URL
+    //console.log("Solicitando datos de Adicionales a:", url); // Depurar URL
 
     const response = await servicio.get(url);
     const message = getErrorStatus(response.status);
@@ -742,7 +742,7 @@ export const getAditionalsData = async (idCartera, idCuenta) => {
 export const fetchProcessesWLP = async (proceso, idCuenta) => {
   try {
     if (!proceso || !idCuenta) {
-      console.error("Parámetros inválidos:", { proceso, idCuenta });
+      //console.error("Parámetros inválidos:", { proceso, idCuenta });
       throw new Error("Se requieren ambos parámetros: proceso e idCuenta");
     }
 
@@ -752,10 +752,10 @@ export const fetchProcessesWLP = async (proceso, idCuenta) => {
       idCuenta: idCuenta.toString().trim()
     };
 
-    console.log("Realizando solicitud a:", url, "con parámetros:", params);
+    //console.log("Realizando solicitud a:", url, "con parámetros:", params);
 
     const response = await servicio.get(url, { params });
-    console.log("Respuesta recibida:", response);
+    //console.log("Respuesta recibida:", response);
 
     if (!response) {
       throw new Error("No se recibió respuesta del servidor");
@@ -1175,7 +1175,7 @@ export const validateTimeZone = async (
       if (data[0]?.Mensaje === "La marcación es válida") {
         toast.info(`Llame a : ${numeroTelefonico}`, {
           position: "top-center", // Cambia la posición al centro superior
-         
+
           autoClose: 5000,
           hideProgressBar: false,
           closeOnClick: true,
@@ -1183,12 +1183,8 @@ export const validateTimeZone = async (
           draggable: true,
           progress: undefined,
           style: {
-           
-         
             fontSize: "1.2rem",
-            fontWeight: "bold",
-         
-           
+            fontWeight: "bold"
           }
         });
         return { isValid: true, mensaje: data[0].Mensaje };

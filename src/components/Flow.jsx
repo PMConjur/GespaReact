@@ -17,6 +17,8 @@ import SaveButton from "./flowComponents/SaveButton"; // Importa el nuevo compon
 import CalculatorSimulator from "./CalculatorSimulator"; // Importa el componente CalculatorSimulator
 
 import Validators from "./fragments/Validators";
+import { isValid } from "date-fns";
+import { id } from "date-fns/locale";
 const Flow = () => {
   const {
     searchResults,
@@ -127,6 +129,7 @@ const Flow = () => {
     setIsNegotiationActive(false);
     setIsFollowUpActive(false);
     setStartTimer(false);
+    setUserActiveFlow(false); // Establecer userActiveFlow en false al iniciar el flujo
   };
   const clearStatesManagment = () => {
     setCurrentQuestionId(null);
@@ -213,6 +216,9 @@ const Flow = () => {
 
   const responseData = JSON.parse(localStorage.getItem("responseData"));
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+  const valueContestaron = answerHistory.find(
+    (item) => item.idPregunta === 2
+  )?.valor;
   const idContacto = answerHistory.find(
     (item) => item.idPregunta === 3 || item.idPregunta === 4
   )?.idValor;
@@ -513,7 +519,7 @@ const Flow = () => {
       setCommentData(value); // Actualiza el comentario
       setIsCommentValid(isValid); // Actualiza la validez del comentario
     };
-
+    //Renderiza el contenido para la llamada manual para los campos que se necesitan llenar
     const renderContent = () => {
       if (idComunico) {
         if (idDijo) {
@@ -584,7 +590,7 @@ const Flow = () => {
         );
       }
     };
-
+    //Renderiza el contenido para la llamada de entrada para los campos que se necesitan llenar
     const renderContentEnter = () => {
       if (idComunico) {
         if (idDijo) {
@@ -654,6 +660,15 @@ const Flow = () => {
         );
       }
     };
+    //Renderiza el contenido para flujo sin componentes de comentario y llamadas para manual
+    const renderContentNoComment = () => {
+      {
+        setIsCommentValid(true);
+      }
+      {
+        /* Marca isCommentValid como true */
+      }
+    };
 
     return (
       <Card className="flow-size" border="primary">
@@ -685,17 +700,31 @@ const Flow = () => {
             />{" "}
             {/* Implementación del timer */}
             {isFlowFinished ? (
-              selectedAnswer.value === 10 ? (
-                renderContent() // Renderiza formulario final de flujo para llamada entrada
-              ) : selectedAnswer.value === 2 ? (
-                renderContentEnter() // Renderiza formulario final de flujo para llamada manual
-              ) : (
-                <>
-                  <h5>Presiona guardar para finalizar el flujo</h5>
-                  {setIsCommentValid(true)}{" "}
-                  {/* Marca isCommentValid como true */}
-                </>
-              )
+              (() => {
+                if (selectedAnswer.value === 10) {
+                  return renderContent(); // Renderiza formulario final de flujo para llamada entrada
+                } else if (selectedAnswer.value === 2) {
+                  if (
+                    idContacto === 1109 ||
+                    idContacto === 1129 ||
+                    valueContestaron === "No"
+                  ) {
+                    return (
+                      <>
+                        <h5>Presiona guardar para finalizar el flujo</h5>
+                      </>
+                    );
+                  } else {
+                    return renderContentEnter(); // Renderiza formulario final de flujo para llamada manual
+                  }
+                } else {
+                  return (
+                    <>
+                      <h5>Presiona guardar para finalizar el flujo</h5>
+                    </>
+                  );
+                }
+              })()
             ) : (
               <>
                 <h5>{questions[0]?.pregunta}</h5>
@@ -744,6 +773,8 @@ const Flow = () => {
                 isValid={isCommentValid} // Validez del comentario
                 data={commentData} // Datos del comentario
                 onStopTimer={handleStopTimer} // Detiene el temporizador y obtiene el tiempo
+                idContacto={idContacto} // Pasa idContacto como prop
+                valueContestaron={valueContestaron} // Pasa valueContestaron como prop
               />
             </Col>
           </Row>
@@ -751,6 +782,16 @@ const Flow = () => {
       </Card>
     );
   };
+
+  useEffect(() => {
+    if (
+      isFlowFinished &&
+      selectedAnswer?.value === 2 &&
+      (idContacto === 1109 || idContacto === 1129 || valueContestaron === "No")
+    ) {
+      setIsCommentValid(true); // Marca el comentario como válido
+    }
+  }, [isFlowFinished, selectedAnswer, idContacto, valueContestaron]);
 
   return renderMainContent();
 };

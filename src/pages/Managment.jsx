@@ -214,7 +214,6 @@ const Managment = () => {
     setUserActiveFlow, // Enviar función para actualizar userActiveFlow al contexto
     isManagment, // Enviar estado de gestión al contexto
     setManagment // Enviar función para actualizar la gestión al contexto
-
   };
 
   return (
