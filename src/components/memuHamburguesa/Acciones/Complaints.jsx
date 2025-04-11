@@ -255,8 +255,10 @@ const Complaints = ({ show, handleClose }) => {
     <Modal show={show} onHide={handleClose} backdrop="static" size="xl">
       <Modal.Header closeButton>
         <Modal.Title>Quejas</Modal.Title>
-        <div className=" ms-auto me-3">
-          <p className="cursor typewriter-animation">Desliza hacia bajo</p>
+        <div className="ms-auto me-3">
+          {complaints.length > 0 && ( // Verifica si hay datos disponibles
+            <p className="cursor typewriter-animation">Desliza hacia abajo</p>
+          )}
         </div>
       </Modal.Header>
       <Modal.Body className="d-block gap-1">
@@ -266,7 +268,7 @@ const Complaints = ({ show, handleClose }) => {
               className="scroll-container w-50"
               style={{ maxHeight: "70vh", overflowY: "auto" }}
             >
-              <Form className=" p-2">
+              <Form className="p-2">
                 <div className="">
                   <Form.Group className="mb-4">
                     <Dropdown
@@ -448,7 +450,7 @@ const Complaints = ({ show, handleClose }) => {
               `}</style>
             </div>
           ) : (
-            <p className="text-center">No hay cuenta gestionada</p>
+            <p className="text-center">No hay datos disponibles</p>
           )}
           {showAddressTable && ( // Mostrar la tabla de domicilios si showAddressTable es true
             <Col className="w-50">
@@ -588,7 +590,7 @@ const Complaints = ({ show, handleClose }) => {
         </Row>
 
         <Row
-          className="table-responsive custom-scrollbar w-100 p-3"
+          className="table-responsive custom-scrollbar w-100 p-3 pt-0"
           style={{
             maxHeight: "70vh",
             maxWidth: "1210px",
