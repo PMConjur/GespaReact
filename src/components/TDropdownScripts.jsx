@@ -49,7 +49,7 @@ const TDropdownScripts = ({ data }) => {
     let idCartera = 1;
 
     // Verificar y obtener valores de searchResults
-    if (searchResults && searchResults.length > 0 && searchResults[0]) {
+    if (searchResults) {
         console.log("searchResults[0]:", searchResults[0]); // Inspeccionar searchResults[0]
         cuenta = searchResults[0]?.idCuenta || "";
         idProducto = searchResults[0]?.idProducto || 1;

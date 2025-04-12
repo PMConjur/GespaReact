@@ -2,7 +2,8 @@ import { useContext, useState, useEffect } from "react";
 import { Modal, Table, Button, Card, Form, Col, Spinner} from "react-bootstrap";
 import {
   fetchAccoutStatements,
-  fetchSaveAccount
+  fetchSaveAccount,
+  fetchEmailsCharging
 } from "../../../services/gespawebServices";
 import { AppContext } from "../../../pages/Managment";
 import { toast } from "sonner";
@@ -17,7 +18,9 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   });
   const [selectedEmail, setSelectedEmail] = useState("");
   const [selectedOption, setSelectedOption] = useState(false);
+  const [selectedOptionEnvio, setSelectedOptionEnvio] = useState(false); // Estado independiente para "Envio"
   const [isFormValid, setIsFormValid] = useState(false); // Estado para controlar la validez del formulario
+  const [validEmails, setValidEmails] = useState([]); // Estado para almacenar los correos válidos
   const responseData =
     location.state || JSON.parse(localStorage.getItem("responseData"));
 
@@ -76,6 +79,34 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
     setSelectedOption(e.target.checked);
   };
 
+  const handleEnvioSwitchChange = async (e) => {
+    const isChecked = e.target.checked;
+    setSelectedOptionEnvio(isChecked); // Actualiza el estado del switch
+
+    if (isChecked) {
+      if (!searchResults || searchResults.length === 0) {
+        toast.error("Error 428: Primero debes buscar una Cuenta");
+        return;
+      }
+
+      try {
+        const idCartera = 1; // Ejemplo de valor
+        const idCuenta = searchResults?.[0]?.idCuenta?.trim();
+        const emails = await fetchEmailsCharging(idCartera, idCuenta);
+
+        console.log("Correos válidos obtenidos:", emails); // Verifica los correos obtenidos
+
+        // Extrae solo el campo 'CorreoElectrónico' de cada objeto
+        const extractedEmails = emails.map((emailObj) => emailObj.CorreoElectrónico);
+
+        setValidEmails(extractedEmails || []); // Actualiza el estado con los correos válidos
+      } catch (error) {
+        console.error("Error al obtener los correos válidos:", error);
+        toast.error("Error al cargar los correos válidos.");
+      }
+    }
+  };
+
   // Envío de datos al endpoint
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -112,6 +143,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
       setSelectedDateRange({ startDate: "", endDate: "" });
       setSelectedEmail("");
       setSelectedOption(false);
+      setSelectedOptionEnvio(false);
 
       // Recarga la tabla
       await handleAccountStatement();
@@ -120,11 +152,6 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
       toast.error("Hubo un error al enviar la solicitud.");
     }
   };
-
-  // Filtrar correos válidos
-  const validEmails = accountData
-    .map((item) => item["Correo Electrónico"])
-    .filter((email) => typeof email === "string");
 
   return (
     <Modal show={show} onHide={handleClose} backdrop="static" size="xl">
@@ -231,16 +258,16 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
           </div>
           <Col>
             <Card
-              className="ml-3 w-auto"
+              className="ml-3"
               style={{ width: "18rem", marginBottom: "0px" }}
             >
               <Card.Body style={{ padding: "5px" }}>
                 <Card.Title style={{ paddingTop: "0px" }}>
-                  Solicitar Estado de Cuenta
+                  Solicitar
                 </Card.Title>
                 <Form>
                   <Form.Group className="mb-3">
-                    <Form.Label>Fecha Inicial</Form.Label>
+                    <Form.Label>Desde</Form.Label>
                     <Form.Control
                       type="date"
                       name="startDate"
@@ -250,7 +277,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                     />
                   </Form.Group>
                   <Form.Group className="mb-3">
-                    <Form.Label>Fecha Final</Form.Label>
+                    <Form.Label>Hasta</Form.Label>
                     <Form.Control
                       type="date"
                       name="endDate"
@@ -259,36 +286,46 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                       required
                     />
                   </Form.Group>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Correo</Form.Label>
-                    <Form.Select
-                      value={selectedEmail}
-                      onChange={handleEmailChange}
-                      required
-                    >
-                      <option value="">Seleccione un correo</option>
-                      {validEmails.map((email, index) => (
-                        <option key={index} value={email}>
-                          {email}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  </Form.Group>
 
-                  <div className="d-grid gap-2 mb-3">
+                  <div className="d-flex gap-2 mb-3 justify-content-between">
                     <Form.Switch
-                      key={selectedOption} // Fuerza el re-renderizado cuando cambia el estado
+                      key={selectedOption} // Key único para el switch "Consulta"
                       label="Consulta"
                       name="option"
-                      checked={selectedOption}
+                      checked={selectedOption} // Estado independiente para "Consulta"
                       onChange={handleOptionChange}
                     />
+                    <Form.Switch
+                      key={"envioSwitch"} // Key único para el switch "Envio"
+                      label="Envio"
+                      name="envio"
+                      checked={selectedOptionEnvio} // Estado independiente para "Envio"
+                      onChange={handleEnvioSwitchChange} // Llama a la función al cambiar el estado del switch
+                    />
                   </div>
+
+                  {selectedOptionEnvio && ( // Muestra la lista de correos solo si el switch "Envio" está activado
+                    <Form.Group className="mb-3">
+                      <Form.Label>Correo</Form.Label>
+                      <Form.Select
+                        value={selectedEmail}
+                        onChange={handleEmailChange}
+                        required
+                      >
+                        <option value="">Seleccione un correo</option>
+                        {validEmails.map((email, index) => (
+                          <option key={index} value={email}>
+                            {email}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group>
+                  )}
 
                   <Button
                     variant="primary"
                     type="button"
-                    style={{ borderRadius: "20px" }}
+                    className="w-100"
                     onClick={handleSubmit}
                     disabled={!isFormValid} // Deshabilitar el botón si el formulario no es válido
                   >

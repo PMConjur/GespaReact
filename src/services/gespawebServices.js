@@ -1366,7 +1366,7 @@ export const fetchSearchAddDate = async () => {
   }
 };
 
-//endpoint carga telefonos
+//endpoint carga correos
 export const fetchEmailsCharging = async (idCartera, idCuenta) => {
   try {
     console.log(
@@ -1385,10 +1385,10 @@ export const fetchEmailsCharging = async (idCartera, idCuenta) => {
     }
 
     const result = response.data;
-    console.log("Validación recibida Validators:", result);
+    console.log("respuesta de endpoint emails:", result);
     return result;
   } catch (error) {
-    console.error("Error en fetchValidators:", error);
+    console.error("Error en fetchEmails:", error);
     throw error;
   }
 };
