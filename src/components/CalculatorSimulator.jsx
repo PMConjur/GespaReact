@@ -182,13 +182,11 @@ const CalculatorSimulator = ({show, handleClose}) => {
         validHerramientasAgregar.includes(herramientaSeleccionada.nombre)
     );
   
-    // Habilita los campos si la herramienta seleccionada es "Parcial" o "Ajuste"
     setAreFieldsEnabled(
       herramientaSeleccionada &&
         validHerramientasAgregar.includes(herramientaSeleccionada.nombre)
     );
   
-    // Actualiza los formularios dinámicamente según la herramienta seleccionada
     if (herramientaSeleccionada) {
       switch (herramientaSeleccionada.nombre) {
         case "Convenio":
@@ -207,7 +205,6 @@ const CalculatorSimulator = ({show, handleClose}) => {
           setMontoPago(""); // Ejemplo: valor predeterminado para "Parcial"
           break;
         default:
-          // Restablece los valores si no hay configuración específica
           setFormInputs((prev) => ({
             ...prev,
             meses: "",
@@ -356,8 +353,12 @@ const CalculatorSimulator = ({show, handleClose}) => {
         requestData.agregarPagos,
         requestData.filaMod
       );
-  
       console.log("Respuesta del endpoint fetchCalSecondPartModify:", response);
+
+      // Verifica si no hay plazos calculados en la respuesta
+      if (!response?.calculos || response.calculos.length === 0) {
+        toast.warning(`Respuesta del endpoint: ${JSON.stringify(response)}`);
+      }
   
       // Actualizar los datos en la tabla y el formulario
       setCalculosData({
@@ -370,7 +371,6 @@ const CalculatorSimulator = ({show, handleClose}) => {
         tasaMensual: response.tasaMensual, // Agregar la tasa mensual al estado
       });
   
-      toast.success("Datos enviados correctamente.");
     } catch (error) {
       console.error("Error al enviar los datos al endpoint fetchCalSecondPartModify:", error);
       const errorMessage = error.response?.data?.title || "Error desconocido al enviar los datos.";
@@ -996,12 +996,14 @@ const handleSaveOffering = async () => {
                   </Col>
                 </Row>
               )}
-              <Col className="p-0">
-                {showCalculator &&
+
+               {showCalculator &&
                   !areFieldsEnabled && ( // Oculta la calculadora si los campos están habilitados
                     <>
+              <Col className="p-0 mt-4">
+             
                       {/* Calculadora AMEX */}
-                      <h5 style={{ textAlign: "center", color: "#20c997" }}>
+                      <h5 style={{ textAlign: "center", color: "#20c997"}}>
                         Calculadora AMEX
                       </h5>
                       <Card className="p-3 mb-0" ref={calculatorRef}>
@@ -1108,8 +1110,7 @@ const handleSaveOffering = async () => {
                           </Form>
                         </Card.Body>
                       </Card>
-                    </>
-                  )}
+             
               </Col>
               <Row ref={detailsRef}>
                 {showDetails && (
@@ -1442,6 +1443,8 @@ const handleSaveOffering = async () => {
                   </>
                 )}
               </Row>
+              </>
+                  )}
             </Col>
           </Col>
         </Modal.Body>
