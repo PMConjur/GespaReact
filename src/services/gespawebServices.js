@@ -386,11 +386,11 @@ export const fetchActionsSearch = async (idCuenta) => {
     console.log("Iniciando llamada a la API...");
     console.log(
       "URL de la API:",
-      `${apiUrl}/ejecutivo/busqueda/1/${idCuenta}/0`
+      `${apiUrl}/ejecutivo/busqueda/1/${idCuenta}`
     );
 
     const response = await servicio.get(
-      `${apiUrl}/ejecutivo/busqueda/1/${idCuenta}/0`
+      `${apiUrl}/ejecutivo/busqueda/1/${idCuenta}`
     );
 
     const message = getErrorStatus(response.status);

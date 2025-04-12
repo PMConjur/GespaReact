@@ -1,7 +1,13 @@
 import { useContext, useState, useEffect } from "react";
 import { AppContext } from "../pages/Managment";
 import { Card, Row, Col, Placeholder } from "react-bootstrap";
-import { CreditCard, Person, FileText, CalendarCheck, Clipboard } from "react-bootstrap-icons";
+import {
+  CreditCard,
+  Person,
+  FileText,
+  CalendarCheck,
+  Clipboard
+} from "react-bootstrap-icons";
 import { getRelaciones } from "../services/gespawebServices"; // Importa el servicio
 
 const SearchCustomer = () => {
@@ -32,7 +38,11 @@ const SearchCustomer = () => {
 
   const renderSituacion = (situacion) => {
     const relacion = relaciones.find((r) => r.Valor1 === situacion);
-    let colores = { texto: "#f8f9fa", corazon: "#FFFFFF", gradiente: "header-white" };
+    let colores = {
+      texto: "#f8f9fa",
+      corazon: "#FFFFFF",
+      gradiente: "header-white"
+    };
 
     if (relacion) {
       const idValor2 = relacion.idValor2; // Usar idValor2 para la comparación
@@ -40,19 +50,39 @@ const SearchCustomer = () => {
       // Asignar colores según idValor2
       switch (idValor2) {
         case 3101: // Localización
-          colores = { texto: "#FFFFFF", corazon: "#FFFFFF", gradiente: "header-white" };
+          colores = {
+            texto: "#FFFFFF",
+            corazon: "#FFFFFF",
+            gradiente: "header-white"
+          };
           break;
         case 3102: // Convencimiento
-          colores = { texto: "#FF0000", corazon: "#FF0000", gradiente: "header-red" };
+          colores = {
+            texto: "#f14b41",
+            corazon: "#f14b41",
+            gradiente: "header-red"
+          };
           break;
         case 3103: // Acuerdo
-          colores = { texto: "#39fc8d", corazon: "#00FF00", gradiente: "header-green" };
+          colores = {
+            texto: "#39fc8d",
+            corazon: "#39fc8d",
+            gradiente: "header-green"
+          };
           break;
         case 3104: // Definición
-          colores = { texto: "#6c5ce7", corazon: "#6c5ce7", gradiente: "header-purple" };
+          colores = {
+            texto: "#cac0ff",
+            corazon: "#cac0ff",
+            gradiente: "header-purple"
+          };
           break;
-        default:
-          colores = { texto: "#f8f9fa", corazon: "#FFFFFF", gradiente: "header-white" };
+        default: 
+          colores = {
+            texto: "#f8f9fa",
+            corazon: "#FFFFFF",
+            gradiente: "header-white"
+          };
           break;
       }
     }

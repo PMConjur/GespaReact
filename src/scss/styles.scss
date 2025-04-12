@@ -2,7 +2,6 @@
 
 body {
   background-color: #000000;
-
 }
 $card-bg: #f8f9fa;
 $card-border-width: 0;
@@ -1823,6 +1822,8 @@ $color-white: #f8f9fa;
 $color-white-secondary: #a5d2ff;
 $color-gray: #6c757d;
 $color-green-secondary: #17ff1f;
+$color-purple: #cac0ff;
+$color-purple-secondary: #935eff;
 
 // Mixin común para los estilos de texto animado
 @mixin monochromatic-gradient-text {
@@ -1854,16 +1855,17 @@ $color-green-secondary: #17ff1f;
   @include monochromatic-gradient-text;
   background-image: linear-gradient(
     92deg,
-    $color-red,
-    color.adjust($color-red-secondary, $lightness: 35%),
+    $color-white,
+    color.adjust($color-red-secondary, $lightness: -1%),
     // Reemplaza lighten
-    color.adjust($color-red, $lightness: -5%),
+    color.adjust($color-red, $lightness: 35%),
     // Reemplaza darken
-    color.adjust($color-red, $saturation: 55%),
+    color.adjust($color-red, $saturation: 5%),
     // Reemplaza saturate
-    color.adjust($color-red-secondary, $saturation: -35%)
+    color.adjust($color-white-secondary, $saturation: -35%)
       // Reemplaza desaturate
   );
+  text-shadow: 0 0 10px rgba(255, 74, 74, 0.302);
 }
 
 // Gradiente VERDE (solo tonos de verde)
@@ -1872,15 +1874,16 @@ $color-green-secondary: #17ff1f;
   background-image: linear-gradient(
     92deg,
     $color-green,
-    color.adjust($color-green-secondary, $lightness: 10%),
+    color.adjust($color-green-secondary, $lightness: -1%),
     // Reemplaza lighten
-    color.adjust($color-green, $lightness: -20%),
+    color.adjust($color-green, $lightness: 35%),
     // Reemplaza darken
-    color.adjust($color-green, $saturation: 35%),
+    color.adjust($color-green, $saturation: 5%),
     // Reemplaza saturate
-    color.adjust($color-green-secondary, $saturation: -35%)
+    color.adjust($color-white-secondary, $saturation: -35%)
       // Reemplaza desaturate
   );
+  text-shadow: 0 0 10px rgba(61, 234, 39, 0.302);
 }
 
 // Gradiente BLANCO (solo variaciones neutras)
@@ -1894,8 +1897,22 @@ $color-green-secondary: #17ff1f;
     color.adjust($color-white, $lightness: 5%),
     color.adjust($color-white-secondary, $saturation: -35%)
   );
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 0 10px rgba(212, 212, 212, 0.302);
 }
+// Gradiente Morado (solo variaciones neutras)
+.header-purple {
+  @include monochromatic-gradient-text;
+  background-image: linear-gradient(
+    82deg,
+    $color-white,
+    color.adjust($color-purple-secondary, $lightness: -1%),
+    color.adjust($color-purple, $lightness: 35%),
+    color.adjust($color-purple, $lightness: 5%),
+    color.adjust($color-white-secondary, $saturation: -35%)
+  );
+  text-shadow: 0 0 10px rgba(188, 163, 255, 0.302);
+}
+
 .table-auto-width {
   table-layout: auto; // Permite que las celdas se ajusten al contenido
   word-wrap: break-word; // Evita que el contenido se desborde
