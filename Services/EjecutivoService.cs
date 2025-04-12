@@ -64,6 +64,7 @@ namespace NoriAPI.Services
         Task<ResultadoCalculadora> ValidateInfoCalculadora1(int Cartera, string NoCuenta, int idHerr);
         Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int IdCartera, double MontoRequerido, int Descuento, int iMeses, string dtpFecha, int periodos, int modificar, double montoMod, string fechaPagoMod, int agregarPagos, int filaMod);
         Task<dynamic> GuardarOfrecimiento(SaveOfrecimientoRequest ofrecimientoInfo);
+        Task<dynamic> GuardarOfrecimientoExtra(SaveOfrecimientoExtraRequest ofrecimientoInfo);
         Task<string> GuardaEliminaPlazos(EliminaGuardaPlazos PlazosInfo);
         Task<NegociacionPlazosOutput> GuardaNegociacionPlazos(NegociacionPlazosInput input);
         Task<dynamic> IncrementaNegociacion(IncrementoNegociacion incrementaNegInfo);
@@ -2187,6 +2188,102 @@ namespace NoriAPI.Services
             return new { Validadores = validaPootis, Message = verificaOfrecimiento, Success = true };
 
         }
+
+        /// <summary>
+        /// Guarda un ofrecimiento.
+        /// Este método fue creado para extender la lógica de guardado original y contemplar reglas de validación
+        /// particulares que antes estaban implementadas directamente en Geaspa.
+        ///
+        /// Las validaciones contemplan:
+        /// - Herramientas que requieren un número específico de pagos (ej. 2 pagos para ciertas herramientas)
+        /// - Reglas específicas para productos como "Liquidación covid"
+        /// - Restricciones por agente para herramientas determinadas (ej. ID 511)
+        /// - Verificación de monto negociado mayor a cero
+        ///
+        /// </summary>
+        /// <param name="ofrecimientoInfo">Objeto con toda la información del ofrecimiento a guardar</param>
+        /// <returns>
+        /// Un objeto anónimo con:
+        /// - Message: texto explicativo del resultado
+        /// - Success: indica si la operación fue exitosa
+        /// - Validadores: resultado del SP en caso exitoso
+        /// </returns>
+        public async Task<dynamic> GuardarOfrecimientoExtra(SaveOfrecimientoExtraRequest ofrecimientoInfo)
+        {
+            // Validación base (verificaciones generales)
+            string verificaOfrecimiento = VerificaOfrecimientoNegociación(ofrecimientoInfo);
+            if (!verificaOfrecimiento.IsNullOrEmpty())
+            {
+                return new { Message = verificaOfrecimiento, Success = false };
+            }
+
+            // Validaciones adicionales específicas al negocio (heredadas del Gespa original)
+            string mensajeValidacionAdicional = VerificaOfrecimientoNegociacionAdicional(ofrecimientoInfo);
+            if (!string.IsNullOrEmpty(mensajeValidacionAdicional))
+            {
+                return new { Message = mensajeValidacionAdicional, Success = false };
+            }
+
+            // Validación adicional: asegurar que se haya seleccionado una herramienta válida
+            if (ofrecimientoInfo.IdHerramienta == 0)
+            {
+                return new { Message = "Indique la herramienta que se va a ofrecer.", Success = false };
+            }
+
+            // Guardar ofrecimiento en base de datos a través del repositorio
+            var validaPootis = await _ejecutivoRepository.GuardaOfrecimientoStored(ofrecimientoInfo);
+
+            // Validación del resultado del Stored Procedure: si no devuelve datos, algo falló
+            if (validaPootis == null || !validaPootis.Any())
+            {
+                return new { Message = "No se encontraron validadores para el producto.", Success = false };
+            }
+
+            // Éxito: retornamos los validadores obtenidos
+            return new { Validadores = validaPootis, Message = verificaOfrecimiento, Success = true };
+        }
+
+
+        public static string VerificaOfrecimientoNegociacionAdicional(SaveOfrecimientoExtraRequest ofrecimiento)
+        {
+            // Validación: Herramientas que requieren exactamente 2 pagos
+            var herramientasDosPagos = new List<string>
+            {
+                "Liquidación plazos descuento",
+                "Liq Plazos Descuento Excepcion",
+                "Liquidación plazos s/desc.",
+                "Liq plazos descuento excepción"
+            };
+
+            if (herramientasDosPagos.Contains(ofrecimiento.HerramientaNombre) && ofrecimiento.Plazos.Length != 2)
+            {
+                return $"La herramienta {ofrecimiento.HerramientaNombre} se realiza únicamente en 2 exhibiciones.";
+            }
+
+            // Validación: Herramienta "Liquidación covid" solo permite 5 o 6 PV
+            if (ofrecimiento.HerramientaNombre == "Liquidación covid" &&
+                ofrecimiento.PV != 5 && ofrecimiento.PV != 6)
+            {
+                return $"La herramienta {ofrecimiento.HerramientaNombre} solo permite 5 o 6 PV.";
+            }
+
+            // Validación: Herramienta con ID 511 tiene restricciones para ciertos agentes
+            var agentesRestringidos = new List<string> { "035", "326", "339", "727", "729" };
+            if (ofrecimiento.IdHerramienta == 511 && agentesRestringidos.Contains(ofrecimiento.Agente))
+            {
+                return $"La herramienta {ofrecimiento.HerramientaNombre} tiene restricciones especiales para esta cuenta.";
+            }
+
+            // Validación: Monto negociado debe ser mayor a cero
+            if (ofrecimiento.MontoNegociado <= 0)
+            {
+                return "Agregue pagos para calcular el Monto Negociado.";
+            }
+
+            return string.Empty;
+        }
+
+
         public static string VerificaOfrecimientoNegociación(SaveOfrecimientoRequest ofrecimiento)
         {
             // Validación de Monto Negociado vs Monto Requerido
@@ -4430,13 +4527,12 @@ namespace NoriAPI.Services
 
             correosGet.TableName = "Correos";
 
-            AgregarYTraducirColumna();
-
             ClasesGespaNonStatic gespaCargaEje = new();
             gespaCargaEje.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
             gespaCargaEje.CargaCatalogos();
 
-            AgregarYTraducirColumna(pagosGet, "Sucursal", "SucursalValor", gespaPagos._htValoresCatálogo);
+            AgregarYTraducirColumna(correosGet, "idOrigen", "Origen", gespaCargaEje._htValoresCatálogo);
+            AgregarYTraducirColumna(correosGet, "idInformación", "Información", gespaCargaEje._htValoresCatálogo);
 
 
 

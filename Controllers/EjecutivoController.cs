@@ -393,6 +393,20 @@ namespace NoriAPI.Controllers
             return Ok(result);
         }
 
+        [HttpPost("save-ofrecimiento-extra")]
+        public async Task<ActionResult> SaveOfrecimientoExtra([FromBody] SaveOfrecimientoExtraRequest ofrecimientoInfo)
+        {
+            var result = await _ejecutivoService.GuardarOfrecimientoExtra(ofrecimientoInfo);
+
+            if (!result.Success)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result);
+        }
+
+
 
         [HttpPost("GuardaNegociacionPlazos")]
         public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] NegociacionPlazosInput input)
@@ -1454,7 +1468,6 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("CorreosCarga/{idCartera}/{idCuenta}")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetCorreosCarga(int idCartera, string idCuenta)
         {
 
@@ -1475,9 +1488,12 @@ namespace NoriAPI.Controllers
             }
 
             var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Correos"]);
-            string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+            string jsonSeguimientos = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
 
-            return Ok(jsonString);
+            return Content(jsonSeguimientos, "application/json; charset=utf-8");
+
+
+            //return Ok(jsonString);
 
         }
 
