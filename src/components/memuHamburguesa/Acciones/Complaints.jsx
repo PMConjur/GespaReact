@@ -28,12 +28,32 @@ const Complaints = ({ show, handleClose }) => {
   const [showAddressTable, setShowAddressTable] = useState(false); // Estado para mostrar la tabla de domicilios
   const [emails, setEmails] = useState([]); // Estado para almacenar los correos electrónicos
   const [showEmailTable, setShowEmailTable] = useState(false); // Estado para mostrar la tabla de correos electrónicos
+  const [showScrollHint, setShowScrollHint] = useState(true); // Estado para controlar la visibilidad del párrafo
 
   // Validar el formulario
   useEffect(() => {
     const isValid = formData.idQueja && formData.idInstitucion && formData.folio && formData.comentarios && formData.solicitante;
     setIsFormValid(isValid);
   }, [formData]);
+
+  // Efecto para ocultar el párrafo al hacer scroll dentro del modal
+  useEffect(() => {
+    const handleScroll = () => {
+      const modalBody = document.querySelector(".modal-body"); // Selecciona el contenedor del modal
+      if (modalBody && modalBody.scrollTop > 0) {
+        setShowScrollHint(false); // Oculta el párrafo si se detecta scroll en el modal
+      } else {
+        setShowScrollHint(true); // Muestra el párrafo si no hay scroll
+      }
+    };
+
+    const modalBody = document.querySelector(".modal-body");
+    modalBody?.addEventListener("scroll", handleScroll); // Agrega el evento de scroll al contenedor del modal
+
+    return () => {
+      modalBody?.removeEventListener("scroll", handleScroll); // Limpia el evento al desmontar
+    };
+  }, [show]); // Asegúrate de que el efecto se registre cada vez que el modal se muestre
 
   // Cargar las quejas
   useEffect(() => {
@@ -256,7 +276,7 @@ const Complaints = ({ show, handleClose }) => {
       <Modal.Header closeButton>
         <Modal.Title>Quejas</Modal.Title>
         <div className="ms-auto me-3">
-          {complaints.length > 0 && ( // Verifica si hay datos disponibles
+          {complaints.length > 0 && showScrollHint && ( // Verifica si hay datos y si debe mostrarse el párrafo
             <p className="cursor typewriter-animation">Desliza hacia abajo</p>
           )}
         </div>
@@ -265,8 +285,8 @@ const Complaints = ({ show, handleClose }) => {
         <Row>
           {complaints.length > 0 ? ( // Verifica si hay datos en la tabla
             <div
-              className="scroll-container w-50"
-              style={{ maxHeight: "70vh", overflowY: "auto" }}
+              className=" w-50"
+              style={{ maxHeight: "70vh"}}
             >
               <Form className="p-2">
                 <div className="">
