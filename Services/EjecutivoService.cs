@@ -67,10 +67,21 @@ namespace NoriAPI.Services
         Task<string> GuardaEliminaPlazos(EliminaGuardaPlazos PlazosInfo);
         Task<NegociacionPlazosOutput> GuardaNegociacionPlazos(NegociacionPlazosInput input);
         Task<dynamic> IncrementaNegociacion(IncrementoNegociacion incrementaNegInfo);
-
         #endregion
-        Task ObtenerBusquedaEJE(DataRow drDatos, DataSet dsTablas);
 
+        #region Ofrecer 
+        Task<ResultadoOfrecer> ValidaOfrecer(OfrecerNegociacionRequest ofrecerInfo);
+        #endregion
+
+        #region Conteo
+        //Task<ConteoResultado> MuestraConteo(int idEjecutivo);
+        #endregion
+
+
+
+
+
+        Task ObtenerBusquedaEJE(DataRow drDatos, DataSet dsTablas);
         Task<bool> GuardarBusquedaAsync(BusquedaNueva busqueda);
         Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo);
 
@@ -1560,17 +1571,6 @@ namespace NoriAPI.Services
                     }
                 }
             }
-
-
-
-
-
-
-
-
-
-
-
             //Muestra cálculos
             double MontoRequerido_ = Convert.ToDouble(MontoRequerido.ToString());
             double MontoNegociado_ = Convert.ToDouble(dMontoNegociado.ToString());
@@ -2039,6 +2039,55 @@ namespace NoriAPI.Services
 
         #endregion
 
+        #region Ofrecer
+        public async Task<ResultadoOfrecer> ValidaOfrecer(OfrecerNegociacionRequest ofrecerInfo)
+        {
+            DataTable dtinfoHerramienta = new DataTable();
+            DataTable dtproducto = new DataTable();
+            DataTable dtPagos = new DataTable();
+            int iMaxDias = 0;
+            DateTime fechaCorte, fechaAsignacion;
+            bool PrimesLending;
+
+            dtinfoHerramienta = await _ejecutivoRepository.ObtieneHerramientas(ofrecerInfo.idCuenta);
+            iMaxDias = Convert.ToInt32(dtinfoHerramienta.Rows[0][0].ToString());
+
+            dtproducto = await _ejecutivoRepository.ObtieneProducto(ofrecerInfo.idCuenta);
+            fechaCorte = Convert.ToDateTime(dtproducto.Rows[0]["Fechacorte"].ToString());
+            fechaAsignacion = Convert.ToDateTime(dtproducto.Rows[0]["batchdate"].ToString());
+            string Producto = dtproducto.Rows[0]["Product"].ToString();
+            if (Producto == "Placement" || Producto == "Product" || Producto == "Lending" || Producto == "MidPrimes")
+                PrimesLending = true;
+            else
+                PrimesLending = false;
+
+            dtPagos = await _ejecutivoRepository.ObtienePagos(ofrecerInfo.idCartera, ofrecerInfo.idCuenta);
+            dtPagos.DefaultView.Sort = "FechaPago DESC";
+
+            var InfoOfrecer = _ejecutivoRepository.ValidaOfrecer(ofrecerInfo, iMaxDias, fechaCorte, fechaAsignacion, PrimesLending, dtPagos);
+            var resultadoofrecer = new ResultadoOfrecer(Convert.ToString(InfoOfrecer));
+            return resultadoofrecer;
+
+
+        }
+        #endregion
+
+        #region Conteo
+        //public async Task<ConteoResultado>MuestraConteo(int idEjecutivo)
+        //{
+        //    string mensajeConteo = null;
+
+
+
+
+
+
+
+        //}
+
+
+
+        #endregion
 
         #region GuardaEliminaPlazos
 
@@ -2180,14 +2229,8 @@ namespace NoriAPI.Services
         public async Task<dynamic> IncrementaNegociacion(IncrementoNegociacion incrementaNegInfo)
         {
             var incrementaNeg = await _ejecutivoRepository.IncrementaNegociacion(incrementaNegInfo);
-
-
-
             return incrementaNeg;
         }
-
-
-
 
         #endregion
 

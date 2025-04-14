@@ -344,7 +344,7 @@ namespace NoriAPI.Controllers
             var InfoCalculadora = await _ejecutivoService.ValidateInfoCalculadora1(Cartera, NoCuenta, idHerr);
             if (InfoCalculadora.Mensaje != null)
             {
-                return BadRequest(new { Ofrecimientos = InfoCalculadora.Ofrecimientos, Mensaje = InfoCalculadora.Mensaje });
+                return Ok(new { Ofrecimientos = InfoCalculadora.Ofrecimientos, Mensaje = InfoCalculadora.Mensaje });
             }
             else
             {
@@ -363,6 +363,15 @@ namespace NoriAPI.Controllers
 
         }
 
+        [HttpPost("Ofrecer-Negociacion")]
+        public async Task<IActionResult> ValidaOfrecer([FromBody] OfrecerNegociacionRequest ofrecerInfo)
+        {
+            var infoOfrecer = await _ejecutivoService.ValidaOfrecer(ofrecerInfo);
+
+            return Ok(infoOfrecer);
+
+        }
+
         [HttpPost("save-ofrecimiento")]
         public async Task<ActionResult<OfrecimientoValidadores>> SaveOfrecimiento([FromBody] SaveOfrecimientoRequest ofrecimientoInfo)
         {
@@ -377,7 +386,6 @@ namespace NoriAPI.Controllers
         }       
 
         [HttpPost ("GuardaNegociacionPlazos")]
-
         public async Task<IActionResult> GuardaNegociacionPlazos([FromBody] NegociacionPlazosInput input)
         {
             var result = await _ejecutivoService.GuardaNegociacionPlazos(input);
@@ -399,7 +407,6 @@ namespace NoriAPI.Controllers
 
         }
 
-
         [HttpPost ("IncrementaNegociacion")]
         public async Task<IActionResult> IncrementaNegociacion([FromBody] IncrementoNegociacion incrementaNegInfo)
         {
@@ -414,8 +421,19 @@ namespace NoriAPI.Controllers
             }
 
         }
-
         #endregion
+
+        #region Conteo
+        //[HttpGet("ConteoCuentasAutomatico")]
+        //public async Task<ActionResult<ConteoResultado>>MuestraConteo([FromQuery] int idEjecutivo)
+        //{
+        //    var muestraConteo = await _ejecutivoService.MuestraConteo(idEjecutivo);
+
+
+
+        //}
+        #endregion
+
 
         #region Busqueda
         [HttpGet("busqueda/{idCartera}/{idCuenta}/{Jerarquia}")]

@@ -16,6 +16,7 @@ using System.Diagnostics;
 using NoriAPI.Models.Flujo;
 using NoriAPI.Models.Ofrecimiento;
 using NoriAPI.Models;
+using static NoriAPI.Services.EjecutivoService;
 
 namespace NoriAPI.Repositories
 {
@@ -58,6 +59,12 @@ namespace NoriAPI.Repositories
         Task<IEnumerable<OfrecimientoValidadores>> GuardaOfrecimientoStored(SaveOfrecimientoRequest ofrecimientoInfo);
 
         #endregion
+
+        #region Ofrecer
+        string ValidaOfrecer(OfrecerNegociacionRequest ofrecerInfo, int iMaxDias, DateTime fechaCorte, DateTime fechaAsignacion, bool PrimesLending, DataTable dtPagos);
+
+        #endregion
+
 
         #region Tiempos
         Task<ResultadoTiempos> ValidateTimes(int numEmpleado);
@@ -869,6 +876,123 @@ namespace NoriAPI.Repositories
 
         #endregion
 
+        #region Ofrecer 
+        public string ValidaOfrecer(OfrecerNegociacionRequest ofrecerInfo, int iMaxDias, DateTime fechaCorte, DateTime fechaAsignacion, bool PrimesLending, DataTable dtPagos)
+        {
+            string mensaje = "";
+
+            if (ofrecerInfo.MontoNegociado == 0)
+            {
+                mensaje = "Agregue pagos para calcular el Monto Negociado.";
+                return mensaje;
+            }
+            int iDías = Convert.ToInt16(EvaluateDate(ofrecerInfo.Plazos[ofrecerInfo.Plazos.Length - 1].Fecha.ToShortDateString()
+                + " - "
+                + ((ofrecerInfo.idHerramienta == 141 || ofrecerInfo.Plazos.Length == 1) ? DateTime.Today.ToShortDateString() : ofrecerInfo.Plazos[0].Fecha.ToShortDateString())));
+
+            if (iDías > iMaxDias)
+            {
+                mensaje = "La negociación se debe cumplir antes de " + iMaxDias + " días";
+                return mensaje;
+            }
+            if (ofrecerInfo.idHerramienta == 139 && ofrecerInfo.Plazos.Length == 1)
+            {
+                mensaje = "Debe de ingresar al menos dos pagos para esta herramienta.";
+                return mensaje;
+            }
+            //Bloqueo Parcial ajuste
+            if (ofrecerInfo.idHerramienta == 142)
+            {
+                int DíasRes = 3, DíasSum = 2;
+                DateTime FechaCorte = new DateTime(DateTime.Today.Year, DateTime.Today.Month, fechaCorte.Day);
+
+                for (int i = 1; i <= DíasSum; i++)
+                    if (FechaCorte.AddDays(i).DayOfWeek == DayOfWeek.Sunday || FechaCorte.AddDays(i).DayOfWeek == DayOfWeek.Saturday)
+                        DíasSum++;
+
+                for (int i = 1; i <= DíasRes; i++)
+                    if (FechaCorte.AddDays(-i).DayOfWeek == DayOfWeek.Sunday || FechaCorte.AddDays(-i).DayOfWeek == DayOfWeek.Saturday)
+                        DíasRes++;
+
+                if (ofrecerInfo.Plazos[0].Fecha >= FechaCorte.AddDays(-DíasRes) && ofrecerInfo.Plazos[0].Fecha <= FechaCorte.AddDays(DíasSum))
+                {
+                    mensaje = "El primer pago no puede ser cercano al corte.";
+                    return mensaje;
+                }
+
+            }
+            //Bloqueo Oasis
+            if (ofrecerInfo.idHerramienta == 140)
+            {
+
+                double dSumaPagos = 0;
+
+                if (dtPagos != null)
+                    double.TryParse(dtPagos.Compute("SUM (MontoPago)", " Reportado = '' AND  FechaPago >= '" + fechaAsignacion.ToShortDateString() + "'").ToString(), out dSumaPagos);
+
+                if (ofrecerInfo.idHerramienta == 140 && ofrecerInfo.MontoNegociado + dSumaPagos < 12000)
+                {
+                    mensaje = "El monto total recuperado para esta herramienta debe de ser mayor o igual a $12,000.00";
+                    return mensaje;
+                }
+            }
+            if (ofrecerInfo.idHerramienta == 136 || ofrecerInfo.idHerramienta == 144)
+            {
+                if (Math.Round((100 - (ofrecerInfo.MontoNegociado / ofrecerInfo.saldo) * 100), 2) <= 0)
+                {
+                    mensaje = "No se permite 0% de descuento. Verifique la herramienta.";
+                    return mensaje;
+                }
+
+                if (Math.Round(ofrecerInfo.MontoNegociado, 2) < Math.Round((float)ofrecerInfo.saldo * (1 - ofrecerInfo.descuento / (float)100), 2))
+                {
+                    mensaje = "El Monto Negociado debe ser MAYOR que el Monto Requerido.";
+                    return mensaje;
+                }
+
+                if (Math.Round((100 - (ofrecerInfo.MontoNegociado / ofrecerInfo.saldo) * 100), 2) > ofrecerInfo.maxDescuento)
+                {
+                    mensaje = "El descuento introducido supera el máximo permitido (" + ofrecerInfo.maxDescuento + " %).";
+                    return mensaje;
+                }
+                if (!(PrimesLending))
+                {
+                    ofrecerInfo.MontoRequerido = Math.Round((float)ofrecerInfo.saldo * (1 - ofrecerInfo.descuento / (float)100), 2);
+                    ofrecerInfo.descuento = Math.Round((100 - (ofrecerInfo.MontoNegociado / ofrecerInfo.saldo) * 100), 2);
+                }
+            }
+            if (mensaje == "")
+                mensaje = "No hay problema";
+
+            return mensaje;
+        }
+
+        #endregion
+
+        #region Conteo
+        //public async int ObtieneConteo(int idEjecutivo)
+        //{
+        //    int Conteo;
+        //    using var connection = GetConnection("Piso2Amex");
+        //    string queryInfoConteo = "select * from [dbo].[MetasEjecutivo] where idEjecutivo = @idEjecutivo";
+
+        //    var parameters = new
+        //    {
+        //        idEjecutivo = idEjecutivo
+        //    };
+
+        //    var InfoConteo = (await connection.QueryAsync<dynamic>(
+        //        queryInfoConteo,
+        //        parameters,
+        //        commandType: CommandType.Text                
+        //    ));
+        //    return Conteo = Convert.ToInt32(InfoConteo);
+        //}
+
+
+
+        #endregion
+
         #region GuardaEliminaPlazos
 
         public async Task<dynamic> Elimina_Plazos(EliminaGuardaPlazos PlazosInfo)
@@ -1404,6 +1528,9 @@ namespace NoriAPI.Repositories
             Regex ValidEmailRegex = new Regex(validEmailPattern, RegexOptions.IgnoreCase);
             return ValidEmailRegex.IsMatch(correoElectronico);
         }
+
+        
+
 
         #region Datos
         public int ObtenerIdCartera()
