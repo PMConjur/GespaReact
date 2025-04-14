@@ -271,6 +271,14 @@ const Complaints = ({ show, handleClose }) => {
       (phone) => "XXXXXX" + phone.númeroTelefónico.slice(6) === reportedPhone
     );
 
+    // Encuentra el número completo en la tabla de teléfonos si existe
+    const fullPhone = phones.find(
+      (phone) => "XXXXXX" + phone.númeroTelefónico.slice(6) === reportedPhone
+    )?.númeroTelefónico;
+
+    // Usa el número completo si existe, de lo contrario usa el valor ingresado
+    const cleanPhone = fullPhone || reportedPhone.replace(/^XXXXXX/, "");
+
     const requestData = {
       idCartera: 1,
       idCuenta: idCuenta,
@@ -282,11 +290,11 @@ const Complaints = ({ show, handleClose }) => {
       idInstitucion: formData.idInstitucion,
       solicitante: formData.solicitante,
       llamadaEntrada: formData.llamadaEntrada,
-      numeroTelefonico: phoneExists ? reportedPhone : 0, // Si existe, se envía aquí
+      numeroTelefonico: phoneExists ? cleanPhone : 0, // Usa el número completo si existe
       correoElectronico: emailExists ? reportedEmail : "", // Si existe, se envía aquí
       idDomicilio: 0,
       comentario: formData.comentarios,
-      numeroTelefonicoContacto: phoneExists ? 0 : reportedPhone, // Si no existe, se envía aquí
+      numeroTelefonicoContacto: phoneExists ? 0 : cleanPhone, // Usa el número completo si no existe
       correoElectronicoContacto: emailExists ? "" : reportedEmail, // Si no existe, se envía aquí
     };
 
@@ -510,18 +518,34 @@ const Complaints = ({ show, handleClose }) => {
                     />
                   </Form.Group>
                 )}
-                <Form.Group
-                  className="mb-3"
-                  controlId="exampleForm.ControlInput2"
-                >
-                  <Form.Label>Teléfono Reportado</Form.Label>
-                  <Form.Control
-                    type="text" // Cambia a "text" para permitir el formato con "XXXXXX"
-                    placeholder="Numero de telefono"
-                    value={reportedPhone} // Vincula el estado al campo de entrada
-                    onChange={(e) => setReportedPhone(e.target.value)} // Actualiza el estado al cambiar el valor
-                  />
-                </Form.Group>
+
+                {/* Mostrar el campo de teléfono solo si "Teléfono no corresponde" está seleccionado */}
+                {formData.tipoQuejaDescripcion === "Teléfono no corresponde" && ( // Mostrar solo si "Teléfono no corresponde" está seleccionado
+                  <Form.Group
+                    className="mb-3"
+                    controlId="exampleForm.ControlInput2"
+                  >
+                    <Form.Label>Teléfono Reportado</Form.Label>
+                    <Form.Control
+                      type="text" // Cambia a "text" para permitir el formato con "XXXXXX"
+                      placeholder="Numero de telefono"
+                      value={reportedPhone} // Vincula el estado al campo de entrada
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const regex = /^[0-9]{0,13}$/; // Permite solo números hasta 13 dígitos
+                        if (regex.test(value)) {
+                          setReportedPhone(value); // Actualiza el estado si cumple con la validación
+                        }
+                      }}
+                      onBlur={() => {
+                        if (reportedPhone.length < 10 || reportedPhone.length > 13) {
+                          toast.error("El número de teléfono debe tener entre 10 y 13 dígitos.");
+                          setReportedPhone(""); // Limpia el campo si no cumple con el rango
+                        }
+                      }}
+                    />
+                  </Form.Group>
+                )}
                 <div className="boton-reportar">
                   <Button
                     className="mt-3 full-width"
