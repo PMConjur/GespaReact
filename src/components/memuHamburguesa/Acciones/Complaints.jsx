@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect } from 'react';
 import { Modal, Button, Form, Table, Dropdown, Col, Spinner, Row} from 'react-bootstrap';
-import { fetchComplaints, fetchViewComplaints, fetchOriginComplaints, fetchDdComplaints, fetchAddress, fetchEmailsCharging } from '../../../services/gespawebServices';
+import { fetchComplaints, fetchViewComplaints, fetchOriginComplaints, fetchDdComplaints, fetchAddress, fetchEmailsCharging, fetchPhones } from '../../../services/gespawebServices';
 import { AppContext } from "../../../pages/Managment";
 import { toast } from 'sonner';
 import "../../../scss/styles.scss";
@@ -18,6 +18,8 @@ const Complaints = ({ show, handleClose }) => {
     solicitante: ''
   });
 
+  const [reportedEmail, setReportedEmail] = useState(""); // Estado para almacenar el correo ingresado
+  const [reportedPhone, setReportedPhone] = useState(""); // Estado para almacenar el teléfono ingresado
   const [complaints, setComplaints] = useState([]);
   const [originComplaints, setOriginComplaints] = useState([]); // Estado para almacenar los datos del endpoint
   const [isFormValid, setIsFormValid] = useState(false);
@@ -29,12 +31,36 @@ const Complaints = ({ show, handleClose }) => {
   const [emails, setEmails] = useState([]); // Estado para almacenar los correos electrónicos
   const [showEmailTable, setShowEmailTable] = useState(false); // Estado para mostrar la tabla de correos electrónicos
   const [showScrollHint, setShowScrollHint] = useState(true); // Estado para controlar la visibilidad del párrafo
+  const [phones, setPhones] = useState([]); // Estado para almacenar los teléfonos
+  const [showPhoneTable, setShowPhoneTable] = useState(false); // Estado para mostrar la tabla de teléfonos
 
-  // Validar el formulario
+  const fetchAndLogPhones = async () => {
+    if (searchResults.length === 0 || !searchResults[0].idCuenta) {
+      toast.warning("No hay una cuenta válida seleccionada para obtener teléfonos.");
+      return;
+    }
+  
+    const idCuenta = searchResults[0].idCuenta;
+  
+    try {
+      const phones = await fetchPhones(idCuenta); // Llama al endpoint
+      console.log("Teléfonos obtenidos:", phones); // Imprime los datos obtenidos
+      setPhones(phones); // Almacena los datos en el estado
+    } catch (error) {
+      console.error("Error al obtener los teléfonos:", error);
+    }
+  };
+
+  // Validar el formulario dinámicamente
   useEffect(() => {
-    const isValid = formData.idQueja && formData.idInstitucion && formData.folio && formData.comentarios && formData.solicitante;
+    const isValid =
+      formData.idQueja && // Tipo de queja
+      formData.idInstitucion && // Origen
+      formData.folio && // Folio
+      formData.comentarios; // Comentarios
+
     setIsFormValid(isValid);
-  }, [formData]);
+  }, [formData]); // Dependencias actualizadas para validar dinámicamente
 
   // Efecto para ocultar el párrafo al hacer scroll dentro del modal
   useEffect(() => {
@@ -174,6 +200,12 @@ const Complaints = ({ show, handleClose }) => {
     }
   }, [show, searchResults]);
 
+  useEffect(() => {
+    if (show) {
+      fetchAndLogPhones(); // Llama a la función cuando el modal se muestra
+    }
+  }, [show]);
+
   // Manejar cambios en el formulario
   const handleChange = (name, value) => {
     const nombreDeudor = searchResults?.[0]?.nombreDeudor || "";
@@ -216,11 +248,28 @@ const Complaints = ({ show, handleClose }) => {
 
   // Manejar el envío del formulario
   const handleReport = async () => {
+    // Validar que el correo tenga un formato válido
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Expresión regular para validar correos
+    if (reportedEmail && !emailRegex.test(reportedEmail)) {
+      toast.error("Por favor, ingrese un correo electrónico válido.");
+      return; // Detiene el envío si el correo no es válido
+    }
+
     const idCuenta =
       searchResults.length > 0 ? searchResults[0].idCuenta : "string";
     const currentTime = new Date().toLocaleTimeString("en-GB", {
       hour12: false,
     });
+
+    // Verifica si el correo ingresado existe en la tabla de correos
+    const emailExists = emails.some(
+      (email) => email.CorreoElectrónico === reportedEmail
+    );
+
+    // Verifica si el teléfono ingresado existe en la tabla de teléfonos
+    const phoneExists = phones.some(
+      (phone) => "XXXXXX" + phone.númeroTelefónico.slice(6) === reportedPhone
+    );
 
     const requestData = {
       idCartera: 1,
@@ -233,12 +282,12 @@ const Complaints = ({ show, handleClose }) => {
       idInstitucion: formData.idInstitucion,
       solicitante: formData.solicitante,
       llamadaEntrada: formData.llamadaEntrada,
-      numeroTelefonico: 0,
-      correoElectronico: "",
+      numeroTelefonico: phoneExists ? reportedPhone : 0, // Si existe, se envía aquí
+      correoElectronico: emailExists ? reportedEmail : "", // Si existe, se envía aquí
       idDomicilio: 0,
       comentario: formData.comentarios,
-      numeroTelefonicoContacto: 0,
-      correoElectronicoContacto: "",
+      numeroTelefonicoContacto: phoneExists ? 0 : reportedPhone, // Si no existe, se envía aquí
+      correoElectronicoContacto: emailExists ? "" : reportedEmail, // Si no existe, se envía aquí
     };
 
     try {
@@ -256,6 +305,8 @@ const Complaints = ({ show, handleClose }) => {
         titular: false,
         solicitante: ''
       });
+      setReportedEmail(""); // Limpia el correo ingresado
+      setReportedPhone(""); // Limpia el teléfono ingresado
 
       // Actualiza la tabla de quejas
       const updatedComplaints = await fetchViewComplaints({
@@ -276,18 +327,16 @@ const Complaints = ({ show, handleClose }) => {
       <Modal.Header closeButton>
         <Modal.Title>Quejas</Modal.Title>
         <div className="ms-auto me-3">
-          {complaints.length > 0 && showScrollHint && ( // Verifica si hay datos y si debe mostrarse el párrafo
-            <p className="cursor typewriter-animation">Desliza hacia abajo</p>
-          )}
+          {complaints.length > 0 &&
+            showScrollHint && ( // Verifica si hay datos y si debe mostrarse el párrafo
+              <p className="cursor typewriter-animation">Desliza hacia abajo</p>
+            )}
         </div>
       </Modal.Header>
       <Modal.Body className="d-block gap-1">
         <Row>
           {complaints.length > 0 ? ( // Verifica si hay datos en la tabla
-            <div
-              className=" w-50"
-              style={{ maxHeight: "70vh"}}
-            >
+            <div className=" w-50">
               <Form className="p-2">
                 <div className="">
                   <Form.Group className="mb-4">
@@ -320,6 +369,15 @@ const Complaints = ({ show, handleClose }) => {
                           setShowEmailTable(true);
                         } else {
                           setShowEmailTable(false);
+                        }
+
+                        // Mostrar la tabla de teléfonos si se selecciona "Teléfono no corresponde"
+                        if (
+                          selectedComplaint?.descripcion === "Teléfono no corresponde"
+                        ) {
+                          setShowPhoneTable(true); // Mostrar la tabla de teléfonos
+                        } else {
+                          setShowPhoneTable(false); // Ocultar la tabla de teléfonos
                         }
                       }}
                     >
@@ -436,12 +494,40 @@ const Complaints = ({ show, handleClose }) => {
                     </Form.Group>
                   </div>
                 )}
+
+                {/* Mostrar el campo de correo electrónico solo si "Email no corresponde" está seleccionado */}
+                {formData.tipoQuejaDescripcion === "Email no corresponde" && (
+                  <Form.Group
+                    className="mb-3"
+                    controlId="exampleForm.ControlInput1"
+                  >
+                    <Form.Label>Correo Electrónico Reportado</Form.Label>
+                    <Form.Control
+                      type="email"
+                      placeholder="correo@ejemplo.com"
+                      value={reportedEmail} // Vincula el estado al campo de entrada
+                      onChange={(e) => setReportedEmail(e.target.value)} // Actualiza el estado al cambiar el valor
+                    />
+                  </Form.Group>
+                )}
+                <Form.Group
+                  className="mb-3"
+                  controlId="exampleForm.ControlInput2"
+                >
+                  <Form.Label>Teléfono Reportado</Form.Label>
+                  <Form.Control
+                    type="text" // Cambia a "text" para permitir el formato con "XXXXXX"
+                    placeholder="Numero de telefono"
+                    value={reportedPhone} // Vincula el estado al campo de entrada
+                    onChange={(e) => setReportedPhone(e.target.value)} // Actualiza el estado al cambiar el valor
+                  />
+                </Form.Group>
                 <div className="boton-reportar">
                   <Button
                     className="mt-3 full-width"
                     variant="danger"
                     onClick={handleReport}
-                    disabled={!isFormValid || isLoading} // Deshabilita el botón mientras carga
+                    disabled={!isFormValid || isLoading} // Deshabilita el botón si el formulario no es válido o está cargando
                   >
                     {isLoading ? "Guardando..." : "Reportar"}{" "}
                     {/* Cambia el texto durante la carga */}
@@ -476,7 +562,6 @@ const Complaints = ({ show, handleClose }) => {
             <Col className="w-50">
               {addresses.domicilios?.length > 0 && ( // Verifica si hay domicilios
                 <div className="addresses-section">
-                  <h5>Domicilios</h5>
                   <div
                     className="table-container custom-scrollbar"
                     style={{ maxHeight: "50vh", overflowY: "auto" }}
@@ -552,10 +637,9 @@ const Complaints = ({ show, handleClose }) => {
             </Col>
           )}
           {showEmailTable && ( // Mostrar la tabla de correos si showEmailTable es true
-            <Col className='w-50'>
+            <Col className="w-50">
               {emails.length > 0 ? ( // Verifica si hay correos electrónicos
                 <div className="emails-section">
-                  <h5>Correos Electrónicos</h5>
                   <div
                     className="table-responsive custom-scrollbar "
                     style={{ maxHeight: "50vh", overflowY: "auto" }}
@@ -583,7 +667,13 @@ const Complaints = ({ show, handleClose }) => {
                       </thead>
                       <tbody>
                         {emails.map((email, index) => (
-                          <tr key={index}>
+                          <tr
+                            key={index}
+                            onClick={() =>
+                              setReportedEmail(email.CorreoElectrónico || "")
+                            } // Actualiza el estado con el correo seleccionado
+                            style={{ cursor: "pointer" }} // Cambia el cursor para indicar que es clickeable
+                          >
                             <td style={{ textAlign: "left" }}>
                               {email.CorreoElectrónico || "--"}
                             </td>
@@ -592,8 +682,7 @@ const Complaints = ({ show, handleClose }) => {
                             </td>
                             <td style={{ textAlign: "left" }}>
                               {email.Fecha_Insert?.split("T")[0] || "--"}
-                            </td>{" "}
-                            {/* Muestra solo la fecha antes de la "T" */}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -607,10 +696,64 @@ const Complaints = ({ show, handleClose }) => {
               )}
             </Col>
           )}
+          {showPhoneTable && ( // Mostrar la tabla de teléfonos si showPhoneTable es true
+            <Col className="w-50">
+              <div className="emails-telefonos">
+                <div
+                  className="table-responsive custom-scrollbar"
+                  style={{ maxHeight: "50vh", overflowY: "auto" }}
+                >
+                  <Table
+                    striped
+                    bordered
+                    hover
+                    variant="dark"
+                    style={{ tableLayout: "auto", whiteSpace: "nowrap" }}
+                  >
+                    <thead
+                      style={{
+                        position: "sticky",
+                        top: 0,
+                        backgroundColor: "#343a40",
+                        zIndex: 20,
+                      }}
+                    >
+                      <tr>
+                        <th>ID</th>
+                        <th>Teléfono</th>
+                        <th>Telefonía</th>
+                        <th>Origen</th>
+                        <th>Clase</th>
+                        <th>Confirmado</th>
+                        <th>Activo</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {phones.map((phone, index) => (
+                        <tr
+                          key={index}
+                          onClick={() => setReportedPhone("XXXXXX" + phone.númeroTelefónico.slice(6) || "--")} // Actualiza el estado con el teléfono formateado
+                          style={{ cursor: "pointer" }} // Cambia el cursor para indicar que es clickeable
+                        >
+                          <td>{phone.id || "0"}</td>
+                          <td>{"XXXXXX" + phone.númeroTelefónico.slice(6) || "--"}</td>
+                          <td>{phone.telefonia || "--"}</td>
+                          <td>{phone.origen || "--"}</td>
+                          <td>{phone.clase || "--"}</td>
+                          <td>{phone._Confirmado ? "Sí" : "No"}</td>
+                          <td>{phone.activo ? "Activo" : "Inactivo"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+              </div>
+            </Col>
+          )}
         </Row>
 
         <Row
-          className="table-responsive custom-scrollbar w-100 p-3 pt-0"
+          className="table-responsive custom-scrollbar w-100 p-3 pt-0 mt-2"
           style={{
             maxHeight: "70vh",
             maxWidth: "1210px",

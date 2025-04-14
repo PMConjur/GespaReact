@@ -54,7 +54,7 @@ const Telephones = () => {
     }
     if (phoneNumber.length !== 10 && phoneNumber.length !== 13) {
       toast.warning(
-        "Error 400: El número de teléfono debe tener 10 o 11 dígitos",
+        "Error 400: El número de teléfono debe tener 10 o 13 dígitos",
         {
           position: "top-right"
         }
@@ -207,7 +207,9 @@ const Telephones = () => {
     try {
       const phones = await Promise.all(
         searchResults.map(async (result) => {
-          return await fetchPhones(result.idCuenta);
+          const response = await fetchPhones(result.idCuenta);
+          console.log("Respuesta de fetchPhones:", response); // Imprime la respuesta de fetchPhones
+          return response;
         })
       );
       const flatPhones = phones.flat();
