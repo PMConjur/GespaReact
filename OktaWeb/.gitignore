@@ -1,0 +1,30 @@
+# .NET Build Folders
+bin/
+obj/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# IDE specific files
+.vscode/
+.idea/
+
+# ASP.NET Core
+appsettings.Development.json
+appsettings.Local.json
+
+# Logs
+*.log
+
+# NuGet
+project.lock.json
+project.fragment.lock.json
+
+# Rider
+.idea/
+
+# MacOS
+.DS_Store
