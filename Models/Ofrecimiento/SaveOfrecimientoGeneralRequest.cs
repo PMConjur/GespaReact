@@ -2,7 +2,7 @@
 
 namespace NoriAPI.Models.Ofrecimiento
 {
-    public class SaveOfrecimientoExtraRequest: SaveOfrecimientoRequest
+    public class SaveOfrecimientoGeneralRequest: SaveOfrecimientoRequest
     {
         public string HerramientaNombre { get; set; }
         public int PV { get; set; }

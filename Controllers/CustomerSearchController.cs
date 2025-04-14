@@ -60,6 +60,7 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("phones")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<PhoneTranslated>>> GetPhones([FromQuery] string idCuenta)
         {
             var phones = await _searchService.FetchPhones(idCuenta);

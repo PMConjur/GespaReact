@@ -19,9 +19,9 @@ namespace NoriAPI.Models.Phones
         public string HusoHorario { get; set; }
         public TimeSpan? SegHorarioContacto { get; set; }
         public string Extensión { get; set; }
-        public bool _Confirmado { get; set; }
+        public bool _ConfirmadoValue { get; set; }
         public DateTime Fecha_Insert { get; set; }
         public string Calificacion { get; set; }
-        public bool Activo { get; set; }
+        public bool ActivoValue { get; set; }
     }
 }

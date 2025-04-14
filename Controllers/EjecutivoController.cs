@@ -393,10 +393,10 @@ namespace NoriAPI.Controllers
             return Ok(result);
         }
 
-        [HttpPost("save-ofrecimiento-extra")]
-        public async Task<ActionResult> SaveOfrecimientoExtra([FromBody] SaveOfrecimientoExtraRequest ofrecimientoInfo)
+        [HttpPost("save-ofrecimiento-general")]
+        public async Task<ActionResult> SaveOfrecimientoGeneral([FromBody] SaveOfrecimientoGeneralRequest ofrecimientoInfo)
         {
-            var result = await _ejecutivoService.GuardarOfrecimientoExtra(ofrecimientoInfo);
+            var result = await _ejecutivoService.GuardarOfrecimientoGeneral(ofrecimientoInfo);
 
             if (!result.Success)
             {
@@ -584,6 +584,7 @@ namespace NoriAPI.Controllers
         #region Estado de Cuenta
 
         [HttpGet("estadoDeCuenta/{idCartera}/{idCuenta}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetEstadoDeCuenta(int idCartera, string idCuenta)
         {
             try
@@ -604,9 +605,10 @@ namespace NoriAPI.Controllers
                 }
 
                 var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["EstadoDeCuenta"]);
-                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
+                string jsonEstadoCuenta = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
 
-                return Ok(jsonString);
+                return Content(jsonEstadoCuenta, "application/json; charset=utf-8");
+
             }
             catch (Exception ex)
             {
@@ -1338,14 +1340,12 @@ namespace NoriAPI.Controllers
         }
 
         [HttpGet("viewQuejas")]
-
+        [AllowAnonymous]
         public async Task<IActionResult> GetViewQuejas(int idCartera, string idCuenta)
         {
             try
             {
-                DataTable viewQuejas = new DataTable();
-
-                viewQuejas = await _ejecutivoService.GetViewQuejasAsync(idCartera, idCuenta);
+                DataTable viewQuejas = await _ejecutivoService.GetViewQuejasAsync(idCartera, idCuenta);
 
                 // Convertimos el DataTable a una lista de diccionarios
                 var QuejasView = ConvertDataTableToList(viewQuejas);
@@ -1353,7 +1353,6 @@ namespace NoriAPI.Controllers
                 // Serializamos la lista a JSON
                 string jsonViewQuejas = JsonSerializer.Serialize(QuejasView, new JsonSerializerOptions { WriteIndented = true });
 
-                //return Ok(jsonViewQuejas);
                 return Content(jsonViewQuejas, "application/json; charset=utf-8");
 
             }

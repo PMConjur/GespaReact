@@ -185,8 +185,10 @@ namespace NoriAPI.Services
             var phonesList = await _searchRepository.GetPhones(idCuenta, 1);
 
 
-            ClasesGespaNonStatic gespaPhonesList = new();
-            gespaPhonesList.dtCatalogos = await _ejecutivoRepository.VwCatalogos();
+            ClasesGespaNonStatic gespaPhonesList = new()
+            {
+                dtCatalogos = await _ejecutivoRepository.VwCatalogos()
+            };
             gespaPhonesList.CargaCatalogos();
 
             var phonesTranslatedList = phonesList.Select(p => new PhoneTranslated
@@ -201,10 +203,10 @@ namespace NoriAPI.Services
                 HusoHorario = p.HusoHorario,
                 SegHorarioContacto = p.SegHorarioContacto,
                 Extensión = p.Extensión,
-                _Confirmado = p._Confirmado,
+                _ConfirmadoValue = p._ConfirmadoValue,
                 Fecha_Insert = p.Fecha_Insert,
                 Calificacion = p.Calificacion,
-                Activo = p.Activo,
+                ActivoValue = p.ActivoValue,
                 Titulares = p.Titulares,
                 Conocidos = p.Conocidos,
                 Desconocidos = p.Desconocidos,
@@ -212,7 +214,9 @@ namespace NoriAPI.Services
                 IntentosViciDial = p.IntentosViciDial,
                 Telefonia = BuscarEnValoresHashtable(gespaPhonesList._htValoresCatálogo, p.idTelefonía.ToString()),
                 Origen = BuscarEnValoresHashtable(gespaPhonesList._htValoresCatálogo, p.idOrigen.ToString()),
-                Clase = BuscarEnValoresHashtable(gespaPhonesList._htValoresCatálogo, p.idClase.ToString())
+                Clase = BuscarEnValoresHashtable(gespaPhonesList._htValoresCatálogo, p.idClase.ToString()),
+                Confirmado = p._ConfirmadoValue ? "✓" : "X",
+                Activo = p.ActivoValue ? "✓" : "X"
             }).ToList();
 
 

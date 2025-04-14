@@ -64,7 +64,7 @@ namespace NoriAPI.Services
         Task<ResultadoCalculadora> ValidateInfoCalculadora1(int Cartera, string NoCuenta, int idHerr);
         Task<ResultadoCalculadora2> ValidateInfoCalculadora2(int idherramienta, string nocuenta, int IdCartera, double MontoRequerido, int Descuento, int iMeses, string dtpFecha, int periodos, int modificar, double montoMod, string fechaPagoMod, int agregarPagos, int filaMod);
         Task<dynamic> GuardarOfrecimiento(SaveOfrecimientoRequest ofrecimientoInfo);
-        Task<dynamic> GuardarOfrecimientoExtra(SaveOfrecimientoExtraRequest ofrecimientoInfo);
+        Task<dynamic> GuardarOfrecimientoGeneral(SaveOfrecimientoGeneralRequest ofrecimientoInfo);
         Task<string> GuardaEliminaPlazos(EliminaGuardaPlazos PlazosInfo);
         Task<NegociacionPlazosOutput> GuardaNegociacionPlazos(NegociacionPlazosInput input);
         Task<dynamic> IncrementaNegociacion(IncrementoNegociacion incrementaNegInfo);
@@ -2208,7 +2208,7 @@ namespace NoriAPI.Services
         /// - Success: indica si la operación fue exitosa
         /// - Validadores: resultado del SP en caso exitoso
         /// </returns>
-        public async Task<dynamic> GuardarOfrecimientoExtra(SaveOfrecimientoExtraRequest ofrecimientoInfo)
+        public async Task<dynamic> GuardarOfrecimientoGeneral(SaveOfrecimientoGeneralRequest ofrecimientoInfo)
         {
             // Validación base (verificaciones generales)
             string verificaOfrecimiento = VerificaOfrecimientoNegociación(ofrecimientoInfo);
@@ -2244,7 +2244,7 @@ namespace NoriAPI.Services
         }
 
 
-        public static string VerificaOfrecimientoNegociacionAdicional(SaveOfrecimientoExtraRequest ofrecimiento)
+        public static string VerificaOfrecimientoNegociacionAdicional(SaveOfrecimientoGeneralRequest ofrecimiento)
         {
             // Validación: Herramientas que requieren exactamente 2 pagos
             var herramientasDosPagos = new List<string>
