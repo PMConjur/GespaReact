@@ -183,7 +183,7 @@ const TableTimes = ({ updatedTimes }) => {
         
         if (!updatedTimes) return;
 
-
+        console.log("Actualizando datos con tiempos nuevos:", updatedTimes);
         setTimesData(prev => {
             const newTotal = { ...prev.total };
 

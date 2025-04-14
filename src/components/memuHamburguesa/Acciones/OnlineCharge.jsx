@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Modal, Row, Col } from "react-bootstrap";
 import TableOnlineCharge from "../../TableOnlineCharge";
 import FormOnlineCharge from "./FormOnlineCharge";
@@ -8,11 +8,34 @@ const OnlineCharge = ({ show, handleClose }) => {
     const { isOnlineChargeActive, setOnlineChargeActive } = useContext(AppContext);
     const [allowClose, setAllowClose] = useState(false);
 
+    // Resetear estados cuando el modal se cierra
+    useEffect(() => {
+        if (!show) {
+            console.log('🔄 Reseteando estados para nueva apertura');
+            setAllowClose(false);
+            setOnlineChargeActive(false); // Forzar reset al cerrar
+        }
+    }, [show, setOnlineChargeActive]);
+
+    // Manejar cierre del modal
     const handleModalClose = () => {
-        if (!isOnlineChargeActive || allowClose ) {
-            handleClose();
-            setAllowClose(true); // Resetear para la próxima apertura
-            setOnlineChargeActive(false); // Asegurar que el formulario se desactive
+        console.log('🔘 Close conditions:', {
+            canClose: !isOnlineChargeActive || allowClose,
+            isOnlineChargeActive,
+            allowClose
+        });
+
+        if (!isOnlineChargeActive || allowClose) {
+            console.log('✅ Closing modal');
+            handleClose(); // Esto debería cambiar show a false
+        }
+    };
+
+    // Manejar éxito del formulario
+    const handleFormSuccess = (success) => {
+        if (success) {
+            console.log('🟢 Registro exitoso - Habilitando cierre');
+            setAllowClose(true);
         }
     };
 
@@ -22,9 +45,7 @@ const OnlineCharge = ({ show, handleClose }) => {
             onHide={handleModalClose}
             size="xl"
             backdrop={isOnlineChargeActive && !allowClose ? 'static' : true}
-            keyboard={false}
-            contentClassName="d-flex flex-column bg-dark"
-            dialogClassName="my-custom-modal"
+            keyboard={isOnlineChargeActive && !allowClose ? false : true}
         >
             <Modal.Header 
                 closeButton={!isOnlineChargeActive || allowClose}
@@ -35,33 +56,16 @@ const OnlineCharge = ({ show, handleClose }) => {
                 </Modal.Title>
             </Modal.Header>
 
-            <Modal.Body className="flex-grow-1 p-0 d-flex flex-column bg-dark" style={{ overflow: "hidden" }}>
+            <Modal.Body className="flex-grow-1 p-0 d-flex flex-column bg-dark">
                 <Row className="flex-grow-1 g-0 m-0" style={{ height: "100%" }}>
-                    <Col 
-                        md={isOnlineChargeActive ? 8 : 12} 
-                        className="h-100 d-flex flex-column p-0" 
-                        style={{ maxHeight: "700px", overflowY: "auto" }}
-                    >
+                    <Col md={isOnlineChargeActive ? 8 : 12} className="h-100 p-0">
                         <TableOnlineCharge />
                     </Col>
                     
                     {isOnlineChargeActive && (
-                        <Col 
-                            md={4}
-                            className="h-100 d-flex flex-column p-3 bg-dark text-white"
-                            style={{ 
-                                maxHeight: "700px",
-                                overflowY: "auto",
-                                borderLeft: "1px solid #444"
-                            }}
-                        >
+                        <Col md={4} className="h-100 p-3 bg-dark text-white">
                             <FormOnlineCharge 
-                                handleClose={(success) => {
-                                    if (success) {
-                                        setAllowClose(false); // Permitir cierre después de registro
-                                        
-                                    }
-                                }}
+                                handleClose={handleFormSuccess}
                             />
                         </Col>
                     )}

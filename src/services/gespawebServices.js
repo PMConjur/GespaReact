@@ -469,15 +469,10 @@ export const getOnlinechargeData = async (idCartera, idCuenta) => {
     }
 
     const url = `/ejecutivo/cargosEnLinea/${idCartera}/${idCuenta}`;
-    console.log("Solicitando datos de cargos en linea a:", url); // Depurar URL
+   
 
     const response = await servicio.get(url);
-    const message = getErrorStatus(response.status);
 
-    if (response.status !== 200) {
-      toast.error(message, { position: "top-right" });
-      throw new Error(message);
-    }
 
     return response.data;
   } catch (error) {

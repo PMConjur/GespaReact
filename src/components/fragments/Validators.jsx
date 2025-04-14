@@ -29,7 +29,10 @@ const Validators = ({ show, handleClose, handleValidate }) => {
   
   // Estados para controlar los modales
   const [showOnlineChargeModal, setShowOnlineChargeModal] = useState(false);
-  const [showPaymentModal, setShowPaymentsModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  // Función para abrir el modal de OnlineCharge
+
 
   useEffect(() => {
     const fetchValidatorsList = async () => {
@@ -81,13 +84,11 @@ const Validators = ({ show, handleClose, handleValidate }) => {
       const idEjecutivo = validator;
       const Contraseña = password;
 
-         // Imprime los datos que se enviarán al endpoint
-    console.log("Datos enviados a fetchValidators:", {
-      idProducto,
-      idEjecutivo,
-      Contraseña,
-    });
-
+      console.log("Datos enviados a fetchValidators:", {
+        idProducto,
+        idEjecutivo,
+        Contraseña,
+      });
 
       const response = await fetchValidators(
         idProducto,
@@ -109,17 +110,15 @@ const Validators = ({ show, handleClose, handleValidate }) => {
       handleClose();
 
       // Abrir modales según las condiciones
-      if (isOnlineChargeActive && typeof setPaymentActive === 'function') {
-        setShowOnlineChargeModal(true);
-        setPaymentActive(true); // Asegurar que el otro modal no se active
+      if (isOnlineChargeActive === true) {
+        handleOpenOnlineCharge(); // Usamos la nueva función para abrir
         toast.success("Validación exitosa. Continua con el proceso de Cargo en Linea.", {
           position: "top-center",
         });
       }
       
-      if (isPaymentActive && typeof setOnlineChargeActive === 'function') {
-        setShowPaymentsModal(true);
-        setOnlineChargeActive(true); // Asegurar que el otro modal no se active
+      if (isPaymentActive === true) {
+        setShowPaymentModal(true);
         toast.success("Validación exitosa. Continua con el proceso de Pago.", {
           position: "top-center",
         });
@@ -127,8 +126,6 @@ const Validators = ({ show, handleClose, handleValidate }) => {
 
     } catch (error) {
       console.error("Datos incorrectos, vuelva intentarlo:", error);
-
-      // Muestra un toast de error si ocurre un problema
       const message = error.response ? getErrorStatus(error.response.status) : "Error desconocido";
       toast.error(`${message}`, {
         position: "top-center",
@@ -138,13 +135,20 @@ const Validators = ({ show, handleClose, handleValidate }) => {
     }
   };
 
-  const handleCloseOnlineChargeModal = () => {
-    setShowOnlineChargeModal(false);
-    setOnlineChargeActive(false);
-  };
+  const handleOpenOnlineCharge = () => {
+    console.log('🎯 Abriendo modal con formulario');
+    setOnlineChargeActive(true); // <-- Esto es crucial
+    setShowOnlineChargeModal(true);
+};
+
+const handleCloseOnlineChargeModal = () => {
+  console.log('🗑️ Cerrando y preparando para reapertura');
+  setShowOnlineChargeModal(false);
+  setOnlineChargeActive(false); // ¡Esto es crucial!
+};
 
   const handleClosePaymentModal = () => {
-    setShowPaymentsModal(false);
+    setShowPaymentModal(false);
     setPaymentActive(false);
   };
 

@@ -7,7 +7,7 @@ import { idBanco } from "../../valoresBanco";
 
 const FormOnlineCharge = ({ handleClose, onRegistrationSuccess, setOnlineChargeActive }) => {
     const { searchResults } = useContext(AppContext);
-    
+
     if (!searchResults || searchResults.length === 0) {
         toast.error("No se encontraron resultados de búsqueda. No se puede usar este formulario.");
         return null;
@@ -74,16 +74,16 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess, setOnlineChargeA
 
     const validarTarjeta = (tarjeta) => {
         let iSuma = 0;
-        
-        if (!(tarjeta.startsWith("34") || tarjeta.startsWith("37") || 
-              tarjeta.startsWith("5") || tarjeta.startsWith("4") || 
-              tarjeta.startsWith("6"))) {
+
+        if (!(tarjeta.startsWith("34") || tarjeta.startsWith("37") ||
+            tarjeta.startsWith("5") || tarjeta.startsWith("4") ||
+            tarjeta.startsWith("6"))) {
             return false;
         }
 
         for (let i = 0; i < tarjeta.length; i++) {
             let digito = parseInt(tarjeta.charAt(i), 10);
-            
+
             if ((tarjeta.length - i) % 2 === 0) {
                 digito *= 2;
                 if (digito > 9) digito -= 9;
@@ -158,89 +158,135 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess, setOnlineChargeA
 
     const validarNombre = (nombre) => {
         if (nombre.length < 5) return true;
-        
+
         const vocales = nombre.match(/[aeiouáéíóú]/gi) || [];
         const proporcionVocales = vocales.length / nombre.length;
-        
+
         if (proporcionVocales < 0.3) return false;
-        
+
         const tieneSecuenciasRepetidas = /([^aeiou]{4,})/gi.test(nombre);
         if (tieneSecuenciasRepetidas) return false;
-        
+
         const caracteresUnicos = new Set(nombre.toLowerCase()).size;
         const proporcionUnicos = caracteresUnicos / nombre.length;
-        
+
         if (proporcionUnicos > 0.7 && nombre.length > 10) return false;
-        
+
         return true;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-      
-        if (!formData.idCuenta || !formData.tarjeta || !formData.nombre || 
-            !formData.vencimiento || !formData.monto || !formData.idBanco || 
-            !formData.autorizacion) {
-            toast.error("Todos los campos son obligatorios.");
-            return;
-        }
-            
-        const nombreSinEspacios = formData.nombre.replace(/\s/g, '');
-        if (nombreSinEspacios.length < 6) {
-            toast.error("El nombre debe contener al menos 6 letras (sin contar espacios).");
-            return;
-        }
         
-        if (!validarNombre(formData.nombre)) {
-            toast.error("El nombre ingresado no parece válido. Por favor ingrese un nombre real.");
-            return;
+        // 1. Validaciones de campos obligatorios
+        const requiredFields = {
+            'Número de cuenta': formData.idCuenta?.trim(),
+            'Tarjeta/CLABE': formData.tarjeta?.trim(),
+            'Nombre del titular': formData.nombre?.trim(),
+            'Monto': formData.monto,
+            'Banco': formData.idBanco,
+            'Autorización': formData.autorizacion?.trim()
+        };
+    
+        for (const [field, value] of Object.entries(requiredFields)) {
+            if (!value) {
+                toast.error(`${field} es requerido`);
+                return;
+            }
         }
-      
+    
+        // 2. Validaciones específicas
         const tarjetaLimpia = removeSeparators(formData.tarjeta);
-
-        if (tipoTarjeta === "tarjetaCredito" && !validarTarjeta(tarjetaLimpia)) {
-            toast.error("Número de tarjeta inválido.");
-            return;
+        
+        if (tipoTarjeta === "tarjetaCredito") {
+            if (tarjetaLimpia.length !== 16) {
+                toast.error("Tarjeta debe tener 16 dígitos");
+                return;
+            }
+            if (!validarTarjeta(tarjetaLimpia)) {
+                toast.error("Número de tarjeta inválido");
+                return;
+            }
         }
-
+    
         if (tipoTarjeta === "clabeInterbancaria" && tarjetaLimpia.length !== 18) {
-            toast.error("La CLABE interbancaria debe tener exactamente 18 dígitos.");
+            toast.error("CLABE debe tener 18 dígitos");
             return;
         }
-      
-        if (tipoTarjeta === "tarjetaCredito" && validarTarjeta(tarjetaLimpia)) {
-            toast.success("Número de tarjeta válido. Procesando cargo...");
-        } else if (tipoTarjeta === "clabeInterbancaria") {
-            toast.success("CLABE interbancaria válida. Procesando cargo...");
-        } else if (tipoTarjeta === "tarjetaEnrolada") {
-            toast.success("Tarjeta enrolada válida. Procesando cargo...");
+    
+        if (formData.nombre.trim().length < 6) {
+            toast.error("Nombre debe tener mínimo 6 caracteres");
+            return;
         }
-      
+    
+        if (Number(formData.monto) <= 0) {
+            toast.error("Monto debe ser mayor a cero");
+            return;
+        }
+    
+        // 3. Preparación de datos para API
+        const payload = {
+            idCartera: 1,
+            idCuenta: formData.idCuenta.trim(),
+            idEjecutivo: formData.idEjecutivo,
+            tarjeta: tarjetaLimpia,
+            nombre: formData.nombre.trim(),
+            vencimiento: `${formData.vencimientoAnio}-${formData.vencimientoMes}-01`,
+            monto: Math.abs(Number(formData.monto)),
+            idBanco: Number(formData.idBanco),
+            esClabe: tipoTarjeta === "clabeInterbancaria",
+            domiciliado: formData.domiciliado,
+            autorizacion: formData.autorizacion.trim(),
+            idEjecutivo_Autorizo: formData.idEjecutivo_Autorizo,
+            sistema: true,
+            status: formData.status
+        };
+    
+        console.log('📤 Payload para API:', payload);
+    
         setLoading(true);
-      
+    
         try {
-          const dataToSend = {
-              ...formData,
-              tarjeta: tarjetaLimpia,
-              monto: parseInt(formData.monto, 10),
-              idBanco: parseInt(formData.idBanco, 10)
-          };
-  
-          const response = await createOnlineCharge(dataToSend);
-  
-          if (response.success) {
-              toast.success("Cargo registrado  exitosamente");
-              resetForm();
-              // Notificar éxito (true) para mostrar el botón cerrar
-              handleClose(true);
-          }
-      } catch (error) {
-          toast.error(error.message);
-          handleClose(false);
-      } finally {
-          setLoading(false);
-      }
-  };
+            // 4. Llamada a la API
+            const response = await createOnlineCharge(payload);
+    
+            if (!response) {
+                throw new Error("No hubo respuesta del servidor");
+            }
+    
+            if (response.error) {
+                throw new Error(response.error.message || "Error en el servidor");
+            }
+    
+            // 5. Éxito - Reset y notificación
+            toast.success("✅ Cargo registrado exitosamente");
+            resetForm();
+    
+            // 6. Notificar éxito al componente padre
+            if (typeof handleClose === 'function') {
+                handleClose(true);
+                console.log('🔄 Notificado éxito al padre');
+            }
+    
+        } catch (error) {
+            // 7. Manejo detallado de errores
+            console.error('❌ Error en handleSubmit:', error);
+            
+            const errorMessage = error.response?.data?.message || 
+                                error.message || 
+                                "Error al procesar el cargo";
+            
+            toast.error(`❌ ${errorMessage}`);
+    
+            // 8. Notificar fallo al componente padre
+            if (typeof handleClose === 'function') {
+                handleClose(false);
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <Form onSubmit={handleSubmit} className="p-3">
             <Row className="mb-3">
@@ -298,15 +344,15 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess, setOnlineChargeA
                                         tipoTarjeta === "tarjetaCredito"
                                             ? 19
                                             : tipoTarjeta === "clabeInterbancaria"
-                                            ? 21
-                                            : 4
+                                                ? 21
+                                                : 4
                                     }
                                     placeholder={
                                         tipoTarjeta === "tarjetaCredito"
                                             ? "XXXX-XXXX-XXXX-XXXX"
                                             : tipoTarjeta === "clabeInterbancaria"
-                                            ? "XXX-XXX-XXXXXXXXXXX-X"
-                                            : "XXXX"
+                                                ? "XXX-XXX-XXXXXXXXXXX-X"
+                                                : "XXXX"
                                     }
                                 />
                             </Form.Group>
@@ -455,9 +501,9 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess, setOnlineChargeA
                                 variant="primary"
                                 type="submit"
                                 className="w-100"
-                                disabled={loading }
+                                disabled={loading}
                             >
-                                {loading  ? "Guardando..." : "Guardar"}
+                                {loading ? "Guardando..." : "Guardar"}
                             </Button>
                         </Col>
                     </Row>

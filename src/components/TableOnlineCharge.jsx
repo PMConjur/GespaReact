@@ -9,7 +9,8 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
   const { searchResults } = useContext(AppContext); // Hook 1
   const [sortedData, setSortedData] = useState([]); // Hook 2
   const [sortByOldest, setSortByOldest] = useState(false); // Hook 3
-  const [toastShown, setToastShown] = useState(false); // Hook 4
+  const [toastShown, setToastShown] = useState(false); // Hook 
+  const [loading, setLoading] = useState(true); // Hook 4
 
 
     // Función para formatear la hora con AM/PM
@@ -41,22 +42,29 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
   // Hook 5: useEffect para obtener datos
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true); // Activar estado de carga
       if (!searchResults || searchResults.length === 0) {
         toast.error("Error 428: Primero debes buscar una Cuenta");
+        setLoading(false); // Desactivar estado de carga si hay error
         return;
       }
 
       try {
+        setLoading(true); // Activar estado de carga
         const idCuenta = searchResults[0]?.idCuenta; // Obtener el primer idCuenta como ejemplo
         if (!idCuenta) {
           toast.error("No se encontró un idCuenta válido.");
+          setLoading(false); // Desactivar estado de carga si hay error
           return;
         }
 
         const onlineChargeData = await getOnlinechargeData(1, idCuenta); // idCartera fijo como 1
+
         setSortedData(onlineChargeData);
       } catch (error) {
         console.error("Error al obtener los datos de Cargos ne Linea:", error);
+      } finally {
+        setLoading(false); // Desactivar estado de carga al finalizar
       }
     };
 
@@ -85,6 +93,14 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
       });
     }
   }, [sortByOldest, sortedData, toastShown]);
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", marginTop: "20px" }}>
+        <span className="ms-2">Cargando datos...</span>
+      </div>
+    );
+  }
 
   if (!sortedData || sortedData.length === 0) {
     return <p>No hay datos disponibles.</p>;
