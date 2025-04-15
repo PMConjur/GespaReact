@@ -1,25 +1,64 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Form, Button, Spinner, Row, Col } from "react-bootstrap";
 import { toast } from "sonner";
 import { createFollows } from "../../../services/gespawebServices";
 import { AppContext } from "../../../pages/Managment";
 
-const FormFollowUps = ({ handleClose,isFollowUpsActive, onSuccessfulRegister }) => {
-    const { searchResults } = useContext(AppContext);
+const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister }) => {
+    const { isManagment, searchResults } = useContext(AppContext);
 
+    // Verificar si hay resultados de búsqueda
     if (!searchResults || searchResults.length === 0) {
-        toast.error(
-            "No se encontraron resultados de búsqueda. No se puede usar este formulario."
-        );
+        toast.error("No se encontraron resultados de búsqueda. No se puede usar este formulario.");
         return null;
     }
 
-    const idCuenta = searchResults?.map((result) => result.idCuenta) || [];
+    // Obtener datos del contexto y localStorage
+    const idCuenta = searchResults.map((result) => result.idCuenta);
     const responseData = JSON.parse(localStorage.getItem("responseData"));
     const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo.idEjecutivo;
+    const selectedAnswer = responseData?.selectedAnswer;
+    console.log('Estado del telefono:', isManagment.gestion?.numeroTelefonico);
+    
+    // Función para formatear el número (nueva función agregada)
+    const formatPhoneNumber = (phone) => {
+        if (!phone) return "";
+        
+        const phoneStr = phone.toString();
+        if (phoneStr.length <= 4) return phoneStr;
+        
+        const last4 = phoneStr.slice(-4);
+        const masked = phoneStr.slice(0, -4).replace(/./g, 'X');
+        
+        return masked + last4;
+    };
 
+    // Función para obtener el número telefónico del contexto
+    const getContextPhoneNumber = () => {
+        // Primero verifica isManagment.gestion
+        if (isManagment?.gestion?.numeroTelefonico) {
+            return {
+                raw: isManagment.gestion.numeroTelefonico.toString(),
+                formatted: formatPhoneNumber(isManagment.gestion.numeroTelefonico)
+            };
+        }
+        
+        // Luego verifica selectedAnswer como fallback
+        if (selectedAnswer?.dataPhone?.númeroTelefónico) {
+            return {
+                raw: selectedAnswer.dataPhone.númeroTelefónico.toString(),
+                formatted: formatPhoneNumber(selectedAnswer.dataPhone.númeroTelefónico)
+            };
+        }
+        
+        return {
+            raw: "",
+            formatted: ""
+        };
+    };
+
+    // Estado del formulario
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
     const [formData, setFormData] = useState({
         idCartera: 1,
         idCuenta: idCuenta[0].trim(),
@@ -28,51 +67,33 @@ const FormFollowUps = ({ handleClose,isFollowUpsActive, onSuccessfulRegister }) 
         segundo: "07:00:00",
         idAcercamiento: "1601",
         recordatorio: false,
-        numeroTelefonico: "",
+        numeroTelefonico: "", // Guarda el número completo
+        displayedPhone: "",   // Guarda el número formateado para mostrar
         datoContacto: "",
         idMotivoS: "0",
     });
 
+    // Actualizar el número cuando cambie el contexto
+    useEffect(() => {
+        const phone = getContextPhoneNumber();
+        setFormData(prev => ({
+            ...prev,
+            numeroTelefonico: phone.raw,
+            displayedPhone: phone.formatted
+        }));
+    }, [isManagment]); // Dependencias del efecto
+    // Manejar cambios en los campos editables
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-    
-        if (name === "numeroTelefonico") {
-            // 1. Permite números y '+' (para internacionales)
-            const numericValue = value.replace(/[^0-9]/g, "");
-    
-            // 2. Validación anti-números-genéricos (solo si tiene 10+ dígitos)
-            if (numericValue.replace(/\D/g, "").length >= 15) {
-                const digitsOnly = numericValue.replace(/\D/g, "");
-                
-                const isInvalidGenericNumber = (
-                    /^(\d)\1{9,}$/.test(digitsOnly) || // Todos iguales (1111111111)
-                    /^(\d{2,})\1{4,}$/.test(digitsOnly) || // Patrones repetidos (7474747474)
-                    /^0123456789$/.test(digitsOnly) || // Secuencia ascendente
-                    /^9876543210$/.test(digitsOnly) || // Secuencia descendente
-                    /^(\d)\1*(\d)\2*(\d)\3*$/.test(digitsOnly) // Combinaciones sospechosas (444888222)
-                );
-    
-                if (isInvalidGenericNumber) {
-                    toast.error("Número no válido. Evite patrones repetitivos");
-                    return;
-                }
-            }
-    
-            // 3. Actualiza el estado (máximo 15 caracteres)
-            setFormData(prev => ({
-                ...prev,
-                [name]: numericValue.slice(0, 15)
-            }));
-        }
-        else if (name === "datoContacto") {
+
+        if (name === "datoContacto") {
             if (value.length > 280) {
                 toast.error("Máximo 280 caracteres permitidos");
                 return;
             }
-            const sanitizedValue = value.replace(/[^a-zA-Z0-9\s]/g, "");
             setFormData(prev => ({
                 ...prev,
-                [name]: sanitizedValue,
+                [name]: value,
             }));
         }
         else if (name === "fecha") {
@@ -94,92 +115,73 @@ const FormFollowUps = ({ handleClose,isFollowUpsActive, onSuccessfulRegister }) 
         }
     };
 
+    // Guardar el seguimiento
     const handleSave = async () => {
         setLoading(true);
-        setError(null);
 
         try {
-            // Validación del teléfono
-            if (formData.numeroTelefonico.length < 10) {
-                toast.error("El número telefónico debe tener al menos 10 dígitos.");
-                setLoading(false);
+            // Validación básica del teléfono (solo si es requerido)
+            if (!formData.numeroTelefonico) {
+                toast.error("No se encontró un número telefónico válido en el contexto.");
                 return;
             }
 
-            // Validación de fecha
+            // Resto de validaciones
             const today = new Date().toISOString().split("T")[0];
             if (formData.fecha < today) {
                 toast.error("La fecha no puede ser anterior al día actual.");
-                setLoading(false);
                 return;
             }
 
-
-
-            // Validación de horario
             if (formData.recordatorio) {
                 const [hours, minutes] = formData.segundo.split(":").map(Number);
                 const period = hours >= 12 ? "PM" : "AM";
 
                 if (period === "AM" && (hours < 7 || hours > 11)) {
                     toast.error("Horario AM inválido. Debe ser entre 7:00 AM y 11:59 AM");
-                    setLoading(false);
                     return;
                 }
 
-                if (period === "PM" && (hours < 12 || hours > 22)) {
-                    toast.error(
-                        "Horario PM inválido. Debe ser entre 12:00 PM y 10:00 PM"
-                    );
-                    setLoading(false);
+                if (period === "PM" && (hours < 12 || hours > 21)) {
+                    toast.error("Horario PM inválido. Debe ser entre 12:00 PM y 10:00 PM");
                     return;
                 }
-
-                if (minutes < 0 || minutes > 59) {
-                    toast.error("Los minutos deben estar entre 00 y 59");
-                    setLoading(false);
-                    return;
-                }
-                
             }
 
-            const dataToSend = { ...formData };
-            if (!dataToSend.datoContacto.trim()) {
-                dataToSend.datoContacto = null;
-            }
+            // Preparar datos para enviar
+            const dataToSend = { 
+                ...formData,
+                datoContacto: formData.datoContacto.trim() || null
+            };
 
-            
+            console.log("Datos a enviar:", dataToSend); // Debug
 
-            console.log("Datos a enviar al endpoint:", dataToSend); // Agregado para depuración
-
+            // Enviar datos
             const response = await createFollows(dataToSend);
             toast.success(response.mensaje || "Seguimiento guardado exitosamente.");
-
-             // Notificar al componente padre que se ha realizado un registro
+            
+            // Notificar registro exitoso
             onSuccessfulRegister();
 
-            // Limpiar los campos del formulario
+            // Resetear formulario (manteniendo el número del contexto)
             setFormData({
-                idCartera: 1,
-                idCuenta: idCuenta[0].trim(),
-                idEjecutivo: idEjecutivo,
+                ...formData,
                 fecha: new Date().toISOString().split("T")[0],
                 segundo: "07:00:00",
-                idAcercamiento: "1601",
                 recordatorio: false,
-                numeroTelefonico: "",
                 datoContacto: "",
                 idMotivoS: "0",
+                // numeroTelefonico se mantiene automáticamente del contexto
             });
+
         } catch (error) {
             console.error("Error al guardar el seguimiento:", error);
-            toast.error(
-                error.message || "Ocurrió un error al guardar el seguimiento."
-            );
+            toast.error(error.message || "Ocurrió un error al guardar el seguimiento.");
         } finally {
             setLoading(false);
         }
     };
+
     return (
         <div className="p-3">
             <Form>
@@ -204,17 +206,20 @@ const FormFollowUps = ({ handleClose,isFollowUpsActive, onSuccessfulRegister }) 
                             <Form.Control
                                 type="tel"
                                 name="numeroTelefonico"
-                                value={formData.numeroTelefonico}
-                                onChange={handleChange}
-                                placeholder="Ej: 5512345678"
-                                pattern="[0-9]{10,13}"
-                                title="Debe contener entre 10 y 13 dígitos numéricos"
-                                required
+                                value={formData.displayedPhone || ""}
+                                readOnly
+                                placeholder={formData.displayedPhone || "No se encontró número en el contexto"}
                             />
+                            {!formData.displayedPhone && (
+                                <Form.Text className="text-danger">
+                                    Advertencia: No se encontró número telefónico en el contexto
+                                </Form.Text>
+                            )}
                         </Form.Group>
                     </Col>
                 </Row>
 
+                {/* Resto del formulario se mantiene igual */}
                 <Row className="mb-3">
                     <Col md={4}>
                         <Form.Group>
@@ -293,9 +298,7 @@ const FormFollowUps = ({ handleClose,isFollowUpsActive, onSuccessfulRegister }) 
                                             if (period === "AM" && hour >= 12) hour -= 12;
                                             setFormData({
                                                 ...formData,
-                                                segundo: `${hour
-                                                    .toString()
-                                                    .padStart(2, "0")}:${minute}:${second}`,
+                                                segundo: `${hour.toString().padStart(2, "0")}:${minute}:${second}`,
                                             });
                                         }}
                                         aria-label="Seleccionar AM/PM"
@@ -326,11 +329,7 @@ const FormFollowUps = ({ handleClose,isFollowUpsActive, onSuccessfulRegister }) 
                         name="datoContacto"
                         value={formData.datoContacto}
                         onChange={handleChange}
-                        style={{
-                            height: "170px",
-                            resize: "none",
-                            overflowY: "auto",
-                        }}
+                        style={{ height: "170px", resize: "none" }}
                         placeholder="Detalles adicionales del contacto..."
                         maxLength={280}
                     />

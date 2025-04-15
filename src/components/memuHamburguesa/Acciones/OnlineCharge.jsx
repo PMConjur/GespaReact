@@ -9,11 +9,11 @@ const OnlineCharge = ({ show, handleClose }) => {
     const [allowClose, setAllowClose] = useState(false);
 
             // ✅ Añade este console.log ANTES de abrir el modal
-            console.log('Context values (OnlineCharge - RENDER):', {
-                isOnlineChargeActive, // Valor del contexto recibido
-                show,                // Prop que controla visibilidad del modal
-                allowClose           // Estado local
-            });
+            // console.log('Context values (OnlineCharge - RENDER):', {
+            //     isOnlineChargeActive, // Valor del contexto recibido
+            //     show,                // Prop que controla visibilidad del modal
+            //     allowClose           // Estado local
+            // });
 
     // Resetear estados cuando el modal se cierra
     useEffect(() => {
