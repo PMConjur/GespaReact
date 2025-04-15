@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useContext } from "react";
+import { useState, useCallback, useEffect, useContext, useRef } from "react";
 import { Table, Form } from "react-bootstrap";
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
@@ -10,27 +10,33 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
     const [sortByOldest, setSortByOldest] = useState(false);
     const [toastShown, setToastShown] = useState(false);
 
+    const toastShownRef = useRef(false); // Referencia para rastrear si el toast ya se mostró
+
     useEffect(() => {
         const fetchData = async () => {
             if (!searchResults || searchResults.length === 0) {
-                toast.error("Error 428: Primero debes buscar una Cuenta");
+                if (!toastShownRef.current) { // Solo mostrar si no se ha mostrado antes
+                    toast.error("Error 428: Primero debes buscar una Cuenta");
+                    toastShownRef.current = true; // Marcar como mostrado
+                }
                 return;
             }
-
+    
             try {
                 const idCuenta = searchResults[0]?.idCuenta;
                 if (!idCuenta) {
                     toast.error("No se encontró un idCuenta válido.");
                     return;
                 }
-
+    
                 const followUpsData = await getFollowUpsData(1, idCuenta);
                 setSortedData(followUpsData);
+                toastShownRef.current = false; // Resetear para futuras búsquedas
             } catch (error) {
                 console.error("Error al obtener los datos de seguimiento:", error);
             }
         };
-
+    
         fetchData();
     }, [searchResults]);
 

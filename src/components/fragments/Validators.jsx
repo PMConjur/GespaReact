@@ -109,9 +109,17 @@ const Validators = ({ show, handleClose, handleValidate }) => {
       setPassword("");
       handleClose();
 
+              // ✅ Añade este console.log ANTES de abrir el modal
+              console.log('Context values (Validators - PRE apertura):', {
+                isOnlineChargeActive,  // Valor del contexto
+                showOnlineChargeModal, // Estado local del modal
+              // Si aplica
+            });
+
       // Abrir modales según las condiciones
       if (isOnlineChargeActive === true) {
         handleOpenOnlineCharge(); // Usamos la nueva función para abrir
+        console.log(' isOnlineChargeActive sigue siendo true en el segundo intento');
         toast.success("Validación exitosa. Continua con el proceso de Cargo en Linea.", {
           position: "top-center",
         });
@@ -134,11 +142,13 @@ const Validators = ({ show, handleClose, handleValidate }) => {
       setLoading(false);
     }
   };
-
   const handleOpenOnlineCharge = () => {
     console.log('🎯 Abriendo modal con formulario');
-    setOnlineChargeActive(true); // <-- Esto es crucial
-    setShowOnlineChargeModal(true);
+    setOnlineChargeActive(false); // Reset primero
+    setTimeout(() => {
+        setOnlineChargeActive(true);
+        setShowOnlineChargeModal(true);
+    }, 50); // Pequeño delay para asegurar el ciclo de actualización
 };
 
 const handleCloseOnlineChargeModal = () => {

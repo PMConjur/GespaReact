@@ -157,8 +157,6 @@ const TableTimes = ({ updatedTimes }) => {
         if (!idEjecutivo) return;
 
         const loadInitialData = async () => {
-            toast.info("Cargando datos iniciales...");
-            console.log("Cargando datos iniciales para el ID de ejecutivo:", idEjecutivo);
 
             const formatOrDefault = (time) => time ? formatTime(time) : "--:--:--";
 
@@ -170,7 +168,7 @@ const TableTimes = ({ updatedTimes }) => {
                 promedio: promedioTimes,
             });
 
-            toast.success("Datos iniciales cargados correctamente");
+            
         };
 
         loadInitialData();
@@ -179,11 +177,9 @@ const TableTimes = ({ updatedTimes }) => {
     // Actualizar datos cuando cambia updatedTimes
     useEffect(() => {
 
-        toast.info("Actualizando datos con tiempos nuevos...");
         
         if (!updatedTimes) return;
-
-        console.log("Actualizando datos con tiempos nuevos:", updatedTimes);
+        
         setTimesData(prev => {
             const newTotal = { ...prev.total };
 

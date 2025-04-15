@@ -360,7 +360,7 @@ export const getTalksData = async (idCartera, idCuenta) => {
     }
 
     const url = `/ejecutivo/accionesNegociacion?idCartera=${idCartera}&idCuenta=${idCuenta}`;
-    console.log("Solicitando datos de Negociaciones a:", url); // Depurar URL"
+    
 
     const response = await servicio.get(url);
     const message = getErrorStatus(response.status);
@@ -372,7 +372,7 @@ export const getTalksData = async (idCartera, idCuenta) => {
 
     return response.data;
   } catch (error) {
-    console.error("Error en getTalksData:", error);
+    
     toast.error(
       "No se pudo obtener los datos de Negociaciones. Verifica la conexión o los parámetros."
     );
@@ -469,7 +469,7 @@ export const getOnlinechargeData = async (idCartera, idCuenta) => {
     }
 
     const url = `/ejecutivo/cargosEnLinea/${idCartera}/${idCuenta}`;
-   
+  
 
     const response = await servicio.get(url);
 
