@@ -101,7 +101,7 @@ const Times = ({ show, handleClose }) => {
             setCurrentTimer(0);
             timerSnapshot.current = 0;
             
-            toast.success("Tiempo registrado correctamente");
+        
             
         } catch (error) {
             console.error("Error en handleStopTimer:", error);

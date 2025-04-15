@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useContext } from "react";
+import { useState, useCallback, useEffect, useContext, useRef } from "react";
 import { Table, Spinner, Form } from "react-bootstrap"; // Importa Spinner para la animación de carga
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
@@ -11,14 +11,18 @@ const TablePayments = ({ customColumnNames = {} }) => {
   const [sortByOldest, setSortByOldest] = useState(false); // Hook 3
   const [toastShown, setToastShown] = useState(false); // Hook 4
   const [loading, setLoading] = useState(true); // Hook 5: Estado para la animación de carga
+  const hasShownToast = useRef(false);
 
   // Hook 6: useEffect para obtener datos
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true); // Mostrar animación de carga
+      setLoading(true);
       if (!searchResults || searchResults.length === 0) {
-        toast.error("Error 428: Primero debes buscar una Cuenta");
-        setLoading(false); // Ocultar animación de carga
+        if (!hasShownToast.current) {
+          toast.error("Error 428: Primero debes buscar una Cuenta");
+          hasShownToast.current = true;
+        }
+        setLoading(false);
         return;
       }
 

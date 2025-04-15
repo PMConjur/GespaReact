@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useContext } from "react";
+import { useState, useCallback, useEffect, useContext, useRef } from "react";
 import { Table, Form } from "react-bootstrap";
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
@@ -40,37 +40,40 @@ const TableOnlineCharge = ({ customColumnNames = {} }) => {
     };
 
   // Hook 5: useEffect para obtener datos
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true); // Activar estado de carga
-      if (!searchResults || searchResults.length === 0) {
+ // Agrega esto junto con tus otros hooks
+const errorToastShown = useRef(false);
+
+useEffect(() => {
+  const fetchData = async () => {
+    setLoading(true);
+    if (!searchResults || searchResults.length === 0) {
+      if (!errorToastShown.current) {
         toast.error("Error 428: Primero debes buscar una Cuenta");
-        setLoading(false); // Desactivar estado de carga si hay error
+        errorToastShown.current = true;
+      }
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const idCuenta = searchResults[0]?.idCuenta;
+      if (!idCuenta) {
+        toast.error("No se encontró un idCuenta válido.");
         return;
       }
 
-      try {
-        setLoading(true); // Activar estado de carga
-        const idCuenta = searchResults[0]?.idCuenta; // Obtener el primer idCuenta como ejemplo
-        if (!idCuenta) {
-          toast.error("No se encontró un idCuenta válido.");
-          setLoading(false); // Desactivar estado de carga si hay error
-          return;
-        }
+      const onlineChargeData = await getOnlinechargeData(1, idCuenta);
+      setSortedData(onlineChargeData);
+      errorToastShown.current = false; // Resetear al tener éxito
+    } catch (error) {
+      console.error("Error al obtener los datos de Cargos en Línea:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        const onlineChargeData = await getOnlinechargeData(1, idCuenta); // idCartera fijo como 1
-
-        setSortedData(onlineChargeData);
-      } catch (error) {
-        console.error("Error al obtener los datos de Cargos ne Linea:", error);
-      } finally {
-        setLoading(false); // Desactivar estado de carga al finalizar
-      }
-    };
-
-    fetchData();
-  }, [searchResults]);
-
+  fetchData();
+}, [searchResults]); // No necesitas agregar dependencias adicionales
   // Hook 6: useCallback para manejar el ordenamiento
   const handleSortChange = useCallback(() => {
     if (!toastShown) {

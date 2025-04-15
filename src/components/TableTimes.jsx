@@ -176,33 +176,32 @@ const TableTimes = ({ updatedTimes }) => {
 
     // Actualizar datos cuando cambia updatedTimes
     useEffect(() => {
-
-        
-        if (!updatedTimes) return;
+        if (!updatedTimes || Object.keys(updatedTimes).length === 0) return;
         
         setTimesData(prev => {
             const newTotal = { ...prev.total };
-
-            // Actualizar y sumar los campos que vienen en updatedTimes
+            let hasUpdates = false;
+    
+            // Update and sum fields coming in updatedTimes
             Object.entries(updatedTimes).forEach(([key, value]) => {
                 if (TIME_CATEGORIES.includes(key)) {
                     const dbValueInSeconds = prev.total[key] !== "--:--:--"
                         ? Number(prev.total[key].split(":").reduce((acc, time) => (60 * acc) + +time, 0))
                         : 0;
                     newTotal[key] = formatTime(dbValueInSeconds + Number(value));
+                    hasUpdates = true;
                 }
-                toast.success("Datos actualizados correctamente");
             });
-
- 
-            console.log("Datos actualizados:", newTotal);
-            return {
-                ...prev,
-                total: newTotal
-            };
+    
+            if (hasUpdates) {
+                toast.success("Datos actualizados correctamente");
+            }
+    
+            return { ...prev, total: newTotal };
         });
     }, [updatedTimes]);
 
+    
     const renderRows = (type) => {
         return TIME_CATEGORIES.map((key) => (
             <td key={`${type}-${key}`} style={{ minWidth: "100px" }}>
