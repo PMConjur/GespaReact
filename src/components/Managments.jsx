@@ -417,21 +417,30 @@ const Managments = () => {
                           )}
                         </td>
                         <td>{validateField(gestion.Segundo_Insert)}</td>
-                        <td>{validateField(gestion.NúmeroTelefónico)}</td>
+                          <td>
+                          {(() => {
+                            const validated = validateField(gestion.NúmeroTelefónico);
+                            return validated === "--" 
+                              ? "--"
+                              : typeof validated === "string" && validated.length > 4
+                                ? 'X'.repeat(validated.length - 4) + validated.slice(-4)
+                                : validated;
+                          })()}
+                        </td>
                         <td>{validateField(gestion.Contacto)}</td>
                         <td>{validateField(gestion.Situación)}</td>
                         <td>{validateField(gestion.NombreContacto)}</td>
                         <td>{validateField(gestion.Parentesco)}</td>
                         <td>{validateField(gestion.CausaNoPago)}</td>
                         <td>{validateField(gestion.Modo)}</td>
-                        <td>{validateField(gestion.idAcercamiento)}</td>
-                        <td>{validateField(gestion.idEtapa)}</td>
+                        <td>{validateField(gestion.Acercamiento)}</td>
+                        <td>{validateField(gestion.Etapa)}</td>
                         <td>{validateField(gestion.Seguimiento)}</td>
                         <td>{validateField(gestion._Realizado)}</td>
                         <td>{validateField(gestion.Duración)}</td>
                         <td>{validateField(gestion.Ejecutivo)}</td>
                         <td>{validateField(gestion.Usuario)}</td>
-                        <td>{validateField(gestion.idSucursal)}</td>
+                        <td>{validateField(gestion.Sucursal)}</td>
                         <td>{validateField(gestion.idExtensión)}</td>
                       </tr>
                     ))

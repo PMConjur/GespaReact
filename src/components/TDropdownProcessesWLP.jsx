@@ -40,21 +40,21 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
         const fetchData = async () => {
             try {
                 if (!Array.isArray(searchResults)) {
-                    console.error('searchResults no es un array:', searchResults);
+                
                     return;
                 }
 
                 const account = searchResults.find(item => item?.idCuenta);
                 if (!account) {
-                    console.warn('No se encontró idCuenta en searchResults');
-                    toast.info('No hay datos de cuenta disponibles', { position: "top-right" });
+                    
+                
                     setProductData([]);
                     return;
                 }
 
                 const idCuenta = account.idCuenta?.toString()?.trim();
                 if (!idCuenta) {
-                    console.warn('idCuenta vacío o inválido');
+                    
                     toast.warning('ID de cuenta inválido', { position: "top-right" });
                     return;
                 }
@@ -190,7 +190,7 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
                 </Dropdown>
                 {searchResults.length === 0 && (
                     <Form.Text className="text-warning">
-                        Realice una búsqueda primero para habilitar la selección
+                        Error 428: Primero debes buscar una Cuenta para habilitar la selección
                     </Form.Text>
                 )}
             </Form.Group>

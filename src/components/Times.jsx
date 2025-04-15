@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useRef } from "react";
+import { useState, useContext, useRef } from "react";
 import { Modal, Button, Form, Container, Row, Col } from "react-bootstrap";
 import TableTimes from "./TableTimes";
 import { toast } from "sonner";
@@ -26,6 +26,7 @@ const formatTime = (seconds) => {
 const Times = ({ show, handleClose }) => {
     const { idEjecutivo } = useContext(AppContext);
     const intervalRef = useRef(null);
+    const timerSnapshot = useRef(0);
 
     const [selectedReason, setSelectedReason] = useState("");
     const [timers, setTimers] = useState(REASONS);
@@ -33,14 +34,6 @@ const Times = ({ show, handleClose }) => {
     const [isPaused, setIsPaused] = useState(false);
     const [contrasenia, setContrasenia] = useState("");
     const [updatedTimesForTable, setUpdatedTimesForTable] = useState({});
-
-    useEffect(() => {
-        return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-            }
-        };
-    }, []);
 
     const validateForm = () => {
         if (!selectedReason) {
@@ -62,19 +55,26 @@ const Times = ({ show, handleClose }) => {
 
         setIsPaused(true);
         setCurrentTimer(0);
+        timerSnapshot.current = 0;
+        
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+        }
+        
         intervalRef.current = setInterval(() => {
-            setCurrentTimer(prev => prev + 1);
+            setCurrentTimer(prev => {
+                const newTime = prev + 1;
+                timerSnapshot.current = newTime;
+                return newTime;
+            });
         }, 1000);
-    };      
+    };
 
     const handleStopTimer = async () => {
         if (!validateForm()) return;
-
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-
+    
         try {
-            const duracion = new Date(currentTimer * 1000).toISOString().substr(11, 8);
+            const duracion = new Date(timerSnapshot.current * 1000).toISOString().substr(11, 8);
             
             await userTimesUpdate({
                 idEjecutivo,
@@ -83,56 +83,97 @@ const Times = ({ show, handleClose }) => {
                 duracion
             });
 
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
+            }
+            
             const updatedTimers = {
                 ...timers,
-                [selectedReason]: timers[selectedReason] + currentTimer
+                [selectedReason]: timers[selectedReason] + timerSnapshot.current
             };
+            
             setTimers(updatedTimers);
-
-            setUpdatedTimesForTable({ [selectedReason]: currentTimer });
-
-            setCurrentTimer(0);
+            setUpdatedTimesForTable({ [selectedReason]: timerSnapshot.current });
             setIsPaused(false);
             setContrasenia("");
             setSelectedReason("");
-
-            toast.success("Tiempo registrado correctamente");
+            setCurrentTimer(0);
+            timerSnapshot.current = 0;
+            
+        
+            
         } catch (error) {
-            if (error.response && error.response.data && error.response.data.message === "Contraseña incorrecta") {
-                toast.error("Contraseña incorrecta. Por favor, inténtelo de nuevo.");
-                // Mantenemos el estado y reiniciamos el timer
-                setIsPaused(true);
+            console.error("Error en handleStopTimer:", error);
+            toast.error(`Error al registrar tiempo: ${error.message}`);
+            
+            if (!intervalRef.current) {
                 intervalRef.current = setInterval(() => {
-                    setCurrentTimer(prev => prev + 1);
+                    setCurrentTimer(prev => {
+                        const newTime = prev + 1;
+                        timerSnapshot.current = newTime;
+                        return newTime;
+                    });
                 }, 1000);
-            } else {
-                toast.error(`Error al registrar tiempo: ${error.message}`);
-                setIsPaused(false);
-                setCurrentTimer(0);
-                setContrasenia("");
             }
+            
+            setContrasenia("");
         }
+    };
+
+    const handleModalClose = () => {
+        if (isPaused) {
+            toast.warning("Detenga el temporizador antes de cerrar");
+            return;
+        }
+        
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        }
+        
+        handleClose();
     };
 
     if (!idEjecutivo) {
         return (
             <div className="alert alert-warning text-center" role="alert">
-                ⚠️ No se encontró un ID de ejecutivo válido. Verifica tu sesión.
+                No se encontró un ID de ejecutivo válido. Verifica tu sesión.
             </div>
         );
     }
 
     return (
-        <Modal show={show} onHide={isPaused ? null : handleClose} size="xl">
+        <Modal 
+            show={show} 
+            onHide={handleModalClose} 
+            size="xl"
+            backdrop={isPaused ? 'static' : true}
+            keyboard={!isPaused}
+        >
             <Modal.Header closeButton={!isPaused}>
                 <Modal.Title>Registro de Tiempos</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Container>
-                    {/* Sección de selección de razón */}
-                    <Row className="mb-3">
+                    {/* Primera fila: Título y Temporizador */}
+                    <Row className="mb-3 text-center">
                         <Col xs={12}>
-                            <Form.Group>
+                            <h4>
+                                {selectedReason ? (
+                                    `${selectedReason}: ${formatTime(currentTimer)}`
+                                ) : (
+                                    "Seleccione una razón para comenzar"
+                                )}
+                            </h4>
+                        </Col>
+                    </Row>
+
+                    {/* Segunda fila: Controles en 2 columnas */}
+                    <Row className="mb-3">
+                        {/* Columna izquierda: Razón + Iniciar */}
+                        <Col md={6} className="mb-3">
+                            <Form.Group className="mb-3">
                                 <Form.Label>Seleccione razón</Form.Label>
                                 <Form.Select
                                     value={selectedReason}
@@ -145,12 +186,7 @@ const Times = ({ show, handleClose }) => {
                                     ))}
                                 </Form.Select>
                             </Form.Group>
-                        </Col>
-                    </Row>
-                    
-                    {/* Sección de botones */}
-                    <Row className="mb-3">
-                        <Col xs={12} md={6} className="mb-2">
+
                             <Button
                                 variant="primary"
                                 onClick={handleStartTimer}
@@ -160,7 +196,20 @@ const Times = ({ show, handleClose }) => {
                                 Iniciar Temporizador
                             </Button>
                         </Col>
-                        <Col xs={12} md={6} className="mb-2">
+
+                        {/* Columna derecha: Contraseña + Detener */}
+                        <Col md={6} className="mb-3">
+                            <Form.Group className="mb-3">
+                                <Form.Label>Contraseña</Form.Label>
+                                <Form.Control
+                                    type="password"
+                                    placeholder="Ingrese su contraseña"
+                                    value={contrasenia}
+                                    onChange={(e) => setContrasenia(e.target.value)}
+                                    disabled={!isPaused}
+                                />
+                            </Form.Group>
+
                             <Button
                                 variant="danger"
                                 onClick={handleStopTimer}
@@ -171,37 +220,8 @@ const Times = ({ show, handleClose }) => {
                             </Button>
                         </Col>
                     </Row>
-                    
-                    {/* Sección de contraseña */}
-                    <Row className="mb-3">
-                        <Col xs={12}>
-                            <Form.Group>
-                                <Form.Label>Contraseña</Form.Label>
-                                <Form.Control
-                                    type="password"
-                                    placeholder="Ingrese su contraseña"
-                                    value={contrasenia}
-                                    onChange={(e) => setContrasenia(e.target.value)}
-                                    disabled={!isPaused}
-                                />
-                            </Form.Group>
-                        </Col>
-                    </Row>
-                    
-                    {/* Temporizador actual */}
-                    <Row className="mb-3 text-center">
-                        <Col xs={12}>
-                            <h4>
-                                {selectedReason ? (
-                                    `${selectedReason}: ${formatTime(currentTimer)}`
-                                ) : (
-                                    "Seleccione una razón para comenzar"
-                                )}
-                            </h4>
-                        </Col>
-                    </Row>
-                    
-                    {/* Tabla de tiempos */}
+
+                    {/* Tercera fila: Tabla de tiempos */}
                     <Row className="mb-3">
                         <Col xs={12}>
                             <TableTimes updatedTimes={updatedTimesForTable} />

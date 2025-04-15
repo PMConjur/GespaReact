@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { AppContext } from "../../../pages/Managment";
 import { createPayments } from "../../../services/gespawebServices";
 
-const FormPayments = ({ isOpen, onClose }) => {
+const FormPayments = ({ onRegistrationSuccess, setPaymentActive }) => {
     const { searchResults } = useContext(AppContext);
     const idCuenta = searchResults?.map((result) => result.idCuenta) || [];
     const responseData = JSON.parse(localStorage.getItem("responseData"));
@@ -26,19 +26,11 @@ const FormPayments = ({ isOpen, onClose }) => {
 
     // Resetear el formulario cuando el modal se abre/cierra o cambian las dependencias
     useEffect(() => {
-        if (!isOpen) {
-            resetForm();
-        }
-    }, [isOpen]);
-
-    useEffect(() => {
-        if (isOpen) {
-            setFormData((prev) => ({
-                ...prev,
-                idCuenta: idCuenta[0]?.trim(),
-            }));
-        }
-    }, [idCuenta, idEjecutivo, isOpen]);
+        setFormData((prev) => ({
+            ...prev,
+            idCuenta: idCuenta[0]?.trim(),
+        }));
+    }, [idCuenta, idEjecutivo]);
 
     const resetForm = () => {
         setFormData(initialFormState);
@@ -50,10 +42,10 @@ const FormPayments = ({ isOpen, onClose }) => {
         setFormData((prev) => ({
             ...prev,
             [name]: name === "montoPago"
-                ? value.replace(/[^0-9]/g, "").slice(0, 9) // Solo números, máximo 9 dígitos
+                ? value.replace(/[^0-9]/g, "").slice(0, 9)
                 : ["referencia", "sucursal"].includes(name)
-                    ? value.replace(/[^a-zA-Z0-9\s]/g, "").slice(0, 16) // Sin símbolos especiales, máximo 16 caracteres
-                    : value, // Para otros campos
+                    ? value.replace(/[^a-zA-Z0-9\s]/g, "").slice(0, 16)
+                    : value,
         }));
     };
 
@@ -77,22 +69,25 @@ const FormPayments = ({ isOpen, onClose }) => {
             return;
         }
 
-            try {
-                const dataToSend = { ...formData, montoPago: parseInt(formData.montoPago, 10) };
-                const response = await createPayments(dataToSend);
+try {
+            const dataToSend = { ...formData, montoPago: parseInt(formData.montoPago, 10) };
+            const response = await createPayments(dataToSend);
 
-                if (response.success) {
-                    throw new Error(response.message || "Error en la respuesta del servidor");
-                }
-
-                toast.success("Pago registrado exitosamente.");
-                resetForm();
-                setTimeout(() => onClose?.(), 100); // Pequeño delay antes de cerrar
-            } catch (error) {
-                console.error("Error:", error);
-                toast.error(error.message || "Error al registrar el pago.");
+            if (response.success) {
+                throw new Error(response.message || "Error en la respuesta del servidor");
             }
-        };
+
+            toast.success("Pago registrado exitosamente.");
+            resetForm();
+            // Notificar al componente padre que hubo un registro exitoso
+            onRegistrationSuccess(false);
+            setPaymentActive(false); // Cerrar el modal después de un registro exitoso
+            
+        } catch (error) {
+            console.error("Error:", error);
+            toast.error(error.message || "Error al registrar el pago.");
+        }
+    };
 
         return (
             <Form onSubmit={handleSubmit} className="p-3">

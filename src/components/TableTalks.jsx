@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useContext } from "react";
+import { useState, useCallback, useEffect, useContext, useRef } from "react";
 import { Table, Form } from "react-bootstrap";
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
@@ -11,50 +11,63 @@ const TableTalks = ({ customColumnNames = {} }) => {
     const [toastShown, setToastShown] = useState(false); // Hook 4
 
     // Hook 5: useEffect para obtener datos
+    const toastShownRef = useRef(false);
+
     useEffect(() => {
         const fetchData = async () => {
             if (!searchResults || searchResults.length === 0) {
-                toast.error("Error 428: Primero debes buscar una Cuenta");
+                if (!toastShownRef.current) {
+                    toast.error("Error 428: Primero debes buscar una Cuenta");
+                    toastShownRef.current = true;
+                }
                 return;
             }
-
+    
             try {
-                const idCuenta = searchResults[0]?.idCuenta; // Obtener el primer idCuenta como ejemplo
+                const idCuenta = searchResults[0]?.idCuenta;
                 if (!idCuenta) {
                     toast.error("No se encontró un idCuenta válido.");
                     return;
                 }
-
-                const talksData = await getTalksData(1, idCuenta); // idCartera fijo como 1
+    
+                const talksData = await getTalksData(1, idCuenta);
                 setSortedData(talksData);
+                toastShownRef.current = false; // Resetear para futuras búsquedas
             } catch (error) {
                 console.error("Error al obtener los datos de Negociaciones:", error);
             }
         };
-
+    
         fetchData();
     }, [searchResults]);
 
     // Hook 6: useCallback para manejar el ordenamiento
     const handleSortChange = useCallback(() => {
-        if (!toastShown) {
-            setSortByOldest(prev => !prev);
-            setSortedData(prevData => {
-                const sorted = !sortByOldest
-                    ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
-                    : [...sortedData]; // Restaurar datos originales si se desmarca el checkbox
-
-                toast.success(
-                    !sortByOldest
-                        ? "Datos ordenados por fecha más antigua."
-                        : "Orden original restaurado."
-                );
-                setToastShown(true);
-                setTimeout(() => setToastShown(false), 2000);
-                return sorted;
-            });
-        }
-    }, [sortByOldest, sortedData, toastShown]);
+        if (toastShown) return;
+        
+        setToastShown(true);
+        setSortByOldest(prev => !prev);
+        
+        setSortedData(prevData => {
+            const sorted = !sortByOldest
+                ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
+                : [...prevData]; // Usar prevData en lugar de sortedData
+            
+            return sorted;
+        });
+    
+        toast.success(
+            !sortByOldest
+                ? "Datos ordenados por fecha más antigua."
+                : "Orden original restaurado."
+        );
+        
+        const timer = setTimeout(() => {
+            setToastShown(false);
+        }, 1); // Tiempo suficiente para que el toast se muestre
+        
+        return () => clearTimeout(timer); // Limpiar el timer si el componente se desmonta
+    }, [sortByOldest, toastShown]); // Considera remover sortedData de las dependencias si es posible
 
     if (!sortedData || sortedData.length === 0) {
         return <p>No hay datos disponibles.</p>;

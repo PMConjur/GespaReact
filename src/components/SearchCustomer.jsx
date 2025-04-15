@@ -43,13 +43,13 @@ const SearchCustomer = () => {
           colores = { texto: "#FFFFFF", corazon: "#FFFFFF", gradiente: "header-white" };
           break;
         case 3102: // Convencimiento
-          colores = { texto: "#FF0000", corazon: "#FF0000", gradiente: "header-red" };
+          colores = { texto: "#FF0000", corazon: "#dc3545", gradiente: "header-red" };
           break;
         case 3103: // Acuerdo
-          colores = { texto: "#39fc8d", corazon: "#00FF00", gradiente: "header-green" };
+          colores = { texto: "#39fc8d", corazon: "#39fc8d", gradiente: "header-green" };
           break;
         case 3104: // Definición
-          colores = { texto: "#6c5ce7", corazon: "#6c5ce7", gradiente: "header-purple" };
+          colores = { texto: "#d3bbf8", corazon: "#d3bbf8", gradiente: "header-purple" };
           break;
         default:
           colores = { texto: "#f8f9fa", corazon: "#FFFFFF", gradiente: "header-white" };

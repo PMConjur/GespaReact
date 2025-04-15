@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useContext } from "react";
+import { useState, useCallback, useEffect, useContext, useRef } from "react";
 import { Table, Form, Spinner } from "react-bootstrap";
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
@@ -11,13 +11,18 @@ const TableAditionals = ({ customColumnNames = {} }) => {
   const [sortByOldest, setSortByOldest] = useState(false); // Hook 3
   const [toastShown, setToastShown] = useState(false); // Hook 4
   const [loading, setLoading] = useState(true);
+  const hasShownToast = useRef(false);
+
 
   // Hook 5: useEffect para obtener datos
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       if (!searchResults || searchResults.length === 0) {
-        toast.error("Error 428: Primero debes buscar una Cuenta");
+        if (!hasShownToast.current) {
+          toast.error("Error 428: Primero debes buscar una Cuenta");
+          hasShownToast.current = true;
+        }
         setLoading(false);
         return;
       }

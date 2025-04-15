@@ -109,6 +109,7 @@ function DropdownInfo() {
         isPaymentActive={true} // Cambié el nombre de la prop a isPaymentActive
     
       />
+      
 
       {/* Renderizar el modal de Addresses */}
       <Addresses

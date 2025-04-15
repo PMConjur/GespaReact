@@ -1,48 +1,52 @@
-import { useState, useCallback, useEffect, useContext } from "react";
+import { useState, useCallback, useEffect, useContext, useRef } from "react";
 import { Table, Form } from "react-bootstrap";
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
 import { getFollowUpsData } from "../services/gespawebServices";
 
 const TableFollowUps = ({ customColumnNames = {} }) => {
-    const { searchResults } = useContext(AppContext); // Hook 1
-    const [sortedData, setSortedData] = useState([]); // Hook 2
-    const [sortByOldest, setSortByOldest] = useState(false); // Hook 3
-    const [toastShown, setToastShown] = useState(false); // Hook 4
+    const { searchResults } = useContext(AppContext);
+    const [sortedData, setSortedData] = useState([]);
+    const [sortByOldest, setSortByOldest] = useState(false);
+    const [toastShown, setToastShown] = useState(false);
 
-    // Hook 5: useEffect para obtener datos
+    const toastShownRef = useRef(false); // Referencia para rastrear si el toast ya se mostró
+
     useEffect(() => {
         const fetchData = async () => {
             if (!searchResults || searchResults.length === 0) {
-                toast.error("Error 428: Primero debes buscar una Cuenta");
+                if (!toastShownRef.current) { // Solo mostrar si no se ha mostrado antes
+                    toast.error("Error 428: Primero debes buscar una Cuenta");
+                    toastShownRef.current = true; // Marcar como mostrado
+                }
                 return;
             }
-
+    
             try {
-                const idCuenta = searchResults[0]?.idCuenta; // Obtener el primer idCuenta como ejemplo
+                const idCuenta = searchResults[0]?.idCuenta;
                 if (!idCuenta) {
                     toast.error("No se encontró un idCuenta válido.");
                     return;
                 }
-
-                const followUpsData = await getFollowUpsData(1, idCuenta); // idCartera fijo como 1
+    
+                const followUpsData = await getFollowUpsData(1, idCuenta);
                 setSortedData(followUpsData);
+                toastShownRef.current = false; // Resetear para futuras búsquedas
             } catch (error) {
                 console.error("Error al obtener los datos de seguimiento:", error);
             }
         };
-
+    
         fetchData();
     }, [searchResults]);
 
-    // Hook 6: useCallback para manejar el ordenamiento
     const handleSortChange = useCallback(() => {
         if (!toastShown) {
             setSortByOldest(prev => !prev);
             setSortedData(prevData => {
                 const sorted = !sortByOldest
                     ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
-                    : [...sortedData]; // Restaurar datos originales si se desmarca el checkbox
+                    : [...sortedData];
 
                 toast.success(
                     !sortByOldest
@@ -60,7 +64,6 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
         return <p>No hay datos disponibles.</p>;
     }
 
-    // 🔹 Campos que NO se mostrarán en la tabla
     const hiddenFields = [
         "idCartera",
         "idCuenta",
@@ -70,27 +73,60 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
         "SegundoSeguimiento"
     ];
 
-    // 🔹 Nombres de columnas por defecto (se pueden sobrescribir con `customColumnNames`)
     const defaultColumnNames = {
         "Fecha_Insert": "Fecha",
         "Segundo_Insert": "Hora",
-        "NúmeroTelefónico": "Telefono",
+        "NúmeroTelefónico": "Teléfono",
         "idContacto": "Contacto",
-        "idSituación": "Situacion",
+        "idSituación": "Situación",
         "NombreContacto": "Nombre",
         "Herramienta": "Acercamiento",
-        "idAcercamiento": "Acercamiento", // Renombrar sin el "id"
+        "idAcercamiento": "Acercamiento",
         "Ofreció": "Ejecutivo",
         "_Realizado": "Realizado"
     };
 
-    // 🔹 Combina los nombres personalizados con los predeterminados
     const columnNames = { ...defaultColumnNames, ...customColumnNames };
 
-    // 🔹 Filtrar claves de los datos, excluyendo los campos ocultos
     const headers = Array.isArray(sortedData) && sortedData.length > 0 && sortedData[0] && typeof sortedData[0] === "object"
         ? Object.keys(sortedData[0]).filter(header => !hiddenFields.includes(header))
         : [];
+
+    // Función para formatear el número telefónico
+    const formatPhoneNumber = (phone) => {
+        if (!phone) return '--';
+        const phoneStr = String(phone);
+        return phoneStr.length > 4 
+            ? 'X'.repeat(phoneStr.length - 4) + phoneStr.slice(-4)
+            : phoneStr;
+    };
+
+    // Función para formatear la hora con AM/PM
+    const formatTimeWithAMPM = (timeString) => {
+        if (!timeString) return '--';
+        
+        try {
+            // Si ya tiene AM/PM, no hacer cambios
+            if (/(AM|PM)/i.test(timeString)) return timeString;
+            
+            // Extraer solo la parte de la hora (en caso de que sea un datetime)
+            const timePart = timeString.includes('T') 
+                ? timeString.split('T')[1].split('.')[0] 
+                : timeString;
+            
+            // Convertir a formato AM/PM
+            const [hours, minutes, seconds] = timePart.split(':');
+            const hourInt = parseInt(hours, 10);
+            
+            const period = hourInt >= 12 ? 'PM' : 'AM';
+            const standardHour = hourInt % 12 || 12; // Convierte 0 a 12 AM
+            
+            return `${standardHour}:${minutes} ${period}`;
+        } catch (e) {
+            console.error("Error formateando hora:", e);
+            return timeString; // Si hay error, devolver el valor original
+        }
+    };
 
     return (
         <>
@@ -110,15 +146,15 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
                     maxHeight: '500px',
                     overflowY: 'auto', 
                     display: 'flex', 
-                    backgroundColor: '#343a40', // Fondo oscuro
-                    color: '#ffffff',          // Texto claro
-                    scrollbarColor: '#6c757d #343a40', // Colores del scroll
-                    scrollbarWidth: 'thin'    // Scroll más delgado
+                    backgroundColor: '#343a40',
+                    color: '#ffffff',
+                    scrollbarColor: '#6c757d #343a40',
+                    scrollbarWidth: 'thin'
                 }}
             >
-                <Table striped bordered hover responsive variant="dark" style={{ fontSize: "13px", width: "100%" }}> {/* Ajuste de ancho */}
-                    <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#343a40" }}> {/* Encabezado fijo */}
-                        <tr style={{ height: "55px" }}> {/* Reducimos la altura de los encabezados */}
+                <Table striped bordered hover responsive variant="dark" style={{ fontSize: "13px", width: "100%" }}>
+                    <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#343a40" }}>
+                        <tr style={{ height: "55px" }}>
                             {headers.map((header) => (
                                 <th key={header} style={{ padding: "4px", minHeight: "20px", textAlign: "center" }}>
                                     {columnNames[header] || header.replace(/_/g, " ")}
@@ -126,22 +162,28 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
                             ))}
                         </tr>
                     </thead>
-                    <tbody style={{
-                        width: "100%" // 🔹 Evita que la tabla se desconfigure
-                    }}>
+                    <tbody style={{ width: "100%" }}>
                         {sortedData.map((item, index) => (
-                            <tr key={index} style={{ height: "24px" }}> {/* Reducimos la altura de cada fila */}
+                            <tr key={index} style={{ height: "24px" }}>
                                 {headers.map((header) => {
                                     let value = item[header];
 
-                                    // 🔹 Formatear Fecha_Insert en una sola línea
                                     if (header === "Fecha_Insert" && typeof value === "string" && value.includes("T")) {
                                         value = value.split("T")[0];
                                     }
 
-                                    // 🔹 Manejo de valores nulos o no definidos
+                                                        // Formatear hora con AM/PM
+                                    if (header === "Segundo_Insert") {
+                                        value = formatTimeWithAMPM(value);
+                                    }
+
                                     if (value === null || value === undefined || (typeof value === "object" && Object.keys(value).length === 0)) {
-                                        value = "--";
+                                        value = '--';
+                                    }
+
+                                    // Aplicar formato especial solo para el campo de teléfono
+                                    if (header === "NúmeroTelefónico") {
+                                        value = formatPhoneNumber(value);
                                     }
 
                                     return (
@@ -150,9 +192,9 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
                                                 padding: ".7rem", 
                                                 minHeight: "20px", 
                                                 textAlign: "center", 
-                                                whiteSpace: "nowrap", // 🔹 Evita saltos de línea
-                                                overflow: "hidden",  // 🔹 Oculta contenido desbordado
-                                                textOverflow: "ellipsis" // 🔹 Agrega puntos suspensivos si el texto es muy largo
+                                                whiteSpace: "nowrap",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis"
                                             }}>
                                             {value}
                                         </td>

@@ -6,44 +6,45 @@ import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
 
 const TIME_CATEGORIES = [
-    'cuentas', 'negociacion', 'titulares', 
-    'conocidos', 'desconocidos', 'sinContacto',
+    'Cuentas', 'negociacion', 'Titulares', 
+    'Conocidos', 'desconocidos', 'sinContacto',
     'Permiso', 'Curso', 'Calidad', 'Comida', 'Baño'
 ];
 
 const formatTime = (value) => {
-    // Si ya está formateado correctamente (HH:MM:SS)
+    // Caso 1: Valor ya formateado correctamente (HH:MM:SS)
     if (typeof value === 'string' && /^\d{2}:\d{2}:\d{2}$/.test(value)) {
         return value;
     }
     
-    // Si viene con milisegundos (HH:MM:SS.millis)
+    // Caso 2: Valor con milisegundos (HH:MM:SS.milliseconds)
     if (typeof value === 'string' && /^\d{2}:\d{2}:\d{2}\.\d+$/.test(value)) {
-        return value.split('.')[0]; // Tomamos solo la parte antes del punto
+        return value.split('.')[0]; // Elimina los milisegundos
     }
     
-    // Si es null/undefined o no convertible a número
-    if (value == null || isNaN(Number(value))) {
-        return "--:--:--";
+    // Caso 3: Valor en segundos (número)
+    if (!isNaN(Number(value))) {
+        const seconds = Math.floor(Number(value));
+        const hrs = Math.floor(seconds / 3600).toString().padStart(2, "0");
+        const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, "0");
+        const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
+        return `${hrs}:${mins}:${secs}`;
     }
     
-    // Convertir a segundos (si viene en milisegundos)
-    const numericValue = Number(value);
-    const totalSeconds = numericValue >= 1000 ? Math.floor(numericValue / 1000) : Math.floor(numericValue);
-    
-    const hrs = Math.floor(totalSeconds / 3600).toString().padStart(2, "0");
-    const mins = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, "0");
-    const secs = Math.floor(totalSeconds % 60).toString().padStart(2, "0");
-    
-    return `${hrs}:${mins}:${secs}`;
+    // Caso 4: Valor inválido
+    console.warn("Valor no válido recibido para formato de tiempo:", value);
+    return "--:--:--";
 };
+
 // Función para cargar datos totales
 const loadTotalTimes = async (idEjecutivo, formatOrDefault) => {
     try {
         const dataTotal = await userTimes(idEjecutivo);
-        console.log("Datos totales recibidos:", dataTotal);
+        console.log("Datos totales CRUDOS:", dataTotal); // <-- Añadir aquí
+        console.log("Estructura resultadosTiempos:", dataTotal?.resultadosTiempos); // <-- Añadir aquí
 
         const tiempos = dataTotal?.resultadosTiempos || {};
+        console.log("Datos a normalizar:", tiempos); // <-- Añadir aquí
         if (Object.keys(tiempos).length === 0) {
             toast.warning("No hay datos totales disponibles");
             console.warn("No se encontraron datos totales disponibles");
@@ -51,10 +52,10 @@ const loadTotalTimes = async (idEjecutivo, formatOrDefault) => {
         }
 
         return {
-            cuentas: formatOrDefault(tiempos.tiempoCuentas),
+            Cuentas: formatOrDefault(tiempos.tiempoCuentas),
             negociacion: formatOrDefault(tiempos.tiempoNegociaciones),
-            titulares: formatOrDefault(tiempos.tiempoTitulares),
-            conocidos: formatOrDefault(tiempos.tiempoConocidos),
+            Titulares: formatOrDefault(tiempos.tiempoTitulares),
+            Conocidos: formatOrDefault(tiempos.tiempoConocidos),
             desconocidos: formatOrDefault(tiempos.tiempoDesconocidos),
             sinContacto: formatOrDefault(tiempos.tiempoSinContacto),
             Permiso: formatOrDefault(tiempos.tiempoPermiso),
@@ -104,7 +105,8 @@ const normalizeKeys = (data) => {
 const loadPromedioTimes = async (idEjecutivo, formatOrDefault) => {
     try {
         const dataPromedio = await userTimesPromedio(idEjecutivo);
-        console.log("Datos de promedio recibidos:", dataPromedio);
+        console.log("Datos promedio CRUDOS:", dataPromedio); // <-- Añadir aquí
+        console.log("Estructura resultadosTiempos:", dataPromedio.resultadosTiempos); // <-- Añadir aquí
 
         // Verificar si los datos vienen directamente en la respuesta o en resultadosTiempos
         const promediosData = dataPromedio.resultadosTiempos || dataPromedio;
@@ -123,10 +125,10 @@ const loadPromedioTimes = async (idEjecutivo, formatOrDefault) => {
         }
 
         return {
-            cuentas: formatOrDefault(promedios.tiempoCuentas),
+            Cuentas: formatOrDefault(promedios.tiempoCuentas),
             negociacion: formatOrDefault(promedios.tiempoNegociaciones),
-            titulares: formatOrDefault(promedios.tiempoTitulares),
-            conocidos: formatOrDefault(promedios.tiempoConocidos),
+            Titulares: formatOrDefault(promedios.tiempoTitulares),
+            Conocidos: formatOrDefault(promedios.tiempoConocidos),
             desconocidos: formatOrDefault(promedios.tiempoDesconocidos),
             sinContacto: formatOrDefault(promedios.tiempoSinContacto),
             Permiso: formatOrDefault(promedios.tiempoPermiso),
@@ -155,8 +157,6 @@ const TableTimes = ({ updatedTimes }) => {
         if (!idEjecutivo) return;
 
         const loadInitialData = async () => {
-            toast.info("Cargando datos iniciales...");
-            console.log("Cargando datos iniciales para el ID de ejecutivo:", idEjecutivo);
 
             const formatOrDefault = (time) => time ? formatTime(time) : "--:--:--";
 
@@ -168,7 +168,7 @@ const TableTimes = ({ updatedTimes }) => {
                 promedio: promedioTimes,
             });
 
-            toast.success("Datos iniciales cargados correctamente");
+            
         };
 
         loadInitialData();
@@ -176,32 +176,32 @@ const TableTimes = ({ updatedTimes }) => {
 
     // Actualizar datos cuando cambia updatedTimes
     useEffect(() => {
-        if (!updatedTimes) return;
-
-        toast.info("Actualizando datos con tiempos nuevos...");
-        console.log("Actualizando datos con tiempos nuevos:", updatedTimes);
+        if (!updatedTimes || Object.keys(updatedTimes).length === 0) return;
+        
         setTimesData(prev => {
             const newTotal = { ...prev.total };
-
-            // Actualizar y sumar los campos que vienen en updatedTimes
+            let hasUpdates = false;
+    
+            // Update and sum fields coming in updatedTimes
             Object.entries(updatedTimes).forEach(([key, value]) => {
                 if (TIME_CATEGORIES.includes(key)) {
                     const dbValueInSeconds = prev.total[key] !== "--:--:--"
                         ? Number(prev.total[key].split(":").reduce((acc, time) => (60 * acc) + +time, 0))
                         : 0;
                     newTotal[key] = formatTime(dbValueInSeconds + Number(value));
+                    hasUpdates = true;
                 }
             });
-
-            toast.success("Datos actualizados correctamente");
-            console.log("Datos actualizados:", newTotal);
-            return {
-                ...prev,
-                total: newTotal
-            };
+    
+            if (hasUpdates) {
+                toast.success("Datos actualizados correctamente");
+            }
+    
+            return { ...prev, total: newTotal };
         });
     }, [updatedTimes]);
 
+    
     const renderRows = (type) => {
         return TIME_CATEGORIES.map((key) => (
             <td key={`${type}-${key}`} style={{ minWidth: "100px" }}>
@@ -219,6 +219,7 @@ const TableTimes = ({ updatedTimes }) => {
             </div>
         );
     }
+    
 
     return (
         <Table responsive variant="dark" className="mt-3">
@@ -256,5 +257,6 @@ TableTimes.propTypes = {
         )
     )
 };
+
 
 export default TableTimes;
