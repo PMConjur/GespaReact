@@ -1,21 +1,39 @@
-import { useState, useContext, useEffect } from 'react';
-import { Modal, Button, Form, Table, Dropdown, Col, Spinner, Row} from 'react-bootstrap';
-import { fetchComplaints, fetchViewComplaints, fetchOriginComplaints, fetchDdComplaints, fetchAddress, fetchEmailsCharging, fetchPhones } from '../../../services/gespawebServices';
+import { useState, useContext, useEffect } from "react";
+import {
+  Modal,
+  Button,
+  Form,
+  Table,
+  Dropdown,
+  Col,
+  Spinner,
+  Row,
+} from "react-bootstrap";
+import {
+  fetchComplaints,
+  fetchViewComplaints,
+  fetchOriginComplaints,
+  fetchDdComplaints,
+  fetchAddress,
+  fetchEmailsCharging,
+  fetchPhones,
+} from "../../../services/gespawebServices";
 import { AppContext } from "../../../pages/Managment";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 import "../../../scss/styles.scss";
 
 const Complaints = ({ show, handleClose }) => {
-  const { searchResults, idEjecutivo} = useContext(AppContext);
+  const { searchResults, idEjecutivo } = useContext(AppContext);
 
   const [formData, setFormData] = useState({
-    idQueja: '',
-    idInstitucion: '',
-    folio: '',
+    idQueja: "",
+    idInstitucion: "",
+    folio: "",
     llamadaEntrada: false,
-    comentarios: '',
+    comentarios: "",
     titular: false,
-    solicitante: ''
+    solicitante: "",
+    idDomicilio: 0,
   });
 
   const [reportedEmail, setReportedEmail] = useState(""); // Estado para almacenar el correo ingresado
@@ -33,15 +51,18 @@ const Complaints = ({ show, handleClose }) => {
   const [showScrollHint, setShowScrollHint] = useState(true); // Estado para controlar la visibilidad del párrafo
   const [phones, setPhones] = useState([]); // Estado para almacenar los teléfonos
   const [showPhoneTable, setShowPhoneTable] = useState(false); // Estado para mostrar la tabla de teléfonos
+  const [selectedAddressId, setSelectedAddressId] = useState(null); // Estado para almacenar el idDomicilio seleccionado
 
   const fetchAndLogPhones = async () => {
     if (searchResults.length === 0 || !searchResults[0].idCuenta) {
-      toast.warning("No hay una cuenta válida seleccionada para obtener teléfonos.");
+      toast.warning(
+        "No hay una cuenta válida seleccionada para obtener teléfonos."
+      );
       return;
     }
-  
+
     const idCuenta = searchResults[0].idCuenta;
-  
+
     try {
       const phones = await fetchPhones(idCuenta); // Llama al endpoint
       console.log("Teléfonos obtenidos:", phones); // Imprime los datos obtenidos
@@ -92,8 +113,8 @@ const Complaints = ({ show, handleClose }) => {
           console.log("Datos recibidos de fetchViewComplaints:", result);
           setComplaints(result);
         } catch (error) {
-          toast.error('Error 408: Error al cargar las quejas');
-          console.error('Error al cargar las quejas:', error);
+          toast.error("Error 408: Error al cargar las quejas");
+          console.error("Error al cargar las quejas:", error);
         }
       }
     };
@@ -110,7 +131,6 @@ const Complaints = ({ show, handleClose }) => {
         console.log("Llamando a fetchOriginComplaints");
         const result = await fetchOriginComplaints();
         console.log("Datos recibidos de fetchOriginComplaints:", result);
-        
 
         // Mapear los datos para extraer idValor y Valor
         const mappedData = result.map((item) => ({
@@ -157,7 +177,12 @@ const Complaints = ({ show, handleClose }) => {
         const idCuenta = searchResults[0].idCuenta;
         const idCartera = 1;
         try {
-          console.log("Llamando a fetchAddress con idCartera:", idCartera, "idCuenta:", idCuenta);
+          console.log(
+            "Llamando a fetchAddress con idCartera:",
+            idCartera,
+            "idCuenta:",
+            idCuenta
+          );
           const result = await fetchAddress(idCartera, idCuenta);
           console.log("Datos recibidos de fetchAddress:", result);
           setAddresses(result); // Almacena los datos en el estado
@@ -184,7 +209,12 @@ const Complaints = ({ show, handleClose }) => {
         const idCuenta = searchResults[0].idCuenta;
         const idCartera = 1;
         try {
-          console.log("Llamando a fetchEmailsCharging con idCartera:", idCartera, "idCuenta:", idCuenta);
+          console.log(
+            "Llamando a fetchEmailsCharging con idCartera:",
+            idCartera,
+            "idCuenta:",
+            idCuenta
+          );
           const result = await fetchEmailsCharging(idCartera, idCuenta);
           console.log("Datos recibidos de fetchEmailsCharging:", result);
           setEmails(result); // Almacena los datos en el estado
@@ -220,7 +250,7 @@ const Complaints = ({ show, handleClose }) => {
   const handleFolioChange = (e) => {
     const { name, value } = e.target;
     const regex = /^[0-9]*$/; // Solo permite números
-  
+
     if (regex.test(value)) {
       handleChange(name, value); // Actualiza el estado si el valor es válido
     } else {
@@ -233,10 +263,7 @@ const Complaints = ({ show, handleClose }) => {
       (origin) => origin.id === parseInt(value)
     );
     handleChange("idInstitucion", value); // Actualizar el idInstitucion
-    handleChange(
-      "institucionDescripcion",
-      selectedOrigin?.descripcion || ""
-    ); // Actualizar el texto seleccionado
+    handleChange("institucionDescripcion", selectedOrigin?.descripcion || ""); // Actualizar el texto seleccionado
 
     // Mostrar la sección si se selecciona "financiera"
     if (selectedOrigin?.descripcion.toLowerCase() === "financiera") {
@@ -244,6 +271,15 @@ const Complaints = ({ show, handleClose }) => {
     } else {
       setShowFinancieraSection(false);
     }
+  };
+
+  const handleRowClick = (idDomicilio) => {
+    console.log(`Fila seleccionada con idDomicilio: ${idDomicilio}`); // Verifica el idDomicilio en la consola
+    setSelectedAddressId(idDomicilio); // Actualiza el idDomicilio seleccionado
+    setFormData((prev) => ({
+      ...prev,
+      idDomicilio, // Actualiza el campo idDomicilio con el valor seleccionado
+    }));
   };
 
   // Manejar el envío del formulario
@@ -282,19 +318,19 @@ const Complaints = ({ show, handleClose }) => {
     const requestData = {
       idCartera: 1,
       idCuenta: idCuenta,
-      fechaInsert: new Date().toISOString(),
+      fechaInsert: new Date().toISOString().split("T")[0], // Solo la fecha sin la hora
       segundoInsert: currentTime,
       folio: formData.folio,
       idEjecutivoInsert: idEjecutivo,
-      idQueja: formData.idQueja,
-      idInstitucion: formData.idInstitucion,
+      idQueja: parseInt(formData.idQueja, 10), // Convertir a número
+      idInstitucion: parseInt(formData.idInstitucion, 10), // Convertir a número
       solicitante: formData.solicitante,
       llamadaEntrada: formData.llamadaEntrada,
       numeroTelefonico: phoneExists ? cleanPhone : 0, // Usa el número completo si existe
       correoElectronico: emailExists ? reportedEmail : "", // Si existe, se envía aquí
-      idDomicilio: 0,
+      idDomicilio: formData.idDomicilio || 0, // Usa el valor seleccionado o 0 por defecto
       comentario: formData.comentarios,
-      numeroTelefonicoContacto: phoneExists ? 0 : cleanPhone, // Usa el número completo si no existe
+      numeroTelefonicoContacto: phoneExists ? 0 : parseInt(cleanPhone, 10), // Convertir a número
       correoElectronicoContacto: emailExists ? "" : reportedEmail, // Si no existe, se envía aquí
     };
 
@@ -305,13 +341,14 @@ const Complaints = ({ show, handleClose }) => {
 
       // Limpia el formulario después de guardar
       setFormData({
-        idQueja: '',
-        idInstitucion: '',
-        folio: '',
+        idQueja: "",
+        idInstitucion: "",
+        folio: "",
         llamadaEntrada: false,
-        comentarios: '',
+        comentarios: "",
         titular: false,
-        solicitante: ''
+        solicitante: "",
+        idDomicilio: 0,
       });
       setReportedEmail(""); // Limpia el correo ingresado
       setReportedPhone(""); // Limpia el teléfono ingresado
@@ -342,12 +379,12 @@ const Complaints = ({ show, handleClose }) => {
         </div>
       </Modal.Header>
       <Modal.Body className="d-block gap-1">
-        <Row>
+        <Row className="d-block d-lg-flex">
           {complaints.length > 0 ? ( // Verifica si hay datos en la tabla
-            <div className=" w-50">
+            <Col Col xs={12} lg={6}>
               <Form className="p-2">
-                <div className="">
-                  <Form.Group className="mb-4">
+                <div className="d-flex gap-2">
+                  <Form.Group className="mb-4 w-50">
                     <Dropdown
                       onSelect={(value) => {
                         const selectedComplaint = ddComplaints.find(
@@ -381,7 +418,8 @@ const Complaints = ({ show, handleClose }) => {
 
                         // Mostrar la tabla de teléfonos si se selecciona "Teléfono no corresponde"
                         if (
-                          selectedComplaint?.descripcion === "Teléfono no corresponde"
+                          selectedComplaint?.descripcion ===
+                          "Teléfono no corresponde"
                         ) {
                           setShowPhoneTable(true); // Mostrar la tabla de teléfonos
                         } else {
@@ -414,7 +452,7 @@ const Complaints = ({ show, handleClose }) => {
                       </Dropdown.Menu>
                     </Dropdown>
                   </Form.Group>
-                  <Form.Group className="mb-4 full-width">
+                  <Form.Group className="mb-4 w-50">
                     <Dropdown onSelect={handleDropdownSelect}>
                       <Dropdown.Toggle
                         className="w-100"
@@ -520,7 +558,8 @@ const Complaints = ({ show, handleClose }) => {
                 )}
 
                 {/* Mostrar el campo de teléfono solo si "Teléfono no corresponde" está seleccionado */}
-                {formData.tipoQuejaDescripcion === "Teléfono no corresponde" && ( // Mostrar solo si "Teléfono no corresponde" está seleccionado
+                {formData.tipoQuejaDescripcion ===
+                  "Teléfono no corresponde" && ( // Mostrar solo si "Teléfono no corresponde" está seleccionado
                   <Form.Group
                     className="mb-3"
                     controlId="exampleForm.ControlInput2"
@@ -538,8 +577,13 @@ const Complaints = ({ show, handleClose }) => {
                         }
                       }}
                       onBlur={() => {
-                        if (reportedPhone.length < 10 || reportedPhone.length > 13) {
-                          toast.error("El número de teléfono debe tener entre 10 y 13 dígitos.");
+                        if (
+                          reportedPhone.length < 10 ||
+                          reportedPhone.length > 13
+                        ) {
+                          toast.error(
+                            "El número de teléfono debe tener entre 10 y 13 dígitos."
+                          );
                           setReportedPhone(""); // Limpia el campo si no cumple con el rango
                         }
                       }}
@@ -578,14 +622,15 @@ const Complaints = ({ show, handleClose }) => {
                   margin-bottom: 2rem;
                 }
               `}</style>
-            </div>
+            </Col>
           ) : (
             <p className="text-center">No hay datos disponibles</p>
           )}
           {showAddressTable && ( // Mostrar la tabla de domicilios si showAddressTable es true
-            <Col className="w-50">
+            <Col xs={12} lg={6}>
               {addresses.domicilios?.length > 0 && ( // Verifica si hay domicilios
                 <div className="addresses-section">
+                  <p style={{color: " #f1a441", textAlign: "center"}}>Selecciona un domicilio</p>
                   <div
                     className="table-container custom-scrollbar"
                     style={{ maxHeight: "50vh", overflowY: "auto" }}
@@ -620,7 +665,16 @@ const Complaints = ({ show, handleClose }) => {
                       </thead>
                       <tbody>
                         {addresses.domicilios.map((address, index) => (
-                          <tr key={index}>
+                          <tr
+                            key={index}
+                            onClick={() => handleRowClick(address.idDomicilio)} // Envía el idDomicilio al hacer clic
+                            style={{ cursor: "pointer" }} // Cambia el cursor para indicar que es clickeable
+                            className={
+                              selectedAddressId === address.idDomicilio
+                                ? "selected-row"
+                                : ""
+                            } // Aplica la clase si está seleccionado
+                          >
                             <td style={{ textAlign: "left" }}>
                               {address.calle || "--"}
                             </td>
@@ -661,9 +715,10 @@ const Complaints = ({ show, handleClose }) => {
             </Col>
           )}
           {showEmailTable && ( // Mostrar la tabla de correos si showEmailTable es true
-            <Col className="w-50">
+            <Col xs={12} lg={6}>
               {emails.length > 0 ? ( // Verifica si hay correos electrónicos
                 <div className="emails-section">
+                   <p style={{color: " #f1a441", textAlign: "center"}}>Selecciona un correo</p>
                   <div
                     className="table-responsive custom-scrollbar "
                     style={{ maxHeight: "50vh", overflowY: "auto" }}
@@ -721,8 +776,9 @@ const Complaints = ({ show, handleClose }) => {
             </Col>
           )}
           {showPhoneTable && ( // Mostrar la tabla de teléfonos si showPhoneTable es true
-            <Col className="w-50">
+            <Col xs={12} lg={6}>
               <div className="emails-telefonos">
+              <p style={{color: " #f1a441", textAlign: "center"}}>Selecciona un telefono</p>
                 <div
                   className="table-responsive custom-scrollbar"
                   style={{ maxHeight: "50vh", overflowY: "auto" }}
@@ -756,11 +812,17 @@ const Complaints = ({ show, handleClose }) => {
                       {phones.map((phone, index) => (
                         <tr
                           key={index}
-                          onClick={() => setReportedPhone("XXXXXX" + phone.númeroTelefónico.slice(6) || "--")} // Actualiza el estado con el teléfono formateado
+                          onClick={() =>
+                            setReportedPhone(
+                              "XXXXXX" + phone.númeroTelefónico.slice(6) || "--"
+                            )
+                          } // Actualiza el estado con el teléfono formateado
                           style={{ cursor: "pointer" }} // Cambia el cursor para indicar que es clickeable
                         >
                           <td>{phone.id || "0"}</td>
-                          <td>{"XXXXXX" + phone.númeroTelefónico.slice(6) || "--"}</td>
+                          <td>
+                            {"XXXXXX" + phone.númeroTelefónico.slice(6) || "--"}
+                          </td>
                           <td>{phone.telefonia || "--"}</td>
                           <td>{phone.origen || "--"}</td>
                           <td>{phone.clase || "--"}</td>
@@ -889,6 +951,32 @@ const Complaints = ({ show, handleClose }) => {
           </Table>
         </Row>
       </Modal.Body>
+      <style jsx>{`
+        /* Estilos para la tabla oscura con filas alternadas */
+        .table-dark {
+          --bs-table-striped-bg: #2c3034; /* Color de fondo de filas alternadas */
+          --bs-table-striped-color: #ffffff; /* Color de texto en filas alternadas */
+        }
+
+        /* Estilo para filas seleccionadas */
+        .selected-row > td {
+          background-color: rgb(0, 157.0684931507, 218.4) !important;
+          color: white !important;
+          --bs-table-striped-bg: rgb(0, 157.0684931507, 218.4) !important;
+        }
+
+        /* Estilo para hover en filas (ya que usas hover) */
+        .table-dark tbody tr:hover > td {
+          --bs-table-hover-bg: #323539;
+          --bs-table-hover-color: #fff;
+        }
+
+        /* Asegurar que las filas alternadas mantengan su color */
+        .table-dark.table-striped > tbody > tr:nth-of-type(odd) > td {
+          background-color: var(--bs-table-striped-bg);
+          color: var(--bs-table-striped-color);
+        }
+      `}</style>
     </Modal>
   );
 };
