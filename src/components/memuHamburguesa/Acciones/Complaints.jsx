@@ -764,8 +764,8 @@ const Complaints = ({ show, handleClose }) => {
                           <td>{phone.telefonia || "--"}</td>
                           <td>{phone.origen || "--"}</td>
                           <td>{phone.clase || "--"}</td>
-                          <td>{phone._Confirmado ? "Sí" : "No"}</td>
-                          <td>{phone.activo ? "Activo" : "Inactivo"}</td>
+                          <td>{phone.confirmado || "--"}</td>
+                          <td>{phone.activo || "--"}</td>
                         </tr>
                       ))}
                     </tbody>

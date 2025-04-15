@@ -469,13 +469,13 @@ const Telephones = () => {
                       <td>{row.husoHorario || "--"}</td>
                       {/* <td>{row.segHorarioContacto || "--"}</td> */}
                       <td>{row.extensión || "--"}</td>
-                      <td>{row._Confirmado ? "Sí" : "No" || "--"}</td>
+                      <td>{row.confirmado || "--"}</td>
                       {/* <td>
                         {new Date(row.fecha_Insert).toLocaleDateString() ||
                           "--"}
                       </td> */}
                       <td>{row.calificacion || "--"}</td>
-                      <td>{row.activo ? "Activo" : "Inactivo" || "--"}</td>
+                      <td>{row.activo || "--"}</td>
                     </tr>
                   ))}
             </tbody>

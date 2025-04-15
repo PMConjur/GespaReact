@@ -121,7 +121,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
           saldo: data.saldo,
           fechaCorte: data.fechaCorte,
           descuento: data.descuento,
-          dias1ErPago: data.dias1erPago,
+          dias1erpago: data.dias1erpago, // Corrige el nombre del campo para que coincida con la respuesta del endpoint
         });
       } else {
         console.error("La respuesta del endpoint no contiene los datos esperados:", data);
@@ -182,11 +182,13 @@ const CalculatorSimulator = ({show, handleClose}) => {
         validHerramientasAgregar.includes(herramientaSeleccionada.nombre)
     );
   
+    // Habilita los campos si la herramienta seleccionada es "Parcial" o "Ajuste"
     setAreFieldsEnabled(
       herramientaSeleccionada &&
         validHerramientasAgregar.includes(herramientaSeleccionada.nombre)
     );
   
+    // Actualiza los formularios dinámicamente según la herramienta seleccionada
     if (herramientaSeleccionada) {
       switch (herramientaSeleccionada.nombre) {
         case "Convenio":
@@ -205,6 +207,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
           setMontoPago(""); // Ejemplo: valor predeterminado para "Parcial"
           break;
         default:
+          // Restablece los valores si no hay configuración específica
           setFormInputs((prev) => ({
             ...prev,
             meses: "",
@@ -353,12 +356,8 @@ const CalculatorSimulator = ({show, handleClose}) => {
         requestData.agregarPagos,
         requestData.filaMod
       );
+  
       console.log("Respuesta del endpoint fetchCalSecondPartModify:", response);
-
-      // Verifica si no hay plazos calculados en la respuesta
-      if (!response?.calculos || response.calculos.length === 0) {
-        toast.warning(`Respuesta del endpoint: ${JSON.stringify(response)}`);
-      }
   
       // Actualizar los datos en la tabla y el formulario
       setCalculosData({
@@ -371,6 +370,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
         tasaMensual: response.tasaMensual, // Agregar la tasa mensual al estado
       });
   
+      toast.success("Datos enviados correctamente.");
     } catch (error) {
       console.error("Error al enviar los datos al endpoint fetchCalSecondPartModify:", error);
       const errorMessage = error.response?.data?.title || "Error desconocido al enviar los datos.";
@@ -548,7 +548,6 @@ const handleSaveOffering = async () => {
     const segundoInsert = isManagment?.storeOutput?.Segundo_Insert;
     const producto = 1;   
 
-    // Corrige la condición de validación
     if (!idCuenta || !selectedHerramienta || !montoNegociado) {
       toast.error("Faltan datos requeridos para guardar el ofrecimiento.");
       return;
@@ -568,7 +567,7 @@ const handleSaveOffering = async () => {
         monto: parseFloat(pago.pago), // Convertir a número respetando decimales
         fecha: new Date(pago.fecha).toISOString().split("T")[0], // Formato YYYY-MM-DD
     })),
-    dias1erPago: summaryData.dias1ErPago, // Asigna el valor de data.maxDias
+    dias1erPago: summaryData.dias1erpago, 
       fechaCorte: (() => {
         const [datePart] = summaryData.fechaCorte.split(" "); // Extrae solo la parte de la fecha antes del espacio
         const [day, month, year] = datePart.split("/"); // Divide la fecha en día, mes y año
@@ -996,14 +995,12 @@ const handleSaveOffering = async () => {
                   </Col>
                 </Row>
               )}
-
-               {showCalculator &&
+              <Col className="p-0">
+                {showCalculator &&
                   !areFieldsEnabled && ( // Oculta la calculadora si los campos están habilitados
                     <>
-              <Col className="p-0 mt-4">
-             
                       {/* Calculadora AMEX */}
-                      <h5 style={{ textAlign: "center", color: "#20c997"}}>
+                      <h5 style={{ textAlign: "center", color: "#20c997" }}>
                         Calculadora AMEX
                       </h5>
                       <Card className="p-3 mb-0" ref={calculatorRef}>
@@ -1110,7 +1107,8 @@ const handleSaveOffering = async () => {
                           </Form>
                         </Card.Body>
                       </Card>
-             
+                    </>
+                  )}
               </Col>
               <Row ref={detailsRef}>
                 {showDetails && (
@@ -1443,8 +1441,6 @@ const handleSaveOffering = async () => {
                   </>
                 )}
               </Row>
-              </>
-                  )}
             </Col>
           </Col>
         </Modal.Body>
