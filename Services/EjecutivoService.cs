@@ -69,6 +69,11 @@ namespace NoriAPI.Services
         Task<NegociacionPlazosOutput> GuardaNegociacionPlazos(NegociacionPlazosInput input);
         Task<dynamic> IncrementaNegociacion(IncrementoNegociacion incrementaNegInfo);
 
+        #region Ofrecer 
+        Task<ResultadoOfrecer> ValidaOfrecer(OfrecerNegociacionRequest ofrecerInfo);
+        #endregion
+
+
         #endregion
         Task ObtenerBusquedaEJE(DataRow drDatos, DataSet dsTablas);
 
@@ -2028,6 +2033,39 @@ namespace NoriAPI.Services
         }
 
 
+        #endregion
+
+        #region Ofrecer
+        public async Task<ResultadoOfrecer> ValidaOfrecer(OfrecerNegociacionRequest ofrecerInfo)
+        {
+            DataTable dtinfoHerramienta = new DataTable();
+            DataTable dtproducto = new DataTable();
+            DataTable dtPagos = new DataTable();
+            int iMaxDias = 0;
+            DateTime fechaCorte, fechaAsignacion;
+            bool PrimesLending;
+
+            dtinfoHerramienta = await _ejecutivoRepository.ObtieneHerramientas(ofrecerInfo.idCuenta);
+            iMaxDias = Convert.ToInt32(dtinfoHerramienta.Rows[0][0].ToString());
+
+            dtproducto = await _ejecutivoRepository.ObtieneProducto(ofrecerInfo.idCuenta);
+            fechaCorte = Convert.ToDateTime(dtproducto.Rows[0]["Fechacorte"].ToString());
+            fechaAsignacion = Convert.ToDateTime(dtproducto.Rows[0]["batchdate"].ToString());
+            string Producto = dtproducto.Rows[0]["Product"].ToString();
+            if (Producto == "Placement" || Producto == "Product" || Producto == "Lending" || Producto == "MidPrimes")
+                PrimesLending = true;
+            else
+                PrimesLending = false;
+
+            dtPagos = await _ejecutivoRepository.ObtienePagos(ofrecerInfo.idCartera, ofrecerInfo.idCuenta);
+            dtPagos.DefaultView.Sort = "FechaPago DESC";
+
+            var InfoOfrecer = _ejecutivoRepository.ValidaOfrecer(ofrecerInfo, iMaxDias, fechaCorte, fechaAsignacion, PrimesLending, dtPagos);
+            var resultadoofrecer = new ResultadoOfrecer(Convert.ToString(InfoOfrecer));
+            return resultadoofrecer;
+
+
+        }
         #endregion
 
 

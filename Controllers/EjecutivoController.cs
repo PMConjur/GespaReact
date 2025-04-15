@@ -380,6 +380,16 @@ namespace NoriAPI.Controllers
 
         }
 
+
+        [HttpPost("Ofrecer-Negociacion")]
+        public async Task<IActionResult> ValidaOfrecer([FromBody] OfrecerNegociacionRequest ofrecerInfo)
+        {
+            var infoOfrecer = await _ejecutivoService.ValidaOfrecer(ofrecerInfo);
+
+            return Ok(infoOfrecer);
+
+        }
+
         [HttpPost("save-ofrecimiento")]
         public async Task<ActionResult<OfrecimientoValidadores>> SaveOfrecimiento([FromBody] SaveOfrecimientoRequest ofrecimientoInfo)
         {
