@@ -1582,3 +1582,35 @@ export const fetchAddress = async (idCartera, idCuenta) => {
     throw error;
   }
 };
+
+
+
+export const getDeadlineData = async (idCartera, idCuenta) => {
+  try {
+    if (!idCartera || !idCuenta) {
+      throw new Error("idCartera o idCuenta no son válidos.");
+    }
+
+    const url = `/ejecutivo/accionesPlazos`;
+    console.log("Solicitando datos de plazos a:", url); // Depurar URL
+
+    const response = await servicio.get(url, {
+      params: { idCartera, idCuenta }
+    });
+    const message = getErrorStatus(response.status)
+
+
+    if (response.status !== 200) {
+      toast.error(message, { position: "top-right" });
+      throw new Error(message);
+    }
+
+    return response.data;
+  } catch (error) {
+    
+    toast.error(
+      "No se pudo obtener los datos de Plazos. Verifica la conexión o los parámetros."
+    );
+    throw error;
+  }
+};

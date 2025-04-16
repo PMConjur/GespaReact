@@ -4,13 +4,13 @@ import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
 import { getTalksData } from "../services/gespawebServices";
 
-const TableTalks = ({ customColumnNames = {} }) => {
-    const { searchResults } = useContext(AppContext); // Hook 1
-    const [sortedData, setSortedData] = useState([]); // Hook 2
-    const [sortByOldest, setSortByOldest] = useState(false); // Hook 3
-    const [toastShown, setToastShown] = useState(false); // Hook 4
+const TableTalks = ({ customColumnNames = {}, onRowClick }) => {
+    const { searchResults } = useContext(AppContext);
+    const [sortedData, setSortedData] = useState([]);
+    const [sortByOldest, setSortByOldest] = useState(false);
+    const [toastShown, setToastShown] = useState(false);
+    const [selectedRow, setSelectedRow] = useState(null);
 
-    // Hook 5: useEffect para obtener datos
     const toastShownRef = useRef(false);
 
     useEffect(() => {
@@ -32,7 +32,10 @@ const TableTalks = ({ customColumnNames = {} }) => {
     
                 const talksData = await getTalksData(1, idCuenta);
                 setSortedData(talksData);
-                toastShownRef.current = false; // Resetear para futuras búsquedas
+                toastShownRef.current = false;
+                
+                // Debug: mostrar datos obtenidos
+                console.log("Datos de negociaciones obtenidos:", talksData);
             } catch (error) {
                 console.error("Error al obtener los datos de Negociaciones:", error);
             }
@@ -41,7 +44,6 @@ const TableTalks = ({ customColumnNames = {} }) => {
         fetchData();
     }, [searchResults]);
 
-    // Hook 6: useCallback para manejar el ordenamiento
     const handleSortChange = useCallback(() => {
         if (toastShown) return;
         
@@ -51,7 +53,7 @@ const TableTalks = ({ customColumnNames = {} }) => {
         setSortedData(prevData => {
             const sorted = !sortByOldest
                 ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
-                : [...prevData]; // Usar prevData en lugar de sortedData
+                : [...prevData];
             
             return sorted;
         });
@@ -64,16 +66,28 @@ const TableTalks = ({ customColumnNames = {} }) => {
         
         const timer = setTimeout(() => {
             setToastShown(false);
-        }, 1); // Tiempo suficiente para que el toast se muestre
+        }, 1);
         
-        return () => clearTimeout(timer); // Limpiar el timer si el componente se desmonta
-    }, [sortByOldest, toastShown]); // Considera remover sortedData de las dependencias si es posible
+        return () => clearTimeout(timer);
+    }, [sortByOldest, toastShown]);
+
+    const handleRowClick = (rowData, index) => {
+        setSelectedRow(index);
+        if (onRowClick) {
+            // Enviamos el objeto completo de la negociación
+            onRowClick(rowData);
+            console.log("Negociación seleccionada para filtrar:", {
+                Fecha_Insert: rowData.Fecha_Insert,
+                Segundo_Insert: rowData.Segundo_Insert,
+                idHerramienta: rowData.idHerramienta
+            });
+        }
+    };
 
     if (!sortedData || sortedData.length === 0) {
         return <p>No hay datos disponibles.</p>;
     }
 
-    // ✅ Campos que queremos ocultar en la tabla
     const hiddenFieldstalks = [
         "Fecha_Insert",
         "Segundo_Insert",
@@ -81,7 +95,6 @@ const TableTalks = ({ customColumnNames = {} }) => {
         "idEstado"
     ];
 
-    // ✅ Renombrar los encabezados de la tabla
     const defaultColumnNames = {
         "FechaHora": "Fecha y Hora",
         "Herramienta": "Herramienta",
@@ -100,22 +113,15 @@ const TableTalks = ({ customColumnNames = {} }) => {
         "Remanente": "Remanente",
     };
 
-    // 🔹 Combina los nombres personalizados con los predeterminados
     const columnNames = { ...defaultColumnNames, ...customColumnNames };
-
-    // 🔹 Lista de campos a los que se les agregará el signo "$" con formato de miles
     const currencyFields = ["Saldo", "MontoRequerido", "MontoNegociado", "MontoPagado", "SaldoInterés", "Remanente"];
 
-
-    // 🔹 Filtrar claves de los datos, excluyendo los campos ocultos
     const headers = Array.isArray(sortedData) && sortedData.length > 0 && sortedData[0] && typeof sortedData[0] === "object"
     ? Object.keys(sortedData[0]).filter(header => !hiddenFieldstalks.includes(header))
     : [];
         
-    
     return (
         <>
-            {/* Checkbox para ordenar por el registro más antiguo */}
             <Form.Check
                 type="switch"
                 id="sortByOldest"
@@ -132,15 +138,15 @@ const TableTalks = ({ customColumnNames = {} }) => {
                     maxHeight: '500px', 
                     overflowY: 'auto', 
                     display: 'flex', 
-                    backgroundColor: '#343a40', // Fondo oscuro
-                    color: '#ffffff',          // Texto claro
-                    scrollbarColor: '#6c757d #343a40', // Colores del scroll
-                    scrollbarWidth: 'thin'    // Scroll más delgado
+                    backgroundColor: '#343a40',
+                    color: '#ffffff',
+                    scrollbarColor: '#6c757d #343a40',
+                    scrollbarWidth: 'thin'
                 }}
             >
                 <Table striped bordered hover responsive variant="dark" style={{ fontSize: "13px" }}>
-                    <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#343a40" }}> {/* Encabezado fijo */}
-                        <tr style={{ height: "55px" }}> {/* Reducimos la altura de los encabezados */}
+                    <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#343a40" }}>
+                        <tr style={{ height: "55px" }}>
                             {headers.map((header) => (
                                 <th key={header} style={{ padding: "4px", minHeight: "20px", textAlign: "center" }}>
                                     {columnNames[header] || header.replace(/_/g, " ")}
@@ -148,42 +154,42 @@ const TableTalks = ({ customColumnNames = {} }) => {
                             ))}
                         </tr>
                     </thead>
-                    <tbody style={{
-                        width: "100%"          // 🔹 Evita que la tabla se desconfigure
-                    }}>
-                    
+                    <tbody style={{ width: "100%" }}>
                         {sortedData.map((item, index) => (
-                            <tr key={index} style={{ height: "24px" }}> {/* Reducimos la altura de cada fila */}
+                            <tr 
+                                key={index} 
+                                style={{ 
+                                    height: "24px",
+                                    backgroundColor: selectedRow === index ? '#495057' : 'inherit',
+                                    cursor: 'pointer'
+                                }}
+                                onClick={() => handleRowClick(item, index)}
+                            >
                                 {headers.map((header) => {
                                     let value = item[header];
 
-                                    // 🔹 Formatear FechaHora en una sola línea
                                     if (header === "FechaHora" && typeof value === "string" && value.includes("T")) {
                                         const date = new Date(value);
                                         if (!isNaN(date.getTime())) {
-                                            const formattedDate = date.toISOString().split("T")[0]; // YYYY-MM-DD
+                                            const formattedDate = date.toISOString().split("T")[0];
                                             const hours = date.getHours().toString().padStart(2, "0");
                                             const minutes = date.getMinutes().toString().padStart(2, "0");
                                             value = `${formattedDate} ${hours}:${minutes} hrs`;
                                         }
                                     }
 
-                                    // 🔹 Formatear campos de moneda con "$" y separadores de miles
                                     if (currencyFields.includes(header) && typeof value === "number") {
                                         value = `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                                     }
 
-                                    // 🔹 Agregar "%" al campo de Descuento
                                     if (header === "Descuento" && typeof value === "number") {
                                         value = `${value.toFixed(2)}%`;
                                     }
 
-                                    // 🔹 Formatear Vencimiento como una sola línea
                                     if (header === "Vencimiento" && typeof value === "string" && value.includes("T")) {
                                         value = value.split("T")[0];
                                     }
 
-                                    // 🔹 Manejo de valores nulos o no definidos
                                     if (value === null || value === undefined || (typeof value === "object" && Object.keys(value).length === 0)) {
                                         value = "--";
                                     }
@@ -194,19 +200,19 @@ const TableTalks = ({ customColumnNames = {} }) => {
                                                 padding: ".7rem", 
                                                 minHeight: "20px", 
                                                 textAlign: "center", 
-                                                whiteSpace: "nowrap", // 🔹 Evita saltos de línea
-                                                overflow: "hidden",  // 🔹 Oculta contenido desbordado
-                                                textOverflow: "ellipsis" // 🔹 Agrega puntos suspensivos si el texto es muy largo
+                                                whiteSpace: "nowrap",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis"
                                             }}>
-                                        {value}
-                                    </td>
-                                );
-                            })}
-                        </tr>
-                    ))}
-                </tbody>
-            </Table>
-        </div>
+                                            {value}
+                                        </td>
+                                    );
+                                })}
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            </div>
         </>
     );
 };
