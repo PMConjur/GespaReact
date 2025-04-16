@@ -531,9 +531,9 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
       const increaseResponse = await fetchIncreasesNegotiation(increaseRequestData);
       
       // Verificar si la respuesta es 204 antes de cerrar
-      if (increaseResponse?.status === 204 || increaseResponse?.status === 204) {
+      if (increaseResponse?.status === 200 || increaseResponse?.status === 204) {
         handleClose(false); // Cierra el modal solo si el status es 204
-        setIsNegotiationActive(true);
+        setIsNegotiationActive(false);
         toast.success("Negociación incrementada correctamente.");
       } else {
         toast.warning("La respuesta del servidor no fue la esperada.");

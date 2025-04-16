@@ -6,7 +6,7 @@ import TimePicker from "react-time-picker";
 
 import "react-datepicker/dist/react-datepicker.css";
 import "../scss/styles.scss";
-
+import ReminderFollowUp from "./ReminderFollowUp";
 const responseData = JSON.parse(localStorage.getItem("responseData"));
 const numEmpleado = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
 
@@ -387,6 +387,7 @@ function NotesWidget() {
           </div>
         )}
       </div>
+        <ReminderFollowUp/>
     </div>
   );
 }

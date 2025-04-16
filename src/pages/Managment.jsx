@@ -1,5 +1,5 @@
 import DataCard from "../components/DataCard";
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState} from "react";
 import Flow from "../components/Flow";
 import Telephones from "../components/Telephones";
 import InformationClient from "../components/InformationClient";
