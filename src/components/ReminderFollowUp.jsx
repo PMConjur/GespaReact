@@ -1,11 +1,11 @@
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
-import Managment, { AppContext } from "../pages/Managment";
+import { AppContext } from "../pages/Managment";
 import { useContext} from "react";
 
 const ReminderFollowUp = () => {
   const { isManagment} = useContext(AppContext);
-  console.log(" Esto es isManagment:", Managment);
+  console.log(" Esto es isManagment:", isManagment);
 
   return (
     <Card>
