@@ -6,9 +6,9 @@ import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 import Validators from "./fragments/Validators"; // Importa el modal de Validators
 
-const CalculatorSimulator = ({show, handleClose}) => {
+const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
 
-  const { searchResults, idEjecutivo, isManagment} = useContext(AppContext);
+  const { searchResults, idEjecutivo, isManagment, setIsNegotiationActive} = useContext(AppContext);
   useEffect(() => {
     console.log("Contenido de isManagment:", isManagment);
   }, [isManagment]); // Se ejecutará cada vez que isManagment cambie
@@ -69,7 +69,6 @@ const CalculatorSimulator = ({show, handleClose}) => {
   const [validationMessage, setValidationMessage] = useState("");
   const calculatorRef = useRef(null); // Referencia para la sección de la calculadora
   const detailsRef = useRef(null); // Referencia para la sección de "Resumen y Plazos"
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (showCalculator && calculatorRef.current) {
@@ -534,6 +533,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
       // Verificar si la respuesta es 204 antes de cerrar
       if (increaseResponse?.status === 204 || increaseResponse?.status === 204) {
         handleClose(false); // Cierra el modal solo si el status es 204
+        setIsNegotiationActive(true);
         toast.success("Negociación incrementada correctamente.");
       } else {
         toast.warning("La respuesta del servidor no fue la esperada.");
@@ -551,7 +551,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
   
 
 const handleSaveOffering = async () => {
-  setIsSubmitting(true);
+ 
   try {
     const idCuenta = searchResults?.[0]?.idCuenta?.trim();
     const fechaInsert = isManagment?.storeOutput?.Fecha_Insert?.split("T")[0];
@@ -597,6 +597,7 @@ const handleSaveOffering = async () => {
     console.log("Respuesta del endpoint fetchSaveOffering:", response);
 
     handleClose(false)
+    setIsNegotiationActive(true);
     // Verifica si fetchData está definida antes de llamarla
     if (typeof fetchData === "function") {
       const idCartera = 1; // Ejemplo de valor
@@ -614,7 +615,7 @@ const handleSaveOffering = async () => {
   return (
     <>
       <Modal key={show ? "modal-open" : "modal-closed"}  show={show} onHide={handleClose} size="xl" backdrop="static">
-        <Modal.Header closeButton>
+        <Modal.Header closeButton={showCloseButton}>
           <Modal.Title style={{ color: "#0dcaf0" }} className="ms-3">
             Calculadora
           </Modal.Title>
