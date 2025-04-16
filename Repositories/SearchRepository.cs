@@ -75,7 +75,7 @@ namespace NoriAPI.Repositories
             {
                 case "Cuenta":
                     queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (NOLOCK)");
-                    queryBusqueda += " WHERE CuentaActiva = 1 AND C.idCuenta in ('340100000000000','370700000000007','371700000000002','371700000000005','376000000000001','376600000000009','376700000000000','376700000000004','370700000000004','370700000000008','376700000000007','376700000000006','376700000000008') AND C.idCuenta = '" + ValorBusqueda.Replace(" ", "") + "' ";
+                    queryBusqueda += " WHERE CuentaActiva = 1 AND C.idCuenta in ('340100000000000','370700000000007','371700000000002','371700000000005','376000000000001','376600000000009','376700000000000','376700000000004','370700000000004','370700000000008','376700000000007','376700000000006','376700000000008','370789338633001') AND C.idCuenta = '" + ValorBusqueda.Replace(" ", "") + "' ";
                     break;
 
                 case "Nombre":
@@ -84,18 +84,18 @@ namespace NoriAPI.Repositories
 
                     foreach (string sNombre in ValorBusqueda.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
                         queryBusqueda += " AND CONTAINS( N.NombreDeudor, '" + sNombre.Replace("'", "") + "') ";
-                    queryBusqueda += "WHERE CuentaActiva = 1 AND C.idCuenta in ('340100000000000','370700000000007','371700000000002','371700000000005','376000000000001','376600000000009','376700000000000','376700000000004','370700000000004','370700000000008','376700000000007','376700000000006','376700000000008')";
+                    queryBusqueda += "WHERE CuentaActiva = 1 AND C.idCuenta in ('340100000000000','370700000000007','371700000000002','371700000000005','376000000000001','376600000000009','376700000000000','376700000000004','370700000000004','370700000000008','376700000000007','376700000000006','376700000000008','370789338633001')";
                     validacion = "Nombre";
                     break;
 
                 case "RFC":
                     queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (INDEX(IX_Cuentas_RFC), NOLOCK)");
-                    queryBusqueda += " WHERE CuentaActiva = 1 AND C.idCuenta in ('340100000000000','370700000000007','371700000000002','371700000000005','376000000000001','376600000000009','376700000000000','376700000000004','370700000000004','370700000000008','376700000000007','376700000000006','376700000000008') AND  CHARINDEX('" + ValorBusqueda.Replace(" ", "") + "', C.RFC) = 1  ";
+                    queryBusqueda += " WHERE CuentaActiva = 1 AND C.idCuenta in ('340100000000000','370700000000007','371700000000002','371700000000005','376000000000001','376600000000009','376700000000000','376700000000004','370700000000004','370700000000008','376700000000007','376700000000006','376700000000008','370789338633001') AND  CHARINDEX('" + ValorBusqueda.Replace(" ", "") + "', C.RFC) = 1  ";
                     break;
 
                 case "Numero Cliente":
                     queryBusqueda = queryBusqueda.Replace("Cuentas C", "Cuentas C WITH (INDEX(IX_Cuentas_NúmeroCliente), NOLOCK)");
-                    queryBusqueda += " WHERE CuentaActiva = 1 AND C.idCuenta in ('340100000000000','370700000000007','371700000000002','371700000000005','376000000000001','376600000000009','376700000000000','376700000000004','370700000000004','370700000000008','376700000000007','376700000000006','376700000000008') AND  C.NúmeroCliente = '" + ValorBusqueda.Replace(" ", "") + "' ";
+                    queryBusqueda += " WHERE CuentaActiva = 1 AND C.idCuenta in ('340100000000000','370700000000007','371700000000002','371700000000005','376000000000001','376600000000009','376700000000000','376700000000004','370700000000004','370700000000008','376700000000007','376700000000006','376700000000008','370789338633001') AND  C.NúmeroCliente = '" + ValorBusqueda.Replace(" ", "") + "' ";
                     break;
 
                 case "Telefono":
@@ -107,12 +107,12 @@ namespace NoriAPI.Repositories
                     //        return tblResultado;
                     //que el equipo Front controle que solo sean numeros y sean 10 digitos
 
-                    queryBusqueda += " WHERE CuentaActiva = 1 AND C.idCuenta in ('340100000000000','370700000000007','371700000000002','371700000000005','376000000000001','376600000000009','376700000000000','376700000000004','370700000000004','370700000000008','376700000000007','376700000000006','376700000000008') AND T.NúmeroTelefónico = RIGHT('" + ValorBusqueda.Replace(" ", "") + "', 10) ";
+                    queryBusqueda += " WHERE CuentaActiva = 1 AND C.idCuenta in ('340100000000000','370700000000007','371700000000002','371700000000005','376000000000001','376600000000009','376700000000000','376700000000004','370700000000004','370700000000008','376700000000007','376700000000006','376700000000008','370789338633001') AND T.NúmeroTelefónico = RIGHT('" + ValorBusqueda.Replace(" ", "") + "', 10) ";
                     break;
 
                 case "Expediente":     //El equipo Front debe validar que no tenga letras
 
-                    queryBusqueda += " WHERE CuentaActiva = 1 AND C.idCuenta in ('340100000000000','370700000000007','371700000000002','371700000000005','376000000000001','376600000000009','376700000000000','376700000000004','370700000000004','370700000000008','376700000000007','376700000000006','376700000000008') AND CL.Abreviación = '";
+                    queryBusqueda += " WHERE CuentaActiva = 1 AND C.idCuenta in ('340100000000000','370700000000007','371700000000002','371700000000005','376000000000001','376600000000009','376700000000000','376700000000004','370700000000004','370700000000008','376700000000007','376700000000006','376700000000008','370789338633001') AND CL.Abreviación = '";
                     foreach (char Caracter in ValorBusqueda.Substring(0, 3))
                         if (char.IsLetter(Caracter))
                             queryBusqueda += Caracter;
