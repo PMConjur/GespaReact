@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Modal, Row, Col } from "react-bootstrap";
 import PropTypes from "prop-types";
 import TableOnlineCharge from "../../TableOnlineCharge";
@@ -7,36 +7,48 @@ import { AppContext } from "../../../pages/Managment";
 
 const OnlineCharge = ({
     show = false,
+    
     handleCloseOnlineCharge = () => console.warn("handleCloseOnlineCharge no proporcionada"),
-    allowClose = true,
     onFormSuccess = () => { },
 }) => {
-    const { isOnlineChargeActive } = useContext(AppContext);
+    const { isOnlineChargeActive, loading, setOnlineChargeActive, setShowOnlineCharge  } = useContext(AppContext);
+    const [allowClose, setAllowClose] = useState(false); // <-- Estado local para controlar el c
 
     // Debug de estados
+    // Resetear allowClose cuando se abre el modal
     useEffect(() => {
-        console.log(`[Modal] Estado actualizado - 
-      Active: ${isOnlineChargeActive}, 
-      AllowClose: ${allowClose}, 
-      Show: ${show}`);
-    }, [show, isOnlineChargeActive, allowClose]);
+        if (show) {
+            setAllowClose(false);
+        }
+    }, [show]);
 
     const handleModalClose = () => {
-        console.log("Ejecutando cierre del modal");
-        if (typeof handleCloseOnlineCharge === 'function') {
-            handleCloseOnlineCharge();
+        if (loading) {
+            console.log("[Modal] Bloqueando cierre durante carga");
+            return;
         }
+        setOnlineChargeActive(false);
+        handleCloseOnlineCharge(); // Llama a la función proporcionada por el padre
+        setShowOnlineCharge(false); // Cambia el estado de isOnlineChargeActive a false
     };
 
+        // Manejador para cuando el formulario tiene éxito
+        const handleFormSuccess = (success) => {
+            setAllowClose(success); // Permitir cierre solo si success es true
+            onFormSuccess(success); // Opcional: propagar el evento al padre si es necesario
+        };
+
     // Modal CON formulario (isOnlineChargeActive = true)
-    if (isOnlineChargeActive) {
+    if (isOnlineChargeActive === true) {
         return (
             <Modal
                 show={show}
                 onHide={() => {
                     console.log('[Modal] Intento de cierre con formulario activo', allowClose);
-                    if (allowClose) {
-                        handleModalClose();
+                    if (allowClose === true) {
+                        setOnlineChargeActive(false); // Cambia el estado de isOnlineChargeActive a false
+                        handleCloseOnlineCharge(); // Llama a la función proporcionada por el padre
+                        setShowOnlineCharge(true); // Cambia el estado de isOnlineChargeActive a false
                     }
                 }}
                 size="xl"
@@ -59,10 +71,11 @@ const OnlineCharge = ({
                         </Col>
                         <Col md={4} className="h-100 p-3 bg-dark text-white overflow-auto">
                             <FormOnlineCharge
-                                handleSuccess={(success) => {
-                                    console.log('[Modal] Formulario completado con éxito:', success);
-                                    onFormSuccess(success);
-                                }}
+                                    handleClose={(success) => setAllowClose(success)} 
+                                    allowClose={allowClose}
+                                    onClose={handleModalClose}
+                                    onRegistrationSuccess={handleFormSuccess}
+                                
                             />
                         </Col>
                     </Row>

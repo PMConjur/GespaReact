@@ -247,7 +247,8 @@ const handleCloseOnlineChargeModal = () => {
       {/* Modal de OnlineCharge */}
       <OnlineCharge 
         show={showOnlineChargeModal}
-        handleCloseCharge={handleCloseOnlineChargeModal}
+        handleClose={handleCloseOnlineChargeModal}
+      
       />
 
       {/* Modal de Payments */}
