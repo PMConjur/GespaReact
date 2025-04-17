@@ -23,13 +23,17 @@ import "../scss/styles.scss";
 import { TelephoneFill } from "react-bootstrap-icons";
 
 const Telephones = () => {
-  const { userActiveFlow, setSelectedAnswer } = useContext(AppContext);
-  const [isDataAllPhones, setDataAllPhones] = useState([]);
+  const {
+    userActiveFlow,
+    setSelectedAnswer,
+    searchResults,
+    lastPhoneNumberFromToast,
+    isDataAllPhones,
+    setIsDataAllPhones // Usar el estado del contexto
+  } = useContext(AppContext);
   const [isLoading, setIsLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isPhoneNew, setIsPhoneNew] = useState(false);
-  const { searchResults, lastPhoneNumberFromToast } = useContext(AppContext);
-
   const [toastShown, setToastShown] = useState(false);
   const [selectedClaseTelefono, setSelectedClaseTelefono] = useState("");
   const [horarioContacto, setHorarioContacto] = useState("00:00:00");
@@ -213,7 +217,7 @@ const Telephones = () => {
         })
       );
       const flatPhones = phones.flat();
-      setDataAllPhones(flatPhones);
+      setIsDataAllPhones(flatPhones); // Actualizar el contexto con los datos
       if (flatPhones.length === 0 && !toastShown) {
         toast.error("Error 404: No hay carga de teléfonos", {
           position: "top-right"

@@ -45,6 +45,7 @@ const Managment = () => {
   const [triggerUpdateStickyTime, setTriggerUpdateStickyTime] = useState(false); // Estado para accionar la actualización del tiempo
   const [userActiveFlow, setUserActiveFlow] = useState(false); // Asegurar que el estado inicial sea false
   const [isManagment, setManagment] = useState([]); // Estado para la gestión
+  const [isDataAllPhones, setIsDataAllPhones] = useState([]); // Estado para manejar los teléfonos
   const token = responseData?.ejecutivo?.token;
   const nombreEjecutivo =
     responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
@@ -213,7 +214,9 @@ const Managment = () => {
     userActiveFlow, // Enviar estado userActiveFlow al contexto
     setUserActiveFlow, // Enviar función para actualizar userActiveFlow al contexto
     isManagment, // Enviar estado de gestión al contexto
-    setManagment // Enviar función para actualizar la gestión al contexto
+    setManagment, // Enviar función para actualizar la gestión al contexto
+    isDataAllPhones, // Agregar al contexto
+    setIsDataAllPhones // Agregar setter al contexto
   };
 
   return (

@@ -8,11 +8,12 @@ import {
 import { AppContext } from "../../pages/Managment"; // Importa el contexto
 
 const FormSearch = () => {
-  const { searchResults } = useContext(AppContext);
+  const { searchResults, isDataAllPhones } = useContext(AppContext);
   const idCuenta = searchResults?.[0]?.idCuenta;
   const [datoOptions, setDatoOptions] = useState([]);
-  const [tipoDatoOptions, setTipoDatoOptions] = useState([]); // Opciones para ddlTipoDato
+  const [tipoDatoOptions, setTipoDatoOptions] = useState([""]); // Opciones para ddlTipoDato
   const [selectedValue, setSelectedValue] = useState("");
+  const [isTipoDatoChanged, setIsTipoDatoChanged] = useState(false); // Estado para controlar el cambio
 
   useEffect(() => {
     const loadDatoOptions = async () => {
@@ -30,12 +31,15 @@ const FormSearch = () => {
   }, [idCuenta]); // Ejecuta el efecto solo cuando idCuenta cambia
 
   const handleSelectChange = (e) => {
+    setTipoDatoOptions([""]); // Limpiar opciones antes de llenar nuevas
     const value = e.target.value;
     setSelectedValue(value);
+    setIsTipoDatoChanged(false); // Reinicia el estado de cambio
 
     // Llenar ddlTipoDato según el valor seleccionado
     switch (value) {
       case "2601": // Nombre
+        setIsTipoDatoChanged(true); // Marca que se realizó un cambio y activa animación de pulso
         setTipoDatoOptions([
           {
             id: searchResults?.[0]?.nombreDeudor,
@@ -44,13 +48,16 @@ const FormSearch = () => {
         ]);
         break;
       case "2602": // Teléfono
-        setTipoDatoOptions([
-          { id: "1", text: "Celular" },
-          { id: "2", text: "Casa" },
-          { id: "3", text: "Trabajo" }
-        ]);
+        setIsTipoDatoChanged(true); // Marca que se realizó un cambio y activa animación de pulso
+        setTipoDatoOptions(
+          isDataAllPhones.map((phone) => ({
+            id: phone.númeroTelefónico, // Usar el número completo como ID
+            text: `XXX-XXX-${phone.númeroTelefónico.slice(-4)}` // Mostrar solo los últimos 4 dígitos
+          }))
+        );
         break;
       case "2603": // Empresa
+        setIsTipoDatoChanged(true); // Marca que se realizó un cambio y activa animación de pulso
         setTipoDatoOptions([
           { id: "1", text: "Nombre de la Empresa" },
           { id: "2", text: "Giro" },
@@ -61,18 +68,21 @@ const FormSearch = () => {
         setTipoDatoOptions([{ id: "", text: "" }]);
         break;
       case "2605": // Adicional
+        setIsTipoDatoChanged(true); // Marca que se realizó un cambio y activa animación de pulso
         setTipoDatoOptions([
           { id: "1", text: "Referencia Personal" },
           { id: "2", text: "Referencia Laboral" }
         ]);
         break;
       case "2606": // Correo
+        setIsTipoDatoChanged(true); // Marca que se realizó un cambio y activa animación de pulso
         setTipoDatoOptions([
           { id: "1", text: "Correo Personal" },
           { id: "2", text: "Correo Laboral" }
         ]);
         break;
       case "2607": // RFC
+        setIsTipoDatoChanged(true); // Marca que se realizó un cambio y activa animación de pulso
         setTipoDatoOptions([
           {
             id: searchResults?.[0]?.rfc,
@@ -81,11 +91,17 @@ const FormSearch = () => {
         ]);
         break;
       default:
+        setIsTipoDatoChanged(false); // Marca que se realizó un cambio y activa animación de pulso
         setTipoDatoOptions([]); // Vaciar opciones si no hay coincidencia
         break;
     }
   };
-
+  const handleTipoDatoChange = (e) => {
+    const value = e.target.value;
+    if (value != "Seleccionar..." || value != "") {
+      setIsTipoDatoChanged(false); // Marca que se realizó un cambio y activa animación de pulso
+    }
+  };
   return (
     <>
       <div>
@@ -113,7 +129,11 @@ const FormSearch = () => {
                 <span>-</span>
               </InputGroup.Text>
               <Form.Group as={Col} controlId="formGridState">
-                <Form.Select id="ddlTipoDato">
+                <Form.Select
+                  id="ddlTipoDato"
+                  className={isTipoDatoChanged === true ? "pulse-search" : ""} // Aplica la clase si hubo un cambio
+                  onChange={handleTipoDatoChange}
+                >
                   <option value="">Seleccionar...</option>
                   {tipoDatoOptions.map((option) => (
                     <option key={option.id} value={option.id}>
