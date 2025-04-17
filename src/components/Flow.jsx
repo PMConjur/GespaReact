@@ -17,8 +17,7 @@ import SaveButton from "./flowComponents/SaveButton"; // Importa el nuevo compon
 import CalculatorSimulator from "./CalculatorSimulator"; // Importa el componente CalculatorSimulator
 
 import Validators from "./fragments/Validators";
-import { isValid } from "date-fns";
-import { id } from "date-fns/locale";
+
 const Flow = () => {
   const {
     searchResults,
@@ -82,7 +81,7 @@ const Flow = () => {
   const handleOpenOnlineCharge = () => setShowOnlineCharge(true); // Abre el modal OnlineCharge
   const handleCloseOnlineCharge = () => {
     console.log("Cerrando OnlineCharge...");
-    setShowOnlineCharge(false); // Cierra el modal OnlineCharge
+    setShowOnlineCharge(false); // Cierra el modal OnlineCharge  
   };
 
   const handleStopTimer = () => {
@@ -661,15 +660,7 @@ const Flow = () => {
       }
     };
     //Renderiza el contenido para flujo sin componentes de comentario y llamadas para manual
-    const renderContentNoComment = () => {
-      {
-        setIsCommentValid(true);
-      }
-      {
-        /* Marca isCommentValid como true */
-      }
-    };
-
+   
     return (
       <Card className="flow-size" border="primary">
         <Card.Header className="text-white">

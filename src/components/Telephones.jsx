@@ -24,7 +24,7 @@ import { TelephoneFill } from "react-bootstrap-icons";
 
 const Telephones = () => {
   const { userActiveFlow, setSelectedAnswer } = useContext(AppContext);
-  const [data, setData] = useState([]);
+  const [isDataAllPhones, setDataAllPhones] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isPhoneNew, setIsPhoneNew] = useState(false);
@@ -158,7 +158,9 @@ const Telephones = () => {
   };
 
   const processPhoneCall = (phoneNumber) => {
-    const foundRow = data.find((row) => row.númeroTelefónico === phoneNumber);
+    const foundRow = isDataAllPhones.find(
+      (row) => row.númeroTelefónico === phoneNumber
+    );
 
     if (foundRow) {
       setSelectedAnswer({
@@ -200,7 +202,7 @@ const Telephones = () => {
     if (lastPhoneNumberFromToast) {
       processPhoneCall(lastPhoneNumberFromToast);
     }
-  }, [lastPhoneNumberFromToast, data]);
+  }, [lastPhoneNumberFromToast, isDataAllPhones]);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -211,7 +213,7 @@ const Telephones = () => {
         })
       );
       const flatPhones = phones.flat();
-      setData(flatPhones);
+      setDataAllPhones(flatPhones);
       if (flatPhones.length === 0 && !toastShown) {
         toast.error("Error 404: No hay carga de teléfonos", {
           position: "top-right"
@@ -440,7 +442,7 @@ const Telephones = () => {
                       ))}
                     </tr>
                   ))
-                : data.map((row, index) => (
+                : isDataAllPhones.map((row, index) => (
                     <tr key={index}>
                       <td>{row.titulares || "--"}</td>
                       <td>{row.conocidos || "--"}</td>

@@ -1346,10 +1346,10 @@ export const createOnlineCharge = async (data) => {
 //endpoint buscar-tipo de queja y origen de queja
 export const fetchSearchAddDate = async () => {
   try {
-    console.log("Llamando al endpoint /ejecutivo/ddDatos");
+  
     const response = await servicio.get(`/ejecutivo/ddDatos`);
 
-    console.log("Respuesta recibida:", response);
+    console.log("Respuesta recibida endpoint /ejecutivo/ddDatos:", response);
 
     if (response.status !== 200) {
       throw new Error(
