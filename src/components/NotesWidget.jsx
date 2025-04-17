@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { fetchNotes } from "../services/gespawebServices";
 import servicio from "../services/axiosServices";
 import DatePicker from "react-datepicker";
@@ -6,6 +6,7 @@ import TimePicker from "react-time-picker";
 import Button from "react-bootstrap/Button";
 import "react-datepicker/dist/react-datepicker.css";
 import "../scss/styles.scss";
+import { toast } from "sonner";
 
 const responseData = JSON.parse(localStorage.getItem("responseData"));
 const numEmpleado = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
@@ -43,13 +44,9 @@ function NotesWidget() {
       } catch (error) {
         console.error("Error fetching notes:", error);
         if (error.response && error.response.status === 404) {
-          // alert(
-          //    "No se encontraron Recordatorios para el ID de empleado proporcionado."
-          //  );
+          // alert("No se encontraron Recordatorios...");
         } else {
-          //  alert(
-          //    "Se produjo un error al recuperar Recordatorios. Por favor inténtalo de nuevo más tarde.."
-          //  );
+          // alert("Se produjo un error al recuperar Recordatorios...");
         }
       }
     };
@@ -61,23 +58,12 @@ function NotesWidget() {
   useEffect(() => {
     const checkFollowUpTime = () => {
       const currentDate = new Date();
-      console.log("Checking follow-up time at:", currentDate);
 
       notes.forEach((note) => {
         if (note.time && note.date) {
-          // Verificar que note.time y note.date no sean undefined
           const [hours, minutes] = note.time.split(":").map(Number);
-          const [day, month, year] = note.date.split("/").map(Number); // formato dd/MM/yyyy
-          const followUpDateTime = new Date(
-            year,
-            month - 1,
-            day,
-            hours,
-            minutes
-          );
-
-          console.log("Current date:", currentDate);
-          console.log("Follow-up date:", followUpDateTime);
+          const [day, month, year] = note.date.split("/").map(Number);
+          const followUpDateTime = new Date(year, month - 1, day, hours, minutes);
 
           if (
             currentDate.getFullYear() === followUpDateTime.getFullYear() &&
@@ -92,9 +78,8 @@ function NotesWidget() {
       });
     };
 
-    // Comprobar cada minuto
     const intervalId = setInterval(checkFollowUpTime, 60000);
-    return () => clearInterval(intervalId); // Limpiar intervalo cuando el componente se desmonte
+    return () => clearInterval(intervalId);
   }, [notes]);
 
   // Guardar notas en el endpoint cuando cambian
@@ -121,6 +106,78 @@ function NotesWidget() {
     }
   }, [notes]);
 
+  // Función para ordenar notas por fecha y hora más próxima
+  const sortNotesByDateTime = (notes) => {
+    return [...notes].sort((a, b) => {
+      try {
+        // Crear objetos Date para comparación
+        const dateA = a.time ? new Date(`${a.date} ${a.time}`) : new Date(a.date);
+        const dateB = b.time ? new Date(`${b.date} ${b.time}`) : new Date(b.date);
+        
+        // Orden ascendente (más próximo primero)
+        return dateA - dateB;
+      } catch (error) {
+        console.error("Error al ordenar notas:", error);
+        return 0;
+      }
+    });
+  };
+
+  // Notas ordenadas memoizadas
+  const sortedNotes = useMemo(() => sortNotesByDateTime(notes), [notes]);
+
+  // Función para extraer número de teléfono
+  const extractFullPhoneNumber = (content) => {
+    if (!content) return null;
+    const phoneMatch = content.match(/\b\d{10}\b/);
+    return phoneMatch ? phoneMatch[0] : null;
+  };
+
+  // Verificar si fecha ya pasó
+  const isDateInPast = (isoDateString) => {
+    if (!isoDateString) return true;
+    try {
+      const noteDate = new Date(isoDateString);
+      return noteDate < new Date();
+    } catch (error) {
+      console.error("Error al parsear fecha:", error);
+      return true;
+    }
+  };
+
+  // Manejar clic en Realizar
+  const handleRealizarClick = (note) => {
+    try {
+      const phoneNumber = extractFullPhoneNumber(note.content);
+      
+      if (!phoneNumber) {
+        toast.warning("No se encontró número de teléfono válido");
+        return;
+      }
+
+      const phoneLinks = document.querySelectorAll('a.text-info[data-full-number]');
+      let foundPhone = null;
+
+      phoneLinks.forEach(link => {
+        const fullNumber = link.getAttribute('data-full-number');
+        if (fullNumber === phoneNumber) {
+          foundPhone = link;
+        }
+      });
+
+      if (foundPhone) {
+        foundPhone.click();
+        toast.success(`Llamando a: ${'XXXXXX' + phoneNumber.slice(-4)}`);
+      } else {
+        toast.error(`Número no encontrado: ${'XXXXXX' + phoneNumber.slice(-4)}`);
+      }
+    } catch (error) {
+      console.error("Error en handleRealizarClick:", error);
+      toast.error("Error al procesar el recordatorio");
+    }
+  };
+
+  // Resto de tus funciones (handleAddNote, handleEditNote, etc.)...
   const handleAddNote = () => {
     setActiveNote(null);
     setTitle("");
@@ -158,7 +215,6 @@ function NotesWidget() {
     const dateTime = `${dateString} ${time}`;
 
     if (activeNote) {
-      // Actualizar nota existente
       const updatedNotes = notes.map((note) =>
         note.id === activeNote.id
           ? { ...note, title, content, approach, date: dateTime, time, option }
@@ -166,7 +222,6 @@ function NotesWidget() {
       );
       setNotes(updatedNotes);
     } else {
-      // Crear nueva nota
       const newNote = {
         id: Date.now().toString(),
         title,
@@ -200,23 +255,13 @@ function NotesWidget() {
     setActiveNote(null);
   };
 
-  // Función actualizada para verificar si la fecha ya pasó
-  const isDateInPast = (isoDateString) => {
-    if (!isoDateString) return true;
-    
-    try {
-      const noteDate = new Date(isoDateString);
-      const now = new Date();
-      return noteDate < now;
-    } catch (error) {
-      console.error("Error al parsear fecha:", error);
-      return true;
-    }
-  };
 
   return (
-    <div  className="notes-widget card shadow">
-      <div style={{}} className="card-header text-white d-flex justify-content-between align-items-center">
+    <div className="notes-widget card shadow">
+      <div
+        style={{}}
+        className="card-header text-white d-flex justify-content-between align-items-center"
+      >
         <h5 className="mb-0">Mis Recordatorios</h5>
         {/* 
         <button
@@ -308,65 +353,55 @@ function NotesWidget() {
               </button>
             </div>
           </div>
-        ) : (
-          <div className="notes-list">
-            {notes.length === 0 ? (
-              <div className="text-center text-muted py-5 mb-0 text-white">
-                <p className="text-white">No hay Recordatorio.</p>
-                {/* 
-                <button className="btn btn-primary" onClick={handleAddNote}>
-                <PlusIcon /> <span className="ms-1">Nuevo Recordatorio</span>
-                </button> 
-                */}
-              </div>
-            ) : (
-              <div
-                className="list-group overflow-auto"
-                style={{ maxHeight: "auto",}}
-              >
-                {notes.map((note) => (
-                  <div
-                    key={note.id}
-                    className="list-group-item list-group-item-action"
-                  >
-                    <div className="d-flex justify-content-between align-items-center">
-                      <h6 className="mb-2">{note.title || "Sin título"}</h6>
-                      <div>
-                        {/* <button
-                          className="btn btn-sm btn-outline-primary me-1"
-                          onClick={() => handleEditNote(note)}
-                          aria-label="Editar nota"
+       ) : (
+        <div className="notes-list">
+          {sortedNotes.length === 0 ? (
+            <div className="text-center text-muted py-5 mb-0 text-white">
+              <p className="text-white">No hay Recordatorios.</p>
+            </div>
+          ) : (
+            <div className="list-group overflow-auto" style={{ maxHeight: "400px" }}>
+              {sortedNotes.map((note, index) => (
+               <div
+               key={note.id}
+               className={`list-group-item list-group-item-action ${index === 0 && note.date && !isDateInPast(note.date) ? 'blinking-border' : ''}`}
+               style={{ marginBottom: "2rem" }}
+             >
+                  <div className="d-flex justify-content-between align-items-center">
+                    <h6 className="mb-1">{note.title || "Sin título"}</h6>
+            
+                  </div>
+                  <p className="mb-1">
+                    <span style={{ whiteSpace: "none" }}>
+                      {note.content || "Sin contenido"}
+                    </span>
+                  </p>
+          
+                       {/* Mostrar botón SOLO en el primer recordatorio (más próximo) */}
+                       {index === 0 && note.date && !isDateInPast(note.date) && (
+                      <div className="d-flex justify-content-between align-items-center mt-2">
+                        <span style={{ color: "red", fontWeight: "bold" }}>
+                          PRÓXIMO SEGUIMIENTO
+                        </span>
+                        <Button 
+                        className="mt-2"
+                          variant="danger"
+                          size="sm"
+                          onClick={() => handleRealizarClick(note)}
                         >
-                          <PencilIcon />
-                        </button>
-                        <button
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() => handleDeleteNote(note.id)}
-                          aria-label="Eliminar nota"
-                        >
-                          <TrashIcon />
-                        </button> */}
-                      </div>
-                    </div>
-                    <span style={{whiteSpace: 'none'}} className="mb-1">{note.content || "Sin contenido"}</span>
-                    
-                    {/* Botón Realizar condicional - versión corregida */}
-                    {note.date && !isDateInPast(note.date) && (
-                      <div className="d-flex justify-content-end mt-3">
-                        <Button variant="primary" size="sm">
                           Realizar
                         </Button>
                       </div>
                     )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
-  );
+  </div>
+);
 }
 
 export default NotesWidget;

@@ -597,7 +597,7 @@ const handleSaveOffering = async () => {
     console.log("Respuesta del endpoint fetchSaveOffering:", response);
 
     handleClose(false)
-    setIsNegotiationActive(true);
+    setIsNegotiationActive(false);
     // Verifica si fetchData está definida antes de llamarla
     if (typeof fetchData === "function") {
       const idCartera = 1; // Ejemplo de valor

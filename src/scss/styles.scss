@@ -690,9 +690,8 @@ $list-group-transition: all 0.3s ease;
 
     // Efecto hover
     &:hover {
-      background: black;
-
-      color: rgb(0, 157.0684931507, 218.4);
+      background-color: black !important;
+      color: rgb(0, 157.0684931507, 218.4) !important;
     }
 
     // Estado activo
@@ -2081,4 +2080,21 @@ to { width: 100%; }
 @keyframes blinkingCursor{
 from { border-right-color: rgba(248, 244, 6, 0.75)}
 to { border-right-color: transparent; }
+}
+
+
+/* Animación de parpadeo */
+@keyframes border-blink {
+  0% { border-left-color: transparent; }
+  50% { border-left-color: #dc3545; }
+  100% { border-left-color: transparent; }
+  0% { border-bottom-color: transparent; }
+  50% { border-bottom-color: #dc3545; }
+  100% { border-bottom-color: transparent; }
+}
+
+.blinking-border {
+  border-left: 3px solid #dc3545;
+  border-bottom: 3px solid #dc3545;
+  animation: border-blink 1.5s infinite;
 }

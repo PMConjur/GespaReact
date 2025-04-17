@@ -17,6 +17,7 @@ import Managments from "../components/Managments";
 import NotesWidget from "../components/NotesWidget";
 import { searchCustomer } from "../services/gespawebServices";
 import StickyTimmer from "../components/StickyTimmer";
+import { se } from "date-fns/locale";
 export const AppContext = createContext();
 
 const Managment = () => {
@@ -49,7 +50,7 @@ const Managment = () => {
   const nombreEjecutivo =
     responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
-
+  const [phoneData, setPhoneData] = useState([]);
   const handleSearch = async () => {
     try {
       const response = await searchCustomer(filter, searchTerm);
@@ -213,7 +214,9 @@ const Managment = () => {
     userActiveFlow, // Enviar estado userActiveFlow al contexto
     setUserActiveFlow, // Enviar función para actualizar userActiveFlow al contexto
     isManagment, // Enviar estado de gestión al contexto
-    setManagment // Enviar función para actualizar la gestión al contexto
+    setManagment, // Enviar función para actualizar la gestión al contexto
+    phoneData, // Enviar datos de teléfono al contexto
+    setPhoneData, // Enviar función para actualizar los datos de teléfono al contexto
   };
 
   return (
@@ -262,7 +265,7 @@ const Managment = () => {
                     </Row>
                     <Row>
                       <Col xs={12} md={12} lg={12}>
-                        <Telephones />
+                        <Telephones onDataLoaded={setPhoneData} />
                       </Col>
                     </Row>
                   </Col>
@@ -286,7 +289,7 @@ const Managment = () => {
 
                         {/* Componente de gestiones */}
                         <Col xs={12} md={12} xl={12}>
-                          <NotesWidget />
+                          <NotesWidget phoneData={phoneData} />
                         </Col>
                       </Row>
                     </Card>

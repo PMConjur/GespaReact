@@ -367,7 +367,7 @@ const Telephones = () => {
                               "Celular",
                               "Recados",
                               "Oficina",
-                              "Baja"
+                              "Baja",
                             ].map((item) => (
                               <Dropdown.Item key={item} eventKey={item}>
                                 {item}
@@ -452,10 +452,10 @@ const Telephones = () => {
                         <a
                           href="#"
                           className="text-info"
-                          onClick={() => handleRowClick(row)} // Llamada manual con datos de fila
+                          onClick={() => handleRowClick(row)}
+                          data-full-number={row.númeroTelefónico} // Este atributo es esencial
                         >
-                          {"XXXXXX" + row.númeroTelefónico.slice(6)}{" "}
-                          {/* Solo muestra los últimos 4 dígitos */}
+                          {"XXXXXX" + row.númeroTelefónico.slice(6)}
                         </a>
                       </td>
                       <td>{row.telefonia || "--"}</td>{" "}
