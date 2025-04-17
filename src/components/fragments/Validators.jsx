@@ -23,8 +23,8 @@ const Validators = ({ show, handleClose, handleValidate }) => {
     searchResults, 
     isOnlineChargeActive, 
     isPaymentActive, 
-    setOnlineChargeActive = () => {}, 
-    setPaymentActive = () => {} 
+    setOnlineChargeActive, 
+    setPaymentActive 
   } = useContext(AppContext);
   const [emails, setEmails] = useState("");
   
@@ -32,7 +32,6 @@ const Validators = ({ show, handleClose, handleValidate }) => {
   const [showOnlineChargeModal, setShowOnlineChargeModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  // Función para abrir el modal de OnlineCharge
 
 
   useEffect(() => {
@@ -79,24 +78,12 @@ const Validators = ({ show, handleClose, handleValidate }) => {
   };
 
   const handleSubmit = async () => {
+    console.log("Validando datos... entro a condicion de validador");
     setLoading(true);
     try {
-      const idProducto = 1;
-      const idEjecutivo = validator;
-      const Contraseña = password;
+ 
 
-      console.log("Datos enviados a fetchValidators:", {
-        idProducto,
-        idEjecutivo,
-        Contraseña,
-      });
-
-      const response = await fetchValidators(
-        idProducto,
-        idEjecutivo,
-        Contraseña
-      );
-      console.log("Respuesta del endpoint:", response);
+  
 
       toast.success("Validación exitosa. Datos correctos.", {
         position: "top-center",
@@ -104,23 +91,17 @@ const Validators = ({ show, handleClose, handleValidate }) => {
 
       if (handleValidate) {
         handleValidate(validator, password, showEmailsSelect ? 1 : 0, emails || "");
+      
       }
 
       setValidator("");
       setPassword("");
-      handleClose();
-
-              // ✅ Añade este console.log ANTES de abrir el modal
-              console.log('Context values (Validators - PRE apertura):', {
-                isOnlineChargeActive,  // Valor del contexto
-                showOnlineChargeModal, // Estado local del modal
-              // Si aplica
-            });
-
+      handleClose();//CIERRA EL MODAL DE VALIDACION
+      console.log("Cargos en linea:",isOnlineChargeActive, "Pagos",isPaymentActive);
       // Abrir modales según las condiciones
       if (isOnlineChargeActive === true) {
-        handleOpenOnlineCharge(); // Usamos la nueva función para abrir
-        console.log(' isOnlineChargeActive sigue siendo true en el segundo intento');
+        handleOpenOnlineCharge(true); // Usamos la nueva función para abrir
+
         toast.success("Validación exitosa. Continua con el proceso de Cargo en Linea.", {
           position: "top-center",
         });
@@ -144,10 +125,10 @@ const Validators = ({ show, handleClose, handleValidate }) => {
     }
   };
   const handleOpenOnlineCharge = () => {
-    console.log('🎯 Abriendo modal con formulario');
-    setOnlineChargeActive(false); // Reset primero
+ 
+
     setTimeout(() => {
-        setOnlineChargeActive(true);
+     
         setShowOnlineChargeModal(true);
     }, 50); // Pequeño delay para asegurar el ciclo de actualización
 };
@@ -155,12 +136,12 @@ const Validators = ({ show, handleClose, handleValidate }) => {
 const handleCloseOnlineChargeModal = () => {
   console.log('🗑️ Cerrando y preparando para reapertura');
   setShowOnlineChargeModal(false);
-  setOnlineChargeActive(false); // ¡Esto es crucial!
+ 
 };
 
   const handleClosePaymentModal = () => {
     setShowPaymentModal(false);
-    setPaymentActive(false);
+
   };
 
   const handleCloseModal = () => {
@@ -266,7 +247,7 @@ const handleCloseOnlineChargeModal = () => {
       {/* Modal de OnlineCharge */}
       <OnlineCharge 
         show={showOnlineChargeModal}
-        handleClose={handleCloseOnlineChargeModal}
+        handleCloseCharge={handleCloseOnlineChargeModal}
       />
 
       {/* Modal de Payments */}

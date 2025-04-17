@@ -30,12 +30,21 @@ const DropdownActions = () => {
   const handleCloseComments = () => setShowComments(false); // Función para cerrar el modal de comentarios
   const handleCloseSimulators = () => setShowSimulators(false); // Función para cerrar el modal de simuladores
 
-  const [showOnlinecharge, setShowOnlinecharge] = useState(false);
+  const [showOnlineCharge, setShowOnlineCharge] = useState(false);
   const [showProcessesWLP, setShowProcessesWLP] = useState(false);
   const handleShowFollowUps = () => setShowFollowUps(true); // Solo abre el modal
   const handleCloseFollowUps = () => setShowFollowUps(false);
-  const handleShowOnlinecharge = () => setShowOnlinecharge(true); // Solo abre el modal
-  const handleCloseOnlinecharge = () => setShowOnlinecharge(false);
+
+  const handleShowOnlineCharge = () => {
+    console.log("Abriendo modal de cargos");
+    setShowOnlineCharge(true);
+  };
+  
+  const handleCloseOnlineCharge = () => {
+    console.log("Cerrando modal de cargos");
+    setShowOnlineCharge(false);
+  };
+
   const handleShowTalks = () => setShowTalks(true);
   const handleCloseTalks = () => setShowTalks(false);
 
@@ -89,9 +98,7 @@ const DropdownActions = () => {
             Busqueda
           </Dropdown.Item>
           <Dropdown.Item
-            onClick={() => {
-              setShowOnlinecharge(true);
-            }}
+            onClick={handleShowOnlineCharge}
             className="custom-dropdown-item"
           >
             Cargos en línea
@@ -130,10 +137,11 @@ const DropdownActions = () => {
       />
       <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps} />
       <Talks show={showTalks} handleClose={handleCloseTalks} />
-      <OnlineCharge
-        show={showOnlinecharge}
-        handleClose={handleCloseOnlinecharge}
-        isOnlineChargeActive={true} // Cambiar a true para mostrar ambos componentes
+      <OnlineCharge 
+        show={showOnlineCharge}
+        handleCloseOnlineCharge={handleCloseOnlineCharge}
+        allowClose={true}
+        onFormSuccess={() => console.log("Formulario completado")}
       />
     
       <Drives showModal={showDrives} handleCloseModal={handleCloseDrives} />

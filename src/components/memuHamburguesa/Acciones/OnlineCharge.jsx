@@ -1,87 +1,111 @@
-import { useState, useContext, useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { Modal, Row, Col } from "react-bootstrap";
+import PropTypes from "prop-types";
 import TableOnlineCharge from "../../TableOnlineCharge";
 import FormOnlineCharge from "./FormOnlineCharge";
 import { AppContext } from "../../../pages/Managment";
 
-const OnlineCharge = ({ show, handleClose }) => {
-    const { isOnlineChargeActive, setOnlineChargeActive } = useContext(AppContext);
-    const [allowClose, setAllowClose] = useState(false);
+const OnlineCharge = ({
+    show = false,
+    handleCloseOnlineCharge = () => console.warn("handleCloseOnlineCharge no proporcionada"),
+    allowClose = true,
+    onFormSuccess = () => { },
+}) => {
+    const { isOnlineChargeActive } = useContext(AppContext);
 
-            // ✅ Añade este console.log ANTES de abrir el modal
-            // console.log('Context values (OnlineCharge - RENDER):', {
-            //     isOnlineChargeActive, // Valor del contexto recibido
-            //     show,                // Prop que controla visibilidad del modal
-            //     allowClose           // Estado local
-            // });
-
-    // Resetear estados cuando el modal se cierra
+    // Debug de estados
     useEffect(() => {
-        if (!show) {
-            console.log('🔄 Reseteando estados para nueva apertura');
-            setAllowClose(false);
-            setOnlineChargeActive(false);
-        }
-    }, [show, setOnlineChargeActive]);
+        console.log(`[Modal] Estado actualizado - 
+      Active: ${isOnlineChargeActive}, 
+      AllowClose: ${allowClose}, 
+      Show: ${show}`);
+    }, [show, isOnlineChargeActive, allowClose]);
 
-    // Manejar cierre del modal
     const handleModalClose = () => {
-        console.log('🔘 Close conditions:', {
-            canClose: !isOnlineChargeActive || allowClose,
-            isOnlineChargeActive,
-            allowClose
-        });
-
-        if (!isOnlineChargeActive || allowClose) {
-            console.log('✅ Closing modal');
-            handleClose(); // Esto debería cambiar show a false
+        console.log("Ejecutando cierre del modal");
+        if (typeof handleCloseOnlineCharge === 'function') {
+            handleCloseOnlineCharge();
         }
     };
 
-    // Manejar éxito del formulario
-    const handleFormSuccess = (success) => {
-        if (success) {
-            console.log('🟢 Registro exitoso - Habilitando cierre');
-            setAllowClose(true);
-        }
-    };
-    
-    
+    // Modal CON formulario (isOnlineChargeActive = true)
+    if (isOnlineChargeActive) {
+        return (
+            <Modal
+                show={show}
+                onHide={() => {
+                    console.log('[Modal] Intento de cierre con formulario activo', allowClose);
+                    if (allowClose) {
+                        handleModalClose();
+                    }
+                }}
+                size="xl"
+                backdrop={allowClose ? true : 'static'}
+                keyboard={allowClose}
+                centered
+            >
+                <Modal.Header
+                    closeButton={allowClose}
+                    className="bg-dark text-white"
+                    closeVariant="white"
+                >
+                    <Modal.Title>Nuevo Cargo en Línea</Modal.Title>
+                </Modal.Header>
 
+                <Modal.Body className="flex-grow-1 p-0 d-flex flex-column bg-dark">
+                    <Row className="flex-grow-1 g-0 m-0" style={{ minHeight: '60vh' }}>
+                        <Col md={8} className="h-100 p-0 border-end border-secondary">
+                            <TableOnlineCharge />
+                        </Col>
+                        <Col md={4} className="h-100 p-3 bg-dark text-white overflow-auto">
+                            <FormOnlineCharge
+                                handleSuccess={(success) => {
+                                    console.log('[Modal] Formulario completado con éxito:', success);
+                                    onFormSuccess(success);
+                                }}
+                            />
+                        </Col>
+                    </Row>
+                </Modal.Body>
+            </Modal>
+        );
+    }
+
+    // Modal SIN formulario (isOnlineChargeActive = false)
     return (
         <Modal
             show={show}
             onHide={handleModalClose}
             size="xl"
-            backdrop={isOnlineChargeActive && !allowClose ? 'static' : true}
-            keyboard={isOnlineChargeActive && !allowClose ? false : true}
+            backdrop={true}
+            keyboard={true}
+            centered
         >
-            <Modal.Header 
-                closeButton={!isOnlineChargeActive || allowClose}
+            <Modal.Header
+                closeButton={true}
                 className="bg-dark text-white"
+                closeVariant="white"
             >
-                <Modal.Title>
-                    {isOnlineChargeActive ? "Nuevo Cargo en Línea" : "Historial de Cargos"}
-                </Modal.Title>
+                <Modal.Title>Historial de Cargos</Modal.Title>
             </Modal.Header>
 
             <Modal.Body className="flex-grow-1 p-0 d-flex flex-column bg-dark">
-                <Row className="flex-grow-1 g-0 m-0" style={{ height: "100%" }}>
-                    <Col md={isOnlineChargeActive ? 8 : 12} className="h-100 p-0">
+                <Row className="flex-grow-1 g-0 m-0" style={{ minHeight: '70vh' }}>
+                    <Col md={12} className="h-100 p-0">
                         <TableOnlineCharge />
                     </Col>
-                    
-                    {isOnlineChargeActive && (
-                        <Col md={4} className="h-100 p-3 bg-dark text-white">
-                            <FormOnlineCharge 
-                                handleClose={handleFormSuccess}
-                            />
-                        </Col>
-                    )}
                 </Row>
             </Modal.Body>
         </Modal>
     );
+};
+
+// Validación de props
+OnlineCharge.propTypes = {
+    show: PropTypes.bool,
+    handleCloseOnlineCharge: PropTypes.func.isRequired,
+    allowClose: PropTypes.bool,
+    onFormSuccess: PropTypes.func,
 };
 
 export default OnlineCharge;

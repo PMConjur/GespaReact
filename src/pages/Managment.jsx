@@ -286,7 +286,7 @@ const Managment = () => {
 
                         {/* Componente de gestiones */}
                         <Col xs={12} md={12} xl={12}>
-                          <NotesWidget />
+                          {/* <NotesWidget /> */}
                         </Col>
                       </Row>
                     </Card>

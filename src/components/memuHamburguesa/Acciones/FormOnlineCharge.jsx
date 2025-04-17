@@ -5,8 +5,8 @@ import { createOnlineCharge } from "../../../services/gespawebServices";
 import { AppContext } from "../../../pages/Managment";
 import { idBanco } from "../../valoresBanco";
 
-const FormOnlineCharge = ({ handleClose, onRegistrationSuccess, setOnlineChargeActive }) => {
-    const { searchResults } = useContext(AppContext);
+const FormOnlineCharge = ({ handleClose, onRegistrationSuccess }) => {
+    const { searchResults, setOnlineChargeActive } = useContext(AppContext);
 
     if (!searchResults || searchResults.length === 0) {
         toast.error("No se encontraron resultados de búsqueda. No se puede usar este formulario.");
@@ -177,7 +177,8 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess, setOnlineChargeA
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+        setLoading(true);
+
         // 1. Validaciones de campos obligatorios
         const requiredFields = {
             'Número de cuenta': formData.idCuenta?.trim(),
@@ -187,44 +188,51 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess, setOnlineChargeA
             'Banco': formData.idBanco,
             'Autorización': formData.autorizacion?.trim()
         };
-    
+
+        // Validar campos requeridos
         for (const [field, value] of Object.entries(requiredFields)) {
             if (!value) {
                 toast.error(`${field} es requerido`);
+                setLoading(false);
                 return;
             }
         }
-    
+
         // 2. Validaciones específicas
         const tarjetaLimpia = removeSeparators(formData.tarjeta);
-        
+
         if (tipoTarjeta === "tarjetaCredito") {
             if (tarjetaLimpia.length !== 16) {
                 toast.error("Tarjeta debe tener 16 dígitos");
+                setLoading(false);
                 return;
             }
             if (!validarTarjeta(tarjetaLimpia)) {
                 toast.error("Número de tarjeta inválido");
+                setLoading(false);
                 return;
             }
         }
-    
+
         if (tipoTarjeta === "clabeInterbancaria" && tarjetaLimpia.length !== 18) {
             toast.error("CLABE debe tener 18 dígitos");
+            setLoading(false);
             return;
         }
-    
+
         if (formData.nombre.trim().length < 6) {
             toast.error("Nombre debe tener mínimo 6 caracteres");
+            setLoading(false);
             return;
         }
-    
+
         if (Number(formData.monto) <= 0) {
             toast.error("Monto debe ser mayor a cero");
+            setLoading(false);
             return;
         }
-    
-        // 3. Preparación de datos para API
+
+        // 3. Preparar payload para la API
         const payload = {
             idCartera: 1,
             idCuenta: formData.idCuenta.trim(),
@@ -241,47 +249,52 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess, setOnlineChargeA
             sistema: true,
             status: formData.status
         };
-    
-        console.log('📤 Payload para API:', payload);
-    
-        setLoading(true);
-    
+
+        console.log('Payload para API:', payload);
+
         try {
             // 4. Llamada a la API
             const response = await createOnlineCharge(payload);
-    
+
             if (!response) {
                 throw new Error("No hubo respuesta del servidor");
             }
-    
+
             if (response.error) {
                 throw new Error(response.error.message || "Error en el servidor");
             }
-    
+
             // 5. Éxito - Reset y notificación
             toast.success("✅ Cargo registrado exitosamente");
             resetForm();
-    
+
             // 6. Notificar éxito al componente padre
+            // Solo notificamos el éxito, el cierre lo maneja el padre
             if (typeof handleClose === 'function') {
-                handleClose(true);
-                console.log('🔄 Notificado éxito al padre');
+                handleClose(true); // Indica que el registro fue exitoso
             }
-    
+            if (typeof onRegistrationSuccess === 'function') {
+                onRegistrationSuccess(true); // Callback adicional
+            }
+
         } catch (error) {
             // 7. Manejo detallado de errores
-            console.error('❌ Error en handleSubmit:', error);
-            
-            const errorMessage = error.response?.data?.message || 
-                                error.message || 
-                                "Error al procesar el cargo";
-            
+            console.error('Error en handleSubmit:', error);
+
+            const errorMessage = error.response?.data?.message ||
+                error.message ||
+                "Error al procesar el cargo";
+
             toast.error(`❌ ${errorMessage}`);
-    
+
             // 8. Notificar fallo al componente padre
             if (typeof handleClose === 'function') {
-                handleClose(false);
+                handleClose(false); // Indica que hubo un error
             }
+            if (typeof onRegistrationSuccess === 'function') {
+                onRegistrationSuccess(false);
+            }
+
         } finally {
             setLoading(false);
         }

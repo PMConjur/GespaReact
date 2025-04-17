@@ -117,6 +117,10 @@ const Flow = () => {
   }, [isOnlineChargeActive, setOnlineChargeActive]);
 
   const clearStates = () => {
+    setOnlineChargeActive(false); // Desactiva el estado de cargos en línea
+    setPaymentActive(false); // Desactiva el estado de pagos
+    setNegotiationActive(false); // Desactiva el estado de negociación
+    setFollowUpActive(false); // Desactiva el estado de seguimiento
     setUserFlowData([]);
     setCurrentQuestionId(null);
     setSelectedAnswers({});
@@ -201,9 +205,10 @@ const Flow = () => {
         clearStatesManagment(); //Limpia solo para renderizar el formulario vacio
         return renderMainContent(); // Renderiza el contenido principal
       } else if (idCargoLinea === 1034) {
-        console.log("Entró a Cargo Linea.");
+     
         setIsOnlineChargeActive(true); // Activa la variable de cargos en línea
         handleOpenOnlineCharge(); // Abre el modal OnlineCharge
+        console.log("Entró a Cargo Linea. es true",isOnlineChargeActive);
         toast.info("Flujo preparado para generar Cargo Linea.");
         clearStatesManagment(); //Limpia solo para renderizar el formulario vacio
         return renderMainContent(); // Renderiza el contenido principal

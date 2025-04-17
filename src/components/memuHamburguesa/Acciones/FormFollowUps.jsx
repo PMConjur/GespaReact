@@ -5,7 +5,7 @@ import { createFollows, fetchNotes } from "../../../services/gespawebServices";
 import { AppContext } from "../../../pages/Managment";
 
 const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister }) => {
-    const { isManagment, searchResults } = useContext(AppContext);
+    const { isManagment, searchResults, setManagment, nombreEjecutivo } = useContext(AppContext);
 
     if (!searchResults || searchResults.length === 0) {
         toast.error("No se encontraron resultados de búsqueda. No se puede usar este formulario.");
@@ -156,64 +156,127 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
 
     const handleSave = async () => {
         setLoading(true);
-
+    
         try {
-            if (!formData.numeroTelefonico) {
-                toast.error("No se encontró un número telefónico válido en el contexto.");
+            // 1. Validación de número telefónico
+            if (!formData.numeroTelefonico || formData.numeroTelefonico.trim().length < 10) {
+                toast.error("Número telefónico inválido o incompleto");
+                setLoading(false);
                 return;
             }
-
-            const today = new Date().toISOString().split('T')[0];
-            if (formData.fecha < today) {
-                toast.error("La fecha no puede ser anterior al día actual.");
+    
+            // 2. Validación de fecha
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const selectedDate = new Date(formData.fecha);
+            
+            console.log("Fecha seleccionada:", selectedDate, "Fecha actual:", today);
+            
+            if (selectedDate < today) {
+                toast.error("No puedes seleccionar una fecha anterior al día actual");
+                setLoading(false);
                 return;
             }
-
+    
+            // 3. Validación de horario para recordatorios
             if (formData.recordatorio) {
                 const [hours, minutes] = formData.segundo.split(':').map(Number);
                 const period = hours >= 12 ? "PM" : "AM";
-
+    
+                // Validar horario AM (7:00 - 11:59)
                 if (period === "AM" && (hours < 7 || hours > 11)) {
                     toast.error("Horario AM inválido. Debe ser entre 7:00 AM y 11:59 AM");
+                    setLoading(false);
                     return;
                 }
-
+    
+                // Validar horario PM (12:00 - 22:00)
                 if (period === "PM" && (hours < 12 || hours > 22)) {
                     toast.error("Horario PM inválido. Debe ser entre 12:00 PM y 10:00 PM");
+                    setLoading(false);
                     return;
                 }
-
-                // Validación robusta de 5 minutos
+    
+                // Validar solapamiento de recordatorios
                 const { conflict, existingTime } = hasReminderConflict(formData.fecha, formData.segundo);
                 if (conflict) {
-                    toast.error(`Debe haber al menos 5 minutos entre recordatorios. Ya existe un recordatorio programado para ${existingTime}`);
+                    toast.error(`Conflicto con recordatorio existente a las ${existingTime}. Debe haber al menos 5 minutos de diferencia.`);
+                    setLoading(false);
                     return;
                 }
             }
-
-            const dataToSend = { 
+    
+            // 4. Preparar datos para enviar al servidor
+            const dataToSend = {
                 ...formData,
-                fecha: `${formData.fecha}T${formData.segundo}`, // Formato completo para el servidor
-                datoContacto: formData.datoContacto.trim() || null
+                fecha: `${formData.fecha}T${formData.segundo}`,
+                datoContacto: formData.datoContacto.trim() || null,
+                numeroTelefonico: formData.numeroTelefonico.toString().replace(/\D/g, '') // Limpiar formato
             };
-
+    
+            // 5. Enviar al servidor
             const response = await createFollows(dataToSend);
-            toast.success(response.mensaje || "Seguimiento guardado exitosamente.");
             
-            onSuccessfulRegister();
-
+            // 6. Actualizar contexto
+            setManagment(prev => ({
+                ...prev,
+                gestion: {
+                    ...dataToSend,
+                    idSeguimiento: response.idSeguimiento || Date.now(), // ID del servidor o temporal
+                    timestamp: new Date().toISOString(),
+                    tipo: "seguimiento",
+                    ejecutivo: {
+                        idEjecutivo: idEjecutivo,
+                        nombre: nombreEjecutivo // Asegúrate de tener esta variable del contexto
+                    }
+                }
+            }));
+    
+            // 7. Notificar éxito
+            toast.success(<div>
+                <strong>Seguimiento registrado</strong>
+                <div>Cuenta: {formData.idCuenta}</div>
+                <div>Fecha: {formData.fecha} {formData.segundo}</div>
+            </div>);
+    
+            // 8. Resetear formulario (conservando número telefónico)
             setFormData(prev => ({
                 ...prev,
                 fecha: new Date().toISOString().split('T')[0],
                 segundo: "07:00:00",
                 recordatorio: false,
                 datoContacto: "",
-                idMotivoS: "0",
+                idMotivoS: "0"
             }));
-
+    
+            // 9. Ejecutar callback de éxito
+            if (onSuccessfulRegister) onSuccessfulRegister();
+    
+            // 10. Debug: Verificar contexto actualizado
+            console.log("Contexto actualizado:", {
+                gestion: {
+                    ...dataToSend,
+                    idSeguimiento: response.idSeguimiento,
+                    timestamp: new Date().toISOString()
+                }
+            });
+    
         } catch (error) {
-            console.error("Error al guardar el seguimiento:", error);
-            toast.error(error.message || "Ocurrió un error al guardar el seguimiento.");
+            console.error("Error en handleSave:", error);
+            
+            // Manejo detallado de errores
+            const errorMessage = error.response?.data?.message || 
+                                error.message || 
+                                "Error al guardar el seguimiento";
+            
+            toast.error(<div>
+                <strong>Error</strong>
+                <div>{errorMessage}</div>
+                {error.response?.data?.details && (
+                    <div>{JSON.stringify(error.response.data.details)}</div>
+                )}
+            </div>);
+    
         } finally {
             setLoading(false);
         }
