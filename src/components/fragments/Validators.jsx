@@ -99,12 +99,10 @@ const Validators = ({ show, handleClose, handleValidate }) => {
       handleClose();//CIERRA EL MODAL DE VALIDACION
       console.log("Cargos en linea:",isOnlineChargeActive, "Pagos",isPaymentActive);
       // Abrir modales según las condiciones
-      if (isOnlineChargeActive === true) {
-        handleOpenOnlineCharge(true); // Usamos la nueva función para abrir
-
-        toast.success("Validación exitosa. Continua con el proceso de Cargo en Linea.", {
-          position: "top-center",
-        });
+      if (isOnlineChargeActive) {
+        setShowOnlineChargeModal(true); 
+        // setShowOnlineChargeModal(false);
+        toast.success("Validación exitosa. Continua con Cargo en Linea.");
       }
       
       if (isPaymentActive === true) {
@@ -125,19 +123,23 @@ const Validators = ({ show, handleClose, handleValidate }) => {
     }
   };
   const handleOpenOnlineCharge = () => {
- 
+    console.log(' reapertura con haNDLEoNLINEcHARGE');
+    setShowOnlineChargeModal(false);
+  };
 
-    setTimeout(() => {
-     
-        setShowOnlineChargeModal(true);
-    }, 50); // Pequeño delay para asegurar el ciclo de actualización
-};
-
-const handleCloseOnlineChargeModal = () => {
-  console.log('🗑️ Cerrando y preparando para reapertura');
-  setShowOnlineChargeModal(false);
- 
-};
+  const handleCloseOnlineChargeModal = () => {
+    console.log('🗑️ Cerrando y preparando para reapertura');
+    
+    setShowOnlineChargeModal(false);
+    setOnlineChargeActive(false);
+  
+    queueMicrotask(() => {
+      console.log("Estado actualizado:", {
+        setShowOnlineChargeModal: true,  // Sabemos que se estableció en `false`
+        isOnlineChargeActive: true      // Lo mismo aquí
+      });
+    });
+  };
 
   const handleClosePaymentModal = () => {
     setShowPaymentModal(false);
@@ -245,11 +247,10 @@ const handleCloseOnlineChargeModal = () => {
       </Modal>
       
       {/* Modal de OnlineCharge */}
-      <OnlineCharge 
-        show={showOnlineChargeModal}
-        handleClose={handleCloseOnlineChargeModal}
-      
-      />
+          <OnlineCharge 
+      show={showOnlineChargeModal}
+      handleCloseOnlineCharge={(handleOpenOnlineCharge, handleCloseOnlineChargeModal)} 
+    />
 
       {/* Modal de Payments */}
       <Payments
