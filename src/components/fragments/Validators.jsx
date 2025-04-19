@@ -81,30 +81,24 @@ const Validators = ({ show, handleClose, handleValidate }) => {
     console.log("Validando datos... entro a condicion de validador");
     setLoading(true);
     try {
- 
-
-  
-
       toast.success("Validación exitosa. Datos correctos.", {
         position: "top-center",
       });
 
       if (handleValidate) {
         handleValidate(validator, password, showEmailsSelect ? 1 : 0, emails || "");
-      
       }
 
       setValidator("");
       setPassword("");
-      handleClose();//CIERRA EL MODAL DE VALIDACION
-      console.log("Cargos en linea:",isOnlineChargeActive, "Pagos",isPaymentActive);
-      // Abrir modales según las condiciones
-      if (isOnlineChargeActive) {
-        setShowOnlineChargeModal(true); 
-        // setShowOnlineChargeModal(false);
-        toast.success("Validación exitosa. Continua con Cargo en Linea.");
-      }
-      
+      handleClose(); // CIERRA EL MODAL DE VALIDACION
+
+      // Forzar la activación del estado de Cargo en Línea
+      setOnlineChargeActive(true);
+      console.log("Cargos en linea:", true, "Pagos", isPaymentActive);
+      setShowOnlineChargeModal(true);
+      toast.success("Validación exitosa. Continua con Cargo en Linea.");
+
       if (isPaymentActive === true) {
         setShowPaymentModal(true);
         toast.success("Validación exitosa. Continua con el proceso de Pago.", {
@@ -122,6 +116,7 @@ const Validators = ({ show, handleClose, handleValidate }) => {
       setLoading(false);
     }
   };
+
   const handleOpenOnlineCharge = () => {
     console.log(' reapertura con haNDLEoNLINEcHARGE');
     setShowOnlineChargeModal(false);
