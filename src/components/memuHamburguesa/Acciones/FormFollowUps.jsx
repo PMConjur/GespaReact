@@ -166,16 +166,22 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
             }
     
             // 2. Validación de fecha
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const selectedDate = new Date(formData.fecha);
-            
-            console.log("Fecha seleccionada:", selectedDate, "Fecha actual:", today);
-            
-            if (selectedDate < today) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            if (formData.fecha < todayStr) {
                 toast.error("No puedes seleccionar una fecha anterior al día actual");
                 setLoading(false);
                 return;
+            }
+
+            // Nueva validación: si la fecha es hoy, la hora debe ser al menos 1 minuto mayor a la hora actual
+            if (formData.fecha === todayStr) {
+                const scheduledDate = new Date(`${formData.fecha}T${formData.segundo}`);
+                const nowPlusOne = new Date(Date.now() + 60000);
+                if (scheduledDate < nowPlusOne) {
+                    toast.error("La hora debe ser al menos 1 minuto mayor a la hora actual");
+                    setLoading(false);
+                    return;
+                }
             }
     
             // 3. Validación de horario para recordatorios

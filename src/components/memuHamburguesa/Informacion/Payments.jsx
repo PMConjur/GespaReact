@@ -54,7 +54,7 @@ const Payments = ({
                 centered
             >
                 <Modal.Header closeButton={allowClose} className="bg-dark text-white" closeVariant="white">
-                    <Modal.Title>Nuevo Cargo en Línea</Modal.Title>
+                    <Modal.Title>Reporte de Pago</Modal.Title>
                 </Modal.Header>
 
                 <Modal.Body className="flex-grow-1 p-0 d-flex flex-column bg-dark">

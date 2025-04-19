@@ -12,7 +12,7 @@ import { AppContext } from "../../pages/Managment";
 import OnlineCharge from "../memuHamburguesa/Acciones/OnlineCharge";
 import Payments from "../memuHamburguesa/Informacion/Payments";
 
-const Validators = ({ show, handleClose, handleValidate }) => {
+const Validators = ({ show, handleClose, handleValidate, modalCase = "" }) => { // Se agregó modalCase con valor por defecto
   const [validators, setValidators] = useState([]);
   const [validator, setValidator] = useState("");
   const [password, setPassword] = useState("");
@@ -93,17 +93,21 @@ const Validators = ({ show, handleClose, handleValidate }) => {
       setPassword("");
       handleClose(); // CIERRA EL MODAL DE VALIDACION
 
-      // Forzar la activación del estado de Cargo en Línea
-      setOnlineChargeActive(true);
-      console.log("Cargos en linea:", true, "Pagos", isPaymentActive);
-      setShowOnlineChargeModal(true);
-      toast.success("Validación exitosa. Continua con Cargo en Linea.");
-      
-      setPaymentActive(true);
-      console.log("Pagos:", true, "Cargos en linea:", isOnlineChargeActive);
-      setShowPaymentModal(true);
-      toast.success("Validación exitosa. Continua con Pagos.");
-
+      switch(modalCase) {
+        case "onlineCharge":
+          setOnlineChargeActive(true);
+          setShowOnlineChargeModal(true);
+          toast.success("Validación exitosa. Continua con Cargo en Linea.");
+          break;
+        case "payment":
+          setPaymentActive(true);
+          setShowPaymentModal(true);
+          toast.success("Validación exitosa. Continua con Pagos.");
+          break;
+        default:
+          // No se realiza acción si no se especifica modalCase
+          break;
+      }
     } catch (error) {    
       console.error("Datos incorrectos, vuelva intentarlo:", error);
       const message = error.response ? getErrorStatus(error.response.status) : "Error desconocido";

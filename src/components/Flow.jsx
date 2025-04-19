@@ -167,11 +167,13 @@ const Flow = () => {
       />
       <Validators 
         show={showPayments} 
-        handleClose={handleClosePayments} 
+        handleClose={handleClosePayments}
+        modalCase="payment" // Se especifica que es modal de Reporte de Pago
       />
       <Validators
         show={showOnlineCharge}
         handleClose={handleCloseOnlineCharge}
+        modalCase="onlineCharge" // Se especifica que es modal de Cargo en Línea
       />
       <FollowUps
         show={showFollowUps}
