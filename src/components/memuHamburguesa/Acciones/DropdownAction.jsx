@@ -136,7 +136,9 @@ const DropdownActions = () => {
         handleClose={() => setModalShow(false)}
       />
       <FollowUps show={showFollowUps} handleClose={handleCloseFollowUps} />
+      
       <Talks show={showTalks} handleClose={handleCloseTalks} />
+
       <OnlineCharge 
         show={showOnlineCharge}
         handleCloseOnlineCharge={handleCloseOnlineCharge}

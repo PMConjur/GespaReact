@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useContext, useRef } from "react";
-import { Table, Spinner, Form } from "react-bootstrap"; // Importa Spinner para la animación de carga
+import { Table, Form } from "react-bootstrap"; // Importa Spinner para la animación de carga
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
 import { getPaymentsData } from "../services/gespawebServices";

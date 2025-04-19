@@ -165,7 +165,10 @@ const Flow = () => {
         show={showCalculator}
         handleClose={handleCloseCalculator} // Asegura el cierre correcto
       />
-      <Validators show={showPayments} handleClose={handleClosePayments} />
+      <Validators 
+        show={showPayments} 
+        handleClose={handleClosePayments} 
+      />
       <Validators
         show={showOnlineCharge}
         handleClose={handleCloseOnlineCharge}

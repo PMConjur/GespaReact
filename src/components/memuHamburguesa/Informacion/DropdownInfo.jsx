@@ -4,7 +4,7 @@ import { AppContext } from "../../../pages/Managment"; // Importar el contexto d
 import "../../../scss/styles.scss";
 import Addresses from "./Addresses"; // Importar el componente Addresses
 import Mail from "./Mail"; // Importar el componente Mail
-import Payments from "./Payments"; // Importar el componente Payments
+import Payments from "./Payments"; 
 import Aditionals from "./Aditionals"; // Importar el componente Aditionals
 import { InfoCircleFill } from "react-bootstrap-icons"; // Importar el ícono de Info de Bootstrap
 import Multideudores from "../Informacion/MultiDeptor"; // Importar el componente Multideudores
@@ -14,10 +14,17 @@ function DropdownInfo() {
   const [showMultideudores, setShowMultideudores] = useState(false); // Estado para el modal de Multideudores
   const [showMail, setShowMail] = useState(false); // Estado para el modal de Mail
 
-  const [showPayments, setShowPayments] = useState(false); // Estado para el modal de Payments
+  const [showPayments, setShowPayments] = useState(false);
 
-  const handleShowPayments = () => setShowPayments(true);
-  const handleClosePayments = () => setShowPayments(false);
+  const handleShowPayments = () => {
+    console.log("Abriendo modal de Pagos");
+    setShowPayments(true);
+  };
+
+  const handleClosePayments = () => {
+    console.log("Cerrando modal de Pagos");
+    setShowPayments(false);
+  };
 
 
   //adicionales
@@ -27,8 +34,6 @@ function DropdownInfo() {
   const handleCloseAditionals = () => setShowAditionals(false);
   //adiconaslers
 
-  const [paymentsData, setPaymentsData] = useState([]); // Estado para almacenar los datos de pagos
-  const [loadingPayments, setLoadingPayments] = useState(false); // Estado para indicar si se están cargando los pagos
 
   const [aditionalsData, setAditionalsData] = useState([]); // Estado para almacenar los datos adicionales
   const [loadingAditionals, setLoadingAditionals] = useState(false); // Estado para indicar si se están cargando los datos adicionales
@@ -36,7 +41,7 @@ function DropdownInfo() {
   // Consumir el contexto para obtener los resultados de búsqueda
   const { searchResults } = useContext(AppContext);
 
-  // Función para manejar la apertura del modal de Payments
+
 
   // Función para manejar la apertura del modal de Addresses
   const handleShowAddresses = () => setShowAddresses(true);
@@ -92,9 +97,7 @@ function DropdownInfo() {
             Correos
           </Dropdown.Item>
           <Dropdown.Item
-            onClick={() => {
-              setShowPayments(true);
-            }}
+            onClick={handleShowPayments}
             className="custom-dropdown-item"
           >
             Pagos
@@ -102,12 +105,11 @@ function DropdownInfo() {
         </Dropdown.Menu>
       </Dropdown>
 
-      {/* Renderizar el modal de Payments */}
       <Payments
         show={showPayments}
-        handleClose={handleClosePayments}
-        isPaymentActive={true} // Cambié el nombre de la prop a isPaymentActive
-    
+        handleClosePayments={handleClosePayments}
+        allowClose={true}
+        onFormSuccess={() => console.log("Formulario Pagos completado")}
       />
       
 

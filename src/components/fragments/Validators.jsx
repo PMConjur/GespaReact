@@ -98,15 +98,13 @@ const Validators = ({ show, handleClose, handleValidate }) => {
       console.log("Cargos en linea:", true, "Pagos", isPaymentActive);
       setShowOnlineChargeModal(true);
       toast.success("Validación exitosa. Continua con Cargo en Linea.");
+      
+      setPaymentActive(true);
+      console.log("Pagos:", true, "Cargos en linea:", isOnlineChargeActive);
+      setShowPaymentModal(true);
+      toast.success("Validación exitosa. Continua con Pagos.");
 
-      if (isPaymentActive === true) {
-        setShowPaymentModal(true);
-        toast.success("Validación exitosa. Continua con el proceso de Pago.", {
-          position: "top-center",
-        });
-      }
-
-    } catch (error) {
+    } catch (error) {    
       console.error("Datos incorrectos, vuelva intentarlo:", error);
       const message = error.response ? getErrorStatus(error.response.status) : "Error desconocido";
       toast.error(`Datos incorrectos, vuelva intentarlo: "${message}"`, {
@@ -136,9 +134,23 @@ const Validators = ({ show, handleClose, handleValidate }) => {
     });
   };
 
-  const handleClosePaymentModal = () => {
+  const handleOpenPayments = () => {
+    console.log(' reapertura con haNDLEPayMNETS');
     setShowPaymentModal(false);
+  };
 
+  const handleClosePaymentModal = () => {
+    console.log('🗑️ Cerrando y preparando para reapertura');
+    
+    setShowPaymentModal(false);
+    setPaymentActive(false);
+  
+    queueMicrotask(() => {
+      console.log("Estado actualizado:", {
+        setShowPaymentModal: true,  // Sabemos que se estableció en `false`
+        isPaymentActive: true      // Lo mismo aquí
+      });
+    });
   };
 
   const handleCloseModal = () => {
@@ -250,7 +262,7 @@ const Validators = ({ show, handleClose, handleValidate }) => {
       {/* Modal de Payments */}
       <Payments
         show={showPaymentModal}
-        handleClose={handleClosePaymentModal}
+        handleClosePayments={(handleOpenPayments, handleClosePaymentModal)}
       />
     </>
   );
