@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { fetchNotes } from "../services/gespawebServices";
 import servicio from "../services/axiosServices";
@@ -133,18 +134,6 @@ function NotesWidget() {
     return phoneMatch ? phoneMatch[0] : null;
   };
 
-  // Verificar si fecha ya pasó
-  const isDateInPast = (isoDateString) => {
-    if (!isoDateString) return true;
-    try {
-      const noteDate = new Date(isoDateString);
-      return noteDate < new Date();
-    } catch (error) {
-      console.error("Error al parsear fecha:", error);
-      return true;
-    }
-  };
-
   // Manejar clic en Realizar
   const handleRealizarClick = (note) => {
     try {
@@ -177,7 +166,6 @@ function NotesWidget() {
     }
   };
 
-  // Resto de tus funciones (handleAddNote, handleEditNote, etc.)...
   const handleAddNote = () => {
     setActiveNote(null);
     setTitle("");
@@ -362,11 +350,11 @@ function NotesWidget() {
           ) : (
             <div className="list-group overflow-auto" style={{ maxHeight: "400px" }}>
               {sortedNotes.map((note, index) => (
-               <div
-               key={note.id}
-               className={`list-group-item list-group-item-action ${index === 0 && note.date && !isDateInPast(note.date) ? 'blinking-border' : ''}`}
-               style={{ marginBottom: "2rem" }}
-             >
+                <div
+                key={note.id}
+                className={`list-group-item list-group-item-action ${index === 0 && note.date ? 'blinking-border' : ''}`}
+                style={{ marginBottom: "2rem" }}
+              >
                   <div className="d-flex justify-content-between align-items-center">
                     <h6 className="mb-1">{note.title || "Sin título"}</h6>
             
@@ -376,15 +364,14 @@ function NotesWidget() {
                       {note.content || "Sin contenido"}
                     </span>
                   </p>
-          
-                       {/* Mostrar botón SOLO en el primer recordatorio (más próximo) */}
-                       {index === 0 && note.date && !isDateInPast(note.date) && (
+                        {/* Mostrar botón SOLO en el primer recordatorio (más próximo) */}
+                        {index === 0 && note.date && (
                       <div className="d-flex justify-content-between align-items-center mt-2">
-                        <span style={{ color: "red", fontWeight: "bold" }}>
+                        <span className="shake-animation" style={{ color: "red", fontWeight: "bold" }}>
                           PRÓXIMO SEGUIMIENTO
                         </span>
                         <Button 
-                        className="mt-2"
+                          className="mt-2"
                           variant="danger"
                           size="sm"
                           onClick={() => handleRealizarClick(note)}

@@ -2085,16 +2085,23 @@ to { border-right-color: transparent; }
 
 /* Animación de parpadeo */
 @keyframes border-blink {
-  0% { border-left-color: transparent; }
-  50% { border-left-color: #dc3545; }
-  100% { border-left-color: transparent; }
-  0% { border-bottom-color: transparent; }
-  50% { border-bottom-color: #dc3545; }
-  100% { border-bottom-color: transparent; }
+  0% { border-color: transparent; }
+  50% { border-color: red; }
+  100% { border-color: transparent; }
 }
 
 .blinking-border {
-  border-left: 3px solid #dc3545;
-  border-bottom: 3px solid #dc3545;
+  border: 3px solid #dc3545;
   animation: border-blink 1.5s infinite;
+}
+
+@keyframes shakeX {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
+.shake-animation {
+  animation: shakeX 1s infinite;
+  display: inline-block; // Necesario para que transform funcione
 }
