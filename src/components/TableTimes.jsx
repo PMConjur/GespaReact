@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import PropTypes from "prop-types";
 import { Table } from "react-bootstrap";
 import { userTimes, userTimesPromedio } from "../services/gespawebServices";
@@ -146,7 +146,9 @@ const loadPromedioTimes = async (idEjecutivo, formatOrDefault) => {
 
 const TableTimes = ({ updatedTimes }) => {
     const { idEjecutivo } = useContext(AppContext);
-
+    
+    const toastShownRef = useRef(false); // Nuevo useRef
+    
     const [timesData, setTimesData] = useState({
         total: Object.fromEntries(TIME_CATEGORIES.map(cat => [cat, "--:--:--"])),
         promedio: Object.fromEntries(TIME_CATEGORIES.map(cat => [cat, "--:--:--"]))
@@ -178,27 +180,28 @@ const TableTimes = ({ updatedTimes }) => {
     useEffect(() => {
         if (!updatedTimes || Object.keys(updatedTimes).length === 0) return;
         
-        setTimesData(prev => {
-            const newTotal = { ...prev.total };
-            let hasUpdates = false;
+        let hasUpdates = false;
+        const newTotal = { ...timesData.total };
     
-            // Update and sum fields coming in updatedTimes
-            Object.entries(updatedTimes).forEach(([key, value]) => {
-                if (TIME_CATEGORIES.includes(key)) {
-                    const dbValueInSeconds = prev.total[key] !== "--:--:--"
-                        ? Number(prev.total[key].split(":").reduce((acc, time) => (60 * acc) + +time, 0))
-                        : 0;
-                    newTotal[key] = formatTime(dbValueInSeconds + Number(value));
-                    hasUpdates = true;
-                }
-            });
-    
-            if (hasUpdates) {
-                toast.success("Datos actualizados correctamente");
+        Object.entries(updatedTimes).forEach(([key, value]) => {
+            if (TIME_CATEGORIES.includes(key)) {
+                const dbValueInSeconds = newTotal[key] !== "--:--:--"
+                    ? Number(newTotal[key].split(":").reduce((acc, time) => (60 * acc) + +time, 0))
+                    : 0;
+                newTotal[key] = formatTime(dbValueInSeconds + Number(value));
+                hasUpdates = true;
             }
-    
-            return { ...prev, total: newTotal };
         });
+
+        if (hasUpdates && !toastShownRef.current) {
+            toast.success("Datos actualizados correctamente");
+            toastShownRef.current = true;
+        }
+    
+        setTimesData(prev => ({
+            ...prev,
+            total: newTotal
+        }));
     }, [updatedTimes]);
 
     

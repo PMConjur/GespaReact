@@ -36,8 +36,11 @@ const FollowUps = ({
       show={show} 
       onHide={handleConditionalClose} 
       size="xl"
-      backdrop={isFollowUpActive && !hasRegistered ? "static" : true}
-      keyboard={!isFollowUpActive || hasRegistered}
+      // backdrop={isFollowUpActive && !hasRegistered ? "static" : true}
+      // keyboard={!isFollowUpActive || hasRegistered}
+      
+      backdrop={!isFollowUpActive ? "static" : (!hasRegistered ? "static" : true)}
+      keyboard={!isFollowUpActive ? false : (hasRegistered ? true : false)}
       contentClassName="d-flex flex-column"
       dialogClassName="my-custom-modal"
     >

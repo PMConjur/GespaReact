@@ -50,14 +50,15 @@ const OnlineCharge = ({
                 size="xl"
                 backdrop={allowClose ? true : 'static'}
                 keyboard={allowClose}
-                centered
+                contentClassName="d-flex flex-column"
+                dialogClassName="my-custom-modal"
             >
                 <Modal.Header closeButton={allowClose} className="bg-dark text-white" closeVariant="white">
                     <Modal.Title>Nuevo Cargo en Línea</Modal.Title>
                 </Modal.Header>
 
-                <Modal.Body className="flex-grow-1 p-0 d-flex flex-column bg-dark">
-                    <Row className="flex-grow-1 g-0 m-0" style={{ minHeight: '60vh' }}>
+                <Modal.Body className="flex-grow-1 p-0 d-flex flex-column bg-dark" style={{ overflow: "hidden" }}>
+                    <Row className="flex-grow-1 g-0 m-0" style={{ height: "100%" }}>
                         <Col md={8} className="h-100 p-0 border-end border-secondary">
                             <TableOnlineCharge />
                         </Col>
@@ -80,16 +81,17 @@ const OnlineCharge = ({
             show={show}
             onHide={handleModalClose}
             size="xl"
-            backdrop={true}
-            keyboard={true}
-            centered
+            backdrop="static"
+            keyboard={false}
+            contentClassName="d-flex flex-column"
+            dialogClassName="my-custom-modal"
         >
             <Modal.Header closeButton className="bg-dark text-white" closeVariant="white">
                 <Modal.Title>Historial de Cargos</Modal.Title>
             </Modal.Header>
 
-            <Modal.Body className="flex-grow-1 p-0 d-flex flex-column bg-dark">
-                <Row className="flex-grow-1 g-0 m-0" style={{ minHeight: '70vh' }}>
+            <Modal.Body className="flex-grow-1 p-0 d-flex flex-column bg-dark" style={{ overflow: "hidden" }}>
+                <Row className="flex-grow-1 g-0 m-0" style={{ height: "100%" }}>
                     <Col md={12} className="h-100 p-0">
                         <TableOnlineCharge />
                     </Col>

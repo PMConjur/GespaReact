@@ -29,7 +29,7 @@ const Talks = ({ show, handleClose }) => {
             onHide={handleClose} 
             backdrop="static" 
             size="xl"
-            keyboard={true}
+            keyboard={false}
             contentClassName="d-flex flex-column"
             dialogClassName="my-custom-modal"
         >

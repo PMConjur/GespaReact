@@ -8,6 +8,7 @@ const Aditionals = ({ show, handleClose}) => {
         show={show} 
         onHide={handleClose} 
         backdrop="static"
+        keyboard={false}
         size="xl">
             <Modal.Header closeButton>
                 <Modal.Title>Adicionales</Modal.Title>

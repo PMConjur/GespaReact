@@ -159,6 +159,7 @@ useEffect(() => {
         className="scroll-container"
         style={{
           width: "100%",
+          height: "500px",
           maxHeight: "500px",
           overflowY: "auto",
           display: "flex",
