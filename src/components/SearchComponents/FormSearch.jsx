@@ -3,7 +3,8 @@ import { toast } from "sonner";
 import { Button, Form, InputGroup, Col, Row } from "react-bootstrap";
 import {
   fetchSaveExecutive,
-  fetchSearchAddDate
+  fetchSearchAddDate,
+  getAditionalsData
 } from "../../services/gespawebServices";
 import { AppContext } from "../../pages/Managment"; // Importa el contexto
 
@@ -11,97 +12,137 @@ const FormSearch = () => {
   const { searchResults, isDataAllPhones } = useContext(AppContext);
   const idCuenta = searchResults?.[0]?.idCuenta;
   const [datoOptions, setDatoOptions] = useState([]);
-  const [tipoDatoOptions, setTipoDatoOptions] = useState([""]); // Opciones para ddlTipoDato
+  const [tipoDatoOptions, setTipoDatoOptions] = useState([]); // Opciones para ddlTipoDato
+  const [additionalOptions, setAdditionalOptions] = useState([]); // Opciones adicionales
   const [selectedValue, setSelectedValue] = useState("");
   const [isTipoDatoChanged, setIsTipoDatoChanged] = useState(false); // Estado para controlar el cambio
 
-  useEffect(() => {
-    const loadDatoOptions = async () => {
-      if (!idCuenta) return; // Solo ejecuta si idCuenta no es vacío
-      try {
-        const response = await fetchSearchAddDate(idCuenta); // Pasa idCuenta como parámetro
-        setDatoOptions(response);
-      } catch (error) {
-        console.error("Error al cargar los datos:", error);
-        toast.error("Error al cargar los datos del dropdown.");
-      }
-    };
+  const loadDatoOptions = async () => {
+    if (!idCuenta) return; // Solo ejecuta si idCuenta no es vacío
+    try {
+      const response = await fetchSearchAddDate(idCuenta); // Pasa idCuenta como parámetro
+      setDatoOptions(response);
+    } catch (error) {
+      console.error("Error al cargar los datos:", error);
+      toast.error("Error al cargar los datos del dropdown.");
+    }
+  };
 
-    loadDatoOptions();
-  }, [idCuenta]); // Ejecuta el efecto solo cuando idCuenta cambia
+  const handleSelectChange = async (e) => {
+    // Limpieza completa de datos antes de procesar la nueva selección
+    setTipoDatoOptions([]);
+    setAdditionalOptions([]);
+    setSelectedValue("");
+    setIsTipoDatoChanged(false);
 
-  const handleSelectChange = (e) => {
-    setTipoDatoOptions([""]); // Limpiar opciones antes de llenar nuevas
     const value = e.target.value;
     setSelectedValue(value);
-    setIsTipoDatoChanged(false); // Reinicia el estado de cambio
 
     // Llenar ddlTipoDato según el valor seleccionado
     switch (value) {
       case "2601": // Nombre
-        setIsTipoDatoChanged(true); // Marca que se realizó un cambio y activa animación de pulso
-        setTipoDatoOptions([
-          {
-            id: searchResults?.[0]?.nombreDeudor,
-            text: searchResults?.[0]?.nombreDeudor
-          }
-        ]);
+        {
+          setIsTipoDatoChanged(true);
+          setTipoDatoOptions([
+            {
+              id: searchResults?.[0]?.nombreDeudor,
+              text: searchResults?.[0]?.nombreDeudor
+            }
+          ]);
+        }
         break;
       case "2602": // Teléfono
-        setIsTipoDatoChanged(true); // Marca que se realizó un cambio y activa animación de pulso
-        setTipoDatoOptions(
-          isDataAllPhones.map((phone) => ({
-            id: phone.númeroTelefónico, // Usar el número completo como ID
-            text: `XXX-XXX-${phone.númeroTelefónico.slice(-4)}` // Mostrar solo los últimos 4 dígitos
-          }))
-        );
+        {
+          setIsTipoDatoChanged(true);
+          setTipoDatoOptions(
+            isDataAllPhones.map((phone) => ({
+              id: phone.númeroTelefónico,
+              text: `XXX-XXX-${phone.númeroTelefónico.slice(-4)}`
+            }))
+          );
+        }
         break;
       case "2603": // Empresa
-        setIsTipoDatoChanged(true); // Marca que se realizó un cambio y activa animación de pulso
-        setTipoDatoOptions([
-          { id: "1", text: "Nombre de la Empresa" },
-          { id: "2", text: "Giro" },
-          { id: "3", text: "Tamaño" }
-        ]);
+        {
+          setIsTipoDatoChanged(true);
+          setTipoDatoOptions([
+            { id: "1", text: "Nombre de la Empresa" },
+            { id: "2", text: "Giro" },
+            { id: "3", text: "Tamaño" }
+          ]);
+        }
         break;
       case "2604": // Domicilio
-        setTipoDatoOptions([{ id: "", text: "" }]);
+        {
+          setTipoDatoOptions([{ id: "", text: "" }]);
+        }
         break;
       case "2605": // Adicional
-        setIsTipoDatoChanged(true); // Marca que se realizó un cambio y activa animación de pulso
-        setTipoDatoOptions([
-          { id: "1", text: "Referencia Personal" },
-          { id: "2", text: "Referencia Laboral" }
-        ]);
+        {
+          try {
+            const additionalData = await loadAdditionalOptions();
+            setIsTipoDatoChanged(true);
+            setTipoDatoOptions(additionalData);
+          } catch (error) {
+            console.error("Error al cargar los datos adicionales:", error);
+            toast.error("Error al cargar los datos adicionales.");
+          }
+        }
         break;
       case "2606": // Correo
-        setIsTipoDatoChanged(true); // Marca que se realizó un cambio y activa animación de pulso
-        setTipoDatoOptions([
-          { id: "1", text: "Correo Personal" },
-          { id: "2", text: "Correo Laboral" }
-        ]);
+        {
+          setIsTipoDatoChanged(true);
+          setTipoDatoOptions([
+            { id: "1", text: "Correo Personal" },
+            { id: "2", text: "Correo Laboral" }
+          ]);
+        }
         break;
       case "2607": // RFC
-        setIsTipoDatoChanged(true); // Marca que se realizó un cambio y activa animación de pulso
-        setTipoDatoOptions([
-          {
-            id: searchResults?.[0]?.rfc,
-            text: searchResults?.[0]?.rfc
-          }
-        ]);
+        {
+          setIsTipoDatoChanged(true);
+          setTipoDatoOptions([
+            {
+              id: searchResults?.[0]?.rfc,
+              text: searchResults?.[0]?.rfc
+            }
+          ]);
+        }
         break;
       default:
-        setIsTipoDatoChanged(false); // Marca que se realizó un cambio y activa animación de pulso
-        setTipoDatoOptions([]); // Vaciar opciones si no hay coincidencia
+        {
+          setIsTipoDatoChanged(false);
+          setTipoDatoOptions([]);
+        }
         break;
     }
   };
+
+  const loadAdditionalOptions = async () => {
+    if (!idCuenta) return []; // Solo ejecuta si idCuenta no es vacío
+    try {
+      const response = await getAditionalsData(1, idCuenta); // Pasa idCuenta como parámetro
+      return response.map((option) => ({
+        id: option.idParentesco,
+        text: option.NombreAdicional
+      }));
+    } catch (error) {
+      console.error("Error al cargar los datos adicionales:", error);
+      throw error; // Lanza el error para manejarlo en el caso "2605"
+    }
+  };
+
   const handleTipoDatoChange = (e) => {
     const value = e.target.value;
-    if (value != "Seleccionar..." || value != "") {
+    if (value !== "Seleccionar..." && value !== "") {
       setIsTipoDatoChanged(false); // Marca que se realizó un cambio y activa animación de pulso
     }
   };
+
+  useEffect(() => {
+    loadDatoOptions(); // Carga las opciones iniciales
+  }, [idCuenta]);
+
   return (
     <>
       <div>
