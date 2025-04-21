@@ -125,7 +125,7 @@ const Validators = ({ show, handleClose, handleValidate, modalCase = "" }) => { 
   };
 
   const handleCloseOnlineChargeModal = () => {
-    console.log('🗑️ Cerrando y preparando para reapertura');
+    console.log(' Cerrando y preparando para reapertura');
     
     setShowOnlineChargeModal(false);
     setOnlineChargeActive(false);
@@ -144,7 +144,7 @@ const Validators = ({ show, handleClose, handleValidate, modalCase = "" }) => { 
   };
 
   const handleClosePaymentModal = () => {
-    console.log('🗑️ Cerrando y preparando para reapertura');
+    console.log(' Cerrando y preparando para reapertura');
     
     setShowPaymentModal(false);
     setPaymentActive(false);

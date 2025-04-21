@@ -5,7 +5,7 @@ import { AppContext } from "../pages/Managment";
 import { getOnlinechargeData } from "../services/gespawebServices";
 import { reemplazarValores } from "./ValoresCatalogos.js"; // Importa el método
 
-const TableOnlineCharge = ({ customColumnNames = {} }) => {
+const TableOnlineCharge = ({ customColumnNames = {}, refreshTrigger }) => {
   const { searchResults } = useContext(AppContext); // Hook 1
   const [sortedData, setSortedData] = useState([]); // Hook 2
   const [sortByOldest, setSortByOldest] = useState(false); // Hook 3
@@ -73,7 +73,7 @@ useEffect(() => {
   };
 
   fetchData();
-}, [searchResults]); // No necesitas agregar dependencias adicionales
+}, [searchResults, refreshTrigger]); // Asegúrese de incluir refreshTrigger aquí
   // Hook 6: useCallback para manejar el ordenamiento
   const handleSortChange = useCallback(() => {
     if (!toastShown) {

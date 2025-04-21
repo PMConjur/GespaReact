@@ -265,7 +265,7 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess }) => {
             }
 
             // 5. Éxito - Reset y notificación
-            toast.success("✅ Cargo registrado exitosamente");
+            toast.success("Cargo registrado exitosamente");
             resetForm();
 
             // 6. Notificar éxito al componente padre
@@ -285,7 +285,7 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess }) => {
                 error.message ||
                 "Error al procesar el cargo";
 
-            toast.error(`❌ ${errorMessage}`);
+            toast.error(`${errorMessage}`);
 
             // 8. Notificar fallo al componente padre
             if (typeof handleClose === 'function') {
@@ -426,7 +426,7 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess }) => {
                         </Col>
                         <Col>
                             <Form.Group>
-                                <Form.Label>No. Autorización</Form.Label>
+                                <Form.Label>Número de Autorización</Form.Label>
                                 <Form.Control
                                     type="number"
                                     name="autorizacion"

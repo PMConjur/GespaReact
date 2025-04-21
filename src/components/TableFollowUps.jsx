@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
 import { getFollowUpsData } from "../services/gespawebServices";
 
-const TableFollowUps = ({ customColumnNames = {} }) => {
+const TableFollowUps = ({ customColumnNames = {}, refreshTrigger }) => {
     const { searchResults } = useContext(AppContext);
     const [sortedData, setSortedData] = useState([]);
     const [sortByOldest, setSortByOldest] = useState(false);
@@ -30,7 +30,8 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
                 }
     
                 const followUpsData = await getFollowUpsData(1, idCuenta);
-                setSortedData(followUpsData);
+                // Ordenar de más reciente a más antiguo por defecto
+                setSortedData([...followUpsData].sort((a, b) => new Date(b.Fecha_Insert) - new Date(a.Fecha_Insert)));
                 toastShownRef.current = false; // Resetear para futuras búsquedas
             } catch (error) {
                 console.error("Error al obtener los datos de seguimiento:", error);
@@ -38,27 +39,28 @@ const TableFollowUps = ({ customColumnNames = {} }) => {
         };
     
         fetchData();
-    }, [searchResults]);
+    }, [searchResults, refreshTrigger]);
 
     const handleSortChange = useCallback(() => {
         if (!toastShown) {
-            setSortByOldest(prev => !prev);
-            setSortedData(prevData => {
-                const sorted = !sortByOldest
+            setSortByOldest(prev => {
+                const newSortByOldest = !prev;
+                setSortedData(prevData => 
+                    newSortByOldest
                     ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
-                    : [...sortedData];
-
+                    : [...prevData].sort((a, b) => new Date(b.Fecha_Insert) - new Date(a.Fecha_Insert))
+                );
                 toast.success(
-                    !sortByOldest
-                        ? "Datos ordenados por fecha más antigua."
-                        : "Orden original restaurado."
+                    newSortByOldest
+                        ? "Ordenados de más antiguo a más reciente."
+                        : "Ordenados de más reciente a más antiguo."
                 );
                 setToastShown(true);
                 setTimeout(() => setToastShown(false), 2000);
-                return sorted;
+                return newSortByOldest;
             });
         }
-    }, [sortByOldest, sortedData, toastShown]);
+    }, [toastShown]);
 
     if (!sortedData || sortedData.length === 0) {
         return <p>No hay datos disponibles.</p>;

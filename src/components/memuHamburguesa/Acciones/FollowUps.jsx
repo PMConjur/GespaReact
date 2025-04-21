@@ -9,6 +9,7 @@ const FollowUps = ({
   isFollowUpActive = false
 }) => {
   const [hasRegistered, setHasRegistered] = useState(false);
+  const [refreshTable, setRefreshTable] = useState(0);
 
   // Resetear el estado cuando el modal se cierra o cuando isFollowUpActive cambia
   useEffect(() => {
@@ -36,9 +37,6 @@ const FollowUps = ({
       show={show} 
       onHide={handleConditionalClose} 
       size="xl"
-      // backdrop={isFollowUpActive && !hasRegistered ? "static" : true}
-      // keyboard={!isFollowUpActive || hasRegistered}
-      
       backdrop={!isFollowUpActive ? "static" : (!hasRegistered ? "static" : true)}
       keyboard={!isFollowUpActive ? false : (hasRegistered ? true : false)}
       contentClassName="d-flex flex-column"
@@ -64,7 +62,7 @@ const FollowUps = ({
               overflowY: "auto"
             }}
           >
-            <TableFollowUps />
+            <TableFollowUps key={refreshTable} refreshTrigger={refreshTable} />
           </Col>
           {isFollowUpActive && (
             <Col 
@@ -78,7 +76,10 @@ const FollowUps = ({
               <FormFollowUps 
                 handleClose={handleClose} 
                 isFollowUpsActive={isFollowUpActive}
-                onSuccessfulRegister={() => setHasRegistered(true)}
+                onSuccessfulRegister={() => { 
+                  setHasRegistered(true); 
+                  setRefreshTable(Date.now()); 
+                }}
               />
             </Col>
           )}

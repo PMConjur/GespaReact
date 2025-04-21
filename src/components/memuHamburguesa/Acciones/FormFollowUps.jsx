@@ -97,22 +97,20 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
         }));
     }, [isManagment]);
 
-    // Función robusta para comparar fechas y horas
+    // Función robusta para comparar fechas y horas (se actualiza para incluir la comparación del campo "hora")
     const hasReminderConflict = (date, time) => {
         try {
-            // Crear fecha completa del nuevo recordatorio
-            const [hours, minutes] = time.split(':').map(Number);
-            const newDateTime = new Date(`${date}T${hours}:${minutes}:00Z`);
+            const timeParts = time.split(':').map(Number);
+            const [hours, minutes, seconds = 0] = timeParts; // Incluir segundos si existen
+            const newDateTime = new Date(`${date}T${hours}:${minutes}:${seconds}Z`);
             
-            // Verificar cada recordatorio existente
             for (const reminder of existingReminders) {
-                const [reminderHours, reminderMinutes] = reminder.segundo.split(':').map(Number);
+                const timeParts2 = reminder.segundo.split(':').map(Number);
+                const [rHours, rMinutes, rSeconds = 0] = timeParts2; // Incluir segundos si existen
                 const reminderDate = new Date(reminder.FechaPago);
-                reminderDate.setHours(reminderHours, reminderMinutes, 0);
+                reminderDate.setUTCHours(rHours, rMinutes, rSeconds, 0);
                 
-                // Calcular diferencia absoluta en minutos
                 const diffMinutes = Math.abs((newDateTime - reminderDate) / (1000 * 60));
-                
                 if (diffMinutes < 5) {
                     return {
                         conflict: true,
@@ -120,7 +118,6 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                     };
                 }
             }
-            
             return { conflict: false };
         } catch (error) {
             console.error("Error en la validación de recordatorios:", error);

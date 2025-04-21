@@ -10,9 +10,9 @@ const Payments = ({
     handleClosePayments = () => console.warn("handleClosePayments no proporcionada"),
     onFormSuccess = () => { },
 }) => {
-     // Se elimina setShowPaymenst de la desestructuración
     const { isPaymentActive, loading, setPaymentActive } = useContext(AppContext);
-    const [ allowClose, setAllowClose ] = useState(false);
+    const [allowClose, setAllowClose] = useState(false);
+    const [refreshTable, setRefreshTable] = useState(0); // Nuevo estado para refrescar la tabla
 
     // Resetear el estado cuando el modal se muestra o cambia isPaymentActive
     useEffect(() => {
@@ -28,11 +28,13 @@ const Payments = ({
         }
         setPaymentActive(false);
         handleClosePayments(); 
-        // Línea eliminada: setShowPayments(false);
     };
 
     const handleFormSuccess = (success) => {
         setAllowClose(success);
+        if (success) {
+            setRefreshTable(prev => prev + 1); // Se incrementa el valor para forzar actualización
+        }
         onFormSuccess(success);
     };
 
@@ -45,7 +47,6 @@ const Payments = ({
                     if (allowClose === true) {
                         setPaymentActive(false);
                         handleClosePayments();
-                        // Línea eliminada: setShowPayments(true);
                     }
                 }}
                 size="xl"
@@ -66,10 +67,10 @@ const Payments = ({
                         className="flex-grow-1 g-0 m-0" 
                         style={{ height: "100%" }}
                     >
-                        <Col md={8} className="h-100 p-0 border-end border-secondary">
-                            <TablePayments />
+                        <Col md={9} className="h-100 p-0 border-end border-secondary">
+                            <TablePayments refreshTrigger={refreshTable} />
                         </Col>
-                        <Col md={4} className="h-100 p-3 bg-dark text-white overflow-auto">
+                        <Col md={3} className="h-100 p-3 bg-dark text-white overflow-auto">
                             <FormPayments
                                 handleClose={(success) => setAllowClose(success)}
                                 allowClose={allowClose}
@@ -106,7 +107,7 @@ const Payments = ({
                     style={{ height: "100%" }}
                 >
                     <Col md={12} className="h-100 p-0">
-                        <TablePayments />
+                        <TablePayments refreshTrigger={refreshTable} />
                     </Col>
                 </Row>
             </Modal.Body>

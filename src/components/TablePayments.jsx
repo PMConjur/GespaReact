@@ -5,7 +5,7 @@ import { AppContext } from "../pages/Managment";
 import { getPaymentsData } from "../services/gespawebServices";
 import { reemplazarValores } from "./ValoresCatalogos.js"; // Importa el método
 
-const TablePayments = ({ customColumnNames = {} }) => {
+const TablePayments = ({ customColumnNames = {}, refreshTrigger }) => { // Cambio: se usa refreshTrigger en lugar de refreshKey
   const { searchResults } = useContext(AppContext); // Hook 1
   const [sortedData, setSortedData] = useState([]); // Hook 2
   const [sortByOldest, setSortByOldest] = useState(false); // Hook 3
@@ -35,7 +35,11 @@ const TablePayments = ({ customColumnNames = {} }) => {
         }
 
         const paymentsData = await getPaymentsData(1, idCuenta); // idCartera fijo como 1
-        setSortedData(paymentsData);
+        // Ordenar datos de forma descendente según "Guardado" (más reciente primero)
+        const sortedPayments = [...paymentsData].sort(
+          (a, b) => new Date(b.Guardado) - new Date(a.Guardado)
+        );
+        setSortedData(sortedPayments);
       } catch (error) {
         console.error("Error al obtener los datos de Pagos:", error);
       } finally {
@@ -44,7 +48,7 @@ const TablePayments = ({ customColumnNames = {} }) => {
     };
 
     fetchData();
-  }, [searchResults]);
+  }, [searchResults, refreshTrigger]); // Cambio: se añadió refreshTrigger en las dependencias
   
 
   // Hook 7: useCallback para manejar el ordenamiento
@@ -52,18 +56,19 @@ const TablePayments = ({ customColumnNames = {} }) => {
     setSortByOldest((prev) => {
       const newSortByOldest = !prev; // Invertir el estado del switch
       setSortedData((prevData) => {
+        // Si newSortByOldest es true, ordena de más antigua a más reciente; de lo contrario, de más reciente a más antigua
         const sorted = newSortByOldest
           ? [...prevData].sort(
-              (a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert)
+              (a, b) => new Date(a.Guardado) - new Date(b.Guardado)
             )
           : [...prevData].sort(
-              (a, b) => new Date(b.Fecha_Insert) - new Date(a.Fecha_Insert)
-            ); // Ordenar por fecha más reciente si el switch está desactivado
+              (a, b) => new Date(b.Guardado) - new Date(a.Guardado)
+            );
 
         toast.success(
           newSortByOldest
-            ? "Datos ordenados por fecha más antigua."
-            : "Datos ordenados por fecha más reciente."
+            ? "Datos ordenados por fecha de guardado antigua."
+            : "Datos ordenados por fecha de guardado reciente."
         );
         return sorted;
       });

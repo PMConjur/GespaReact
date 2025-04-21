@@ -13,6 +13,7 @@ const OnlineCharge = ({
     // Se elimina setShowOnlineCharge de la desestructuración
     const { isOnlineChargeActive, loading, setOnlineChargeActive } = useContext(AppContext);
     const [allowClose, setAllowClose] = useState(false);
+    const [refreshTable, setRefreshTable] = useState(0); 
 
     useEffect(() => {
         if (show) {
@@ -32,6 +33,9 @@ const OnlineCharge = ({
 
     const handleFormSuccess = (success) => {
         setAllowClose(success);
+        if (success) {
+            setRefreshTable(prev => prev + 1); // Se incrementa el valor para forzar actualización
+        }
         onFormSuccess(success);
     };
 
@@ -59,10 +63,10 @@ const OnlineCharge = ({
 
                 <Modal.Body className="flex-grow-1 p-0 d-flex flex-column bg-dark" style={{ overflow: "hidden" }}>
                     <Row className="flex-grow-1 g-0 m-0" style={{ height: "100%" }}>
-                        <Col md={8} className="h-100 p-0 border-end border-secondary">
-                            <TableOnlineCharge />
+                        <Col md={7} className="h-100 p-0 border-end border-secondary">
+                            <TableOnlineCharge refreshTrigger={refreshTable}/>
                         </Col>
-                        <Col md={4} className="h-100 p-3 bg-dark text-white overflow-auto">
+                        <Col md={5} className="h-100 p-3 bg-dark text-white overflow-auto">
                             <FormOnlineCharge
                                 handleClose={(success) => setAllowClose(success)}
                                 allowClose={allowClose}
@@ -93,7 +97,7 @@ const OnlineCharge = ({
             <Modal.Body className="flex-grow-1 p-0 d-flex flex-column bg-dark" style={{ overflow: "hidden" }}>
                 <Row className="flex-grow-1 g-0 m-0" style={{ height: "100%" }}>
                     <Col md={12} className="h-100 p-0">
-                        <TableOnlineCharge />
+                        <TableOnlineCharge  refreshTrigger={refreshTable}/>
                     </Col>
                 </Row>
             </Modal.Body>

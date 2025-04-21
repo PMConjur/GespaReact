@@ -31,7 +31,8 @@ const TableTalks = ({ customColumnNames = {}, onRowClick }) => {
                 }
     
                 const talksData = await getTalksData(1, idCuenta);
-                setSortedData(talksData);
+                // Ordenar de más reciente a más antiguo
+                setSortedData([...talksData].sort((a, b) => new Date(b.Fecha_Insert) - new Date(a.Fecha_Insert)));
                 toastShownRef.current = false;
                 
                 // Debug: mostrar datos obtenidos
