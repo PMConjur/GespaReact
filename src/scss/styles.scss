@@ -683,14 +683,14 @@ $list-group-transition: all 0.3s ease;
   &-item {
     // Estilo base
     background-color: #1d1f20;
-    color: #07fb70;
+    color: #39fc8d;
     border-bottom: 1px solid #6c757d;
     transition: $list-group-transition;
 
     // Efecto hover
     &:hover {
       background-color: black !important;
-      color: rgb(0, 157.0684931507, 218.4) !important;
+      color: #39fc8d !important;
     }
 
     // Estado activo
@@ -2080,12 +2080,12 @@ to { border-right-color: transparent; }
 /* Animación de parpadeo */
 @keyframes border-blink {
   0% { border-color: transparent; }
-  50% { border-color: red; }
+  50% { border-color: $warning; }
   100% { border-color: transparent; }
 }
 
 .blinking-border {
-  border: 3px solid #dc3545;
+  border: 3px solid $warning;
   animation: border-blink 1.5s infinite;
 }
 
@@ -2098,4 +2098,7 @@ to { border-right-color: transparent; }
 .shake-animation {
   animation: shakeX 1s infinite;
   display: inline-block; // Necesario para que transform funcione
+  color: $warning; // Color del texto
+  font-weight: bold; // Negrita
 }
+

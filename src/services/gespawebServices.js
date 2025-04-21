@@ -33,7 +33,7 @@ export async function userReset(dataUserReset) {
   }
 }
 
-// endpoint buscar ejecutivo
+// endpoint busqueda manual ejecutivo
 export async function searchCustomers(filter, searchValue) {
   try {
     const response = await servicio.get(
@@ -52,8 +52,6 @@ export async function searchCustomers(filter, searchValue) {
   }
 }
 
-// services.js
-
 // Endpoint para búsqueda automática de ejecutivo
 export async function automaticSearchEjecutivo(idEjecutivo) {
   try {
@@ -70,7 +68,7 @@ export async function automaticSearchEjecutivo(idEjecutivo) {
   }
 }
 
-// Endpoint para búsqueda por cuenta (ya lo tenías, pero lo optimizo)
+// Endpoint para búsqueda por cuenta 
 export async function searchByAccount(idCuenta) {
   try {
     const response = await servicio.get(
@@ -1639,7 +1637,7 @@ export const fetchAddress = async (idCartera, idCuenta) => {
   }
 };
 
-// src/services/managment.jsx
+// endpoint recordatorios 
 const numEmpleado = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
 export const saveNotesToAPI = async (notes) => {
   try {

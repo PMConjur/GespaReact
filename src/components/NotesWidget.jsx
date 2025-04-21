@@ -359,13 +359,12 @@ useEffect(() => {
                         {/* Mostrar botón SOLO en el primer recordatorio (más próximo) */}
                         {index === 0 && note.date && (
                       <div className="d-flex justify-content-between align-items-center mt-2">
-                        <span className="shake-animation" style={{ color: "red", fontWeight: "bold" }}>
+                        <span className="shake-animation">
                           PRÓXIMO SEGUIMIENTO
                         </span>
                         <Button 
-                          className="mt-2"
-                          variant="danger"
-                          size="sm"
+                          className="mt-2 btn-success"
+                         
                           onClick={() => handleRealizarClick(note)}
                         >
                           Realizar
