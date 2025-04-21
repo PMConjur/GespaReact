@@ -1,14 +1,22 @@
 import { useState, useEffect, useContext, useRef } from "react";
 import { Modal, Button, Form, Table, Card, Row, Col } from "react-bootstrap";
 import "../scss/styles.scss";
-import { fetchCalFirtsPart, fetchCalSecondPart, fetchCalSecondPartModify, fetchSaveDeleteDeadlines, fetchSaveNegotiationDeadlines, fetchIncreasesNegotiation, fetchSaveOffering } from "../services/gespawebServices";
+import {
+  fetchCalFirtsPart,
+  fetchCalSecondPart,
+  fetchCalSecondPartModify,
+  fetchSaveDeleteDeadlines,
+  fetchSaveNegotiationDeadlines,
+  fetchIncreasesNegotiation,
+  fetchSaveOffering
+} from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 import Validators from "./fragments/Validators"; // Importa el modal de Validators
 
-const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
-
-  const { searchResults, idEjecutivo, isManagment, setIsNegotiationActive} = useContext(AppContext);
+const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
+  const { searchResults, idEjecutivo, isManagment, setNegotiationActive } =
+    useContext(AppContext);
   useEffect(() => {
     console.log("Contenido de isManagment:", isManagment);
   }, [isManagment]); // Se ejecutará cada vez que isManagment cambie
@@ -19,7 +27,7 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
     montoDescuento: 0,
     saldo: 0,
     fechaCorte: "",
-    descuento: 0,
+    descuento: 0
   });
   const [herramientas, setHerramientas] = useState([]); // Estado para almacenar las herramientas
   const [selectedHerramienta, setSelectedHerramienta] = useState(null); // Estado para almacenar el idHerramienta seleccionado
@@ -30,18 +38,19 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
     montoNegociado: 0,
     descuento: 0,
     calculos: [],
-    tasaMensual: 0, // Agregar tasa mensual al estado
+    tasaMensual: 0 // Agregar tasa mensual al estado
   });
   const [formValues, setFormValues] = useState({
     montoRequerido: "",
-    descuento: "",
+    descuento: ""
   });
   const [formInputs, setFormInputs] = useState({
     meses: "",
     fechaPago: "",
-    periodos: 1,
+    periodos: 1
   });
-  const [isCalculateButtonEnabled, setIsCalculateButtonEnabled] = useState(false);
+  const [isCalculateButtonEnabled, setIsCalculateButtonEnabled] =
+    useState(false);
   const [isAddButtonEnabled, setIsAddButtonEnabled] = useState(false);
   const [montoPago, setMontoPago] = useState(""); // Estado para almacenar el valor de "Monto Pago"
   const [montoNegociado, setMontoNegociado] = useState(""); // Estado para almacenar el valor de "Monto Negociado"
@@ -52,9 +61,9 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
     montoMod: "",
     fechaPagoMod: "",
     agregarPagos: false,
-    filaMod: null,
+    filaMod: null
   });
-  const [selectedRow, setSelectedRow] = useState(null);// Estado para almacenar la fila seleccionada
+  const [selectedRow, setSelectedRow] = useState(null); // Estado para almacenar la fila seleccionada
   const [showDetails, setShowDetails] = useState(false); // Estado para controlar la visibilidad del Row
   const [showCalculator, setShowCalculator] = useState(false); // Estado para controlar la visibilidad del Col
   const [showValidators, setShowValidators] = useState(false); // Estado para controlar el modal
@@ -86,120 +95,137 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
     const { name, value } = e.target;
     setFormInputs((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: value
     }));
   };
 
   useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const idCartera = 1; // Ejemplo de valor
-      const idCuenta = searchResults?.[0]?.idCuenta?.trim();
-      if (!idCuenta) {
-        console.error("No se encontró idCuenta en searchResults");
-        return;
-      }
-      const data = await fetchCalFirtsPart(idCartera, idCuenta, selectedHerramienta || 136);
+    const fetchData = async () => {
+      try {
+        const idCartera = 1; // Ejemplo de valor
+        const idCuenta = searchResults?.[0]?.idCuenta?.trim();
+        if (!idCuenta) {
+          console.error("No se encontró idCuenta en searchResults");
+          return;
+        }
+        const data = await fetchCalFirtsPart(
+          idCartera,
+          idCuenta,
+          selectedHerramienta || 136
+        );
 
-      if (data) {
-        // Extraer el mensaje de validación
-        if (data.mensaje) {
-          setValidationMessage(data.mensaje); // Actualiza el estado con el mensaje
-        }
+        if (data) {
+          // Extraer el mensaje de validación
+          if (data.mensaje) {
+            setValidationMessage(data.mensaje); // Actualiza el estado con el mensaje
+          }
 
-        // Actualizar otros datos
-        if (Array.isArray(data.ofrecimientos)) {
-          setTableData(data.ofrecimientos);
+          // Actualizar otros datos
+          if (Array.isArray(data.ofrecimientos)) {
+            setTableData(data.ofrecimientos);
+          }
+          if (Array.isArray(data.herramientas)) {
+            setHerramientas(data.herramientas);
+          }
+          setSummaryData({
+            montoRequerido: data.montoRequerido,
+            montoDescuento: data.montoDescuento,
+            saldo: data.saldo,
+            fechaCorte: data.fechaCorte,
+            descuento: data.descuento,
+            dias1erpago: data.dias1erpago // Corrige el nombre del campo para que coincida con la respuesta del endpoint
+          });
+        } else {
+          console.error(
+            "La respuesta del endpoint no contiene los datos esperados:",
+            data
+          );
+          setTableData([]);
         }
-        if (Array.isArray(data.herramientas)) {
-          setHerramientas(data.herramientas);
-        }
-        setSummaryData({
-          montoRequerido: data.montoRequerido,
-          montoDescuento: data.montoDescuento,
-          saldo: data.saldo,
-          fechaCorte: data.fechaCorte,
-          descuento: data.descuento,
-          dias1erpago: data.dias1erpago, // Corrige el nombre del campo para que coincida con la respuesta del endpoint
-        });
-      } else {
-        console.error("La respuesta del endpoint no contiene los datos esperados:", data);
+      } catch (error) {
+        console.error("Error al obtener los datos de la calculadora:", error);
         setTableData([]);
       }
-    } catch (error) {
-      console.error("Error al obtener los datos de la calculadora:", error);
-      setTableData([]);
-    }
-  };
+    };
 
-  if (searchResults?.length > 0) {
-    fetchData();
-  }
-}, [searchResults, selectedHerramienta, show]); // Agrega 'show' como dependencia
- 
+    if (searchResults?.length > 0) {
+      fetchData();
+    }
+  }, [searchResults, selectedHerramienta, show]); // Agrega 'show' como dependencia
+
   useEffect(() => {
     // Sincroniza formValues con summaryData cuando summaryData cambia
     setFormValues({
-      montoRequerido: summaryData.montoRequerido ? summaryData.montoRequerido.toFixed(2) : 0,
-      descuento: summaryData.descuento ? summaryData.descuento.toFixed(2) : 0,
+      montoRequerido: summaryData.montoRequerido
+        ? summaryData.montoRequerido.toFixed(2)
+        : 0,
+      descuento: summaryData.descuento ? summaryData.descuento.toFixed(2) : 0
     });
   }, [summaryData]);
 
   const handleHerramientaChange = (e) => {
     const selectedValue = e.target.value;
     setSelectedHerramienta(Number(selectedValue)); // Actualiza el idHerramienta seleccionado
-  
+
     // Limpia los campos al cambiar de herramienta
     setMontoPago("");
     setMontoNegociado("");
     setFormInputs({
       meses: "",
       fechaPago: "",
-      periodos: 1,
+      periodos: 1
     });
-  
+
     // Actualiza formValues con los valores correctos de summaryData
     setFormValues({
-      montoRequerido: summaryData.montoRequerido ? summaryData.montoRequerido.toFixed(2) : 0,
-      descuento: summaryData.descuento ? summaryData.descuento.toFixed(2) : 0,
+      montoRequerido: summaryData.montoRequerido
+        ? summaryData.montoRequerido.toFixed(2)
+        : 0,
+      descuento: summaryData.descuento ? summaryData.descuento.toFixed(2) : 0
     });
-  
+
     // Habilita el botón "Calcular" si la herramienta seleccionada es válida
-    const validHerramientasCalcular = ["Convenio", "PIF", "PPA", "APR", "PPA+AC"];
+    const validHerramientasCalcular = [
+      "Convenio",
+      "PIF",
+      "PPA",
+      "APR",
+      "PPA+AC"
+    ];
     const validHerramientasAgregar = ["Parcial", "Ajuste"];
     const herramientaSeleccionada = herramientas.find(
       (herramienta) => herramienta.idHerramienta === Number(selectedValue)
     );
-  
+
     setIsCalculateButtonEnabled(
       herramientaSeleccionada &&
         validHerramientasCalcular.includes(herramientaSeleccionada.nombre)
     );
-  
+
     setIsAddButtonEnabled(
       herramientaSeleccionada &&
         validHerramientasAgregar.includes(herramientaSeleccionada.nombre)
     );
-  
+
     // Habilita los campos si la herramienta seleccionada es "Parcial" o "Ajuste"
     setAreFieldsEnabled(
       herramientaSeleccionada &&
         validHerramientasAgregar.includes(herramientaSeleccionada.nombre)
     );
-  
+
     // Actualiza los formularios dinámicamente según la herramienta seleccionada
     if (herramientaSeleccionada) {
       switch (herramientaSeleccionada.nombre) {
         case "Convenio":
           setFormInputs((prev) => ({
             ...prev,
-            meses: "", // Ejemplo: valor predeterminado para "Convenio"
+            meses: "" // Ejemplo: valor predeterminado para "Convenio"
           }));
           break;
         case "PIF":
           setFormInputs((prev) => ({
             ...prev,
-            periodos: 0, // Ejemplo: valor predeterminado para "PIF"
+            periodos: 0 // Ejemplo: valor predeterminado para "PIF"
           }));
           break;
         case "Parcial":
@@ -210,13 +236,12 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
           setFormInputs((prev) => ({
             ...prev,
             meses: "",
-            periodos: 0,
+            periodos: 0
           }));
           break;
       }
     }
   };
-  
 
   const handleMontoPagoChange = (e) => {
     const value = e.target.value;
@@ -228,12 +253,20 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
     const idCuenta = searchResults?.[0]?.idCuenta?.trim();
     try {
       // Validar los datos antes de enviarlos
-      if (!selectedHerramienta || !idCuenta || !formValues.montoRequerido || !formValues.descuento || !formInputs.fechaPago) {
-        console.error("Datos incompletos. Verifica los campos antes de enviar.");
+      if (
+        !selectedHerramienta ||
+        !idCuenta ||
+        !formValues.montoRequerido ||
+        !formValues.descuento ||
+        !formInputs.fechaPago
+      ) {
+        console.error(
+          "Datos incompletos. Verifica los campos antes de enviar."
+        );
         toast.error("Por favor, completa todos los campos requeridos.");
         return;
       }
-  
+
       const requestData = {
         idHerramienta: selectedHerramienta,
         NoCuenta: idCuenta,
@@ -242,11 +275,14 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
         Descuento: parseFloat(formValues.descuento) || 0,
         iMeses: parseInt(formInputs.meses, 10) || 0,
         dtpFecha: formInputs.fechaPago || "",
-        periodos: parseInt(formInputs.periodos, 10) || 1,
+        periodos: parseInt(formInputs.periodos, 10) || 1
       };
-  
-      console.log("Datos enviados al endpoint fetchCalSecondPart:", requestData);
-  
+
+      console.log(
+        "Datos enviados al endpoint fetchCalSecondPart:",
+        requestData
+      );
+
       const response = await fetchCalSecondPart(
         requestData.idCartera,
         requestData.NoCuenta,
@@ -257,7 +293,7 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
         requestData.dtpFecha,
         requestData.periodos
       );
-  
+
       console.log("Respuesta del endpoint fetchCalSecondPart:", response);
       toast.success("Cálculo realizado correctamente.");
       setCalculosData({
@@ -267,22 +303,28 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
         montoNegociado: response.montoNegociado,
         descuento: response.descuento,
         calculos: response.calculos,
-        tasaMensual: response.tasaMensual, // Agregar la tasa mensual al estado
+        tasaMensual: response.tasaMensual // Agregar la tasa mensual al estado
       });
 
       setShowDetails(true); // Muestra el contenido del Row
     } catch (error) {
-      console.error("Error al enviar los datos al endpoint fetchCalSecondPart:", error);
-      const errorMessage = error.response?.data?.errors || "Error desconocido al realizar el cálculo.";
+      console.error(
+        "Error al enviar los datos al endpoint fetchCalSecondPart:",
+        error
+      );
+      const errorMessage =
+        error.response?.data?.errors ||
+        "Error desconocido al realizar el cálculo.";
       toast.error(errorMessage);
     }
   };
-  
 
   const handleSetFormValues = () => {
     setFormValues({
-      montoRequerido: summaryData.montoRequerido ? summaryData.montoRequerido.toFixed(2) : 0,
-      descuento: summaryData.descuento ? summaryData.descuento.toFixed(2) : 0,
+      montoRequerido: summaryData.montoRequerido
+        ? summaryData.montoRequerido.toFixed(2)
+        : 0,
+      descuento: summaryData.descuento ? summaryData.descuento.toFixed(2) : 0
     });
     setShowCalculator(true); // Muestra el contenido del Col
   };
@@ -291,8 +333,12 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
     if (montoNegociado && formInputs.fechaPago) {
       const nuevoPago = {
         fecha: formInputs.fechaPago,
-        hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }), // Agrega hora y minutos en formato 12 horas
-        pago: montoNegociado,
+        hora: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true
+        }), // Agrega hora y minutos en formato 12 horas
+        pago: montoNegociado
       };
       setTablaPagos((prev) => [...prev, nuevoPago]); // Agrega el nuevo pago a la tabla
       setIsAddButtonEnabled(false); // Inhabilita el botón después de agregar un pago
@@ -308,7 +354,7 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
     const { name, value, type, checked } = e.target;
     setModifyForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === "checkbox" ? checked : value
     }));
   };
 
@@ -316,12 +362,19 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
     const idCuenta = searchResults?.[0]?.idCuenta?.trim();
     try {
       // Validar los datos antes de enviarlos
-      if (!selectedHerramienta || !idCuenta || !modifyForm.montoMod || !modifyForm.fechaPagoMod) {
-        console.error("Datos incompletos. Verifica los campos antes de enviar.");
+      if (
+        !selectedHerramienta ||
+        !idCuenta ||
+        !modifyForm.montoMod ||
+        !modifyForm.fechaPagoMod
+      ) {
+        console.error(
+          "Datos incompletos. Verifica los campos antes de enviar."
+        );
         toast.error("Por favor, completa todos los campos requeridos.");
         return;
       }
-  
+
       const requestData = {
         idHerramienta: selectedHerramienta,
         NoCuenta: idCuenta,
@@ -337,9 +390,12 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
         agregarPagos: modifyForm.agregarPagos ? 1 : 0, // 1 si el checkbox está marcado, 0 si no
         filaMod: modifyForm.filaMod
       };
-  
-      console.log("Datos enviados al endpoint fetchCalSecondPartModify:", requestData);
-  
+
+      console.log(
+        "Datos enviados al endpoint fetchCalSecondPartModify:",
+        requestData
+      );
+
       const response = await fetchCalSecondPartModify(
         requestData.idCartera,
         requestData.NoCuenta,
@@ -355,9 +411,9 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
         requestData.agregarPagos,
         requestData.filaMod
       );
-  
+
       console.log("Respuesta del endpoint fetchCalSecondPartModify:", response);
-  
+
       // Actualizar los datos en la tabla y el formulario
       setCalculosData({
         plazos: response.plazos,
@@ -366,13 +422,17 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
         montoNegociado: response.montoNegociado,
         descuento: response.descuento,
         calculos: response.calculos,
-        tasaMensual: response.tasaMensual, // Agregar la tasa mensual al estado
+        tasaMensual: response.tasaMensual // Agregar la tasa mensual al estado
       });
-  
+
       toast.success("Datos enviados correctamente.");
     } catch (error) {
-      console.error("Error al enviar los datos al endpoint fetchCalSecondPartModify:", error);
-      const errorMessage = error.response?.data?.title || "Error desconocido al enviar los datos.";
+      console.error(
+        "Error al enviar los datos al endpoint fetchCalSecondPartModify:",
+        error
+      );
+      const errorMessage =
+        error.response?.data?.title || "Error desconocido al enviar los datos.";
       toast.error(errorMessage);
     }
   };
@@ -381,7 +441,7 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
     setSelectedRow(index); // Actualiza el índice de la fila seleccionada
     setModifyForm((prev) => ({
       ...prev,
-      filaMod: index, // Actualiza filaMod con el índice seleccionado
+      filaMod: index // Actualiza filaMod con el índice seleccionado
     }));
   };
 
@@ -401,48 +461,51 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
       toast.error("No hay plazos disponibles para guardar.");
       return;
     }
-  
+
     const plazos = calculosData.calculos.map((calculo) => ({
       monto: calculo.pago,
-      fecha: calculo.fecha,
+      fecha: calculo.fecha
     }));
-  
+
     const requestData = {
       idCartera: 1,
       idCuenta: searchResults?.[0]?.idCuenta?.trim(),
       idHerramienta: selectedHerramienta,
       plazos,
       fechaInsert: fechaInsert,
-      segundo_Insert: segundoInsert,
+      segundo_Insert: segundoInsert
     };
-  
+
     try {
       console.log("Enviando datos al endpoint:", requestData);
       const response = await fetchSaveDeleteDeadlines(requestData);
       console.log("Respuesta del endpoint:", response);
 
-       // Muestra el mensaje de la respuesta en el toast
-    if (response?.mensaje) {
-      toast.warning(`Respuesta de la solicitud: ${response.mensaje}`);
-    } else {
-      toast.success("Datos enviados.");
-    }
-  
+      // Muestra el mensaje de la respuesta en el toast
+      if (response?.mensaje) {
+        toast.warning(`Respuesta de la solicitud: ${response.mensaje}`);
+      } else {
+        toast.success("Datos enviados.");
+      }
+
       if (response?.mensaje) {
         const diasASumar = parseInt(response.mensaje, 10); // Convierte el mensaje a número
         const fechaPago = new Date(formInputs.fechaPago);
         fechaPago.setDate(fechaPago.getDate() + diasASumar); // Suma los días al valor de fechaPago
         const nuevaFechaFinNegociacion = fechaPago.toISOString().split("T")[0]; // Formatea la nueva fecha
-  
-        console.log("Nueva fechaFinNegociacion calculada:", nuevaFechaFinNegociacion);
-  
+
+        console.log(
+          "Nueva fechaFinNegociacion calculada:",
+          nuevaFechaFinNegociacion
+        );
+
         // Actualiza el estado o usa la nueva fecha en el siguiente request
         setFormInputs((prev) => ({
           ...prev,
-          fechaFinNegociacion: nuevaFechaFinNegociacion,
+          fechaFinNegociacion: nuevaFechaFinNegociacion
         }));
       }
-  
+
       toast.success("Datos enviados correctamente.");
       setIsSaveDeadlinesClicked(true); // Cambia el estado para alternar los botones
     } catch (error) {
@@ -450,7 +513,7 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
       toast.error("Error al enviar los datos al endpoint.");
     }
   };
-  
+
   const handleValidateSuccess = () => {
     setIsValidated(true); // Cambia el estado a validado
     setShowValidators(false); // Cierra el modal de validación
@@ -464,10 +527,14 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
       // Validar datos antes de enviarlos
       if (!idCuenta || !selectedHerramienta || !calculosData.montoNegociado) {
         toast.error("Faltan datos requeridos para guardar la negociación.");
-        console.error("Datos faltantes:", { idCuenta, selectedHerramienta, montoNegociado: calculosData.montoNegociado });
+        console.error("Datos faltantes:", {
+          idCuenta,
+          selectedHerramienta,
+          montoNegociado: calculosData.montoNegociado
+        });
         return;
       }
-  
+
       const requestData = {
         idCartera: 1,
         idCuenta: idCuenta,
@@ -485,20 +552,26 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
         segundoInsert: segundoInsert,
         reestructura: 0,
         condonacion: 0,
-        idGrabacion: "", // Cambiar si es necesario
+        idGrabacion: "" // Cambiar si es necesario
       };
-  
-      console.log("Datos enviados al endpoint fetchSaveNegotiationDeadlines:", requestData);
-  
+
+      console.log(
+        "Datos enviados al endpoint fetchSaveNegotiationDeadlines:",
+        requestData
+      );
+
       const response = await fetchSaveNegotiationDeadlines(requestData);
       toast.success("Negociación guardada correctamente.");
-      console.log("Respuesta del endpoint fetchSaveNegotiationDeadlines:", response);
+      console.log(
+        "Respuesta del endpoint fetchSaveNegotiationDeadlines:",
+        response
+      );
 
       // Extraer el campo duración de la respuesta y almacenarlo en el estado
       const duracionObtenida = response?.duración || "";
       console.log("Duración obtenida de la respuesta:", duracionObtenida);
       setDuracion(duracionObtenida); // Almacena la duración en el estado
-  
+
       // Cambia el estado para mostrar el botón "Finalizar"
       setIsNegotiationSaved(true);
     } catch (error) {
@@ -506,9 +579,18 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
       toast.error("Error al guardar la negociación.");
     }
   };
-  
+
   const handleValidate = (validator, password, cartaConvenioValue, email) => {
-    console.log("Validación exitosa con validador:", validator, "contraseña:", password, "cartaConvenio:", cartaConvenioValue, "correo:", email);
+    console.log(
+      "Validación exitosa con validador:",
+      validator,
+      "contraseña:",
+      password,
+      "cartaConvenio:",
+      cartaConvenioValue,
+      "correo:",
+      email
+    );
     setIdEjecutivoValidador(validator); // Almacena el idEjecutivo seleccionado
     setValidatorPassword(password); // Almacena la contraseña del validador
     setCartaConvenio(cartaConvenioValue); // Almacena el valor del checkbox
@@ -517,104 +599,118 @@ const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
     setShowValidators(false); // Cierra el modal de validación
   };
 
-  
   const sendIncreaseNegotiation = async () => {
     try {
       const increaseRequestData = {
         idEjecutivo: idEjecutivo,
         monto: parseFloat(calculosData.montoNegociado),
         saldo: summaryData.saldo,
-        duracion: duracion,
+        duracion: duracion
       };
-  
-      console.log("Enviando datos al endpoint IncrementaNegociacion:", increaseRequestData);
-      const increaseResponse = await fetchIncreasesNegotiation(increaseRequestData);
-      
+
+      console.log(
+        "Enviando datos al endpoint IncrementaNegociacion:",
+        increaseRequestData
+      );
+      const increaseResponse = await fetchIncreasesNegotiation(
+        increaseRequestData
+      );
+
       // Verificar si la respuesta es 204 antes de cerrar
-      if (increaseResponse?.status === 200 || increaseResponse?.status === 204) {
+      if (
+        increaseResponse?.status === 200 ||
+        increaseResponse?.status === 204
+      ) {
         handleClose(false); // Cierra el modal solo si el status es 204
-        setIsNegotiationActive(false);
+        setNegotiationActive(false);
         toast.success("Negociación incrementada correctamente.");
       } else {
         toast.warning("La respuesta del servidor no fue la esperada.");
       }
-  
-      console.log("Respuesta del endpoint IncrementaNegociacion:", increaseResponse);
+
+      console.log(
+        "Respuesta del endpoint IncrementaNegociacion:",
+        increaseResponse
+      );
       return increaseResponse;
-      
     } catch (error) {
       console.error("Error al enviar los datos:", error);
       toast.error("Error al procesar la negociación.");
       throw error;
     }
   };
-  
 
-const handleSaveOffering = async () => {
- 
-  try {
-    const idCuenta = searchResults?.[0]?.idCuenta?.trim();
-    const fechaInsert = isManagment?.storeOutput?.Fecha_Insert?.split("T")[0];
-    const segundoInsert = isManagment?.storeOutput?.Segundo_Insert;
-    const producto = 1;   
+  const handleSaveOffering = async () => {
+    try {
+      const idCuenta = searchResults?.[0]?.idCuenta?.trim();
+      const fechaInsert = isManagment?.storeOutput?.Fecha_Insert?.split("T")[0];
+      const segundoInsert = isManagment?.storeOutput?.Segundo_Insert;
+      const producto = 1;
 
-    if (!idCuenta || !selectedHerramienta || !montoNegociado) {
-      toast.error("Faltan datos requeridos para guardar el ofrecimiento.");
-      return;
+      if (!idCuenta || !selectedHerramienta || !montoNegociado) {
+        toast.error("Faltan datos requeridos para guardar el ofrecimiento.");
+        return;
+      }
+
+      const requestData = {
+        idCartera: 1,
+        idCuenta: idCuenta,
+        idProducto: producto,
+        idEjecutivo: idEjecutivo,
+        idHerramienta: selectedHerramienta,
+        montoRequerido: summaryData.montoRequerido, // Respetar decimales
+        montoNegociado: parseFloat(montoNegociado), // Convertir a número respetando decimales
+        descuento: summaryData.montoDescuento, // Respetar decimales
+        saldo: summaryData.saldo, // Respetar decimales
+        plazos: tablaPagos.map((pago) => ({
+          monto: parseFloat(pago.pago), // Convertir a número respetando decimales
+          fecha: new Date(pago.fecha).toISOString().split("T")[0] // Formato YYYY-MM-DD
+        })),
+        dias1erPago: summaryData.dias1erpago,
+        fechaCorte: (() => {
+          const [datePart] = summaryData.fechaCorte.split(" "); // Extrae solo la parte de la fecha antes del espacio
+          const [day, month, year] = datePart.split("/"); // Divide la fecha en día, mes y año
+          return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`; // Reorganiza en formato YYYY-MM-DD
+        })(),
+        fechaInsert: fechaInsert,
+        segundoInsert: segundoInsert, // Cambia el valor a un objeto vacío
+        cartaConvenio: cartaConvenio,
+        correo: selectedEmail || "",
+        idEjecutivoValidador: parseInt(idEjecutivoValidador, 10)
+      };
+
+      console.log("Datos enviados al endpoint fetchSaveOffering:", requestData);
+
+      const response = await fetchSaveOffering(requestData);
+      toast.success("Ofrecimiento guardado correctamente.");
+      console.log("Respuesta del endpoint fetchSaveOffering:", response);
+
+      handleClose(false);
+      setNegotiationActive(false);
+      // Verifica si fetchData está definida antes de llamarla
+      if (typeof fetchData === "function") {
+        const idCartera = 1; // Ejemplo de valor
+        fetchData(idCartera, idCuenta, selectedHerramienta || 136); // Llama a fetchData para actualizar los datos del modal
+      } else {
+        console.warn(
+          "fetchData no está definida. No se actualizarán los datos del modal."
+        );
+      }
+    } catch (error) {
+      console.error("Error al guardar el ofrecimiento:", error);
+      toast.error("Error al guardar el ofrecimiento.");
     }
-
-    const requestData = {
-      idCartera: 1,
-      idCuenta: idCuenta,
-      idProducto: producto, 
-      idEjecutivo: idEjecutivo,
-      idHerramienta: selectedHerramienta,
-      montoRequerido: summaryData.montoRequerido, // Respetar decimales
-      montoNegociado: parseFloat(montoNegociado), // Convertir a número respetando decimales
-      descuento: summaryData.montoDescuento, // Respetar decimales
-      saldo: summaryData.saldo, // Respetar decimales
-      plazos: tablaPagos.map((pago) => ({
-        monto: parseFloat(pago.pago), // Convertir a número respetando decimales
-        fecha: new Date(pago.fecha).toISOString().split("T")[0], // Formato YYYY-MM-DD
-    })),
-    dias1erPago: summaryData.dias1erpago, 
-      fechaCorte: (() => {
-        const [datePart] = summaryData.fechaCorte.split(" "); // Extrae solo la parte de la fecha antes del espacio
-        const [day, month, year] = datePart.split("/"); // Divide la fecha en día, mes y año
-        return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`; // Reorganiza en formato YYYY-MM-DD
-      })(),
-      fechaInsert: fechaInsert,
-      segundoInsert: segundoInsert, // Cambia el valor a un objeto vacío
-      cartaConvenio: cartaConvenio,
-      correo: selectedEmail || "",
-      idEjecutivoValidador: parseInt(idEjecutivoValidador, 10),
-    };
-
-    console.log("Datos enviados al endpoint fetchSaveOffering:", requestData);
-
-    const response = await fetchSaveOffering(requestData);
-    toast.success("Ofrecimiento guardado correctamente.");
-    console.log("Respuesta del endpoint fetchSaveOffering:", response);
-
-    handleClose(false)
-    setIsNegotiationActive(false);
-    // Verifica si fetchData está definida antes de llamarla
-    if (typeof fetchData === "function") {
-      const idCartera = 1; // Ejemplo de valor
-      fetchData(idCartera, idCuenta, selectedHerramienta || 136); // Llama a fetchData para actualizar los datos del modal
-    } else {
-      console.warn("fetchData no está definida. No se actualizarán los datos del modal.");
-    }
-  } catch (error) {
-    console.error("Error al guardar el ofrecimiento:", error);
-    toast.error("Error al guardar el ofrecimiento.");
-  }
-
-};
+  };
 
   return (
     <>
-      <Modal key={show ? "modal-open" : "modal-closed"}  show={show} onHide={handleClose} size="xl" backdrop="static">
+      <Modal
+        key={show ? "modal-open" : "modal-closed"}
+        show={show}
+        onHide={handleClose}
+        size="xl"
+        backdrop="static"
+      >
         <Modal.Header closeButton={showCloseButton}>
           <Modal.Title style={{ color: "#0dcaf0" }} className="ms-3">
             Calculadora
@@ -624,7 +720,7 @@ const handleSaveOffering = async () => {
           style={{
             maxHeight: "80vh", // Limitar la altura máxima del cuerpo del modal
             overflowY: "auto", // Habilitar scroll vertical
-            position: "relative", // Necesario para posicionar el indicador
+            position: "relative" // Necesario para posicionar el indicador
           }}
         >
           <Col>
@@ -640,7 +736,7 @@ const handleSaveOffering = async () => {
                     style={{
                       maxHeight: "300px",
                       overflowY: "auto",
-                      position: "relative", // Necesario para el scroll del tbody
+                      position: "relative" // Necesario para el scroll del tbody
                     }}
                   >
                     <Table
@@ -655,7 +751,7 @@ const handleSaveOffering = async () => {
                           position: "sticky",
                           top: "0",
                           backgroundColor: "#343a40", // Color de fondo para que coincida con el tema oscuro
-                          zIndex: "1",
+                          zIndex: "1"
                         }}
                       >
                         <tr>
@@ -730,10 +826,13 @@ const handleSaveOffering = async () => {
                 </Col>
               </Row>
               {validationMessage && (
-              <h5 className="ms-2 mt-4 text-center" style={{ color: "#dc3545" }}>
-                {validationMessage}
-              </h5>
-            )}
+                <h5
+                  className="ms-2 mt-4 text-center"
+                  style={{ color: "#dc3545" }}
+                >
+                  {validationMessage}
+                </h5>
+              )}
               <Col className="mt-4">
                 <Card className="rounded-lg mb-0">
                   <Card.Body className="d-flex p-0 pb-1 w-100">
@@ -824,7 +923,7 @@ const handleSaveOffering = async () => {
                 </Card>
               </Col>
             </Col>
-        
+
             <Col className="">
               {areFieldsEnabled && ( // Muestra el Row solo si la herramienta seleccionada es válida
                 <Row className="d-flex gap-4">
@@ -886,7 +985,7 @@ const handleSaveOffering = async () => {
                           <div
                             style={{
                               display: "flex",
-                              justifyContent: "flex-end",
+                              justifyContent: "flex-end"
                             }}
                           >
                             <Button
@@ -908,7 +1007,7 @@ const handleSaveOffering = async () => {
                         maxHeight: "300px",
                         overflowY: "auto",
                         scrollbarColor: "#343a40 #1a1a1a", // Color de la barra de scroll y el fondo
-                        scrollbarWidth: "thin", // Ancho de la barra de scroll
+                        scrollbarWidth: "thin" // Ancho de la barra de scroll
                       }}
                     >
                       <Table
@@ -923,7 +1022,7 @@ const handleSaveOffering = async () => {
                             position: "sticky",
                             top: 0,
                             backgroundColor: "#343a40", // Color de fondo para que coincida con el tema oscuro
-                            zIndex: 1,
+                            zIndex: 1
                           }}
                         >
                           <tr>
@@ -940,7 +1039,7 @@ const handleSaveOffering = async () => {
                                   style={{
                                     overflow: "hidden",
                                     textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap",
+                                    whiteSpace: "nowrap"
                                   }}
                                 >
                                   {pago.fecha}{" "}
@@ -950,7 +1049,7 @@ const handleSaveOffering = async () => {
                                   style={{
                                     overflow: "hidden",
                                     textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap",
+                                    whiteSpace: "nowrap"
                                   }}
                                 >
                                   ${parseFloat(pago.pago).toFixed(2) || 0}
@@ -959,7 +1058,7 @@ const handleSaveOffering = async () => {
                                   style={{
                                     overflow: "hidden",
                                     textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap",
+                                    whiteSpace: "nowrap"
                                   }}
                                 >
                                   <Button
@@ -1035,13 +1134,13 @@ const handleSaveOffering = async () => {
                                       montoRequerido: e.target.value.replace(
                                         /^\$/,
                                         ""
-                                      ), // Elimina el '$' antes de actualizar el estado
+                                      ) // Elimina el '$' antes de actualizar el estado
                                     }))
                                   }
                                   readOnly // Hace que el campo sea de solo lectura
                                   style={{
                                     backgroundColor: "#e9ecef", // Color de fondo para indicar que es no editable
-                                    cursor: "not-allowed", // Cambia el cursor para indicar que no es editable
+                                    cursor: "not-allowed" // Cambia el cursor para indicar que no es editable
                                   }}
                                 />
                               </Form.Group>
@@ -1060,13 +1159,13 @@ const handleSaveOffering = async () => {
                                       descuento: e.target.value.replace(
                                         /%$/,
                                         ""
-                                      ), // Elimina el '%' antes de actualizar el estado
+                                      ) // Elimina el '%' antes de actualizar el estado
                                     }))
                                   }
                                   readOnly // Hace que el campo sea de solo lectura
                                   style={{
                                     backgroundColor: "#e9ecef", // Color de fondo para indicar que es no editable
-                                    cursor: "not-allowed", // Cambia el cursor para indicar que no es editable
+                                    cursor: "not-allowed" // Cambia el cursor para indicar que no es editable
                                   }}
                                 />
                               </Form.Group>
@@ -1199,7 +1298,7 @@ const handleSaveOffering = async () => {
                           <div
                             style={{
                               justifyContent: "space-evenly",
-                              paddingLeft: "0",
+                              paddingLeft: "0"
                             }}
                             className="d-flex gap-3 mb-3"
                           >
@@ -1213,7 +1312,7 @@ const handleSaveOffering = async () => {
                                 setModifyForm((prev) => ({
                                   ...prev,
                                   agregarPagos: e.target.checked,
-                                  filaMod: e.target.checked ? 0 : null,
+                                  filaMod: e.target.checked ? 0 : null
                                 }))
                               }
                             />
@@ -1242,7 +1341,7 @@ const handleSaveOffering = async () => {
                                   ); // Elimina el '$' si ya existe
                                   setModifyForm((prev) => ({
                                     ...prev,
-                                    montoMod: value, // Actualiza el estado sin el '$'
+                                    montoMod: value // Actualiza el estado sin el '$'
                                   }));
                                 }}
                                 onKeyPress={(e) => {
@@ -1272,16 +1371,14 @@ const handleSaveOffering = async () => {
                                 onClick={() => {
                                   setModifyForm((prev) => ({
                                     ...prev,
-                                    modificar: 1,
+                                    modificar: 1
                                   }));
                                   handleModifyPayment();
                                   setIsValidated(false); // Asegura que el botón "Validación" se muestre después de modificar
                                 }}
                                 disabled={isValidated} // Deshabilita el botón si ya está validado
                                 style={{
-                                  display: isValidated
-                                    ? "none"
-                                    : "inline-block",
+                                  display: isValidated ? "none" : "inline-block"
                                 }} // Oculta el botón si está validado
                               >
                                 Modificar
@@ -1292,7 +1389,7 @@ const handleSaveOffering = async () => {
                             style={{
                               display: "flex",
                               justifyContent: "flex-end",
-                              marginTop: "15px",
+                              marginTop: "15px"
                             }}
                           >
                             {!isValidated && (
@@ -1302,7 +1399,7 @@ const handleSaveOffering = async () => {
                                   handleOpenValidators(); // Abre el modal de validación
                                   setModifyForm((prev) => ({
                                     ...prev,
-                                    modificar: 0, // Oculta el botón "Modificar" después de la validación
+                                    modificar: 0 // Oculta el botón "Modificar" después de la validación
                                   }));
                                 }}
                               >
@@ -1314,7 +1411,7 @@ const handleSaveOffering = async () => {
                             style={{
                               display: "flex",
                               justifyContent: "flex-end",
-                              marginTop: "",
+                              marginTop: ""
                             }}
                           >
                             {!isSaveDeadlinesClicked &&
@@ -1331,7 +1428,7 @@ const handleSaveOffering = async () => {
                             style={{
                               display: "flex",
                               justifyContent: "flex-end",
-                              marginTop: "",
+                              marginTop: ""
                             }}
                           >
                             {isSaveDeadlinesClicked &&
@@ -1349,7 +1446,7 @@ const handleSaveOffering = async () => {
                             style={{
                               display: "flex",
                               justifyContent: "flex-end",
-                              marginTop: "",
+                              marginTop: ""
                             }}
                           >
                             {isNegotiationSaved && ( // Muestra el botón "Finalizar" después de guardar la negociación
@@ -1407,7 +1504,7 @@ const handleSaveOffering = async () => {
                                         style={{
                                           cursor: modifyForm.agregarPagos
                                             ? "not-allowed"
-                                            : "pointer",
+                                            : "pointer"
                                         }}
                                       >
                                         <td>{calculo.no}</td>

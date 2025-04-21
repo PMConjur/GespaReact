@@ -12,27 +12,27 @@ import { AppContext } from "../../pages/Managment";
 import OnlineCharge from "../memuHamburguesa/Acciones/OnlineCharge";
 import Payments from "../memuHamburguesa/Informacion/Payments";
 
-const Validators = ({ show, handleClose, handleValidate, modalCase = "" }) => { // Se agregó modalCase con valor por defecto
+const Validators = ({ show, handleClose, handleValidate, modalCase = "" }) => {
   const [validators, setValidators] = useState([]);
   const [validator, setValidator] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailsCharing, setEmailsCharing] = useState([]);
   const [showEmailsSelect, setShowEmailsSelect] = useState(false);
-  const { 
-    searchResults, 
-    isOnlineChargeActive, 
-    isPaymentActive, 
-    setOnlineChargeActive, 
-    setPaymentActive 
+  const {
+    searchResults,
+    isOnlineChargeActive,
+    isPaymentActive,
+    setOnlineChargeActive = () => {},
+    setPaymentActive = () => {}
   } = useContext(AppContext);
   const [emails, setEmails] = useState("");
-  
+
   // Estados para controlar los modales
   const [showOnlineChargeModal, setShowOnlineChargeModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-
+  // Función para abrir el modal de OnlineCharge
 
   useEffect(() => {
     const fetchValidatorsList = async () => {
@@ -63,7 +63,9 @@ const Validators = ({ show, handleClose, handleValidate, modalCase = "" }) => { 
         }
       } catch (error) {
         console.error("Error al obtener la lista de correos:", error);
-        toast.error("Error al obtener la lista de correos. Verifica los datos.");
+        toast.error(
+          "Error al obtener la lista de correos. Verifica los datos."
+        );
       }
     };
 
@@ -78,81 +80,107 @@ const Validators = ({ show, handleClose, handleValidate, modalCase = "" }) => { 
   };
 
   const handleSubmit = async () => {
-    console.log("Validando datos... entro a condicion de validador");
     setLoading(true);
     try {
+      const idProducto = 1;
+      const idEjecutivo = validator;
+      const Contraseña = password;
+
+      console.log("Datos enviados a fetchValidators:", {
+        idProducto,
+        idEjecutivo,
+        Contraseña
+      });
+
+      const response = await fetchValidators(
+        idProducto,
+        idEjecutivo,
+        Contraseña
+      );
+      console.log("Respuesta del endpoint:", response);
+
       toast.success("Validación exitosa. Datos correctos.", {
-        position: "top-center",
+        position: "top-center"
       });
 
       if (handleValidate) {
-        handleValidate(validator, password, showEmailsSelect ? 1 : 0, emails || "");
+        handleValidate(
+          validator,
+          password,
+          showEmailsSelect ? 1 : 0,
+          emails || ""
+        );
+      }
+      if (modalCase != "") {
+        switch (modalCase) {
+          case "onlineCharge":
+            setOnlineChargeActive(true);
+            setShowOnlineChargeModal(true);
+            toast.success("Validación exitosa. Continua con Cargo en Linea.");
+            break;
+          case "payment":
+            setPaymentActive(true);
+            setShowPaymentModal(true);
+            toast.success("Validación exitosa. Continua con Pagos.");
+            break;
+          default:
+            toast.error(
+              "No se especificó un caso de modal válido. No se realizará ninguna acción."
+            );
+            // No se realiza acción si no se especifica modalCase
+            break;
+        }
       }
 
       setValidator("");
       setPassword("");
-      handleClose(); // CIERRA EL MODAL DE VALIDACION
-
-      switch(modalCase) {
-        case "onlineCharge":
-          setOnlineChargeActive(true);
-          setShowOnlineChargeModal(true);
-          toast.success("Validación exitosa. Continua con Cargo en Linea.");
-          break;
-        case "payment":
-          setPaymentActive(true);
-          setShowPaymentModal(true);
-          toast.success("Validación exitosa. Continua con Pagos.");
-          break;
-        default:
-          // No se realiza acción si no se especifica modalCase
-          break;
-      }
-    } catch (error) {    
+      handleClose();
+    } catch (error) {
       console.error("Datos incorrectos, vuelva intentarlo:", error);
-      const message = error.response ? getErrorStatus(error.response.status) : "Error desconocido";
+      const message = error.response
+        ? getErrorStatus(error.response.status)
+        : "Error desconocido";
       toast.error(`Datos incorrectos, vuelva intentarlo: "${message}"`, {
-        position: "top-center",
+        position: "top-center"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const handleOpenOnlineCharge = () => {
-    console.log(' reapertura con haNDLEoNLINEcHARGE');
+    console.log(" reapertura con haNDLEoNLINEcHARGE");
     setShowOnlineChargeModal(false);
   };
 
   const handleCloseOnlineChargeModal = () => {
-    console.log(' Cerrando y preparando para reapertura');
-    
+    console.log(" Cerrando y preparando para reapertura");
+
     setShowOnlineChargeModal(false);
     setOnlineChargeActive(false);
-  
+
     queueMicrotask(() => {
       console.log("Estado actualizado:", {
-        setShowOnlineChargeModal: true,  // Sabemos que se estableció en `false`
-        isOnlineChargeActive: true      // Lo mismo aquí
+        setShowOnlineChargeModal: true, // Sabemos que se estableció en `false`
+        isOnlineChargeActive: true // Lo mismo aquí
       });
     });
   };
 
   const handleOpenPayments = () => {
-    console.log(' reapertura con haNDLEPayMNETS');
+    console.log(" reapertura con haNDLEPayMNETS");
     setShowPaymentModal(false);
   };
 
   const handleClosePaymentModal = () => {
-    console.log(' Cerrando y preparando para reapertura');
-    
+    console.log(" Cerrando y preparando para reapertura");
+
     setShowPaymentModal(false);
     setPaymentActive(false);
-  
+
     queueMicrotask(() => {
       console.log("Estado actualizado:", {
-        setShowPaymentModal: true,  // Sabemos que se estableció en `false`
-        isPaymentActive: true      // Lo mismo aquí
+        setShowPaymentModal: true, // Sabemos que se estableció en `false`
+        isPaymentActive: true // Lo mismo aquí
       });
     });
   };
@@ -247,7 +275,11 @@ const Validators = ({ show, handleClose, handleValidate, modalCase = "" }) => { 
         <Modal.Footer className="p-3 bg-dark text-light">
           <div>
             <span>¿Desea registrar un cargo en línea?</span>
-            <Button variant="danger" onClick={handleCloseModal} disabled={loading}>
+            <Button
+              variant="danger"
+              onClick={handleCloseModal}
+              disabled={loading}
+            >
               Cancelar
             </Button>
             <Button variant="success" onClick={handleSubmit} disabled={loading}>
@@ -256,12 +288,14 @@ const Validators = ({ show, handleClose, handleValidate, modalCase = "" }) => { 
           </div>
         </Modal.Footer>
       </Modal>
-      
+
       {/* Modal de OnlineCharge */}
-          <OnlineCharge 
-      show={showOnlineChargeModal}
-      handleCloseOnlineCharge={(handleOpenOnlineCharge, handleCloseOnlineChargeModal)} 
-    />
+      <OnlineCharge
+        show={showOnlineChargeModal}
+        handleCloseOnlineCharge={
+          (handleOpenOnlineCharge, handleCloseOnlineChargeModal)
+        }
+      />
 
       {/* Modal de Payments */}
       <Payments

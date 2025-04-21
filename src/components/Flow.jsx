@@ -164,10 +164,9 @@ const Flow = () => {
       <CalculatorSimulator
         show={showCalculator}
         handleClose={handleCloseCalculator} // Asegura el cierre correcto
-        showCloseButton={false} 
       />
-      <Validators 
-        show={showPayments} 
+      <Validators
+        show={showPayments}
         handleClose={handleClosePayments}
         modalCase="payment" // Se especifica que es modal de Reporte de Pago
       />
@@ -190,9 +189,10 @@ const Flow = () => {
 
       if (lastAnswer.negociación === 1 && lastAnswer.seguimiento === 1) {
         console.log("Entró a negociación.");
-        setIsNegotiationActive(true); // Activa la variable de negociación
+        setNegotiationActive(true); // Activa la variable de negociación
         handleOpenCalculator(); // Abre el modal CalculatorSimulator
         toast.info("Flujo preparado para negociación.");
+
         clearStatesManagment(); //Limpia solo para renderizar el formulario vacio
         return renderMainContent(); // Renderiza el contenido principal
       } else if (lastAnswer.seguimiento === 1 && lastAnswer.negociación === 0) {
@@ -211,10 +211,9 @@ const Flow = () => {
         clearStatesManagment(); //Limpia solo para renderizar el formulario vacio
         return renderMainContent(); // Renderiza el contenido principal
       } else if (idCargoLinea === 1034) {
-     
         setIsOnlineChargeActive(true); // Activa la variable de cargos en línea
         handleOpenOnlineCharge(); // Abre el modal OnlineCharge
-        console.log("Entró a Cargo Linea. es true",isOnlineChargeActive);
+        console.log("Entró a Cargo Linea. es true", isOnlineChargeActive);
         toast.info("Flujo preparado para generar Cargo Linea.");
         clearStatesManagment(); //Limpia solo para renderizar el formulario vacio
         return renderMainContent(); // Renderiza el contenido principal
