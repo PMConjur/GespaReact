@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useMemo } from "react";
-import { fetchNotes } from "../services/gespawebServices";
+import { fetchNotes, saveNotesToAPI } from "../services/gespawebServices";
 import servicio from "../services/axiosServices";
 import DatePicker from "react-datepicker";
 import TimePicker from "react-time-picker";
@@ -84,28 +84,20 @@ function NotesWidget() {
   }, [notes]);
 
   // Guardar notas en el endpoint cuando cambian
-  useEffect(() => {
-    const saveNotes = async () => {
-      try {
-        await fetch(
-          "http://192.168.7.33/api/ejecutivo/recordatorios/${idEjecutivo}",
-          {
-            method: "Get",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(notes),
-          }
-        );
-      } catch (error) {
-        console.error("Error saving notes:", error);
-      }
-    };
-
-    if (notes.length > 0) {
-      saveNotes();
+useEffect(() => {
+  const handleSaveNotes = async () => {
+    try {
+      await saveNotesToAPI(notes);
+    } catch (error) {
+      console.error("Error en el guardado de notas:", error);
+      // Puedes agregar notificaciones al usuario aquí si lo deseas
     }
-  }, [notes]);
+  };
+
+  if (notes.length > 0) {
+    handleSaveNotes();
+  }
+}, [notes]);
 
   // Función para ordenar notas por fecha y hora más próxima
   const sortNotesByDateTime = (notes) => {

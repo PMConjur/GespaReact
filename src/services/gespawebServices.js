@@ -1583,3 +1583,27 @@ export const fetchAddress = async (idCartera, idCuenta) => {
   }
 };
 
+// src/services/managment.jsx
+const numEmpleado = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+
+export const saveNotesToAPI = async (notes) => {
+  try {
+    if (!notes || notes.length === 0) return;
+    
+    const response = await servicio.put(
+      `/ejecutivo/recordatorios/${numEmpleado}`,
+      notes,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        }
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error("Error saving notes:", error);
+    throw error; // Re-lanzamos el error para manejarlo en el componente
+  }
+};
+

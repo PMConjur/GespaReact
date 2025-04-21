@@ -684,7 +684,6 @@ $list-group-transition: all 0.3s ease;
     // Estilo base
     background-color: #1d1f20;
     color: #07fb70;
-    border: none;
     border-bottom: 1px solid #6c757d;
     transition: $list-group-transition;
 
@@ -729,11 +728,6 @@ $list-group-transition: all 0.3s ease;
       margin-left: auto;
       font-size: 0.9rem;
     }
-  }
-
-  // Eliminar borde del último elemento
-  &-item:last-child {
-    border-bottom: none;
   }
 
   // Variante con fondo oscuro

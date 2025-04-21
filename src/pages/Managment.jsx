@@ -17,7 +17,6 @@ import Managments from "../components/Managments";
 import NotesWidget from "../components/NotesWidget";
 import { searchCustomer } from "../services/gespawebServices";
 import StickyTimmer from "../components/StickyTimmer";
-import { se } from "date-fns/locale";
 export const AppContext = createContext();
 
 const Managment = () => {
@@ -289,7 +288,7 @@ const Managment = () => {
 
                         {/* Componente de gestiones */}
                         <Col xs={12} md={12} xl={12}>
-                          <NotesWidget phoneData={phoneData} />
+                          <NotesWidget />
                         </Col>
                       </Row>
                     </Card>
