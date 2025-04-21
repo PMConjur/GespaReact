@@ -4,7 +4,6 @@ import axios from "axios";
 
 const responseData =
   location.state || JSON.parse(localStorage.getItem("responseData"));
-const token = responseData?.ejecutivo?.token;
 const apiUrl = import.meta.env.VITE_API_URL;
 
 //endpoint login
@@ -33,8 +32,64 @@ export async function userReset(dataUserReset) {
     }
   }
 }
-//EndPointProductividad
 
+// endpoint buscar ejecutivo
+export async function searchCustomers(filter, searchValue) {
+  try {
+    const response = await servicio.get(
+      "/search-customer/busqueda-cuenta",{
+        params: { 
+          filtro: filter, 
+          ValorBusqueda: searchValue 
+        },
+  });
+    
+    return response.data.listaResultados || [];
+    
+  } catch (error) {
+    console.error("Error fetching customer suggestions:", error);
+    throw error; // Puedes personalizar el error que quieres lanzar
+  }
+}
+
+// services.js
+
+// Endpoint para búsqueda automática de ejecutivo
+export async function automaticSearchEjecutivo(idEjecutivo) {
+  try {
+    const response = await servicio.get(
+      `/search-customer/automatico-ejecutivo?numEmpleado=${idEjecutivo}`
+    );
+    return {
+      idCuenta: response.data.idCuenta?.trim(),
+      numeroTelefonico: response.data.numeroTelefonico
+    };
+  } catch (error) {
+    console.error("Error en búsqueda automática de ejecutivo:", error);
+    throw new Error(error.response?.data?.message || "Error al buscar ejecutivo automáticamente");
+  }
+}
+
+// Endpoint para búsqueda por cuenta (ya lo tenías, pero lo optimizo)
+export async function searchByAccount(idCuenta) {
+  try {
+    const response = await servicio.get(
+      "/search-customer/busqueda-cuenta",
+      {
+        params: { 
+          filtro: "Cuenta", 
+          ValorBusqueda: idCuenta 
+        }
+      }
+    );
+    return response.data.listaResultados || [];
+  } catch (error) {
+    console.error("Error en búsqueda por cuenta:", error);
+    throw new Error(error.response?.data?.message || "Error al buscar por cuenta");
+  }
+}
+
+//EndPointProductividad
 export async function userProductivity(numEmpleado) {
   try {
     console.log(numEmpleado);
@@ -99,6 +154,7 @@ export async function userNegotiations(idEjecutivo) {
     }
   }
 }
+
 //Endpoibnt searchCustomer
 export async function searchCustomer(filter, value) {
   try {
@@ -1585,12 +1641,11 @@ export const fetchAddress = async (idCartera, idCuenta) => {
 
 // src/services/managment.jsx
 const numEmpleado = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
-
 export const saveNotesToAPI = async (notes) => {
   try {
     if (!notes || notes.length === 0) return;
     
-    const response = await servicio.put(
+    const response = await servicio.get(
       `/ejecutivo/recordatorios/${numEmpleado}`,
       notes,
       {
@@ -1602,8 +1657,9 @@ export const saveNotesToAPI = async (notes) => {
     
     return response.data;
   } catch (error) {
-    console.error("Error saving notes:", error);
+    toast.error("Error saving notes:", error);
     throw error; // Re-lanzamos el error para manejarlo en el componente
   }
 };
+
 
