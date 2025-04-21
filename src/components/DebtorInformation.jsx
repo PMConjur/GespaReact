@@ -71,6 +71,7 @@ const DebtorInformation = () => {
         <CalculatorSimulator
           show={showCalculatorModal}
           handleClose={handleCloseCalculatorModal}
+          showCloseButton={true} // Prop para mostrar el botón de cerrar
         />
       )}
     </Row>

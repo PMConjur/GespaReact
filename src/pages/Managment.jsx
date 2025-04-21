@@ -1,5 +1,5 @@
 import DataCard from "../components/DataCard";
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState} from "react";
 import Flow from "../components/Flow";
 import Telephones from "../components/Telephones";
 import InformationClient from "../components/InformationClient";
@@ -8,14 +8,13 @@ import DebtorInformation from "../components/DebtorInformation";
 import Calculator from "../components/Calculator";
 import DatePickerComponent from "../components/Calendar";
 import NavbarComponent from "../components/NavbarComponent";
-import axios from "axios";
 import { toast, Toaster } from "sonner";
 import SearchForm from "../components/SearchForm";
 import SearchCustomer from "../components/SearchCustomer";
 import CustomToast from "../components/CustomToast";
 import Managments from "../components/Managments";
 import NotesWidget from "../components/NotesWidget";
-import { searchCustomer } from "../services/gespawebServices";
+import { searchCustomer, searchCustomers, automaticSearchEjecutivo, searchByAccount } from "../services/gespawebServices";
 import StickyTimmer from "../components/StickyTimmer";
 export const AppContext = createContext();
 
@@ -45,11 +44,10 @@ const Managment = () => {
   const [triggerUpdateStickyTime, setTriggerUpdateStickyTime] = useState(false); // Estado para accionar la actualización del tiempo
   const [userActiveFlow, setUserActiveFlow] = useState(false); // Asegurar que el estado inicial sea false
   const [isManagment, setManagment] = useState([]); // Estado para la gestión
-  const token = responseData?.ejecutivo?.token;
   const nombreEjecutivo =
     responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
-
+  const [phoneData, setPhoneData] = useState([]);
   const handleSearch = async () => {
     try {
       const response = await searchCustomer(filter, searchTerm);
@@ -69,20 +67,14 @@ const Managment = () => {
     const value = e.target.value;
     setSearchTerm(value);
     setErrorMessage("");
-
+  
     if (value.length > 0) {
       try {
-        const response = await axios.get(
-          "http://192.168.7.33/api/search-customer/busqueda-cuenta",
-          {
-            params: { filtro: filter, ValorBusqueda: value },
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
-        setSuggestions(response.data.listaResultados || []);
+        const results = await searchCustomers(filter, value);
+        setSuggestions(results);
         setShowSuggestions(true);
       } catch (error) {
-        console.error("Error fetching suggestions:", error);
+        console.error("Error:", error);
         setShowSuggestions(false);
       }
     } else {
@@ -98,55 +90,42 @@ const Managment = () => {
     setShowSuggestions(false);
   };
 
-  const handleAutomaticSearch = async () => {
-    if (!idEjecutivo) {
-      console.error("ID del ejecutivo no disponible");
+  // En tu componente
+const handleAutomaticSearch = async () => {
+  if (!idEjecutivo) {
+    console.error("ID del ejecutivo no disponible");
+    return;
+  }
+
+  try {
+    // 1. Búsqueda automática del ejecutivo
+    const { idCuenta, numeroTelefonico } = await automaticSearchEjecutivo(idEjecutivo);
+
+    if (!idCuenta) {
+      toast.warning(
+        "No cuentas con cuentas asignadas, por favor verifica con tu supervisor"
+      );
+      setSearchResults([]);
       return;
     }
 
-    try {
-      const responseEjecutivo = await axios.get(
-        `http://192.168.7.33/api/search-customer/automatico-ejecutivo?numEmpleado=${idEjecutivo}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    setNumeroTelefonico(numeroTelefonico);
+    setShowToast(true);
 
-      const idCuenta = responseEjecutivo.data.idCuenta?.trim();
-      const numeroTelefonico = responseEjecutivo.data.numeroTelefonico;
+    // 2. Búsqueda por cuenta
+    const listaResultados = await searchByAccount(idCuenta);
 
-      if (!idCuenta) {
-        toast.warning(
-          "No cuentas con cuentas asignadas, por favor verifica con tu supervisor"
-        );
-        setSearchResults([]);
-        return;
-      }
-
-      setNumeroTelefonico(numeroTelefonico);
-      setShowToast(true);
-
-      const responseCuenta = await axios.get(
-        "http://192.168.7.33/api/search-customer/busqueda-cuenta",
-        {
-          params: { filtro: "Cuenta", ValorBusqueda: idCuenta },
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-
-      const listaResultados = responseCuenta.data.listaResultados;
-      if (Array.isArray(listaResultados) && listaResultados.length > 0) {
-        setSearchResults(listaResultados);
-      } else {
-        toast.warning("No se encontraron resultados en la búsqueda de cuenta");
-        setSearchResults([]);
-      }
-    } catch (error) {
-      console.error(
-        "Error en la búsqueda automática:",
-        error.response?.data || error.message
-      );
-      toast.error(`Error: ${error.response?.data?.errors || error.message}`);
+    if (Array.isArray(listaResultados) && listaResultados.length > 0) {
+      setSearchResults(listaResultados);
+    } else {
+      toast.warning("No se encontraron resultados en la búsqueda de cuenta");
+      setSearchResults([]);
     }
-  };
+  } catch (error) {
+    console.error("Error en la búsqueda automática:", error);
+    toast.error(`Error: ${error.message}`);
+  }
+};
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(numeroTelefonico);
@@ -213,7 +192,9 @@ const Managment = () => {
     userActiveFlow, // Enviar estado userActiveFlow al contexto
     setUserActiveFlow, // Enviar función para actualizar userActiveFlow al contexto
     isManagment, // Enviar estado de gestión al contexto
-    setManagment // Enviar función para actualizar la gestión al contexto
+    setManagment, // Enviar función para actualizar la gestión al contexto
+    phoneData, // Enviar datos de teléfono al contexto
+    setPhoneData, // Enviar función para actualizar los datos de teléfono al contexto
   };
 
   return (
@@ -262,7 +243,7 @@ const Managment = () => {
                     </Row>
                     <Row>
                       <Col xs={12} md={12} lg={12}>
-                        <Telephones />
+                        <Telephones onDataLoaded={setPhoneData} />
                       </Col>
                     </Row>
                   </Col>

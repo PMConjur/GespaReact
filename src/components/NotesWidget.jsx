@@ -1,55 +1,17 @@
-import { useState, useEffect } from "react";
-import { fetchNotes } from "../services/gespawebServices";
+
+import { useState, useEffect, useMemo } from "react";
+import { fetchNotes, saveNotesToAPI } from "../services/gespawebServices";
 import servicio from "../services/axiosServices";
 import DatePicker from "react-datepicker";
 import TimePicker from "react-time-picker";
-
+import Button from "react-bootstrap/Button";
 import "react-datepicker/dist/react-datepicker.css";
 import "../scss/styles.scss";
+import { toast } from "sonner";
 
 const responseData = JSON.parse(localStorage.getItem("responseData"));
 const numEmpleado = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
-
 const token = servicio;
-const PencilIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    fill="currentColor"
-    viewBox="0 0 16 16"
-  >
-    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
-  </svg>
-);
-
-const TrashIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    fill="currentColor"
-    viewBox="0 0 16 16"
-  >
-    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
-    <path
-      fillRule="evenodd"
-      d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"
-    />
-  </svg>
-);
-
-const PlusIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    fill="currentColor"
-    viewBox="0 0 16 16"
-  >
-    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
-  </svg>
-);
 
 const SaveIcon = () => (
   <svg
@@ -83,13 +45,9 @@ function NotesWidget() {
       } catch (error) {
         console.error("Error fetching notes:", error);
         if (error.response && error.response.status === 404) {
-          // alert(
-          //    "No se encontraron Recordatorios para el ID de empleado proporcionado."
-          //  );
+          // alert("No se encontraron Recordatorios...");
         } else {
-          //  alert(
-          //    "Se produjo un error al recuperar Recordatorios. Por favor inténtalo de nuevo más tarde.."
-          //  );
+          // alert("Se produjo un error al recuperar Recordatorios...");
         }
       }
     };
@@ -101,23 +59,12 @@ function NotesWidget() {
   useEffect(() => {
     const checkFollowUpTime = () => {
       const currentDate = new Date();
-      console.log("Checking follow-up time at:", currentDate);
 
       notes.forEach((note) => {
         if (note.time && note.date) {
-          // Verificar que note.time y note.date no sean undefined
           const [hours, minutes] = note.time.split(":").map(Number);
-          const [day, month, year] = note.date.split("/").map(Number); // formato dd/MM/yyyy
-          const followUpDateTime = new Date(
-            year,
-            month - 1,
-            day,
-            hours,
-            minutes
-          );
-
-          console.log("Current date:", currentDate);
-          console.log("Follow-up date:", followUpDateTime);
+          const [day, month, year] = note.date.split("/").map(Number);
+          const followUpDateTime = new Date(year, month - 1, day, hours, minutes);
 
           if (
             currentDate.getFullYear() === followUpDateTime.getFullYear() &&
@@ -132,34 +79,84 @@ function NotesWidget() {
       });
     };
 
-    // Comprobar cada minuto
     const intervalId = setInterval(checkFollowUpTime, 60000);
-    return () => clearInterval(intervalId); // Limpiar intervalo cuando el componente se desmonte
+    return () => clearInterval(intervalId);
   }, [notes]);
 
   // Guardar notas en el endpoint cuando cambian
-  useEffect(() => {
-    const saveNotes = async () => {
-      try {
-        await fetch(
-          "http://192.168.7.33/api/ejecutivo/recordatorios/${idEjecutivo}",
-          {
-            method: "Get",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(notes),
-          }
-        );
-      } catch (error) {
-        console.error("Error saving notes:", error);
-      }
-    };
-
-    if (notes.length > 0) {
-      saveNotes();
+useEffect(() => {
+  const handleSaveNotes = async () => {
+    try {
+      await saveNotesToAPI(notes);
+    } catch (error) {
+      console.error("Error en el guardado de notas:", error);
+      // Puedes agregar notificaciones al usuario aquí si lo deseas
     }
-  }, [notes]);
+  };
+
+  if (notes.length > 0) {
+    handleSaveNotes();
+  }
+}, [notes]);
+
+  // Función para ordenar notas por fecha y hora más próxima
+  const sortNotesByDateTime = (notes) => {
+    return [...notes].sort((a, b) => {
+      try {
+        // Crear objetos Date para comparación
+        const dateA = a.time ? new Date(`${a.date} ${a.time}`) : new Date(a.date);
+        const dateB = b.time ? new Date(`${b.date} ${b.time}`) : new Date(b.date);
+        
+        // Orden ascendente (más próximo primero)
+        return dateA - dateB;
+      } catch (error) {
+        console.error("Error al ordenar notas:", error);
+        return 0;
+      }
+    });
+  };
+
+  // Notas ordenadas memoizadas
+  const sortedNotes = useMemo(() => sortNotesByDateTime(notes), [notes]);
+
+  // Función para extraer número de teléfono
+  const extractFullPhoneNumber = (content) => {
+    if (!content) return null;
+    const phoneMatch = content.match(/\b\d{10}\b/);
+    return phoneMatch ? phoneMatch[0] : null;
+  };
+
+  // Manejar clic en Realizar
+  const handleRealizarClick = (note) => {
+    try {
+      const phoneNumber = extractFullPhoneNumber(note.content);
+      
+      if (!phoneNumber) {
+        toast.warning("No se encontró número de teléfono válido");
+        return;
+      }
+
+      const phoneLinks = document.querySelectorAll('a.text-info[data-full-number]');
+      let foundPhone = null;
+
+      phoneLinks.forEach(link => {
+        const fullNumber = link.getAttribute('data-full-number');
+        if (fullNumber === phoneNumber) {
+          foundPhone = link;
+        }
+      });
+
+      if (foundPhone) {
+        foundPhone.click();
+        toast.success(`Llamando a: ${'XXXXXX' + phoneNumber.slice(-4)}`);
+      } else {
+        toast.error(`Número no encontrado: ${'XXXXXX' + phoneNumber.slice(-4)}`);
+      }
+    } catch (error) {
+      console.error("Error en handleRealizarClick:", error);
+      toast.error("Error al procesar el recordatorio");
+    }
+  };
 
   const handleAddNote = () => {
     setActiveNote(null);
@@ -198,7 +195,6 @@ function NotesWidget() {
     const dateTime = `${dateString} ${time}`;
 
     if (activeNote) {
-      // Actualizar nota existente
       const updatedNotes = notes.map((note) =>
         note.id === activeNote.id
           ? { ...note, title, content, approach, date: dateTime, time, option }
@@ -206,7 +202,6 @@ function NotesWidget() {
       );
       setNotes(updatedNotes);
     } else {
-      // Crear nueva nota
       const newNote = {
         id: Date.now().toString(),
         title,
@@ -240,9 +235,13 @@ function NotesWidget() {
     setActiveNote(null);
   };
 
+
   return (
     <div className="notes-widget card shadow">
-      <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <div
+        style={{}}
+        className="card-header text-white d-flex justify-content-between align-items-center"
+      >
         <h5 className="mb-0">Mis Recordatorios</h5>
         {/* 
         <button
@@ -334,61 +333,53 @@ function NotesWidget() {
               </button>
             </div>
           </div>
-        ) : (
-          <div className="notes-list">
-            {notes.length === 0 ? (
-              <div className="text-center text-muted py-5 mb-0 text-white">
-                <p className="text-white">
-                  No hay Recordatorio. 
-                </p>
-                {/* 
-                <button className="btn btn-primary" onClick={handleAddNote}>
-                <PlusIcon /> <span className="ms-1">Nuevo Recordatorio</span>
-                </button> 
-                */}
-              </div>
-            ) : (
-              <div
-                className="list-group overflow-auto"
-                style={{ maxHeight: "400px", whiteSpace: "nowrap" }}
+       ) : (
+        <div className="notes-list">
+          {sortedNotes.length === 0 ? (
+            <div className="text-center text-muted py-5 mb-0 text-white">
+              <p className="text-white">No hay Recordatorios.</p>
+            </div>
+          ) : (
+            <div className="list-group overflow-auto" style={{ maxHeight: "400px" }}>
+              {sortedNotes.map((note, index) => (
+                <div
+                key={note.id}
+                className={`list-group-item list-group-item-action ${index === 0 && note.date ? 'blinking-border' : ''}`}
+                style={{ marginBottom: "2rem" }}
               >
-                {notes.map((note) => (
-                  <div
-                    key={note.id}
-                    className="list-group-item list-group-item-action"
-                  >
-                    <div className="d-flex justify-content-between align-items-center">
-                      <h6 className="mb-1">{note.title || "Sin título"}</h6>
-                      <div>
-                        <button
-                          className="btn btn-sm btn-outline-primary me-1"
-                          onClick={() => handleEditNote(note)}
-                          aria-label="Editar nota"
-                        >
-                          <PencilIcon />
-                        </button>
-                        <button
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() => handleDeleteNote(note.id)}
-                          aria-label="Eliminar nota"
-                        >
-                          <TrashIcon />
-                        </button>
-                      </div>
-                    </div>
-                    <p className="mb-1 text-truncate">
-                      {note.content || "Sin contenido"}
-                    </p>
-                    <small className="text-muted">{note.date}</small>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <h6 className="mb-1">{note.title || "Sin título"}</h6>
+            
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+                  <p className="mb-1">
+                    <span style={{ whiteSpace: "none" }}>
+                      {note.content || "Sin contenido"}
+                    </span>
+                  </p>
+                        {/* Mostrar botón SOLO en el primer recordatorio (más próximo) */}
+                        {index === 0 && note.date && (
+                      <div className="d-flex justify-content-between align-items-center mt-2">
+                        <span className="shake-animation">
+                          PRÓXIMO SEGUIMIENTO
+                        </span>
+                        <Button 
+                          className="mt-2 btn-success"
+                         
+                          onClick={() => handleRealizarClick(note)}
+                        >
+                          Realizar
+                        </Button>
+                      </div>
+                    )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
-  );
+  </div>
+);
 }
 
 export default NotesWidget;

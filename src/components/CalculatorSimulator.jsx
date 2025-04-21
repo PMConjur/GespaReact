@@ -6,9 +6,9 @@ import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 import Validators from "./fragments/Validators"; // Importa el modal de Validators
 
-const CalculatorSimulator = ({show, handleClose}) => {
+const CalculatorSimulator = ({show, handleClose, showCloseButton}) => {
 
-  const { searchResults, idEjecutivo, isManagment} = useContext(AppContext);
+  const { searchResults, idEjecutivo, isManagment, setIsNegotiationActive} = useContext(AppContext);
   useEffect(() => {
     console.log("Contenido de isManagment:", isManagment);
   }, [isManagment]); // Se ejecutará cada vez que isManagment cambie
@@ -67,7 +67,6 @@ const CalculatorSimulator = ({show, handleClose}) => {
   const [isSaveDeadlinesClicked, setIsSaveDeadlinesClicked] = useState(false); // Nuevo estado para controlar la visibilidad de los botones
   const [isNegotiationSaved, setIsNegotiationSaved] = useState(false); // Nuevo estado para controlar la visibilidad del botón "Finalizar"
   const [validationMessage, setValidationMessage] = useState("");
-
   const calculatorRef = useRef(null); // Referencia para la sección de la calculadora
   const detailsRef = useRef(null); // Referencia para la sección de "Resumen y Plazos"
 
@@ -494,7 +493,7 @@ const CalculatorSimulator = ({show, handleClose}) => {
       const response = await fetchSaveNegotiationDeadlines(requestData);
       toast.success("Negociación guardada correctamente.");
       console.log("Respuesta del endpoint fetchSaveNegotiationDeadlines:", response);
-  
+
       // Extraer el campo duración de la respuesta y almacenarlo en el estado
       const duracionObtenida = response?.duración || "";
       console.log("Duración obtenida de la respuesta:", duracionObtenida);
@@ -519,29 +518,40 @@ const CalculatorSimulator = ({show, handleClose}) => {
   };
 
   
-const sendIncreaseNegotiation = async () => {
-  try {
-    // Enviar datos al endpoint IncrementaNegociacion
-    const increaseRequestData = {
-      idEjecutivo: idEjecutivo,
-      monto: parseFloat(calculosData.montoNegociado), // Usar el valor de Monto Negociado
-      saldo: summaryData.saldo,
-      duracion: duracion, // Usar el valor de duración obtenido
-    };
-
-    console.log("Enviando datos al endpoint IncrementaNegociacion:", increaseRequestData);
-    const increaseResponse = await fetchIncreasesNegotiation(increaseRequestData);
-
-    console.log("Respuesta del endpoint IncrementaNegociacion:", increaseResponse);
-    return increaseResponse;
-  } catch (error) {
-    console.error("Error al enviar los datos al endpoint IncrementaNegociacion:", error);
-    toast.error("Error al procesar la negociación.");
-    throw error;
-  }
-};
+  const sendIncreaseNegotiation = async () => {
+    try {
+      const increaseRequestData = {
+        idEjecutivo: idEjecutivo,
+        monto: parseFloat(calculosData.montoNegociado),
+        saldo: summaryData.saldo,
+        duracion: duracion,
+      };
+  
+      console.log("Enviando datos al endpoint IncrementaNegociacion:", increaseRequestData);
+      const increaseResponse = await fetchIncreasesNegotiation(increaseRequestData);
+      
+      // Verificar si la respuesta es 204 antes de cerrar
+      if (increaseResponse?.status === 200 || increaseResponse?.status === 204) {
+        handleClose(false); // Cierra el modal solo si el status es 204
+        setIsNegotiationActive(false);
+        toast.success("Negociación incrementada correctamente.");
+      } else {
+        toast.warning("La respuesta del servidor no fue la esperada.");
+      }
+  
+      console.log("Respuesta del endpoint IncrementaNegociacion:", increaseResponse);
+      return increaseResponse;
+      
+    } catch (error) {
+      console.error("Error al enviar los datos:", error);
+      toast.error("Error al procesar la negociación.");
+      throw error;
+    }
+  };
+  
 
 const handleSaveOffering = async () => {
+ 
   try {
     const idCuenta = searchResults?.[0]?.idCuenta?.trim();
     const fechaInsert = isManagment?.storeOutput?.Fecha_Insert?.split("T")[0];
@@ -586,6 +596,8 @@ const handleSaveOffering = async () => {
     toast.success("Ofrecimiento guardado correctamente.");
     console.log("Respuesta del endpoint fetchSaveOffering:", response);
 
+    handleClose(false)
+    setIsNegotiationActive(false);
     // Verifica si fetchData está definida antes de llamarla
     if (typeof fetchData === "function") {
       const idCartera = 1; // Ejemplo de valor
@@ -602,8 +614,8 @@ const handleSaveOffering = async () => {
 
   return (
     <>
-      <Modal show={show} onHide={handleClose} size="xl" backdrop="static">
-        <Modal.Header closeButton>
+      <Modal key={show ? "modal-open" : "modal-closed"}  show={show} onHide={handleClose} size="xl" backdrop="static">
+        <Modal.Header closeButton={showCloseButton}>
           <Modal.Title style={{ color: "#0dcaf0" }} className="ms-3">
             Calculadora
           </Modal.Title>

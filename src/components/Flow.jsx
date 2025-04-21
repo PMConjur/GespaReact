@@ -164,6 +164,7 @@ const Flow = () => {
       <CalculatorSimulator
         show={showCalculator}
         handleClose={handleCloseCalculator} // Asegura el cierre correcto
+        showCloseButton={false} 
       />
       <Validators 
         show={showPayments} 

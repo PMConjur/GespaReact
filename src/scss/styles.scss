@@ -683,17 +683,14 @@ $list-group-transition: all 0.3s ease;
   &-item {
     // Estilo base
     background-color: #1d1f20;
-    color: #e1e1e1;
-    border: none;
+    color: #39fc8d;
     border-bottom: 1px solid #6c757d;
     transition: $list-group-transition;
 
     // Efecto hover
     &:hover {
-      background: #acacac;
-      transform: translateX(8px);
-
-      color: #000000;
+      background-color: black !important;
+      color: #39fc8d !important;
     }
 
     // Estado activo
@@ -733,11 +730,6 @@ $list-group-transition: all 0.3s ease;
     }
   }
 
-  // Eliminar borde del último elemento
-  &-item:last-child {
-    border-bottom: none;
-  }
-
   // Variante con fondo oscuro
   &.list-group-dark {
     background: #000000;
@@ -746,6 +738,7 @@ $list-group-transition: all 0.3s ease;
     .list-group-item {
       border-color: rgba(white, 0.1);
       color: rgba(white, 0.9);
+      padding: 2px;
 
       &:hover {
         background: rgba(rgb(131, 131, 131), 0.05);
@@ -2082,3 +2075,30 @@ to { width: 100%; }
 from { border-right-color: rgba(248, 244, 6, 0.75)}
 to { border-right-color: transparent; }
 }
+
+
+/* Animación de parpadeo */
+@keyframes border-blink {
+  0% { border-color: transparent; }
+  50% { border-color: $warning; }
+  100% { border-color: transparent; }
+}
+
+.blinking-border {
+  border: 3px solid $warning;
+  animation: border-blink 1.5s infinite;
+}
+
+@keyframes shakeX {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
+.shake-animation {
+  animation: shakeX 1s infinite;
+  display: inline-block; // Necesario para que transform funcione
+  color: $warning; // Color del texto
+  font-weight: bold; // Negrita
+}
+
