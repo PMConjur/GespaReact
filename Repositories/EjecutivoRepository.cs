@@ -65,6 +65,10 @@ namespace NoriAPI.Repositories
 
         #endregion
 
+        #region Conteo
+        Task<int> ObtieneConteo(int idEjecutivo);
+        #endregion
+
 
         #region Tiempos
         Task<ResultadoTiempos> ValidateTimes(int numEmpleado);
@@ -970,24 +974,24 @@ namespace NoriAPI.Repositories
         #endregion
 
         #region Conteo
-        //public async int ObtieneConteo(int idEjecutivo)
-        //{
-        //    int Conteo;
-        //    using var connection = GetConnection("Piso2Amex");
-        //    string queryInfoConteo = "select * from [dbo].[MetasEjecutivo] where idEjecutivo = @idEjecutivo";
+        public async Task<int> ObtieneConteo(int idEjecutivo)
+        {
+            int Conteo;
+            using var connection = GetConnection("Piso2Amex");
+            string queryInfoConteo = "select Cuentas from [dbo].[MetasEjecutivo] where idEjecutivo = @idEjecutivo";
 
-        //    var parameters = new
-        //    {
-        //        idEjecutivo = idEjecutivo
-        //    };
+            var parameters = new
+            {
+                idEjecutivo = idEjecutivo
+            };
 
-        //    var InfoConteo = (await connection.QueryAsync<dynamic>(
-        //        queryInfoConteo,
-        //        parameters,
-        //        commandType: CommandType.Text                
-        //    ));
-        //    return Conteo = Convert.ToInt32(InfoConteo);
-        //}
+            var InfoConteo = (await connection.QueryAsync<int>(
+                queryInfoConteo,
+                parameters,
+                commandType: CommandType.Text
+            ));
+            return InfoConteo.FirstOrDefault();
+        }
 
 
 
@@ -1492,7 +1496,17 @@ namespace NoriAPI.Repositories
                     Herramienta = row.Field<string>("Herramienta"),
                     idEstado = row.Field<string>("idEstado"),
                     Vencimiento = row.Field<string>("Vencimiento"),
-                    SaldoInterés = Convert.ToString(row.Field<Decimal>("SaldoInterés"))
+                    SaldoInterés = Convert.ToString(row.Field<Decimal>("SaldoInterés")),
+                    Descuento = Convert.ToString(row.Field<Decimal>("Descuento")),
+                    Requerido = Convert.ToString(row.Field<Decimal>("MontoRequerido")),
+                    Negociado = Convert.ToString(row.Field<Decimal>("MontoNegociado")),
+                    Pagado = Convert.ToString(row.Field<Decimal>("MontoPagado")),
+                    Plazos = Convert.ToString(row.Field<int>("Plazos")),
+                    Ofrecio = row.Field<string>("Ofreció"),
+                    Valido = row.Field<string>("Validó"),
+                    CartaConvenio = Convert.ToString(row.Field<bool>("_CartaConvenio")),
+                    Interes = Convert.ToString(row.Field<Decimal>("SaldoInterés")),
+                    Remanente = Convert.ToString(row.Field<Decimal>("Remanente"))
                 }).ToList();
             }
             else

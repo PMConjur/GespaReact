@@ -74,12 +74,8 @@ namespace NoriAPI.Services
         #endregion
 
         #region Conteo
-        //Task<ConteoResultado> MuestraConteo(int idEjecutivo);
+        Task<ConteoResultado> MuestraConteo(int idEjecutivo, int conteo);
         #endregion
-
-
-
-
 
         Task ObtenerBusquedaEJE(DataRow drDatos, DataSet dsTablas);
         Task<bool> GuardarBusquedaAsync(BusquedaNueva busqueda);
@@ -989,7 +985,17 @@ namespace NoriAPI.Services
                 dtFiltrado.Columns.Add("Herramienta", typeof(string));
                 dtFiltrado.Columns.Add("idEstado", typeof(string)); // Aquí lo dejamos como string para poder poner "Incumplida"
                 dtFiltrado.Columns.Add("Vencimiento", typeof(string));
+                dtFiltrado.Columns.Add("Saldo", typeof(decimal));
+                dtFiltrado.Columns.Add("Descuento", typeof(decimal));
+                dtFiltrado.Columns.Add("MontoRequerido", typeof(decimal));
+                dtFiltrado.Columns.Add("MontoNegociado", typeof(decimal));
+                dtFiltrado.Columns.Add("MontoPagado", typeof(decimal));
+                dtFiltrado.Columns.Add("Plazos", typeof(int));
+                dtFiltrado.Columns.Add("Ofreció", typeof(string));
+                dtFiltrado.Columns.Add("Validó", typeof(string));
+                dtFiltrado.Columns.Add("_CartaConvenio", typeof(bool));
                 dtFiltrado.Columns.Add("SaldoInterés", typeof(decimal));
+                dtFiltrado.Columns.Add("Remanente", typeof(decimal));
 
                 foreach (DataRow row in dtnegociaciones.Rows)
                 {
@@ -998,8 +1004,7 @@ namespace NoriAPI.Services
                     string herramienta = row["Herramienta"].ToString();
                     string estado = row["idEstado"].ToString();
                     string vencimiento = row["Vencimiento"].ToString().Replace("12:00:00 a. m.", "");
-                    decimal saldo = Convert.ToDecimal(row["SaldoInterés"]);
-
+                    decimal saldo = Convert.ToDecimal(row["Saldo"]);                   
                     // Validación del estado
                     if (estado == "2901")
                         estado = "Vigente";
@@ -1020,10 +1025,21 @@ namespace NoriAPI.Services
                     else if (estado == "2909")
                         estado = "Reestructurada";
                     else if (estado == "")
-                        estado = "";
+                        estado = "";                    
+         
+                    decimal descuento = string.IsNullOrEmpty(row["Descuento"]?.ToString()) ? 0 : Convert.ToDecimal(row["Descuento"]);
+                    decimal requerido = string.IsNullOrEmpty(row["MontoRequerido"]?.ToString()) ? 0 : Convert.ToDecimal(row["MontoRequerido"]);
+                    decimal negociado = string.IsNullOrEmpty(row["MontoNegociado"]?.ToString()) ? 0 : Convert.ToDecimal(row["MontoNegociado"]);
+                    decimal pagado = string.IsNullOrEmpty(row["MontoPagado"]?.ToString()) ? 0 : Convert.ToDecimal(row["MontoPagado"]);
+                    int plazos = string.IsNullOrEmpty(row["Plazos"]?.ToString()) ? 0 : Convert.ToInt32(row["Plazos"]);
+                    string ofrecio = row["Ofreció"].ToString();
+                    string valido = row["Validó"].ToString();
+                    bool cartaconvenio = string.IsNullOrEmpty(row["_CartaConvenio"]?.ToString()) ? false : Convert.ToBoolean(row["_CartaConvenio"]);
+                    decimal interes = string.IsNullOrEmpty(row["SaldoInterés"]?.ToString()) ? 0 : Convert.ToDecimal(row["SaldoInterés"]);
+                    decimal remanente = string.IsNullOrEmpty(row["Remanente"]?.ToString()) ? 0 : Convert.ToDecimal(row["Remanente"]);
 
                     // Agregamos la fila con los valores al nuevo DataTable
-                    dtFiltrado.Rows.Add(fechaInsert, segundoInsert, herramienta, estado, vencimiento, saldo);
+                    dtFiltrado.Rows.Add(fechaInsert, segundoInsert, herramienta, estado, vencimiento, saldo, descuento, requerido, negociado, pagado, plazos, ofrecio, valido, cartaconvenio, interes, remanente);
                     dtFiltrado.DefaultView.Sort = "Fecha_Insert DESC";
                     dtFiltrado = dtFiltrado.DefaultView.ToTable();
                 }
@@ -2073,17 +2089,20 @@ namespace NoriAPI.Services
         #endregion
 
         #region Conteo
-        //public async Task<ConteoResultado>MuestraConteo(int idEjecutivo)
-        //{
-        //    string mensajeConteo = null;
-
-
-
-
-
-
-
-        //}
+        public async Task<ConteoResultado> MuestraConteo(int idEjecutivo, int conteo)
+        {                     
+            var conteo_ = await _ejecutivoRepository.ObtieneConteo(idEjecutivo);
+            if (conteo > conteo_)
+            {
+                var resultado = new ConteoResultado(Convert.ToString("Cuentas trabajadas:" + conteo + "/" + conteo_));
+                return resultado;
+            }
+            else
+            {
+                var resultado = new ConteoResultado("Se han agotado las cuentas.");
+                return resultado;
+            }                                 
+        }
 
 
 

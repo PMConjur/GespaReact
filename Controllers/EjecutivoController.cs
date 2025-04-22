@@ -424,14 +424,12 @@ namespace NoriAPI.Controllers
         #endregion
 
         #region Conteo
-        //[HttpGet("ConteoCuentasAutomatico")]
-        //public async Task<ActionResult<ConteoResultado>>MuestraConteo([FromQuery] int idEjecutivo)
-        //{
-        //    var muestraConteo = await _ejecutivoService.MuestraConteo(idEjecutivo);
-
-
-
-        //}
+        [HttpGet("ConteoCuentasAutomatico")]
+        public async Task<ActionResult<ConteoResultado>> MuestraConteo([FromQuery] int idEjecutivo, int conteo)
+        {
+            var muestraConteo = await _ejecutivoService.MuestraConteo(idEjecutivo, conteo);
+            return Ok(muestraConteo);
+        }
         #endregion
 
 
