@@ -61,60 +61,60 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
     });
 
     // Cargar y preparar recordatorios existentes
-    useEffect(() => {
-        const loadReminders = async () => {
-            try {
-                const notes = await fetchNotes(idCuenta[0].trim());
-                const reminders = notes
-                    .filter(note => note.recordatorio)
-                    .map(note => {
-                        // Asegurar formato correcto de FechaPago
-                        const fechaPago = note.FechaPago.endsWith('Z') 
-                            ? note.FechaPago 
-                            : `${note.FechaPago}Z`;
-                        return {
-                            ...note,
-                            FechaPago: fechaPago,
-                            segundo: note.segundo || "00:00:00"
-                        };
-                    });
-                setExistingReminders(reminders);
-            } catch (error) {
-                console.error("Error al cargar recordatorios:", error);
-            
-            }
-        };
-        
-        loadReminders();
-    }, [idCuenta]);
+
 
     useEffect(() => {
         const phone = getContextPhoneNumber();
-        setFormData(prev => ({
-            ...prev,
-            numeroTelefonico: phone.raw,
-            displayedPhone: phone.formatted
-        }));
+        setFormData(prev => {
+            // Solo actualiza si alguno de los valores cambia
+            if (prev.numeroTelefonico === phone.raw && prev.displayedPhone === phone.formatted) {
+                return prev;
+            }
+            return {
+                ...prev,
+                numeroTelefonico: phone.raw,
+                displayedPhone: phone.formatted
+            };
+        });
     }, [isManagment]);
 
-    // Función robusta para comparar fechas y horas (se actualiza para incluir la comparación del campo "hora")
+    useEffect(() => {
+        const logFetchedNotes = async () => {
+            try {
+                const notes = await fetchNotes(idEjecutivo);
+                console.log("Fetched Notes:", notes);
+                // Agregar: actualizar los recordatorios existentes
+                setExistingReminders(notes);
+            } catch (error) {
+                console.error("Error fetching notes in logFetchedNotes:", error);
+            }
+        };
+        if (idEjecutivo) {
+            logFetchedNotes();
+        }
+    }, [idEjecutivo]);
+
+    // Función robusta para comparar fechas y horas usando el campo "date" de fetchNotes
     const hasReminderConflict = (date, time) => {
         try {
-            const timeParts = time.split(':').map(Number);
-            const [hours, minutes, seconds = 0] = timeParts; // Incluir segundos si existen
-            const newDateTime = new Date(`${date}T${hours}:${minutes}:${seconds}Z`);
+            // Construir fecha y hora del nuevo registro (horario local)
+            const newRecordDateTime = new Date(`${date}T${time}`);
+            // Normalizar segundos y milisegundos a 0
+            newRecordDateTime.setSeconds(0, 0);
             
             for (const reminder of existingReminders) {
-                const timeParts2 = reminder.segundo.split(':').map(Number);
-                const [rHours, rMinutes, rSeconds = 0] = timeParts2; // Incluir segundos si existen
-                const reminderDate = new Date(reminder.FechaPago);
-                reminderDate.setUTCHours(rHours, rMinutes, rSeconds, 0);
+                // Se utiliza el campo "date" para obtener la fecha y hora del recordatorio existente
+                const reminderDateTime = reminder.date 
+                    ? new Date(reminder.date) 
+                    : new Date(`${date}T${reminder.segundo}`);
+                // Normalizar segundos y milisegundos a 0
+                reminderDateTime.setSeconds(0, 0);
                 
-                const diffMinutes = Math.abs((newDateTime - reminderDate) / (1000 * 60));
-                if (diffMinutes < 5) {
+                // Comparar la fecha y hora exactas
+                if (newRecordDateTime.getTime() === reminderDateTime.getTime()) {
                     return {
                         conflict: true,
-                        existingTime: `${reminder.FechaPago.split('T')[0]} ${reminder.segundo}`
+                        existingTime: reminderDateTime.toTimeString().split(" ")[0]
                     };
                 }
             }
@@ -124,7 +124,6 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
             return { conflict: false };
         }
     };
-
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
 
@@ -170,12 +169,12 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 return;
             }
 
-            // Nueva validación: si la fecha es hoy, la hora debe ser al menos 1 minuto mayor a la hora actual
+            // Nueva validación: si la fecha es hoy, la hora debe ser posterior a la hora actual
             if (formData.fecha === todayStr) {
                 const scheduledDate = new Date(`${formData.fecha}T${formData.segundo}`);
                 const nowPlusOne = new Date(Date.now() + 60000);
                 if (scheduledDate < nowPlusOne) {
-                    toast.error("La hora debe ser al menos 1 minuto mayor a la hora actual");
+                    toast.error("Debe seleccionar un horario superior a la hora actual");
                     setLoading(false);
                     return;
                 }
@@ -193,14 +192,14 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                     return;
                 }
     
-                // Validar horario PM (12:00 - 22:00)
+                // Validar horario PM (12:00 - 21:00) (máximo 21 hrs)
                 if (period === "PM" && (hours < 12 || hours > 22)) {
-                    toast.error("Horario PM inválido. Debe ser entre 12:00 PM y 10:00 PM");
+                    toast.error("Horario PM inválido. Debe ser entre 12:00 PM y 9:59 PM");
                     setLoading(false);
                     return;
                 }
     
-                // Validar solapamiento de recordatorios
+                // Validar solapamiento de recordatorios (mínimo 5 minutos entre cada uno)
                 const { conflict, existingTime } = hasReminderConflict(formData.fecha, formData.segundo);
                 if (conflict) {
                     toast.error(`Conflicto con recordatorio existente a las ${existingTime}. Debe haber al menos 5 minutos de diferencia.`);
@@ -217,24 +216,32 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 numeroTelefonico: formData.numeroTelefonico.toString().replace(/\D/g, '') // Limpiar formato
             };
     
-            // 5. Enviar al servidor
+// 5. Enviar al servidor
             const response = await createFollows(dataToSend);
-            
-            // 6. Actualizar contexto
+
+            // 6. Actualizar existingReminders para incluir el nuevo recordatorio
+            setExistingReminders(prev => [
+                ...prev,
+                { 
+                    date: dataToSend.fecha // dataToSend.fecha ya viene en formato "YYYY-MM-DDTHH:mm:ss"
+                }
+            ]);
+
+            // 7. Actualizar contexto
             setManagment(prev => ({
                 ...prev,
                 gestion: {
                     ...dataToSend,
-                    idSeguimiento: response.idSeguimiento || Date.now(), // ID del servidor o temporal
+                    idSeguimiento: response.idSeguimiento || Date.now(),
                     timestamp: new Date().toISOString(),
                     tipo: "seguimiento",
                     ejecutivo: {
                         idEjecutivo: idEjecutivo,
-                        nombre: nombreEjecutivo // Asegúrate de tener esta variable del contexto
+                        nombre: nombreEjecutivo
                     }
                 }
             }));
-    
+                
             // 7. Notificar éxito
             toast.success(<div>
                 <strong>Seguimiento registrado</strong>
