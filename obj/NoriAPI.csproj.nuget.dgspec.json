@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Users\\Yoshi\\Documentos\\Fusion\\NoriAPI.csproj": {}
+    "D:\\Users\\Yoshi\\Documentos\\Back\\GespaReact\\NoriAPI.csproj": {}
   },
   "projects": {
-    "D:\\Users\\Yoshi\\Documentos\\Fusion\\NoriAPI.csproj": {
+    "D:\\Users\\Yoshi\\Documentos\\Back\\GespaReact\\NoriAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Users\\Yoshi\\Documentos\\Fusion\\NoriAPI.csproj",
+        "projectUniqueName": "D:\\Users\\Yoshi\\Documentos\\Back\\GespaReact\\NoriAPI.csproj",
         "projectName": "NoriAPI",
-        "projectPath": "D:\\Users\\Yoshi\\Documentos\\Fusion\\NoriAPI.csproj",
+        "projectPath": "D:\\Users\\Yoshi\\Documentos\\Back\\GespaReact\\NoriAPI.csproj",
         "packagesPath": "C:\\Users\\Yoshua Rodriguez\\.nuget\\packages\\",
-        "outputPath": "D:\\Users\\Yoshi\\Documentos\\Fusion\\obj\\",
+        "outputPath": "D:\\Users\\Yoshi\\Documentos\\Back\\GespaReact\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
