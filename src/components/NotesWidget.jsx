@@ -348,49 +348,52 @@ useEffect(() => {
           </div>
        ) : (
         <div className="notes-list">
-          {sortedNotes.length === 0 ? (
-            <div className="text-center text-muted py-5 mb-0 text-white">
-              <p className="text-white">No hay Recordatorios.</p>
-            </div>
-          ) : (
-            <div className="list-group overflow-auto" style={{ maxHeight: "400px" }}>
-              {sortedNotes.map((note, index) => (
+        {sortedNotes.length === 0 ? (
+          <div className="text-center text-muted py-5 mb-0 text-white">
+            <p className="text-white">No hay Recordatorios.</p>
+          </div>
+        ) : (
+          <div className="list-group overflow-auto" style={{ maxHeight: "400px" }}>
+            {sortedNotes.map((note, index) => {
+              // Determinar si es el recordatorio más próximo
+              const isClosestNote = index === 0;
+              
+              return (
                 <div
-                key={note.uniqueKey || note.id}
-                className={`list-group-item list-group-item-action ${sortedNotes[0]?.id === note.id && note.date ? 'blinking-border' : ''}`}
-                style={{ marginBottom: "2rem" }}
-              >
+                  key={note.uniqueKey || note.id}
+                  className={`list-group-item list-group-item-action ${isClosestNote ? 'blinking-border' : ''}`}
+                  style={{ marginBottom: "2rem" }}
+                >
                   <div className="d-flex justify-content-between align-items-center">
                     <h6 className="mb-1">{note.title || "Sin título"}</h6>
-            
                   </div>
                   <p className="mb-1">
                     <span style={{ whiteSpace: "none" }}>
                       {note.content || "Sin contenido"}
                     </span>
                   </p>
-                        {/* Mostrar botón SOLO en el primer recordatorio (más próximo) */}
-                        {index === 0 && note.date && (
-                      <div className="d-flex justify-content-between align-items-center mt-2">
-                        <span className="shake-animation">
-                          SEGUIMIENTO PENDIENTE
-                        </span>
-                        <Button 
-                          className="mt-2 btn-success"
-                          onClick={() => handleRealizarClick(note)}
-                        >
-                          Realizar
-                        </Button>
-                      </div>
-                    )}
+                  {isClosestNote && note.date && (
+                    <div className="d-flex justify-content-between align-items-center mt-2">
+                      <span className="shake-animation">
+                        SEGUIMIENTO PENDIENTE
+                      </span>
+                      <Button 
+                        className="mt-2 btn-success"
+                        onClick={() => handleRealizarClick(note)}
+                      >
+                        Realizar
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    )}
   </div>
+</div>
 );
 }
 
