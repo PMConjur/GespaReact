@@ -24,7 +24,7 @@ namespace NoriAPI.Controllers
 {
     [ApiController]
     [Route("api/ejecutivo")]
-    [Authorize]
+    //[Authorize]
     public class EjecutivoController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -380,7 +380,6 @@ namespace NoriAPI.Controllers
 
         }
 
-
         [HttpPost("Ofrecer-Negociacion")]
         public async Task<IActionResult> ValidaOfrecer([FromBody] OfrecerNegociacionRequest ofrecerInfo)
         {
@@ -401,7 +400,7 @@ namespace NoriAPI.Controllers
             }
 
             return Ok(result);
-        }
+        }       
 
         [HttpPost("save-ofrecimiento-general")]
         public async Task<ActionResult> SaveOfrecimientoGeneral([FromBody] SaveOfrecimientoGeneralRequest ofrecimientoInfo)
@@ -425,11 +424,12 @@ namespace NoriAPI.Controllers
 
             if (!string.IsNullOrEmpty(result.Mensaje))
             {
-                return BadRequest(result); // Devuelve BadRequest con el mensaje de error
+                return BadRequest(result.Mensaje); // Devuelve BadRequest con el mensaje de error
             }
 
             return Ok(result); // Devuelve el resultado si no hay error
         }
+
         [HttpPost("guarda-Elimina-Plazos")]
         public async Task<IActionResult> GuardaEliminaPlazos([FromBody] EliminaGuardaPlazos PlazosInfo)
         {
@@ -439,7 +439,7 @@ namespace NoriAPI.Controllers
 
         }
 
-        [HttpPost("IncrementaNegociacion")]
+        [HttpPost ("IncrementaNegociacion")]
         public async Task<IActionResult> IncrementaNegociacion([FromBody] IncrementoNegociacion incrementaNegInfo)
         {
             var result = await _ejecutivoService.IncrementaNegociacion(incrementaNegInfo);
@@ -453,11 +453,16 @@ namespace NoriAPI.Controllers
             }
 
         }
-
-
-
         #endregion
 
+        #region Conteo
+        [HttpGet("ConteoCuentasAutomatico")]
+        public async Task<ActionResult<ConteoResultado>> MuestraConteo([FromQuery] int idEjecutivo, int conteo)
+        {
+            var muestraConteo = await _ejecutivoService.MuestraConteo(idEjecutivo, conteo);
+            return Ok(muestraConteo);
+        }
+        #endregion
 
 
         #region Busqueda

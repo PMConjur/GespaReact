@@ -16,6 +16,7 @@ using System.Diagnostics;
 using NoriAPI.Models.Flujo;
 using NoriAPI.Models.Ofrecimiento;
 using NoriAPI.Models;
+using static NoriAPI.Services.EjecutivoService;
 
 namespace NoriAPI.Repositories
 {
@@ -64,6 +65,11 @@ namespace NoriAPI.Repositories
 
         #endregion
 
+        #region Conteo
+        Task<int> ObtieneConteo(int idEjecutivo);
+        #endregion
+
+
         #region Tiempos
         Task<ResultadoTiempos> ValidateTimes(int numEmpleado);
         Task<dynamic> ValidatePasswordEjecutivo(int idEjecutivo, string contrasenia);
@@ -83,9 +89,9 @@ namespace NoriAPI.Repositories
 
         #region GuardaNegociacion
         Task<dynamic> Guarda_Plazos(EliminaGuardaPlazos PlazosInfo, Pago_ pago_, DateTime dtInicio, DateTime dtFin, int iNúmPago);
-        Task<dynamic> Elimina_Plazos(EliminaGuardaPlazos PlazosInfo);
-        // Task<dynamic> Guarda_Negociacion_Plazos(GuardaNegociacionPlazos negociacionInfo);
+        Task<dynamic> Elimina_Plazos(EliminaGuardaPlazos PlazosInfo);        
         Task<dynamic> IncrementaNegociacion(IncrementoNegociacion incrementaNegInfo);
+        bool ValidaCorreo(string correoElectronico);
         #endregion
 
         #region Scripts
@@ -874,8 +880,7 @@ namespace NoriAPI.Repositories
 
         #endregion
 
-
-        #region Ofrecer
+        #region Ofrecer 
         public string ValidaOfrecer(OfrecerNegociacionRequest ofrecerInfo, int iMaxDias, DateTime fechaCorte, DateTime fechaAsignacion, bool PrimesLending, DataTable dtPagos)
         {
             string mensaje = "";
@@ -965,6 +970,30 @@ namespace NoriAPI.Repositories
 
             return mensaje;
         }
+
+        #endregion
+
+        #region Conteo
+        public async Task<int> ObtieneConteo(int idEjecutivo)
+        {
+            int Conteo;
+            using var connection = GetConnection("Piso2Amex");
+            string queryInfoConteo = "select Cuentas from [dbo].[MetasEjecutivo] where idEjecutivo = @idEjecutivo";
+
+            var parameters = new
+            {
+                idEjecutivo = idEjecutivo
+            };
+
+            var InfoConteo = (await connection.QueryAsync<int>(
+                queryInfoConteo,
+                parameters,
+                commandType: CommandType.Text
+            ));
+            return InfoConteo.FirstOrDefault();
+        }
+
+
 
         #endregion
 
@@ -1110,7 +1139,6 @@ namespace NoriAPI.Repositories
 
 
         #endregion
-
 
         #region Tiempos
         public async Task<ResultadoTiempos> ValidateTimes(int numEmpleado)
@@ -1415,9 +1443,6 @@ namespace NoriAPI.Repositories
 
         #endregion
 
-
-
-
         private static DataTable ConvertToDataTable(IEnumerable<dynamic> data, string tableName)
         {
             DataTable table = new DataTable(tableName);
@@ -1471,7 +1496,17 @@ namespace NoriAPI.Repositories
                     Herramienta = row.Field<string>("Herramienta"),
                     idEstado = row.Field<string>("idEstado"),
                     Vencimiento = row.Field<string>("Vencimiento"),
-                    SaldoInterés = Convert.ToString(row.Field<Decimal>("SaldoInterés"))
+                    SaldoInterés = Convert.ToString(row.Field<Decimal>("SaldoInterés")),
+                    Descuento = Convert.ToString(row.Field<Decimal>("Descuento")),
+                    Requerido = Convert.ToString(row.Field<Decimal>("MontoRequerido")),
+                    Negociado = Convert.ToString(row.Field<Decimal>("MontoNegociado")),
+                    Pagado = Convert.ToString(row.Field<Decimal>("MontoPagado")),
+                    Plazos = Convert.ToString(row.Field<int>("Plazos")),
+                    Ofrecio = row.Field<string>("Ofreció"),
+                    Valido = row.Field<string>("Validó"),
+                    CartaConvenio = Convert.ToString(row.Field<bool>("_CartaConvenio")),
+                    Interes = Convert.ToString(row.Field<Decimal>("SaldoInterés")),
+                    Remanente = Convert.ToString(row.Field<Decimal>("Remanente"))
                 }).ToList();
             }
             else
@@ -1496,87 +1531,20 @@ namespace NoriAPI.Repositories
                 SaldoFinal = row.Field<decimal>("Saldo Final")
             }).ToList();
 
+        }        
+        public bool ValidaCorreo(string correoElectronico)
+        {
+            string validEmailPattern =
+                @"^(?!\.)(""([^""\r\\]|\\[""\r\\])*""|"
+                + @"([-a-z0-9!#$%&'*+/=?^_`{|}~]|(?<!\.)\.)*)(?<!\.)"
+                + @"@[-a-z0-9][\w\.-]*[a-z0-9]\.[a-z][a-z\.]*[a-z]$";
+
+            Regex ValidEmailRegex = new Regex(validEmailPattern, RegexOptions.IgnoreCase);
+            return ValidEmailRegex.IsMatch(correoElectronico);
         }
 
-        //#region Acciones
+        
 
-        //public async Task<DataTable> GetAccionesNegociacionesAsync(int idCartera, string idCuenta)
-        //{
-        //    DataTable negociacion = new DataTable();
-        //    string query = "SELECT * FROM fn_OfrecimientosNegociaciones(@idCartera, @idCuenta)"; // Evita inyección SQL
-
-        //    using (var connection = new SqlConnection(_connectionString))
-        //    {
-        //        await connection.OpenAsync();
-        //        using (var command = new SqlCommand(query, connection))
-        //        {
-        //            // Usar Add con tipo explícito para evitar problemas con tipos de datos
-        //            command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
-        //            command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
-
-        //            using (var adapter = new SqlDataAdapter(command))
-        //            {
-        //                adapter.Fill(negociacion);
-        //            }
-        //        }
-        //    }
-
-        //    return negociacion;
-        //}
-
-        //public async Task<DataTable> GetAccionesPlazosAsync(int idCartera, string idCuenta)
-        //{
-        //    DataTable plazos = new DataTable();
-        //    string query = "SELECT * FROM fn_Plazos(@idCartera, @idCuenta)"; // Evita inyección SQL
-
-        //    using (var connection = new SqlConnection(_connectionString))
-        //    {
-        //        await connection.OpenAsync();
-        //        using (var command = new SqlCommand(query, connection))
-        //        {
-        //            // Usar Add con tipo explícito para evitar problemas con tipos de datos
-        //            command.Parameters.Add("@idCartera", SqlDbType.Int).Value = idCartera;
-        //            command.Parameters.Add("@idCuenta", SqlDbType.VarChar).Value = idCuenta;
-
-        //            using (var adapter = new SqlDataAdapter(command))
-        //            {
-        //                adapter.Fill(plazos);
-        //            }
-        //        }
-        //    }
-
-        //    return plazos;
-        //}
-
-        //public async Task<DataTable> GetValidadorAsync(int idProducto)
-        //{
-        //    DataTable validadores = new DataTable();
-        //    string query = "SELECT  E.idEjecutivo, E.NombreEjecutivo Nombre " +
-        //        "FROM Ejecutivos E (NOLOCK) " +
-        //        "INNER JOIN Validadores V (NOLOCK) " +
-        //        "ON E.idEjecutivo = V.idEjecutivo " +
-        //        "WHERE V.idProducto = @idProducto"; // Evita inyección SQL
-
-        //    using (var connection = new SqlConnection(_connectionString))
-        //    {
-        //        await connection.OpenAsync();
-        //        using (var command = new SqlCommand(query, connection))
-        //        {
-        //            //Usar Add con tipo explícito para evitar problemas con tipos de datos
-        //            command.Parameters.Add("@idProducto", SqlDbType.Int).Value = idProducto;
-
-        //            using (var adapter = new SqlDataAdapter(command))
-        //            {
-        //                adapter.Fill(validadores);
-        //            }
-        //        }
-        //    }
-
-        //    return validadores;
-        //}
-
-
-        //#endregion
 
         #region Datos
         public int ObtenerIdCartera()

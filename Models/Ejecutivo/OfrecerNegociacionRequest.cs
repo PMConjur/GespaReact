@@ -8,7 +8,7 @@ namespace NoriAPI.Models.Ejecutivo
         public Pago_[] Plazos { get; set; }
         public double MontoNegociado { get; set; }
         public double MontoRequerido { get; set; }
-        public double saldo { get; set; }
+        public double saldo {  get; set; }
         public double descuento { get; set; }
         public int maxDescuento { get; set; }
         public int idHerramienta { get; set; }
@@ -16,6 +16,6 @@ namespace NoriAPI.Models.Ejecutivo
         public int idCartera { get; set; }
 
 
-    }
+    }   
 
 }

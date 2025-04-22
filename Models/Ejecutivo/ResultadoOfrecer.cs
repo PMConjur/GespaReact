@@ -2,13 +2,18 @@
 {
     public class ResultadoOfrecer
     {
-        public ResultadoOfrecer(string mensaje)
+
+        public ResultadoOfrecer(string mensaje) 
         {
             Mensaje = mensaje;
+                      
         }
 
-        public string Mensaje { get; set; }
+        public string Mensaje {  get; set; }
 
     }
+
+
+
 
 }

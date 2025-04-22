@@ -68,15 +68,21 @@ namespace NoriAPI.Services
         Task<string> GuardaEliminaPlazos(EliminaGuardaPlazos PlazosInfo);
         Task<NegociacionPlazosOutput> GuardaNegociacionPlazos(NegociacionPlazosInput input);
         Task<dynamic> IncrementaNegociacion(IncrementoNegociacion incrementaNegInfo);
+        #endregion
 
         #region Ofrecer 
         Task<ResultadoOfrecer> ValidaOfrecer(OfrecerNegociacionRequest ofrecerInfo);
         #endregion
 
 
-        #endregion
+  
         Task ObtenerBusquedaEJE(DataRow drDatos, DataSet dsTablas);
 
+        #region Conteo
+        Task<ConteoResultado> MuestraConteo(int idEjecutivo, int conteo);
+        #endregion
+
+        
         Task<bool> GuardarBusquedaAsync(BusquedaNueva busqueda);
         Task<DataTable> GetSeguimientosEjecutivoAsync(int idEjecutivo);
 
@@ -985,7 +991,17 @@ namespace NoriAPI.Services
                 dtFiltrado.Columns.Add("Herramienta", typeof(string));
                 dtFiltrado.Columns.Add("idEstado", typeof(string)); // Aquí lo dejamos como string para poder poner "Incumplida"
                 dtFiltrado.Columns.Add("Vencimiento", typeof(string));
+                dtFiltrado.Columns.Add("Saldo", typeof(decimal));
+                dtFiltrado.Columns.Add("Descuento", typeof(decimal));
+                dtFiltrado.Columns.Add("MontoRequerido", typeof(decimal));
+                dtFiltrado.Columns.Add("MontoNegociado", typeof(decimal));
+                dtFiltrado.Columns.Add("MontoPagado", typeof(decimal));
+                dtFiltrado.Columns.Add("Plazos", typeof(int));
+                dtFiltrado.Columns.Add("Ofreció", typeof(string));
+                dtFiltrado.Columns.Add("Validó", typeof(string));
+                dtFiltrado.Columns.Add("_CartaConvenio", typeof(bool));
                 dtFiltrado.Columns.Add("SaldoInterés", typeof(decimal));
+                dtFiltrado.Columns.Add("Remanente", typeof(decimal));
 
                 foreach (DataRow row in dtnegociaciones.Rows)
                 {
@@ -994,8 +1010,7 @@ namespace NoriAPI.Services
                     string herramienta = row["Herramienta"].ToString();
                     string estado = row["idEstado"].ToString();
                     string vencimiento = row["Vencimiento"].ToString().Replace("12:00:00 a. m.", "");
-                    decimal saldo = Convert.ToDecimal(row["SaldoInterés"]);
-
+                    decimal saldo = Convert.ToDecimal(row["Saldo"]);                   
                     // Validación del estado
                     if (estado == "2901")
                         estado = "Vigente";
@@ -1016,10 +1031,21 @@ namespace NoriAPI.Services
                     else if (estado == "2909")
                         estado = "Reestructurada";
                     else if (estado == "")
-                        estado = "";
+                        estado = "";                    
+         
+                    decimal descuento = string.IsNullOrEmpty(row["Descuento"]?.ToString()) ? 0 : Convert.ToDecimal(row["Descuento"]);
+                    decimal requerido = string.IsNullOrEmpty(row["MontoRequerido"]?.ToString()) ? 0 : Convert.ToDecimal(row["MontoRequerido"]);
+                    decimal negociado = string.IsNullOrEmpty(row["MontoNegociado"]?.ToString()) ? 0 : Convert.ToDecimal(row["MontoNegociado"]);
+                    decimal pagado = string.IsNullOrEmpty(row["MontoPagado"]?.ToString()) ? 0 : Convert.ToDecimal(row["MontoPagado"]);
+                    int plazos = string.IsNullOrEmpty(row["Plazos"]?.ToString()) ? 0 : Convert.ToInt32(row["Plazos"]);
+                    string ofrecio = row["Ofreció"].ToString();
+                    string valido = row["Validó"].ToString();
+                    bool cartaconvenio = string.IsNullOrEmpty(row["_CartaConvenio"]?.ToString()) ? false : Convert.ToBoolean(row["_CartaConvenio"]);
+                    decimal interes = string.IsNullOrEmpty(row["SaldoInterés"]?.ToString()) ? 0 : Convert.ToDecimal(row["SaldoInterés"]);
+                    decimal remanente = string.IsNullOrEmpty(row["Remanente"]?.ToString()) ? 0 : Convert.ToDecimal(row["Remanente"]);
 
                     // Agregamos la fila con los valores al nuevo DataTable
-                    dtFiltrado.Rows.Add(fechaInsert, segundoInsert, herramienta, estado, vencimiento, saldo);
+                    dtFiltrado.Rows.Add(fechaInsert, segundoInsert, herramienta, estado, vencimiento, saldo, descuento, requerido, negociado, pagado, plazos, ofrecio, valido, cartaconvenio, interes, remanente);
                     dtFiltrado.DefaultView.Sort = "Fecha_Insert DESC";
                     dtFiltrado = dtFiltrado.DefaultView.ToTable();
                 }
@@ -1288,7 +1314,7 @@ namespace NoriAPI.Services
                     dias1erpago = días1erPago_,
                     MontoDescuento = Montodescuento,
                     Saldo = Saldo,
-                    FechaCorte = Convert.ToString(Fecha_Corte),
+                    FechaCorte = Convert.ToString(Fecha_Corte),                    
                 };
                 return resultadoCalculadora;
             }
@@ -1299,14 +1325,14 @@ namespace NoriAPI.Services
                 //Convierte datatable a list
 
                 List<OfrecimientosInfo> listaOfrecimientos = _ejecutivoRepository.ConvertirDataTableALista(dtFiltrado);
-
+                
                 var resultadoCalculadora = new ResultadoCalculadora
                 {
-                    Ofrecimientos = listaOfrecimientos,
+                    Ofrecimientos = listaOfrecimientos,                    
                     Mensaje = mensaje
                 };
                 return resultadoCalculadora;
-            }
+            }                        
         }
 
         #endregion
@@ -2068,6 +2094,25 @@ namespace NoriAPI.Services
         }
         #endregion
 
+        #region Conteo
+        public async Task<ConteoResultado> MuestraConteo(int idEjecutivo, int conteo)
+        {                     
+            var conteo_ = await _ejecutivoRepository.ObtieneConteo(idEjecutivo);
+            if (conteo > conteo_)
+            {
+                var resultado = new ConteoResultado(Convert.ToString("Cuentas trabajadas:" + conteo + "/" + conteo_));
+                return resultado;
+            }
+            else
+            {
+                var resultado = new ConteoResultado("Se han agotado las cuentas.");
+                return resultado;
+            }                                 
+        }
+
+
+
+        #endregion
 
         #region GuardaEliminaPlazos
 
@@ -2136,67 +2181,81 @@ namespace NoriAPI.Services
         }
         public async Task<NegociacionPlazosOutput> GuardaNegociacionPlazos(NegociacionPlazosInput input)
         {
+            int correo_correcto = 0;
             using (var connection = new SqlConnection(_connectionString))
             {
-                await connection.OpenAsync();
-                var parameters = new DynamicParameters();
-                parameters.Add("@idCartera", input.IdCartera, DbType.Int16);
-                parameters.Add("@idCuenta", input.IdCuenta, DbType.String);
-                parameters.Add("@idEjecutivo", input.IdEjecutivo, DbType.Int32);
-                parameters.Add("@idHerramienta", input.IdHerramienta, DbType.Int32);
-                parameters.Add("@MontoNegociado", input.MontoNegociado, DbType.Decimal);
-                parameters.Add("@Plazos", input.Plazos, DbType.Int16);
-                parameters.Add("@CartaConvenio", input.CartaConvenio, DbType.Int16);
-                parameters.Add("@Correo", input.Correo, DbType.String);
-                parameters.Add("@FechaPago", input.FechaPago, DbType.String);
-                parameters.Add("@FechaFinNegociacion", input.FechaFinNegociacion, DbType.String);
-                parameters.Add("@idEjecutivoValidador", input.IdEjecutivoValidador, DbType.Int32);
-                parameters.Add("@Contraseña", input.Contrasena, DbType.String);
-                parameters.Add("@Fecha_Insert", input.FechaInsert, DbType.String);
-                parameters.Add("@Segundo_Insert", input.SegundoInsert, DbType.String);
-                parameters.Add("@Reestructura", input.Reestructura, DbType.Int16);
-                parameters.Add("@Condonacion", input.Condonacion, DbType.Int16);
-                parameters.Add("@idGrabacion", input.IdGrabacion, DbType.String);
-
-                try
+                if (input.CartaConvenio == 1)
                 {
-                    var result = await connection.QueryFirstOrDefaultAsync<NegociacionPlazosOutput>(
-                        "[dbo].[3.2.GuardaNegociaciónPlazos]",
-                        parameters,
-                        commandType: CommandType.StoredProcedure);
-
-                    return result;
-                }
-                catch (SqlException ex)
-                {
-                    // Manejar errores específicos de SQL
-                    NegociacionPlazosOutput errorResult = new NegociacionPlazosOutput();
-
-                    if (ex.Number == 50000) // Ejemplo: Error personalizado desde el SP
+                    if (!_ejecutivoRepository.ValidaCorreo(input.Correo))
                     {
-                        errorResult.Mensaje = ex.Message;
+                        correo_correcto++;
                     }
                     else
                     {
-                        // Loggear el error o lanzar una excepción genérica
-                        throw;
-                    }
-                    return errorResult;
+                        correo_correcto = 0;
+                    }                    
                 }
+                if (correo_correcto == 0)
+                {
+                    await connection.OpenAsync();
+                    var parameters = new DynamicParameters();
+                    parameters.Add("@idCartera", input.IdCartera, DbType.Int16);
+                    parameters.Add("@idCuenta", input.IdCuenta, DbType.String);
+                    parameters.Add("@idEjecutivo", input.IdEjecutivo, DbType.Int32);
+                    parameters.Add("@idHerramienta", input.IdHerramienta, DbType.Int32);
+                    parameters.Add("@MontoNegociado", input.MontoNegociado, DbType.Decimal);
+                    parameters.Add("@Plazos", input.Plazos, DbType.Int16);
+                    parameters.Add("@CartaConvenio", input.CartaConvenio, DbType.Int16);
+                    parameters.Add("@Correo", input.Correo, DbType.String);
+                    parameters.Add("@FechaPago", input.FechaPago, DbType.String);
+                    parameters.Add("@FechaFinNegociacion", input.FechaFinNegociacion, DbType.String);
+                    parameters.Add("@idEjecutivoValidador", input.IdEjecutivoValidador, DbType.Int32);
+                    parameters.Add("@Contraseña", input.Contrasena, DbType.String);
+                    parameters.Add("@Fecha_Insert", input.FechaInsert, DbType.String);
+                    parameters.Add("@Segundo_Insert", input.SegundoInsert, DbType.String);
+                    parameters.Add("@Reestructura", input.Reestructura, DbType.Int16);
+                    parameters.Add("@Condonacion", input.Condonacion, DbType.Int16);
+                    parameters.Add("@idGrabacion", input.IdGrabacion, DbType.String);
+                    try
+                    {
+                        var result = await connection.QueryFirstOrDefaultAsync<NegociacionPlazosOutput>(
+                            "[dbo].[3.2.GuardaNegociaciónPlazos]",
+                            parameters,
+                            commandType: CommandType.StoredProcedure);
+
+                        return result;
+                    }
+                    catch (SqlException ex)
+                    {
+                        // Manejar errores específicos de SQL
+                        NegociacionPlazosOutput errorResult = new NegociacionPlazosOutput();
+
+                        if (ex.Number == 50000) // Ejemplo: Error personalizado desde el SP
+                        {
+                            errorResult.Mensaje = ex.Message;
+                        }
+                        else
+                        {
+                            // Loggear el error o lanzar una excepción genérica
+                            throw;
+                        }
+                        return errorResult;
+                    }
+                }
+                else
+                {
+                    NegociacionPlazosOutput errorResult = new NegociacionPlazosOutput();
+                    errorResult.Mensaje = "La dirección de correo electrónica es inválida.";
+                    return errorResult;
+                }                
             }
         }
 
         public async Task<dynamic> IncrementaNegociacion(IncrementoNegociacion incrementaNegInfo)
         {
             var incrementaNeg = await _ejecutivoRepository.IncrementaNegociacion(incrementaNegInfo);
-
-
-
             return incrementaNeg;
         }
-
-
-
 
         #endregion
 
