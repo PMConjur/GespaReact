@@ -29,14 +29,16 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   // Validar si el formulario está completo
   useEffect(() => {
     const isValid =
-      selectedDateRange.startDate && selectedDateRange.endDate && selectedEmail;
+      selectedDateRange.startDate && 
+      selectedDateRange.endDate && 
+      (selectedOptionEnvio ? selectedEmail : true);
     setIsFormValid(isValid);
-  }, [selectedDateRange, selectedEmail]);
+  }, [selectedDateRange, selectedEmail, selectedOptionEnvio]);
 
   // Obtener datos de estado de cuenta
   const handleAccountStatement = async () => {
     if (!searchResults || searchResults.length === 0) {
-      toast.error("Error 428: Primero debes buscar una Cuenta");
+      toast.error("Primero debes buscar una Cuenta");
       return;
     }
 
@@ -58,7 +60,6 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   };
 
   useEffect(() => {
-    console.log("Modal abierto:", show); // Verifica que el modal se abra correctamente
     if (show) {
       handleAccountStatement();
     }
@@ -67,7 +68,23 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   // Manejo de cambios en fecha y correo
   const handleDateChange = (e) => {
     const { name, value } = e.target;
-    setSelectedDateRange((prev) => ({ ...prev, [name]: value }));
+    
+    setSelectedDateRange((prev) => {
+      const newRange = { ...prev, [name]: value };
+      
+      // Validación adicional
+      if (name === "startDate" && newRange.endDate && value > newRange.endDate) {
+        toast.warning("La fecha inicial no puede ser posterior a la final");
+        return { ...newRange, endDate: value };
+      }
+      
+      if (name === "endDate" && newRange.startDate && value < newRange.startDate) {
+        toast.warning("La fecha final no puede ser anterior a la inicial");
+        return { ...newRange, startDate: value };
+      }
+      
+      return newRange;
+    });
   };
 
   const handleEmailChange = (e) => {
@@ -90,37 +107,31 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
       }
 
       try {
-        const idCartera = 1; // Ejemplo de valor
+        const idCartera = 1;
         const idCuenta = searchResults?.[0]?.idCuenta?.trim();
         const emails = await fetchEmailsCharging(idCartera, idCuenta);
 
-        console.log("Correos válidos obtenidos:", emails); // Verifica los correos obtenidos
-
-        // Extrae solo el campo 'CorreoElectrónico' de cada objeto
         const extractedEmails = emails.map((emailObj) => emailObj.CorreoElectrónico);
-
-        setValidEmails(extractedEmails || []); // Actualiza el estado con los correos válidos
+        setValidEmails(extractedEmails || []);
+        
+        // Selecciona el primer correo por defecto si hay opciones
+        if (extractedEmails.length > 0) {
+          setSelectedEmail(extractedEmails[0]);
+        }
       } catch (error) {
         console.error("Error al obtener los correos válidos:", error);
         toast.error("Error al cargar los correos válidos.");
       }
     }
   };
+;
 
   // Envío de datos al endpoint
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("handleSubmit ejecutado");
 
-    // Validar campos obligatorios
-    if (
-      !selectedDateRange.startDate ||
-      !selectedDateRange.endDate ||
-      !selectedEmail
-    ) {
-      toast.error(
-        "Por favor, complete todos los campos antes de enviar la solicitud."
-      );
+    if (!isFormValid) {
+      toast.error("Por favor, complete todos los campos requeridos.");
       return;
     }
 
@@ -129,8 +140,8 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
       idCartera: 1,
       idCuenta: searchResults?.[0]?.idCuenta.trim() || "string",
       idEjecutivo: idEjecutivo,
-      fechaInicial: new Date(selectedDateRange.startDate).toISOString(),
-      fechaFinal: new Date(selectedDateRange.endDate).toISOString(),
+      fechaInicial: selectedDateRange.startDate, // Ya no necesitas convertirlo
+      fechaFinal: selectedDateRange.endDate,
       consulta: selectedOption,
       correoElectrónico: selectedEmail
     };
@@ -259,7 +270,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                     Solicitar
                   </Card.Title>
                   <Form>
-                    <Form.Group className="mb-3">
+                  <Form.Group className="mb-3">
                       <Form.Label>Desde</Form.Label>
                       <Form.Control
                         type="date"
@@ -267,6 +278,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                         value={selectedDateRange.startDate}
                         onChange={handleDateChange}
                         required
+                        max={selectedDateRange.endDate}
                       />
                     </Form.Group>
                     <Form.Group className="mb-3">
@@ -277,6 +289,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                         value={selectedDateRange.endDate}
                         onChange={handleDateChange}
                         required
+                        min={selectedDateRange.startDate}
                       />
                     </Form.Group>
 

@@ -5,7 +5,14 @@ import { createFollows, fetchNotes } from "../../../services/gespawebServices";
 import { AppContext } from "../../../pages/Managment";
 
 const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister }) => {
-    const { isManagment, searchResults, setManagment, nombreEjecutivo } = useContext(AppContext);
+    const { 
+        isManagment, 
+        searchResults, 
+        setManagment, 
+        nombreEjecutivo,
+        formData, 
+        setFormData 
+    } = useContext(AppContext);
 
     if (!searchResults || searchResults.length === 0) {
         toast.error("No se encontraron resultados de búsqueda. No se puede usar este formulario.");
@@ -46,19 +53,38 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
 
     const [loading, setLoading] = useState(false);
     const [existingReminders, setExistingReminders] = useState([]);
-    const [formData, setFormData] = useState({
-        idCartera: 1,
-        idCuenta: idCuenta[0].trim(),
-        idEjecutivo: idEjecutivo,
-        fecha: new Date().toISOString().split('T')[0], // Solo fecha sin hora
-        segundo: "07:00:00",
-        idAcercamiento: "1601",
-        recordatorio: false,
-        numeroTelefonico: "",
-        displayedPhone: "",
-        datoContacto: "",
-        idMotivoS: "0",
-    });
+
+    // Inicializar formData en el contexto si no existe
+    useEffect(() => {
+        if (!formData) {
+            const phone = getContextPhoneNumber();
+            setFormData({
+                idCartera: 1,
+                idCuenta: idCuenta[0].trim(),
+                idEjecutivo: idEjecutivo,
+                fecha: new Date().toISOString().split('T')[0],
+                segundo: "07:00:00",
+                idAcercamiento: "1601",
+                recordatorio: false,
+                numeroTelefonico: phone.raw,
+                displayedPhone: phone.formatted,
+                datoContacto: "",
+                idMotivoS: "0",
+            });
+        }
+    }, []);
+
+    // Actualizar número telefónico cuando cambie isManagment
+    useEffect(() => {
+        if (formData) {
+            const phone = getContextPhoneNumber();
+            setFormData(prev => ({
+                ...prev,
+                numeroTelefonico: phone.raw,
+                displayedPhone: phone.formatted
+            }));
+        }
+    }, [isManagment]);
 
     // Cargar y preparar recordatorios existentes
     useEffect(() => {
@@ -68,7 +94,6 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 const reminders = notes
                     .filter(note => note.recordatorio)
                     .map(note => {
-                        // Asegurar formato correcto de FechaPago
                         const fechaPago = note.FechaPago.endsWith('Z') 
                             ? note.FechaPago 
                             : `${note.FechaPago}Z`;
@@ -81,32 +106,21 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 setExistingReminders(reminders);
             } catch (error) {
                 console.error("Error al cargar recordatorios:", error);
-            
             }
         };
         
         loadReminders();
     }, [idCuenta]);
 
-    useEffect(() => {
-        const phone = getContextPhoneNumber();
-        setFormData(prev => ({
-            ...prev,
-            numeroTelefonico: phone.raw,
-            displayedPhone: phone.formatted
-        }));
-    }, [isManagment]);
-
-    // Función robusta para comparar fechas y horas (se actualiza para incluir la comparación del campo "hora")
     const hasReminderConflict = (date, time) => {
         try {
             const timeParts = time.split(':').map(Number);
-            const [hours, minutes, seconds = 0] = timeParts; // Incluir segundos si existen
+            const [hours, minutes, seconds = 0] = timeParts;
             const newDateTime = new Date(`${date}T${hours}:${minutes}:${seconds}Z`);
             
             for (const reminder of existingReminders) {
                 const timeParts2 = reminder.segundo.split(':').map(Number);
-                const [rHours, rMinutes, rSeconds = 0] = timeParts2; // Incluir segundos si existen
+                const [rHours, rMinutes, rSeconds = 0] = timeParts2;
                 const reminderDate = new Date(reminder.FechaPago);
                 reminderDate.setUTCHours(rHours, rMinutes, rSeconds, 0);
                 
@@ -127,6 +141,8 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
+
+        if (!formData) return;
 
         if (name === "datoContacto") {
             if (value.length > 280) {
@@ -152,17 +168,19 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
     };
 
     const handleSave = async () => {
+        if (!formData) return;
+        
         setLoading(true);
     
         try {
-            // 1. Validación de número telefónico
+            // Validación de número telefónico
             if (!formData.numeroTelefonico || formData.numeroTelefonico.trim().length < 10) {
                 toast.error("Número telefónico inválido o incompleto");
                 setLoading(false);
                 return;
             }
     
-            // 2. Validación de fecha
+            // Validación de fecha
             const todayStr = new Date().toISOString().split('T')[0];
             if (formData.fecha < todayStr) {
                 toast.error("No puedes seleccionar una fecha anterior al día actual");
@@ -170,7 +188,6 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 return;
             }
 
-            // Nueva validación: si la fecha es hoy, la hora debe ser al menos 1 minuto mayor a la hora actual
             if (formData.fecha === todayStr) {
                 const scheduledDate = new Date(`${formData.fecha}T${formData.segundo}`);
                 const nowPlusOne = new Date(Date.now() + 60000);
@@ -181,26 +198,23 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 }
             }
     
-            // 3. Validación de horario para recordatorios
+            // Validación de horario para recordatorios
             if (formData.recordatorio) {
                 const [hours, minutes] = formData.segundo.split(':').map(Number);
                 const period = hours >= 12 ? "PM" : "AM";
     
-                // Validar horario AM (7:00 - 11:59)
                 if (period === "AM" && (hours < 7 || hours > 11)) {
                     toast.error("Horario AM inválido. Debe ser entre 7:00 AM y 11:59 AM");
                     setLoading(false);
                     return;
                 }
     
-                // Validar horario PM (12:00 - 22:00)
                 if (period === "PM" && (hours < 12 || hours > 22)) {
                     toast.error("Horario PM inválido. Debe ser entre 12:00 PM y 10:00 PM");
                     setLoading(false);
                     return;
                 }
     
-                // Validar solapamiento de recordatorios
                 const { conflict, existingTime } = hasReminderConflict(formData.fecha, formData.segundo);
                 if (conflict) {
                     toast.error(`Conflicto con recordatorio existente a las ${existingTime}. Debe haber al menos 5 minutos de diferencia.`);
@@ -209,40 +223,36 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 }
             }
     
-            // 4. Preparar datos para enviar al servidor
             const dataToSend = {
                 ...formData,
                 fecha: `${formData.fecha}T${formData.segundo}`,
                 datoContacto: formData.datoContacto.trim() || null,
-                numeroTelefonico: formData.numeroTelefonico.toString().replace(/\D/g, '') // Limpiar formato
+                numeroTelefonico: formData.numeroTelefonico.toString().replace(/\D/g, '')
             };
     
-            // 5. Enviar al servidor
             const response = await createFollows(dataToSend);
             
-            // 6. Actualizar contexto
             setManagment(prev => ({
                 ...prev,
                 gestion: {
                     ...dataToSend,
-                    idSeguimiento: response.idSeguimiento || Date.now(), // ID del servidor o temporal
+                    idSeguimiento: response.idSeguimiento || Date.now(),
                     timestamp: new Date().toISOString(),
                     tipo: "seguimiento",
                     ejecutivo: {
                         idEjecutivo: idEjecutivo,
-                        nombre: nombreEjecutivo // Asegúrate de tener esta variable del contexto
+                        nombre: nombreEjecutivo
                     }
                 }
             }));
     
-            // 7. Notificar éxito
             toast.success(<div>
                 <strong>Seguimiento registrado</strong>
                 <div>Cuenta: {formData.idCuenta}</div>
                 <div>Fecha: {formData.fecha} {formData.segundo}</div>
             </div>);
     
-            // 8. Resetear formulario (conservando número telefónico)
+            // Resetear formulario manteniendo datos esenciales
             setFormData(prev => ({
                 ...prev,
                 fecha: new Date().toISOString().split('T')[0],
@@ -252,22 +262,11 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 idMotivoS: "0"
             }));
     
-            // 9. Ejecutar callback de éxito
             if (onSuccessfulRegister) onSuccessfulRegister();
-    
-            // 10. Debug: Verificar contexto actualizado
-            console.log("Contexto actualizado:", {
-                gestion: {
-                    ...dataToSend,
-                    idSeguimiento: response.idSeguimiento,
-                    timestamp: new Date().toISOString()
-                }
-            });
     
         } catch (error) {
             console.error("Error en handleSave:", error);
             
-            // Manejo detallado de errores
             const errorMessage = error.response?.data?.message || 
                                 error.message || 
                                 "Error al guardar el seguimiento";
@@ -284,6 +283,10 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
             setLoading(false);
         }
     };
+
+    if (!formData) {
+        return <div>Cargando formulario...</div>;
+    }
 
     return (
         <div className="p-3">

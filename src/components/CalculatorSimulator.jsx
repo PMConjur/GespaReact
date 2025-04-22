@@ -977,7 +977,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                   )
                                     .toISOString()
                                     .split("T")[0]
-                                } // Fecha máxima: 15 días después de hoy
+                                } 
                               />
                               <Form.Label>Máximo 28 días</Form.Label>
                             </Form.Group>

@@ -2,7 +2,7 @@ import { Dropdown, ButtonGroup, Image, Col } from "react-bootstrap";
 import User from "../assets/img/user.svg";
 import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import {Hash, PersonSquare} from "react-bootstrap-icons";
+import {Hash} from "react-bootstrap-icons";
 
 const DropExecutive = () => {
   const location = useLocation(); // Hook para obtener la ubicación actual
@@ -69,18 +69,16 @@ const DropExecutive = () => {
           }}
         />
         {/* Opción del menú del dropdown */}
-        <Dropdown.Item
-          href="/maintenance"
+        <p
           className="text-center" // Cambiado a text-center para centrar
           style={{
-            fontSize: "14px",
+            fontSize: "16px",
             color: "#fff", // Cambiado a blanco
-            padding: "10px 15px",
             borderRadius: "5px",
           }}
         >
           Ejecutivo Telefonico
-        </Dropdown.Item>
+        </p>
       </Dropdown.Menu>
 
       {/* Imagen del usuario */}

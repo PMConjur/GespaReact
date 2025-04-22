@@ -629,21 +629,11 @@ export const getGestionTeData = async (idCartera, idCuenta) => {
 
 // Endpoint Recordatorios
 
-export const fetchNotes = async (numEmpleado, token) => {
+export const fetchNotes = async (numEmpleado) => {
   try {
-    if (!token) {
-      throw new Error("Token is missing or invalid");
-    }
-
     const response = await servicio.get(
-      `http://192.168.7.33/api/ejecutivo/recordatorios/${numEmpleado}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
+      `/ejecutivo/recordatorios/${numEmpleado}`,
     );
-
     // formato de los datos
     const data = response.data;
     const formattedNotes = data.map((item) => ({

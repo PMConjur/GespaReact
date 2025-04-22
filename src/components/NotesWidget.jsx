@@ -1,17 +1,17 @@
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useContext} from "react";
 import { fetchNotes, saveNotesToAPI } from "../services/gespawebServices";
-import servicio from "../services/axiosServices";
 import DatePicker from "react-datepicker";
 import TimePicker from "react-time-picker";
 import Button from "react-bootstrap/Button";
 import "react-datepicker/dist/react-datepicker.css";
 import "../scss/styles.scss";
 import { toast } from "sonner";
+import { AppContext } from "../pages/Managment";
 
 const responseData = JSON.parse(localStorage.getItem("responseData"));
 const numEmpleado = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
-const token = servicio;
+console.log("numEmpleado", numEmpleado);
 
 const SaveIcon = () => (
   <svg
@@ -35,25 +35,37 @@ function NotesWidget() {
   const [date, setDate] = useState(new Date());
   const [time, setTime] = useState("");
   const [option, setOption] = useState("");
+  const { formData} = useContext(AppContext);
 
-  // Cargar notas desde un endpoint al iniciar
+  // Cargar notas cuando cambia numEmpleado o formData
   useEffect(() => {
     const loadNotes = async () => {
       try {
-        const fetchedNotes = await fetchNotes(numEmpleado, token);
-        setNotes(fetchedNotes);
+        console.log("Cargando notas...", { numEmpleado, formData });
+        const fetchedNotes = await fetchNotes(numEmpleado);
+        
+        // Asegurar que cada nota tenga un ID único
+        const notesWithUniqueIds = fetchedNotes.map((note, index) => ({
+          ...note,
+          id: note.id || `note-${Date.now()}-${index}`, // Generar ID si no existe
+          uniqueKey: `${note.idCuenta?.trim()}-${note.FechaPago}-${note.segundo}-${index}` // Clave única compuesta
+        }));
+        
+        setNotes(notesWithUniqueIds);
       } catch (error) {
         console.error("Error fetching notes:", error);
-        if (error.response && error.response.status === 404) {
-          // alert("No se encontraron Recordatorios...");
+        if (error.response?.status === 404) {
+          console.log("No se encontraron recordatorios");
         } else {
-          // alert("Se produjo un error al recuperar Recordatorios...");
+          toast.error("Error al cargar los recordatorios");
         }
       }
     };
 
-    loadNotes();
-  }, [numEmpleado, token]);
+    if (numEmpleado) {
+      loadNotes();
+    }
+  }, [numEmpleado, formData?.datoContacto]);
 
   // Validar la fecha y hora de seguimiento
   useEffect(() => {
@@ -203,13 +215,14 @@ useEffect(() => {
       setNotes(updatedNotes);
     } else {
       const newNote = {
-        id: Date.now().toString(),
+        id: `note-${Date.now()}`,
         title,
         content,
         approach,
         date: dateTime,
         time,
         option,
+        uniqueKey: `note-${Date.now()}-${notes.length}` // Clave única para renderizado
       };
       setNotes([newNote, ...notes]);
     }
@@ -343,8 +356,8 @@ useEffect(() => {
             <div className="list-group overflow-auto" style={{ maxHeight: "400px" }}>
               {sortedNotes.map((note, index) => (
                 <div
-                key={note.id}
-                className={`list-group-item list-group-item-action ${index === 0 && note.date ? 'blinking-border' : ''}`}
+                key={note.uniqueKey || note.id}
+                className={`list-group-item list-group-item-action ${sortedNotes[0]?.id === note.id && note.date ? 'blinking-border' : ''}`}
                 style={{ marginBottom: "2rem" }}
               >
                   <div className="d-flex justify-content-between align-items-center">
@@ -360,11 +373,10 @@ useEffect(() => {
                         {index === 0 && note.date && (
                       <div className="d-flex justify-content-between align-items-center mt-2">
                         <span className="shake-animation">
-                          PRÓXIMO SEGUIMIENTO
+                          SEGUIMIENTO PENDIENTE
                         </span>
                         <Button 
                           className="mt-2 btn-success"
-                         
                           onClick={() => handleRealizarClick(note)}
                         >
                           Realizar

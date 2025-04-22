@@ -409,7 +409,14 @@ const Telephones = () => {
         <div style={{ maxHeight: "300px", overflowY: "auto" }}>
           <Table hover variant="dark">
             <thead>
-              <tr>
+              <tr
+                 style={{
+                  position: "sticky",
+                  top: "0",
+                  backgroundColor: "#343a40", // Color de fondo para que coincida con el tema oscuro
+                  zIndex: "10"
+                }}
+              >
                 <th>T</th>
                 <th>C</th>
                 <th>D</th>
