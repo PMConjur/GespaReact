@@ -196,7 +196,7 @@ const Validators = ({ show, handleClose, handleValidate, modalCase = "" }) => {
   return (
     <>
       <Modal show={show} onHide={handleCloseModal} size="md" backdrop="static">
-        <Modal.Header closeButton className="bg-dark text-light">
+        <Modal.Header className="bg-dark text-light">
           <Modal.Title>Validación</Modal.Title>
         </Modal.Header>
         <Modal.Body className="bg-dark text-light d-block">

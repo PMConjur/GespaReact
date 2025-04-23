@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo, useContext} from "react";
 import { fetchNotes, saveNotesToAPI } from "../services/gespawebServices";
 import DatePicker from "react-datepicker";
