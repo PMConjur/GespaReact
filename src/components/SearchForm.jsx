@@ -162,7 +162,7 @@ const SearchForm = () => {
               variant="danger"
               className="position-absolute w-auto mt-5"
               style={{
-                zIndex: 2000
+                zIndex: 10
               }}
             >
               {inputError}
@@ -173,7 +173,7 @@ const SearchForm = () => {
               variant="danger"
               className="position-absolute w-auto mt-5"
               style={{
-                zIndex: 2000
+                zIndex: 10
               }}
             >
               {errorMessage}
@@ -183,15 +183,18 @@ const SearchForm = () => {
             <div
               className="position-absolute w-auto bg-white mt-5"
               style={{
+                borderBottom: "1px solid black",
+                cursor: "pointer",
                 maxHeight: "300px",
                 overflowY: "auto",
-                zIndex: 2000,
+                zIndex: 10,
                 color: "black",
                 fontSize: "13px"
               }}
             >
               {suggestions.map((suggestion, index) => (
                 <div
+                  style={{borderBottom: "1px solid #ccc"}}
                   key={index}
                   onClick={() => handleSuggestionClick(suggestion)}
                   className="p-2 cursor-pointer"
