@@ -430,10 +430,6 @@ const Telephones = () => {
                 <th>Huso Horario</th>
                 {/* <th>SEG Horario Contacto</th> */}
                 <th>Extensión</th>
-                <th>Confirmado</th>
-                {/* <th>Fecha INSERT</th> */}
-                <th>Calificación</th>
-                <th>Activo</th>
               </tr>
             </thead>
             <tbody>
@@ -476,13 +472,6 @@ const Telephones = () => {
                       <td>{row.husoHorario || "--"}</td>
                       {/* <td>{row.segHorarioContacto || "--"}</td> */}
                       <td>{row.extensión || "--"}</td>
-                      <td>{row.confirmado || "--"}</td>
-                      {/* <td>
-                        {new Date(row.fecha_Insert).toLocaleDateString() ||
-                          "--"}
-                      </td> */}
-                      <td>{row.calificacion || "--"}</td>
-                      <td>{row.activo || "--"}</td>
                     </tr>
                   ))}
             </tbody>

@@ -43,7 +43,7 @@ const ActivityDay = ({ show, handleClose }) => {
       <Modal.Header closeButton>
         <Modal.Title>Gestiones Diarias</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body style={{ display: "flex", flexDirection: "column" }}>
         <Tabledailymanagement cuentasData={cuentasData} />
         <Tableefforts
           gestionesData={gestionesData}
