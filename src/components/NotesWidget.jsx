@@ -8,6 +8,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import "../scss/styles.scss";
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
+import { BellFill } from "react-bootstrap-icons";
 
 const responseData = JSON.parse(localStorage.getItem("responseData"));
 const numEmpleado = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
@@ -255,7 +256,7 @@ useEffect(() => {
         style={{}}
         className="card-header text-white d-flex justify-content-between align-items-center"
       >
-        <h5 className="mb-0">Mis Recordatorios</h5>
+        <h5 className="mb-0 gap-3"><BellFill className=" me-1"/>Mis Recordatorios</h5>
         {/* 
         <button
           className="btn btn-sm btn-light"

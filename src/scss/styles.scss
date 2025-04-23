@@ -665,13 +665,13 @@ $list-group-border-radius: 0.75rem;
 $list-group-item-padding-y: 1rem;
 $list-group-item-padding-x: 1.5rem;
 
+
 // Colores y estados
 $list-group-hover-bg: rgba(#4a9dff, 0.05);
 $list-group-active-bg: #4a9dff;
 $list-group-active-color: rgb(255, 255, 255);
 $list-group-disabled-bg: #f8f9fa;
 $list-group-disabled-color: #6c757d;
-
 // Transiciones
 $list-group-transition: all 0.3s ease;
 
@@ -684,7 +684,7 @@ $list-group-transition: all 0.3s ease;
     // Estilo base
     background-color: #1d1f20;
     color: #39fc8d;
-    border-bottom: 1px solid #6c757d;
+    border: none;
     transition: $list-group-transition;
 
     // Efecto hover
@@ -736,7 +736,6 @@ $list-group-transition: all 0.3s ease;
     color: white;
 
     .list-group-item {
-      border-color: rgba(white, 0.1);
       padding: 2px;
 
       &:hover {
