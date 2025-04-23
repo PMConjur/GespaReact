@@ -448,12 +448,18 @@ const Telephones = () => {
           <div style={{ maxHeight: "300px", overflowY: "auto" }}>
             <Table hover variant="dark">
               <thead>
-                <tr>
+                <tr
+                  style={{
+                    position: "sticky",
+                    top: "0",
+                    backgroundColor: "#343a40", // Color de fondo para que coincida con el tema oscuro
+                    zIndex: "10"
+                  }}
+                >
                   <th>T</th>
                   <th>C</th>
                   <th>D</th>
                   <th>S</th>
-                  <th>Seg.</th>
                   <th>Teléfono</th>
                   <th>Telefonía</th>
                   <th>Origen</th>
@@ -461,10 +467,8 @@ const Telephones = () => {
                   <th>Estado</th>
                   <th>Municipio</th>
                   <th>Huso Horario</th>
+                  {/* <th>SEG Horario Contacto</th> */}
                   <th>Extensión</th>
-                  <th>Confirmado</th>
-                  <th>Calificación</th>
-                  <th>Activo</th>
                 </tr>
               </thead>
               <tbody>
@@ -505,21 +509,22 @@ const Telephones = () => {
                             href="#"
                             className="text-info"
                             onClick={() => handleRowClick(row)}
-                            data-full-number={row.númeroTelefónico}
+                            data-full-number={row.númeroTelefónico} // Este atributo es esencial
                           >
                             {"XXXXXX" + row.númeroTelefónico.slice(6)}
                           </a>
                         </td>
-                        <td>{row.telefonia || "--"}</td>
-                        <td>{row.origen || "--"}</td>
-                        <td>{row.clase || "--"}</td>
+                        <td>{row.telefonia || "--"}</td>{" "}
+                        {/* Muestra el valor de telefonia */}
+                        <td>{row.origen || "--"}</td>{" "}
+                        {/* Muestra el valor de origen */}
+                        <td>{row.clase || "--"}</td>{" "}
+                        {/* Muestra el valor de clase */}
                         <td>{row.estado || "--"}</td>
                         <td>{row.municipio || "--"}</td>
                         <td>{row.husoHorario || "--"}</td>
+                        {/* <td>{row.segHorarioContacto || "--"}</td> */}
                         <td>{row.extensión || "--"}</td>
-                        <td>{row.confirmado || "--"}</td>
-                        <td>{row.calificacion || "--"}</td>
-                        <td>{row.activo || "--"}</td>
                       </tr>
                     ))}
               </tbody>

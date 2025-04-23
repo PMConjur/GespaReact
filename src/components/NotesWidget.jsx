@@ -1,17 +1,17 @@
-
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useContext} from "react";
 import { fetchNotes, saveNotesToAPI } from "../services/gespawebServices";
-import servicio from "../services/axiosServices";
 import DatePicker from "react-datepicker";
 import TimePicker from "react-time-picker";
 import Button from "react-bootstrap/Button";
 import "react-datepicker/dist/react-datepicker.css";
 import "../scss/styles.scss";
 import { toast } from "sonner";
+import { AppContext } from "../pages/Managment";
+import { BellFill } from "react-bootstrap-icons";
 
 const responseData = JSON.parse(localStorage.getItem("responseData"));
 const numEmpleado = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
-const token = servicio;
+console.log("numEmpleado", numEmpleado);
 
 const SaveIcon = () => (
   <svg
@@ -35,25 +35,37 @@ function NotesWidget() {
   const [date, setDate] = useState(new Date());
   const [time, setTime] = useState("");
   const [option, setOption] = useState("");
+  const { formData} = useContext(AppContext);
 
-  // Cargar notas desde un endpoint al iniciar
+  // Cargar notas cuando cambia numEmpleado o formData
   useEffect(() => {
     const loadNotes = async () => {
       try {
-        const fetchedNotes = await fetchNotes(numEmpleado, token);
-        setNotes(fetchedNotes);
+        console.log("Cargando notas...", { numEmpleado, formData });
+        const fetchedNotes = await fetchNotes(numEmpleado);
+        
+        // Asegurar que cada nota tenga un ID único
+        const notesWithUniqueIds = fetchedNotes.map((note, index) => ({
+          ...note,
+          id: note.id || `note-${Date.now()}-${index}`, // Generar ID si no existe
+          uniqueKey: `${note.idCuenta?.trim()}-${note.FechaPago}-${note.segundo}-${index}` // Clave única compuesta
+        }));
+        
+        setNotes(notesWithUniqueIds);
       } catch (error) {
         console.error("Error fetching notes:", error);
-        if (error.response && error.response.status === 404) {
-          // alert("No se encontraron Recordatorios...");
+        if (error.response?.status === 404) {
+          console.log("No se encontraron recordatorios");
         } else {
-          // alert("Se produjo un error al recuperar Recordatorios...");
+          toast.error("Error al cargar los recordatorios");
         }
       }
     };
 
-    loadNotes();
-  }, [numEmpleado, token]);
+    if (numEmpleado) {
+      loadNotes();
+    }
+  }, [numEmpleado, formData?.datoContacto]);
 
   // Validar la fecha y hora de seguimiento
   useEffect(() => {
@@ -203,13 +215,14 @@ useEffect(() => {
       setNotes(updatedNotes);
     } else {
       const newNote = {
-        id: Date.now().toString(),
+        id: `note-${Date.now()}`,
         title,
         content,
         approach,
         date: dateTime,
         time,
         option,
+        uniqueKey: `note-${Date.now()}-${notes.length}` // Clave única para renderizado
       };
       setNotes([newNote, ...notes]);
     }
@@ -242,7 +255,7 @@ useEffect(() => {
         style={{}}
         className="card-header text-white d-flex justify-content-between align-items-center"
       >
-        <h5 className="mb-0">Mis Recordatorios</h5>
+        <h5 className="mb-0 gap-3"><BellFill className=" me-1"/>Mis Recordatorios</h5>
         {/* 
         <button
           className="btn btn-sm btn-light"
@@ -335,50 +348,52 @@ useEffect(() => {
           </div>
        ) : (
         <div className="notes-list">
-          {sortedNotes.length === 0 ? (
-            <div className="text-center text-muted py-5 mb-0 text-white">
-              <p className="text-white">No hay Recordatorios.</p>
-            </div>
-          ) : (
-            <div className="list-group overflow-auto" style={{ maxHeight: "400px" }}>
-              {sortedNotes.map((note, index) => (
+        {sortedNotes.length === 0 ? (
+          <div className="text-center text-muted py-5 mb-0 text-white">
+            <p className="text-white">No hay Recordatorios.</p>
+          </div>
+        ) : (
+          <div className="list-group overflow-auto" style={{ maxHeight: "400px" }}>
+            {sortedNotes.map((note, index) => {
+              // Determinar si es el recordatorio más próximo
+              const isClosestNote = index === 0;
+              
+              return (
                 <div
-                key={note.id}
-                className={`list-group-item list-group-item-action ${index === 0 && note.date ? 'blinking-border' : ''}`}
-                style={{ marginBottom: "2rem" }}
-              >
+                  key={note.uniqueKey || note.id}
+                  className={`list-group-item list-group-item-action ${isClosestNote ? 'blinking-border' : ''}`}
+                  style={{ marginBottom: "2rem" }}
+                >
                   <div className="d-flex justify-content-between align-items-center">
                     <h6 className="mb-1">{note.title || "Sin título"}</h6>
-            
                   </div>
                   <p className="mb-1">
                     <span style={{ whiteSpace: "none" }}>
                       {note.content || "Sin contenido"}
                     </span>
                   </p>
-                        {/* Mostrar botón SOLO en el primer recordatorio (más próximo) */}
-                        {index === 0 && note.date && (
-                      <div className="d-flex justify-content-between align-items-center mt-2">
-                        <span className="shake-animation">
-                          PRÓXIMO SEGUIMIENTO
-                        </span>
-                        <Button 
-                          className="mt-2 btn-success"
-                         
-                          onClick={() => handleRealizarClick(note)}
-                        >
-                          Realizar
-                        </Button>
-                      </div>
-                    )}
+                  {isClosestNote && note.date && (
+                    <div className="d-flex justify-content-between align-items-center mt-2">
+                      <span className="shake-animation">
+                        SEGUIMIENTO PENDIENTE
+                      </span>
+                      <Button 
+                        className="mt-2 btn-success"
+                        onClick={() => handleRealizarClick(note)}
+                      >
+                        Realizar
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    )}
   </div>
+</div>
 );
 }
 

@@ -14,15 +14,11 @@ import { toast } from "sonner"; // Importar toast
 const SearchForm = () => {
   const {
     searchTerm,
-    setSearchTerm,
     filter,
-    setFilter,
     suggestions,
-    setSuggestions,
     showSuggestions,
     setShowSuggestions,
     errorMessage,
-    setErrorMessage,
     handleSearch,
     handleFilterSelect,
     handleInputChange,
@@ -30,6 +26,7 @@ const SearchForm = () => {
     handleAutomaticSearch,
     userActiveFlow // Obtener userActiveFlow del contexto
   } = useContext(AppContext);
+  // console.log("Esto trae suggestions",suggestions); // Verifica el valor de userActiveFlow
   //console.log(userActiveFlow); // Verifica el valor de userActiveFlow
   const [inputError, setInputError] = useState(""); // Estado para el mensaje de error
 
@@ -162,7 +159,7 @@ const SearchForm = () => {
               variant="danger"
               className="position-absolute w-auto mt-5"
               style={{
-                zIndex: 2000
+                zIndex: 10
               }}
             >
               {inputError}
@@ -173,7 +170,7 @@ const SearchForm = () => {
               variant="danger"
               className="position-absolute w-auto mt-5"
               style={{
-                zIndex: 2000
+                zIndex: 10
               }}
             >
               {errorMessage}
@@ -183,20 +180,29 @@ const SearchForm = () => {
             <div
               className="position-absolute w-auto bg-white mt-5"
               style={{
+                borderBottom: "1px solid black",
+                cursor: "pointer",
                 maxHeight: "300px",
                 overflowY: "auto",
-                zIndex: 2000,
+                zIndex: 10,
                 color: "black",
                 fontSize: "13px"
               }}
             >
               {suggestions.map((suggestion, index) => (
                 <div
+                  style={{borderBottom: "1px solid #ccc"}}
                   key={index}
                   onClick={() => handleSuggestionClick(suggestion)}
                   className="p-2 cursor-pointer"
                 >
-                  {suggestion.nombreDeudor}
+                  Cuenta: <span className="fw-bold">{suggestion.idCuenta} </span>/
+                  Cartera: <span className="fw-bold">{suggestion.cartera} </span>/
+                  Producto: <span className="fw-bold">{suggestion.producto} </span>/
+                  Nombre: <span className="fw-bold">{suggestion.nombreDeudor} </span> /
+                  RFC: <span className="fw-bold">{suggestion.rfc} </span>/
+                  Numero Cliente: <span className="fw-bold">{suggestion.numeroCliente ||"-"} </span>/
+                  Situacion: <span className="fw-bold">{suggestion.situacion}</span> 
                 </div>
               ))}
             </div>

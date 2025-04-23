@@ -5,7 +5,14 @@ import { createFollows, fetchNotes } from "../../../services/gespawebServices";
 import { AppContext } from "../../../pages/Managment";
 
 const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister }) => {
-    const { isManagment, searchResults, setManagment, nombreEjecutivo } = useContext(AppContext);
+    const { 
+        isManagment, 
+        searchResults, 
+        setManagment, 
+        nombreEjecutivo,
+        formData, 
+        setFormData 
+    } = useContext(AppContext);
 
     if (!searchResults || searchResults.length === 0) {
         toast.error("No se encontraron resultados de búsqueda. No se puede usar este formulario.");
@@ -46,22 +53,64 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
 
     const [loading, setLoading] = useState(false);
     const [existingReminders, setExistingReminders] = useState([]);
-    const [formData, setFormData] = useState({
-        idCartera: 1,
-        idCuenta: idCuenta[0].trim(),
-        idEjecutivo: idEjecutivo,
-        fecha: new Date().toISOString().split('T')[0], // Solo fecha sin hora
-        segundo: "07:00:00",
-        idAcercamiento: "1601",
-        recordatorio: false,
-        numeroTelefonico: "",
-        displayedPhone: "",
-        datoContacto: "",
-        idMotivoS: "0",
-    });
+
+    // Inicializar formData en el contexto si no existe
+    useEffect(() => {
+        if (!formData) {
+            const phone = getContextPhoneNumber();
+            setFormData({
+                idCartera: 1,
+                idCuenta: idCuenta[0].trim(),
+                idEjecutivo: idEjecutivo,
+                fecha: new Date().toISOString().split('T')[0],
+                segundo: "07:00:00",
+                idAcercamiento: "1601",
+                recordatorio: false,
+                numeroTelefonico: phone.raw,
+                displayedPhone: phone.formatted,
+                datoContacto: "",
+                idMotivoS: "0",
+            });
+        }
+    }, []);
+
+    // Actualizar número telefónico cuando cambie isManagment
+    useEffect(() => {
+        if (formData) {
+            const phone = getContextPhoneNumber();
+            setFormData(prev => ({
+                ...prev,
+                numeroTelefonico: phone.raw,
+                displayedPhone: phone.formatted
+            }));
+        }
+    }, [isManagment]);
 
     // Cargar y preparar recordatorios existentes
-
+    useEffect(() => {
+        const loadReminders = async () => {
+            try {
+                const notes = await fetchNotes(idCuenta[0].trim());
+                const reminders = notes
+                    .filter(note => note.recordatorio)
+                    .map(note => {
+                        const fechaPago = note.FechaPago.endsWith('Z') 
+                            ? note.FechaPago 
+                            : `${note.FechaPago}Z`;
+                        return {
+                            ...note,
+                            FechaPago: fechaPago,
+                            segundo: note.segundo || "00:00:00"
+                        };
+                    });
+                setExistingReminders(reminders);
+            } catch (error) {
+                console.error("Error al cargar recordatorios:", error);
+            }
+        };
+        
+        loadReminders();
+    }, [idCuenta]);
 
     useEffect(() => {
         const phone = getContextPhoneNumber();
@@ -132,6 +181,8 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
 
+        if (!formData) return;
+
         if (name === "datoContacto") {
             if (value.length > 280) {
                 toast.error("Máximo 280 caracteres permitidos");
@@ -156,16 +207,18 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
     };
 
     const handleSave = async () => {
+        if (!formData) return;
+        
         setLoading(true);
         try {
-            // 1. Validación de número telefónico
+            // Validación de número telefónico
             if (!formData.numeroTelefonico || formData.numeroTelefonico.trim().length < 10) {
                 toast.error("Número telefónico inválido o incompleto");
                 setLoading(false);
                 return;
             }
     
-            // 2. Validación de fecha
+            // Validación de fecha
             const todayStr = new Date().toISOString().split('T')[0];
             if (formData.fecha < todayStr) {
                 toast.error("No puedes seleccionar una fecha anterior al día actual");
@@ -190,7 +243,6 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 const [hours, minutes] = formData.segundo.split(':').map(Number);
                 const period = hours >= 12 ? "PM" : "AM";
     
-                // Validar horario AM (7:00 - 11:59)
                 if (period === "AM" && (hours < 7 || hours > 11)) {
                     toast.error("Horario AM inválido. Debe ser entre 7:00 AM y 11:59 AM");
                     setLoading(false);
@@ -232,7 +284,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 ...formData,
                 fecha: `${formData.fecha}T${normalizedTime}`,
                 datoContacto: formData.datoContacto.trim() || null,
-                numeroTelefonico: formData.numeroTelefonico.toString().replace(/\D/g, '') // Limpiar formato
+                numeroTelefonico: formData.numeroTelefonico.toString().replace(/\D/g, '')
             };
             console.log("DEBUG: Intentando enviar seguimiento con datos:", dataToSend); // Nuevo log para depuración
 
@@ -262,7 +314,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                     }
                 }
             }));
-                
+    
             // 7. Notificar éxito
             toast.success(<div>
                 <strong>Seguimiento registrado</strong>
@@ -270,7 +322,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 <div>Fecha: {formData.fecha} {formData.segundo}</div>
             </div>);
     
-            // 8. Resetear formulario (conservando número telefónico)
+            // Resetear formulario manteniendo datos esenciales
             setFormData(prev => ({
                 ...prev,
                 fecha: new Date().toISOString().split('T')[0],
@@ -311,6 +363,10 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
             setLoading(false);
         }
     };
+
+    if (!formData) {
+        return <div>Cargando formulario...</div>;
+    }
 
     return (
         <div className="p-3">

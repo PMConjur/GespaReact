@@ -977,7 +977,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                   )
                                     .toISOString()
                                     .split("T")[0]
-                                } // Fecha máxima: 15 días después de hoy
+                                } 
                               />
                               <Form.Label>Máximo 28 días</Form.Label>
                             </Form.Group>
@@ -1285,7 +1285,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 <h5 className="text-light">
                                   {calculosData.tasaMensual
                                     ? `${calculosData.tasaMensual}%`
-                                    : "N/A"}
+                                    : "0"}
                                 </h5>
                               </Col>
                             </Row>
