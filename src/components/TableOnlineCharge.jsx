@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useContext, useRef } from "react";
+import { useState, useCallback, useEffect, useContext, useRef, useMemo } from "react";
 import { Table, Form } from "react-bootstrap";
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
@@ -7,95 +7,94 @@ import { reemplazarValores } from "./ValoresCatalogos.js"; // Importa el método
 
 const TableOnlineCharge = ({ customColumnNames = {}, refreshTrigger }) => {
   const { searchResults } = useContext(AppContext); // Hook 1
-  const [sortedData, setSortedData] = useState([]); // Hook 2
+  const [chargeData, setChargeData] = useState([]); // Hook 2
   const [sortByOldest, setSortByOldest] = useState(false); // Hook 3
-  const [toastShown, setToastShown] = useState(false); // Hook 
-  const [loading, setLoading] = useState(true); // Hook 4
+  const [toastShown, setToastShown] = useState(false); // Hook 4
+  const [loading, setLoading] = useState(true); // Hook 5
 
-
-    // Función para formatear la hora con AM/PM
-    const formatTimeWithAMPM = (timeString) => {
-      if (!timeString) return '--';
-      
-      try {
-        // Si ya tiene AM/PM, devolver tal cual
-        if (/(AM|PM)/i.test(timeString)) return timeString;
-        
-        // Extraer solo la parte de la hora
-        const timePart = timeString.includes('T') 
-          ? timeString.split('T')[1].split('.')[0] 
-          : timeString;
-        
-        const [hours, minutes] = timePart.split(':');
-        const hourInt = parseInt(hours, 10);
-        
-        const period = hourInt >= 12 ? 'PM' : 'AM';
-        const standardHour = hourInt % 12 || 12;
-        
-        return `${standardHour}:${minutes} ${period}`;
-      } catch (e) {
-        console.error("Error formateando hora:", e);
-        return timeString;
-      }
-    };
-
-  // Hook 5: useEffect para obtener datos
- // Agrega esto junto con tus otros hooks
-const errorToastShown = useRef(false);
-
-useEffect(() => {
-  const fetchData = async () => {
-    setLoading(true);
-    if (!searchResults || searchResults.length === 0) {
-      if (!errorToastShown.current) {
-        toast.error("Error 428: Primero debes buscar una Cuenta");
-        errorToastShown.current = true;
-      }
-      setLoading(false);
-      return;
-    }
-
+  // Función para formatear la hora con AM/PM
+  const formatTimeWithAMPM = (timeString) => {
+    if (!timeString) return '--';
+    
     try {
-      const idCuenta = searchResults[0]?.idCuenta;
-      if (!idCuenta) {
-        toast.error("No se encontró un idCuenta válido.");
-        return;
-      }
-
-      const onlineChargeData = await getOnlinechargeData(1, idCuenta);
-      setSortedData(onlineChargeData);
-      errorToastShown.current = false; // Resetear al tener éxito
-    } catch (error) {
-      console.error("Error al obtener los datos de Cargos en Línea:", error);
-    } finally {
-      setLoading(false);
+      // Si ya tiene AM/PM, devolver tal cual
+      if (/(AM|PM)/i.test(timeString)) return timeString;
+      
+      // Extraer solo la parte de la hora
+      const timePart = timeString.includes('T') 
+        ? timeString.split('T')[1].split('.')[0] 
+        : timeString;
+      
+      const [hours, minutes] = timePart.split(':');
+      const hourInt = parseInt(hours, 10);
+      
+      const period = hourInt >= 12 ? 'PM' : 'AM';
+      const standardHour = hourInt % 12 || 12;
+      
+      return `${standardHour}:${minutes} ${period}`;
+    } catch (e) {
+      console.error("Error formateando hora:", e);
+      return timeString;
     }
   };
 
-  fetchData();
-}, [searchResults, refreshTrigger]); // Asegúrese de incluir refreshTrigger aquí
-  // Hook 6: useCallback para manejar el ordenamiento
-  const handleSortChange = useCallback(() => {
-    if (!toastShown) {
-      setSortByOldest((prev) => !prev);
-      setSortedData((prevData) => {
-        const sorted = !sortByOldest
-          ? [...prevData].sort(
-              (a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert)
-            )
-          : [...sortedData]; // Restaurar datos originales si se desmarca el checkbox
+  // Hook 6: useEffect para obtener datos
+  const errorToastShown = useRef(false);
 
-        toast.success(
-          !sortByOldest
-            ? "Datos ordenados por fecha más antigua."
-            : "Orden original restaurado."
-        );
-        setToastShown(true);
-        setTimeout(() => setToastShown(false), 2000);
-        return sorted;
-      });
-    }
-  }, [sortByOldest, sortedData, toastShown]);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      if (!searchResults || searchResults.length === 0) {
+        if (!errorToastShown.current) {
+          toast.error("Error 428: Primero debes buscar una Cuenta");
+          errorToastShown.current = true;
+        }
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const idCuenta = searchResults[0]?.idCuenta;
+        if (!idCuenta) {
+          toast.error("No se encontró un idCuenta válido.");
+          return;
+        }
+
+        const onlineChargeData = await getOnlinechargeData(1, idCuenta);
+        setChargeData(onlineChargeData);
+        errorToastShown.current = false; // Resetear al tener éxito
+      } catch (error) {
+        console.error("Error al obtener los datos de Cargos en Línea:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [searchResults, refreshTrigger]); // Asegúrese de incluir refreshTrigger aquí
+
+  // Se calcula la data ordenada basándose en chargeData y sortByOldest
+  const sortedData = useMemo(() => {
+    return [...chargeData].sort((a, b) => {
+      const dateA = new Date(a.Fecha_Insert);
+      const dateB = new Date(b.Fecha_Insert);
+      return sortByOldest ? dateA - dateB : dateB - dateA;
+    });
+  }, [chargeData, sortByOldest]);
+
+  // Se simplifica la función de cambio para solo invertir el flag
+  const handleSortChange = useCallback(() => {
+    if (toastShown) return;
+    const newSortByOldest = !sortByOldest;
+    setSortByOldest(newSortByOldest);
+    toast.success(
+      newSortByOldest
+        ? "Datos ordenados por fecha más antigua."
+        : "Datos ordenados por fecha más reciente."
+    );
+    setToastShown(true);
+    setTimeout(() => setToastShown(false), 2000);
+  }, [sortByOldest, toastShown]);
 
   if (loading) {
     return (
@@ -221,7 +220,7 @@ useEffect(() => {
                     value = value.split("T")[0];
                   }
 
-                                    // Aplicar formato AM/PM al campo Hora (Segundo_Insert)
+                  // Aplicar formato AM/PM al campo Hora (Segundo_Insert)
                   if (header === "Segundo_Insert") {
                     value = formatTimeWithAMPM(value);
                   }

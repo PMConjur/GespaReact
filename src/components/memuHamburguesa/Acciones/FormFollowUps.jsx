@@ -97,21 +97,18 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
     // Función robusta para comparar fechas y horas usando el campo "date" de fetchNotes
     const hasReminderConflict = (date, time) => {
         try {
-            // Construir fecha y hora del nuevo registro (horario local)
             const newRecordDateTime = new Date(`${date}T${time}`);
-            // Normalizar segundos y milisegundos a 0
             newRecordDateTime.setSeconds(0, 0);
             
             for (const reminder of existingReminders) {
-                // Se utiliza el campo "date" para obtener la fecha y hora del recordatorio existente
                 const reminderDateTime = reminder.date 
-                    ? new Date(reminder.date) 
+                    ? new Date(reminder.date)
                     : new Date(`${date}T${reminder.segundo}`);
-                // Normalizar segundos y milisegundos a 0
                 reminderDateTime.setSeconds(0, 0);
                 
-                // Comparar la fecha y hora exactas
-                if (newRecordDateTime.getTime() === reminderDateTime.getTime()) {
+                // Verificar si la diferencia es menor a 5 minutos
+                const diff = Math.abs(newRecordDateTime - reminderDateTime);
+                if (diff < 5 * 60 * 1000) {
                     return {
                         conflict: true,
                         existingTime: reminderDateTime.toTimeString().split(" ")[0]
@@ -124,6 +121,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
             return { conflict: false };
         }
     };
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
 
@@ -169,7 +167,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 return;
             }
 
-            // Nueva validación: si la fecha es hoy, la hora debe ser posterior a la hora actual
+            // Validación: si la fecha es hoy, la hora debe ser posterior a la actual
             if (formData.fecha === todayStr) {
                 const scheduledDate = new Date(`${formData.fecha}T${formData.segundo}`);
                 const nowPlusOne = new Date(Date.now() + 60000);
@@ -180,8 +178,8 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 }
             }
     
-            // 3. Validación de horario para recordatorios
-            if (formData.recordatorio) {
+            // Validación: si el checkbox de recordatorio es true, validar rango de horas
+            if (formData.recordatorio === true) {
                 const [hours, minutes] = formData.segundo.split(':').map(Number);
                 const period = hours >= 12 ? "PM" : "AM";
     
@@ -198,14 +196,14 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                     setLoading(false);
                     return;
                 }
-    
-                // Validar solapamiento de recordatorios (mínimo 5 minutos entre cada uno)
-                const { conflict, existingTime } = hasReminderConflict(formData.fecha, formData.segundo);
-                if (conflict) {
-                    toast.error(`Conflicto con recordatorio existente a las ${existingTime}. Debe haber al menos 5 minutos de diferencia.`);
-                    setLoading(false);
-                    return;
-                }
+            }
+
+            // Validar que no exista otro seguimiento (sin importar el checkbox) en la misma fecha y hora
+            const { conflict, existingTime } = hasReminderConflict(formData.fecha, formData.segundo);
+            if (conflict) {
+                toast.error(`Conflicto con seguimiento existente a las ${existingTime}. Debe haber al menos 5 minutos de diferencia.`);
+                setLoading(false);
+                return;
             }
     
             // 4. Preparar datos para enviar al servidor
@@ -215,15 +213,17 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 datoContacto: formData.datoContacto.trim() || null,
                 numeroTelefonico: formData.numeroTelefonico.toString().replace(/\D/g, '') // Limpiar formato
             };
-    
-// 5. Enviar al servidor
+            console.log("Enviando registro con data:", dataToSend);
+
+            // 5. Enviar al servidor
             const response = await createFollows(dataToSend);
 
-            // 6. Actualizar existingReminders para incluir el nuevo recordatorio
+            // 6. Actualizar existingReminders para incluir el nuevo seguimiento
             setExistingReminders(prev => [
                 ...prev,
                 { 
-                    date: dataToSend.fecha // dataToSend.fecha ya viene en formato "YYYY-MM-DDTHH:mm:ss"
+                    date: dataToSend.fecha, 
+                    recordatorio: formData.recordatorio  
                 }
             ]);
 
@@ -232,7 +232,6 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 ...prev,
                 gestion: {
                     ...dataToSend,
-                    idSeguimiento: response.idSeguimiento || Date.now(),
                     timestamp: new Date().toISOString(),
                     tipo: "seguimiento",
                     ejecutivo: {
@@ -259,14 +258,14 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 idMotivoS: "0"
             }));
     
-            // 9. Ejecutar callback de éxito
+            // 9. Ejecutar callback de éxito y cerrar modal
             if (onSuccessfulRegister) onSuccessfulRegister();
+            if (handleClose) handleClose();
     
             // 10. Debug: Verificar contexto actualizado
             console.log("Contexto actualizado:", {
                 gestion: {
                     ...dataToSend,
-                    idSeguimiento: response.idSeguimiento,
                     timestamp: new Date().toISOString()
                 }
             });
@@ -274,7 +273,6 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
         } catch (error) {
             console.error("Error en handleSave:", error);
             
-            // Manejo detallado de errores
             const errorMessage = error.response?.data?.message || 
                                 error.message || 
                                 "Error al guardar el seguimiento";

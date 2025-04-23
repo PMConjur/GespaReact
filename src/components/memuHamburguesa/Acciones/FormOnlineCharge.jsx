@@ -34,11 +34,10 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess }) => {
         vencimientoAnio: today.split("-")[0],
         monto: 0,
         idBanco: "",
-        esClabe: false,
         domiciliado: false,
         autorizacion: "",
         idEjecutivo_Autorizo: idEjecutivo,
-        sistema: true,
+        sistema: false,
         status: 1,
     });
 
@@ -54,11 +53,10 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess }) => {
             vencimientoAnio: today.split("-")[0],
             monto: 0,
             idBanco: "",
-            esClabe: false,
             domiciliado: false,
             autorizacion: "",
             idEjecutivo_Autorizo: idEjecutivo,
-            sistema: true,
+            sistema: false,
             status: 1,
         });
         setTipoTarjeta("tarjetaCredito");
@@ -126,7 +124,10 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess }) => {
             });
         } else if (name === "tipoTarjeta") {
             setTipoTarjeta(value);
-            setFormData({ ...formData, tarjeta: "" });
+            setFormData({ 
+                ...formData, 
+                tarjeta: "" 
+            });
         } else if (name === "idBanco") {
             setFormData({ ...formData, [name]: parseInt(value, 10) });
         } else if (name === "monto") {
@@ -246,7 +247,7 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess }) => {
             domiciliado: formData.domiciliado,
             autorizacion: formData.autorizacion.trim(),
             idEjecutivo_Autorizo: formData.idEjecutivo_Autorizo,
-            sistema: true,
+            sistema: tipoTarjeta === "clabeInterbancaria" ? true : formData.sistema,
             status: formData.status
         };
 
@@ -460,17 +461,17 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess }) => {
                         <Col>
                             <Form.Check
                                 type="checkbox"
-                                name="esClabe"
-                                label="Es Clabe"
-                                checked={formData.esClabe}
-                                onChange={() =>
-                                    setFormData({
-                                        ...formData,
-                                        esClabe: !formData.esClabe,
-                                        domiciliado: formData.esClabe ? formData.domiciliado : false,
-                                    })
-                                }
+                                name="sistema"
+                                label="Sistema"
+                                checked={formData.sistema}
                                 disabled={formData.domiciliado}
+                                onChange={() => {
+                                    if (!formData.sistema) {
+                                        setFormData({ ...formData, sistema: true, domiciliado: false });
+                                    } else {
+                                        setFormData({ ...formData, sistema: false });
+                                    }
+                                }}
                             />
                         </Col>
                         <Col>
@@ -479,14 +480,14 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess }) => {
                                 name="domiciliado"
                                 label="Domiciliado"
                                 checked={formData.domiciliado}
-                                onChange={() =>
-                                    setFormData({
-                                        ...formData,
-                                        domiciliado: !formData.domiciliado,
-                                        esClabe: formData.domiciliado ? formData.esClabe : false,
-                                    })
-                                }
-                                disabled={formData.esClabe}
+                                disabled={formData.sistema}
+                                onChange={() => {
+                                    if (!formData.domiciliado) {
+                                        setFormData({ ...formData, domiciliado: true, sistema: false });
+                                    } else {
+                                        setFormData({ ...formData, domiciliado: false });
+                                    }
+                                }}
                             />
                         </Col>
                     </Row>

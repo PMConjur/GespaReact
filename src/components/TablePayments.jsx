@@ -97,7 +97,7 @@ const TablePayments = ({ customColumnNames = {}, refreshTrigger }) => { // Cambi
     FechaPago: "Fecha",
     MontoPago: "Monto",
     Referencia: "Referencia",
-    idSucursal: "Sucursal",
+    Sucursal: "Sucursal",
     Reportado: "Reportado",
     idEtapa: "Etapa",
     AcornPostDate: "Acorn Post Date",
@@ -188,11 +188,6 @@ const TablePayments = ({ customColumnNames = {}, refreshTrigger }) => { // Cambi
                 {/* Reducimos la altura de cada fila */}
                 {headers.map((header) => {
                   let value = item[header];
-
-                  // 🔹 Aplicar reemplazarValores para Sucursal
-                  if (header === "Sucursal") {
-                    value = reemplazarValores(value);
-                  }
 
                   // 🔹 Aplicar reemplazarValores para idEtapa
                   if (header === "idEtapa") {

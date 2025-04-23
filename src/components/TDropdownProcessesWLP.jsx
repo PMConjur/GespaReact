@@ -64,9 +64,7 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
                 
                 const result = await fetchProcessesWLP(producto, idCuenta);
                 
-                if (!result || result.length === 0) {
-                    toast.info(`No se encontraron datos para ${producto}`, { position: "top-right" });
-                }
+    
                 setProductData(result || []);
             } catch (err) {
                 console.error('Fetch error:', err);
@@ -125,9 +123,9 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
             : [];
 
         return (
-            <div className="table-responsive">
-                <Table striped bordered hover variant="dark" style={{ padding: ".7rem" }}>
-                    <thead>
+            <div className="scroll">
+                <Table striped bordered hover responsive variant="dark" style={{ padding: ".7rem", width: "100%" }}>
+                    <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#343a40" }}>
                         <tr>
                             {columns.map(key => (
                                 <th key={key} style={{ textAlign: "center" }}>
@@ -152,7 +150,7 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
                                         ) : (
                                             item[key] !== null && item[key] !== undefined 
                                                 ? item[key].toString() 
-                                                : 'N/A'
+                                                : "N/A"
                                         )}
                                     </td>
                                 ))}

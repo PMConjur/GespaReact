@@ -31,7 +31,7 @@ const TableFollowUps = ({ customColumnNames = {}, refreshTrigger }) => {
     
                 const followUpsData = await getFollowUpsData(1, idCuenta);
                 // Ordenar de más reciente a más antiguo por defecto
-                setSortedData([...followUpsData].sort((a, b) => new Date(b.Fecha_Insert) - new Date(a.Fecha_Insert)));
+                setSortedData([...followUpsData].sort((a, b) => new Date(b.FechaSeguimiento) - new Date(a.FechaSeguimiento)));
                 toastShownRef.current = false; // Resetear para futuras búsquedas
             } catch (error) {
                 console.error("Error al obtener los datos de seguimiento:", error);
@@ -47,8 +47,8 @@ const TableFollowUps = ({ customColumnNames = {}, refreshTrigger }) => {
                 const newSortByOldest = !prev;
                 setSortedData(prevData => 
                     newSortByOldest
-                    ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
-                    : [...prevData].sort((a, b) => new Date(b.Fecha_Insert) - new Date(a.Fecha_Insert))
+                    ? [...prevData].sort((a, b) => new Date(a.FechaSeguimiento) - new Date(b.FechaSeguimiento))
+                    : [...prevData].sort((a, b) => new Date(b.FechaSeguimiento) - new Date(a.FechaSeguimiento))
                 );
                 toast.success(
                     newSortByOldest
@@ -71,13 +71,13 @@ const TableFollowUps = ({ customColumnNames = {}, refreshTrigger }) => {
         "idCuenta",
         "idEjecutivo",
         "idEjecutivoRealizado",
-        "FechaSeguimiento",
-        "SegundoSeguimiento"
+        "Segundo_Insert",
+        "Fecha_Insert"
     ];
 
     const defaultColumnNames = {
-        "Fecha_Insert": "Fecha",
-        "Segundo_Insert": "Hora",
+        "FechaSeguimiento": "Fecha",
+        "SegundoSeguimiento": "Hora",
         "NúmeroTelefónico": "Teléfono",
         "idContacto": "Contacto",
         "idSituación": "Situación",
@@ -90,9 +90,15 @@ const TableFollowUps = ({ customColumnNames = {}, refreshTrigger }) => {
 
     const columnNames = { ...defaultColumnNames, ...customColumnNames };
 
-    const headers = Array.isArray(sortedData) && sortedData.length > 0 && sortedData[0] && typeof sortedData[0] === "object"
+    let headers = Array.isArray(sortedData) && sortedData.length > 0 && sortedData[0] && typeof sortedData[0] === "object"
         ? Object.keys(sortedData[0]).filter(header => !hiddenFields.includes(header))
         : [];
+    // Reordenar para que 'FechaSeguimiento' y 'Segundo_Insert' aparezcan primero
+    headers = [
+        "FechaSeguimiento",
+        "SegundoSeguimiento",
+        ...headers.filter(header => header !== "FechaSeguimiento" && header !== "SegundoSeguimiento")
+    ];
 
     // Función para formatear el número telefónico
     const formatPhoneNumber = (phone) => {
@@ -170,12 +176,12 @@ const TableFollowUps = ({ customColumnNames = {}, refreshTrigger }) => {
                                 {headers.map((header) => {
                                     let value = item[header];
 
-                                    if (header === "Fecha_Insert" && typeof value === "string" && value.includes("T")) {
+                                    if (header === "FechaSeguimiento" && typeof value === "string" && value.includes("T")) {
                                         value = value.split("T")[0];
                                     }
 
                                                         // Formatear hora con AM/PM
-                                    if (header === "Segundo_Insert") {
+                                    if (header === "SegundoSeguimiento") {
                                         value = formatTimeWithAMPM(value);
                                     }
 

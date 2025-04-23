@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useMemo } from "react";
 import { Form, Button, Row, Col } from "react-bootstrap";
 import { toast } from "sonner";
 import { AppContext } from "../../../pages/Managment";
@@ -7,15 +7,15 @@ import { createPayments } from "../../../services/gespawebServices";
 const FormPayments = ({ handleClose, onRegistrationSuccess }) => {
     const { searchResults } = useContext(AppContext);
 
+    // Memoriza idCuenta y la respuesta almacenada para evitar recrearla en cada render
+    const idCuenta = useMemo(() => searchResults?.map((result) => result.idCuenta) || [], [searchResults]);
+    const responseData = useMemo(() => JSON.parse(localStorage.getItem("responseData")), []);
+    const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo.idEjecutivo;
 
     if (!searchResults || searchResults.length === 0) {
         toast.error("No se encontraron resultados de búsqueda. No se puede usar este formulario.");
         return null;
     }
-
-    const idCuenta = searchResults?.map((result) => result.idCuenta) || [];
-    const responseData = JSON.parse(localStorage.getItem("responseData"));
-    const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo.idEjecutivo;
 
     const [loading, setLoading] = useState(false);
     const today = new Date().toISOString().split("T")[0]; // Fecha actual en formato YYYY-MM-DD
@@ -32,13 +32,13 @@ const FormPayments = ({ handleClose, onRegistrationSuccess }) => {
 
     const [formData, setFormData] = useState(initialFormState);
 
-    // Resetear el formulario cuando el modal se abre/cierra o cambian las dependencias
+    // Se actualiza solo cuando idCuenta cambia
     useEffect(() => {
         setFormData((prev) => ({
             ...prev,
             idCuenta: idCuenta[0]?.trim(),
         }));
-    }, [idCuenta, idEjecutivo]);
+    }, [idCuenta]);
 
     const resetForm = () => {
         setFormData(initialFormState);

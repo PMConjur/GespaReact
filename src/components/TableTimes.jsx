@@ -225,7 +225,7 @@ const TableTimes = ({ updatedTimes }) => {
     
 
     return (
-        <Table responsive variant="dark" className="mt-3">
+        <Table striped bordered hover responsive variant="dark" style={{ fontSize: "13px" }}>
             <thead>
                 <tr>
                     <th>Indicador</th>

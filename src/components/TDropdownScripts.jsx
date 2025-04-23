@@ -10,8 +10,6 @@ const TDropdownScripts = ({ data }) => {
     const { searchResults, idEjecutivo, } = useContext(AppContext);
     const [valoresExtraidos, setValoresExtraidos] = useState({}); // Nuevo estado para los valores extraídos
 
-
-
     const handleSelect = (eventKey) => {
         console.log("data en handleSelect:", scriptsData[0]); // Inspecciona data
         const script = scriptsData.find(script => script.idScript === parseInt(eventKey));
@@ -82,37 +80,40 @@ const TDropdownScripts = ({ data }) => {
     }, [idProducto, idCartera, cuenta, Ejecutivo]);
 
     return (
-        <div className="text-center">
-            <Dropdown onSelect={handleSelect}>
-                <Dropdown.Toggle variant="success" id="dropdown-basic">
-                    {selectedLabel}
-                </Dropdown.Toggle>
-                <Dropdown.Menu style={{ maxHeight: '400px', overflowY: 'auto', margin: '0 auto' }}>
-                    {scriptsData.map(script => (
-                        <Dropdown.Item key={script.idScript} eventKey={script.idScript} className="text-center">
-                            {script.Nombre}
-                        </Dropdown.Item>
-                    ))}
-                </Dropdown.Menu>
-            </Dropdown>
+        <div className="text-center" style={{ fontFamily: 'Arial, sans-serif' }}>
+            {/* Contenedor sin posición fixed para ubicación actual */}
+            <div>
+                <Dropdown onSelect={handleSelect}>
+                    <Dropdown.Toggle variant="success" id="dropdown-basic">
+                        {selectedLabel.replace(/&/g, '')}
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu style={{ maxHeight: '400px', overflowY: 'auto', margin: '0 auto' }}>
+                        {scriptsData.map(script => (
+                            <Dropdown.Item key={script.idScript} eventKey={script.idScript} className="text-center">
+                                {script.Nombre.replace(/&/g, '')}
+                            </Dropdown.Item>
+                        ))}
+                    </Dropdown.Menu>
+                </Dropdown>
+            </div>
             {selectedScript && (
                 <div className="mt-3 text-center">
-                    <h5>{selectedScript.Nombre}</h5>
-                    <p>{selectedScript.Descripción}</p>
+                    <p>{selectedScript.Descripción.replace(/&/g, '')}</p>
                     <pre
                         style={{
                             whiteSpace: 'pre-wrap',
                             wordWrap: 'break-word',
                             textAlign: 'justify',
+                            textAlignLast: 'center', // centra la última línea
                             lineHeight: '1.6',
                             letterSpacing: '0.5px',
-                            fontFamily: 'Courier, monospace',
+                            fontFamily: 'Arial, sans-serif',
                             fontSize: '16px',
-                            margin: '10px 0',
+                            margin: '10px auto', // centra el bloque completo
                             padding: '5px'
                         }}
                     >
-                        {selectedScript.Script.replace(/\*/g, '')}
+                        {selectedScript.Script.replace(/\*/g, '').replace(/&/g, '')}
                     </pre>
                 </div>
             )}

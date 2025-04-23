@@ -434,6 +434,8 @@ $table-border-radius: 8px;
 
 .table {
   // Borde redondeado para la tabla
+  word-break: break-all;
+  white-space: nowrap;
   border-collapse: collapse;
   border-spacing: 0;
   padding: 0.2rem 0.2rem;

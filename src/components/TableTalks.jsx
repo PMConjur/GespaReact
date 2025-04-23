@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useContext, useRef } from "react";
+import { useState, useCallback, useEffect, useContext, useRef, useMemo } from "react";
 import { Table, Form } from "react-bootstrap";
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
@@ -6,7 +6,7 @@ import { getTalksData } from "../services/gespawebServices";
 
 const TableTalks = ({ customColumnNames = {}, onRowClick }) => {
     const { searchResults } = useContext(AppContext);
-    const [sortedData, setSortedData] = useState([]);
+    const [talksData, setTalksData] = useState([]);
     const [sortByOldest, setSortByOldest] = useState(false);
     const [toastShown, setToastShown] = useState(false);
     const [selectedRow, setSelectedRow] = useState(null);
@@ -30,13 +30,12 @@ const TableTalks = ({ customColumnNames = {}, onRowClick }) => {
                     return;
                 }
     
-                const talksData = await getTalksData(1, idCuenta);
-                // Ordenar de más reciente a más antiguo
-                setSortedData([...talksData].sort((a, b) => new Date(b.Fecha_Insert) - new Date(a.Fecha_Insert)));
+                const talksDataResponse = await getTalksData(1, idCuenta);
+                setTalksData(talksDataResponse);
                 toastShownRef.current = false;
                 
                 // Debug: mostrar datos obtenidos
-                console.log("Datos de negociaciones obtenidos:", talksData);
+                console.log("Datos de negociaciones obtenidos:", talksDataResponse);
             } catch (error) {
                 console.error("Error al obtener los datos de Negociaciones:", error);
             }
@@ -45,31 +44,24 @@ const TableTalks = ({ customColumnNames = {}, onRowClick }) => {
         fetchData();
     }, [searchResults]);
 
+    const sortedData = useMemo(() => {
+        return [...talksData].sort((a, b) => {
+            const dateA = new Date(a.Fecha_Insert);
+            const dateB = new Date(b.Fecha_Insert);
+            return sortByOldest ? dateA - dateB : dateB - dateA;
+        });
+    }, [talksData, sortByOldest]);
+
     const handleSortChange = useCallback(() => {
         if (toastShown) return;
-        
-        setToastShown(true);
-        setSortByOldest(prev => !prev);
-        
-        setSortedData(prevData => {
-            const sorted = !sortByOldest
-                ? [...prevData].sort((a, b) => new Date(a.Fecha_Insert) - new Date(b.Fecha_Insert))
-                : [...prevData];
-            
-            return sorted;
-        });
-    
+        const newSortByOldest = !sortByOldest;
+        setSortByOldest(newSortByOldest);
+
         toast.success(
-            !sortByOldest
+            newSortByOldest
                 ? "Datos ordenados por fecha más antigua."
-                : "Orden original restaurado."
+                : "Datos ordenados por fecha más reciente."
         );
-        
-        const timer = setTimeout(() => {
-            setToastShown(false);
-        }, 1);
-        
-        return () => clearTimeout(timer);
     }, [sortByOldest, toastShown]);
 
     const handleRowClick = (rowData, index) => {
