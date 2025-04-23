@@ -433,6 +433,8 @@ $table-border-radius: 8px;
 
 .table {
   // Borde redondeado para la tabla
+  word-break: break-all;
+  white-space: nowrap;
   border-collapse: collapse;
   border-spacing: 0;
   padding: 0.2rem 0.2rem;
@@ -2227,7 +2229,7 @@ $accent-color: #000000d2;
   outline-offset: 0;
   outline-color: #39fc8d;
   outline-style: solid;
-  animation:animateOutline 5s cubic-bezier(0.82, -0.46, 0, 1.26) infinite;
+  animation: animateOutline 3s cubic-bezier(0.82, -0.46, 0, 1.26) infinite;
 }
 
 @keyframes animateOutline {
@@ -2279,4 +2281,3 @@ $accent-color: #000000d2;
     stroke-dashoffset: 1000;
   }
 }
-
