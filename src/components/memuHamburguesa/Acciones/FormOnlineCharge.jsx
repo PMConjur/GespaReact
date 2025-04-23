@@ -394,6 +394,7 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess }) => {
                                     name="vencimientoMes"
                                     value={formData.vencimientoMes}
                                     onChange={handleChange}
+                                    disabled={tipoTarjeta === "clabeInterbancaria"}
                                 >
                                     {Array.from({ length: 12 }, (_, i) => {
                                         const month = (i + 1).toString().padStart(2, "0");
@@ -413,6 +414,7 @@ const FormOnlineCharge = ({ handleClose, onRegistrationSuccess }) => {
                                     name="vencimientoAnio"
                                     value={formData.vencimientoAnio}
                                     onChange={handleChange}
+                                    disabled={tipoTarjeta === "clabeInterbancaria"}
                                 >
                                     {Array.from({ length: 21 }, (_, i) => {
                                         const year = new Date().getFullYear() + i;

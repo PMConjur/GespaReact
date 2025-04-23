@@ -122,6 +122,13 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
         }
     };
 
+    // Agregar función para normalizar la hora
+    const normalizeTime = (timeStr) => {
+        const parts = timeStr.split(':');
+        parts[0] = parts[0].padStart(2, '0');
+        return parts.join(':');
+    };
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
 
@@ -150,7 +157,6 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
 
     const handleSave = async () => {
         setLoading(true);
-    
         try {
             // 1. Validación de número telefónico
             if (!formData.numeroTelefonico || formData.numeroTelefonico.trim().length < 10) {
@@ -169,7 +175,8 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
 
             // Validación: si la fecha es hoy, la hora debe ser posterior a la actual
             if (formData.fecha === todayStr) {
-                const scheduledDate = new Date(`${formData.fecha}T${formData.segundo}`);
+                const scheduledTimeNormalized = normalizeTime(formData.segundo); // aplicamos normalization
+                const scheduledDate = new Date(`${formData.fecha}T${scheduledTimeNormalized}`);
                 const nowPlusOne = new Date(Date.now() + 60000);
                 if (scheduledDate < nowPlusOne) {
                     toast.error("Debe seleccionar un horario superior a la hora actual");
@@ -205,18 +212,33 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 setLoading(false);
                 return;
             }
+            // Nueva validación para seguimientos sin recordatorio en el mismo día y hora
+            if (!formData.recordatorio) {
+                const newDateTime = `${formData.fecha}T${formData.segundo}`;
+                const existingNonReminder = existingReminders.find(reminder => {
+                    return reminder.date && reminder.recordatorio === false &&
+                           reminder.date.substring(0,16) === newDateTime.substring(0,16);
+                });
+                if (existingNonReminder) {
+                    toast.error("Ya existe un seguimiento sin recordatorio para la misma fecha y hora");
+                    setLoading(false);
+                    return;
+                }
+            }
     
             // 4. Preparar datos para enviar al servidor
+            const normalizedTime = normalizeTime(formData.segundo);
             const dataToSend = {
                 ...formData,
-                fecha: `${formData.fecha}T${formData.segundo}`,
+                fecha: `${formData.fecha}T${normalizedTime}`,
                 datoContacto: formData.datoContacto.trim() || null,
                 numeroTelefonico: formData.numeroTelefonico.toString().replace(/\D/g, '') // Limpiar formato
             };
-            console.log("Enviando registro con data:", dataToSend);
+            console.log("DEBUG: Intentando enviar seguimiento con datos:", dataToSend); // Nuevo log para depuración
 
             // 5. Enviar al servidor
             const response = await createFollows(dataToSend);
+            console.log("Registro de seguimiento exitoso enviado:", dataToSend); // Nuevo log de envío
 
             // 6. Actualizar existingReminders para incluir el nuevo seguimiento
             setExistingReminders(prev => [
@@ -351,9 +373,10 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                                         onChange={(e) => {
                                             const hour = e.target.value;
                                             const [_, minute, second] = formData.segundo.split(':');
+                                            const newMinute = (hour === "22") ? "00" : minute;
                                             setFormData({
                                                 ...formData,
-                                                segundo: `${hour}:${minute}:${second}`,
+                                                segundo: `${hour}:${newMinute}:${second}`,
                                             });
                                         }}
                                         aria-label="Seleccionar hora"
@@ -376,10 +399,9 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                                         type="text"
                                         value={formData.segundo.split(':')[1]}
                                         onChange={(e) => {
-                                            const minute = e.target.value
-                                                .replace(/\D/g, '')
-                                                .slice(0, 2);
-                                            const [hour, _, second] = formData.segundo.split(':');
+                                            // Permitir cambio solo si la hora no es "22"
+                                            const minute = e.target.value.replace(/\D/g, '').slice(0, 2);
+                                            const [hour, , second] = formData.segundo.split(':');
                                             setFormData({
                                                 ...formData,
                                                 segundo: `${hour}:${minute}:${second}`,
@@ -388,6 +410,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                                         placeholder="MM"
                                         maxLength={2}
                                         pattern="[0-5][0-9]"
+                                        disabled={formData.segundo.split(':')[0] === "22"}
                                     />
                                 </Col>
                                 <Col md={4}>
