@@ -831,7 +831,13 @@ export const fetchProcessesWLP = async (proceso, idCuenta) => {
 // endpoint calculadora primera parte
 export const fetchCalFirtsPart = async (Cartera, NoCuenta, idHerr) => {
   try {
-    console.log("Llamando al endpoint /ejecutivo/Calculadora-1erParte");
+        // Imprimir los parámetros que se enviarán
+        console.log("Parámetros enviados:", { 
+          Cartera, 
+          NoCuenta, 
+          idHerr 
+        });
+        
     const response = await servicio.get(`/ejecutivo/Calculadora-1erParte`, {
       params: { Cartera, NoCuenta, idHerr }
     });

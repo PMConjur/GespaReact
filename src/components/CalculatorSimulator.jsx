@@ -1285,7 +1285,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 <h5 className="text-light">
                                   {calculosData.tasaMensual
                                     ? `${calculosData.tasaMensual}%`
-                                    : "N/A"}
+                                    : "0"}
                                 </h5>
                               </Col>
                             </Row>
