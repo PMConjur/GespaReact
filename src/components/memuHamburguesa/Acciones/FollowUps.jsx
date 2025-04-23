@@ -50,7 +50,7 @@ const FollowUps = ({
       <Modal.Body 
         className="flex-grow-1 p-0 d-flex flex-column"
         style={{
-          overflow: "hidden",
+          overflowY: "auto",
         }}
       >
         <Row className="flex-grow-1 g-0" style={{ height: "100%" }}>

@@ -61,7 +61,7 @@ const OnlineCharge = ({
                     <Modal.Title>Nuevo Cargo en Línea</Modal.Title>
                 </Modal.Header>
 
-                <Modal.Body className="flex-grow-1 p-0 d-flex flex-column bg-dark" style={{ overflow: "hidden" }}>
+                <Modal.Body className="flex-grow-1 p-0 d-flex flex-column bg-dark" style={{ overflowY: "auto" }}>
                     <Row className="flex-grow-1 g-0 m-0" style={{ height: "100%" }}>
                         <Col md={7} className="h-100 p-0 border-end border-secondary">
                             <TableOnlineCharge refreshTrigger={refreshTable}/>
@@ -94,7 +94,7 @@ const OnlineCharge = ({
                 <Modal.Title>Historial de Cargos</Modal.Title>
             </Modal.Header>
 
-            <Modal.Body className="flex-grow-1 p-0 d-flex flex-column bg-dark" style={{ overflow: "hidden" }}>
+            <Modal.Body className="flex-grow-1 p-0 d-flex flex-column bg-dark" style={{ overflowY: "auto" }}>
                 <Row className="flex-grow-1 g-0 m-0" style={{ height: "100%" }}>
                     <Col md={12} className="h-100 p-0">
                         <TableOnlineCharge  refreshTrigger={refreshTable}/>

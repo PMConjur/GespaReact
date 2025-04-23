@@ -152,7 +152,8 @@ const TableFollowUps = ({ customColumnNames = {}, refreshTrigger }) => {
                 style={{ 
                     width: '100%', 
                     maxHeight: '500px',
-                    overflowY: 'auto', 
+                    overflowY: 'auto',
+                    overflowX: 'scroll', // scroll horizontal siempre visible
                     display: 'flex', 
                     backgroundColor: '#343a40',
                     color: '#ffffff',

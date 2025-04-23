@@ -61,7 +61,7 @@ const Payments = ({
 
                 <Modal.Body 
                     className="flex-grow-1 p-0 d-flex flex-column bg-dark" 
-                    style={{ overflow: "hidden" }}
+                    style={{ overflowY: "auto" }}
                 >
                     <Row 
                         className="flex-grow-1 g-0 m-0" 
@@ -100,7 +100,7 @@ const Payments = ({
 
             <Modal.Body 
                 className="flex-grow-1 p-0 d-flex flex-column bg-dark" 
-                style={{ overflow: "hidden" }}
+                style={{ overflowY: "auto" }}
             >
                 <Row 
                     className="flex-grow-1 g-0 m-0" 
