@@ -21,18 +21,20 @@ import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 import "../scss/styles.scss";
 import { TelephoneFill } from "react-bootstrap-icons";
+import FollowUps from "./memuHamburguesa/Acciones/FollowUps";
 
 const Telephones = () => {
   const { userActiveFlow, setSelectedAnswer } = useContext(AppContext);
+  const { searchResults, lastPhoneNumberFromToast } = useContext(AppContext);
+  const { isManagment, selectedAnswer } = useContext(AppContext);
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isPhoneNew, setIsPhoneNew] = useState(false);
-  const { searchResults, lastPhoneNumberFromToast } = useContext(AppContext);
-
   const [toastShown, setToastShown] = useState(false);
   const [selectedClaseTelefono, setSelectedClaseTelefono] = useState("");
   const [horarioContacto, setHorarioContacto] = useState("00:00:00");
+  const [showFollowUps, setShowFollowUps] = useState(false);
   const responseData =
     location.state || JSON.parse(localStorage.getItem("responseData"));
 
@@ -42,7 +44,37 @@ const Telephones = () => {
       setPhoneNumber(input);
     }
   };
-  //const token = responseData?.ejecutivo?.token;
+
+  const formatPhoneNumber = (phone) => {
+    const phoneStr = phone.toString();
+    if (phoneStr.length <= 4) return phoneStr;
+    const last4 = phoneStr.slice(-4);
+    const masked = phoneStr.slice(0, -4).replace(/./g, "X");
+    return masked + last4;
+  };
+
+  const getContextPhoneNumber = () => {
+    if (isManagment?.gestion?.numeroTelefonico) {
+      return {
+        raw: isManagment.gestion.numeroTelefonico.toString(),
+        formatted: formatPhoneNumber(isManagment.gestion.numeroTelefonico)
+      };
+    }
+    if (selectedAnswer?.dataPhone?.númeroTelefónico) {
+      return {
+        raw: selectedAnswer.dataPhone.númeroTelefónico.toString(),
+        formatted: formatPhoneNumber(selectedAnswer.dataPhone.númeroTelefónico)
+      };
+    }
+    return { raw: "", formatted: "" };
+  };
+
+  useEffect(() => {
+    const phoneFromCtx = getContextPhoneNumber();
+    if (phoneFromCtx.raw) {
+      setPhoneNumber(phoneFromCtx.raw);
+    }
+  }, [isManagment, selectedAnswer]);
 
   const handleValidatePhone = async () => {
     if (!phoneNumber.trim()) {
@@ -81,13 +113,13 @@ const Telephones = () => {
           position: "top-right",
           style: { transform: "translateY(80vh)" }
         });
-        setIsPhoneNew(false); // El teléfono existe, no es nuevo
+        setIsPhoneNew(false);
       } else {
         toast.error("Error 404: El número de telefono no existe en la cuenta", {
           position: "center-right",
           style: { transform: "translateY(80vh)" }
         });
-        setIsPhoneNew(true); // El teléfono no existe, es nuevo
+        setIsPhoneNew(true);
       }
     } catch (error) {
       console.error("Error al validar el teléfono:", error);
@@ -95,7 +127,7 @@ const Telephones = () => {
         position: "top-right",
         style: { transform: "translateY(80vh)" }
       });
-      setIsPhoneNew(true); // En caso de error, considerar el teléfono como nuevo
+      setIsPhoneNew(true);
     }
   };
 
@@ -130,14 +162,14 @@ const Telephones = () => {
       cuenta: idCuenta,
       idEjecutivo: idEjecutivo,
       phoneNumber: phoneNumber,
-      telefonia: "fija", // Ajusta estos valores según sea necesario
+      telefonia: "fija",
       claseTelefono: selectedClaseTelefono,
       horarioContacto: horarioContacto,
       extension: 0
     };
 
     console.log("Horario de contacto:", horarioContacto);
-    console.log("Datos enviados:", newPhoneData); // Agrega este log para verificar los datos
+    console.log("Datos enviados:", newPhoneData);
 
     try {
       await fetchNewTel(newPhoneData);
@@ -145,9 +177,9 @@ const Telephones = () => {
         position: "top-right",
         style: { transform: "translateY(80vh)" }
       });
-      setIsPhoneNew(false); // Restablecer el estado del teléfono nuevo
-      setPhoneNumber(""); // Limpiar el campo de entrada
-      loadData(); // Recargar los datos de los teléfonos
+      setIsPhoneNew(false);
+      setPhoneNumber("");
+      loadData();
     } catch (error) {
       console.error("Error al guardar el nuevo teléfono:", error);
       toast.error("Error 408: Error al guardar el nuevo teléfono", {
@@ -208,7 +240,7 @@ const Telephones = () => {
       const phones = await Promise.all(
         searchResults.map(async (result) => {
           const response = await fetchPhones(result.idCuenta);
-          console.log("Respuesta de fetchPhones:", response); // Imprime la respuesta de fetchPhones
+          console.log("Respuesta de fetchPhones:", response);
           return response;
         })
       );
@@ -240,14 +272,13 @@ const Telephones = () => {
       toast.warning(
         "No puedes realizar esta acción mientras el flujo está activo."
       );
-      return; // Bloquear la acción si el flujo está activo
+      return;
     }
 
-    const idCuenta = searchResults[0]?.idCuenta; // Obtén el idCuenta del contexto
-    const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo; // Obtén el idEjecutivo
-    const numeroTelefonico = row?.númeroTelefónico || phoneNumber; // Número telefónico seleccionado
+    const idCuenta = searchResults[0]?.idCuenta;
+    const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+    const numeroTelefonico = row?.númeroTelefónico || phoneNumber;
 
-    // Validaciones iniciales
     if (!numeroTelefonico || numeroTelefonico.trim() === "") {
       toast.warning("Advertencia: Ingrese un número telefónico válido.", {
         position: "top-center"
@@ -266,7 +297,6 @@ const Telephones = () => {
     }
 
     try {
-      // Validación del huso horario
       const { isValid, mensaje } = await validateTimeZone(
         idCuenta,
         numeroTelefonico,
@@ -275,7 +305,7 @@ const Telephones = () => {
 
       if (isValid) {
         setSelectedAnswer({
-          value: row ? 2 : 10, // 2 para llamada manual, 10 para llamada de entrada
+          value: row ? 2 : 10,
           dataPhone: {
             idClase: row?.idClase || 0,
             titulares: row?.titulares || 0,
@@ -296,7 +326,7 @@ const Telephones = () => {
             fecha_Insert: row?.fecha_Insert || 0,
             calificacion: row?.calificacion || 0,
             activo: row?.activo || 0,
-            idModo: row ? 2202 : 2201 // 2202 para llamada manual, 2201 para llamada de entrada
+            idModo: row ? 2202 : 2201
           }
         });
       } else {
@@ -312,177 +342,197 @@ const Telephones = () => {
     }
   };
 
+  const openFollowUpsModal = (row) => {
+    console.log("Abriendo modal FollowUps con isFollowUpActive = true", row);
+    setShowFollowUps(true);
+  };
+
   return (
-    <Card className="overflow-auto card-phones widgets-container">
-      <Card.Body className="card-body-phones">
-        <Row>
-          <Col xs={2}>
-            <h5 className="card-title text-white">
-              <TelephoneFill /> Teléfonos
-            </h5>
-          </Col>
-          <Col xs={10}>
-            <Table hover variant="dark" className="table" responsive="sm">
+    <>
+      <Card className="overflow-auto card-phones widgets-container">
+        <Card.Body className="card-body-phones">
+          <Row>
+            <Col xs={2}>
+              <h5 className="card-title text-white">
+                <TelephoneFill /> Teléfonos
+              </h5>
+            </Col>
+            <Col xs={10}>
+              <Table hover variant="dark" className="table" responsive="sm">
+                <thead>
+                  <tr>
+                    <th colSpan="3">
+                      <div className="button-phones">
+                        <Button
+                          variant="primary"
+                          className="me-2 input-phone"
+                          style={{ width: "25%" }}
+                          onClick={() => handleRowClick(null)}
+                        >
+                          Llamada de entrada
+                        </Button>
+
+                        {isPhoneNew && (
+                          <>
+                            <input
+                              type="time"
+                              step="2"
+                              value={horarioContacto}
+                              onChange={(e) => {
+                                const [h, m, s] = e.target.value.split(":");
+                                setHorarioContacto(
+                                  `${h.padStart(2, "0")}:${m.padStart(
+                                    2,
+                                    "0"
+                                  )}:${s || "00"}`
+                                );
+                              }}
+                              className="time-input"
+                            />
+
+                            <DropdownButton
+                              id="dropdown-basic-button"
+                              title={
+                                selectedClaseTelefono || "Clase de telefono"
+                              }
+                              onSelect={setSelectedClaseTelefono}
+                              className="custom-dropdown-menu"
+                            >
+                              {[
+                                "Hogar",
+                                "Tercero",
+                                "Familiar",
+                                "Empresa Trabajo",
+                                "Celular",
+                                "Recados",
+                                "Oficina",
+                                "Baja"
+                              ].map((item) => (
+                                <Dropdown.Item key={item} eventKey={item}>
+                                  {item}
+                                </Dropdown.Item>
+                              ))}
+                            </DropdownButton>
+                          </>
+                        )}
+
+                        <InputGroup
+                          style={{ width: "35%" }}
+                          className="input-phone"
+                        >
+                          <FormControl
+                            placeholder="Número de teléfono"
+                            value={phoneNumber}
+                            onChange={handlePhoneNumberChange}
+                            className="input-validation"
+                          />
+                          <Button
+                            variant="secondary"
+                            onClick={
+                              isPhoneNew
+                                ? handleSaveNewPhone
+                                : handleValidatePhone
+                            }
+                          >
+                            {isPhoneNew ? "Nuevo" : "Validar"}
+                          </Button>
+                        </InputGroup>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+              </Table>
+            </Col>
+          </Row>
+
+          <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+            <Table hover variant="dark">
               <thead>
                 <tr>
-                  <th colSpan="3">
-                    <div className="button-phones">
-                      <Button
-                        variant="primary"
-                        className="me-2 input-phone"
-                        style={{ width: "25%" }}
-                        onClick={() => handleRowClick(null)} // Llamada de entrada sin datos de fila
-                      >
-                        Llamada de entrada
-                      </Button>
-
-                      {isPhoneNew && (
-                        <>
-                          <input
-                            type="time"
-                            step="2"
-                            value={horarioContacto}
-                            onChange={(e) => {
-                              const [h, m, s] = e.target.value.split(":");
-                              setHorarioContacto(
-                                `${h.padStart(2, "0")}:${m.padStart(2, "0")}:${
-                                  s || "00"
-                                }`
-                              );
-                            }}
-                            className="time-input"
-                          />
-
-                          <DropdownButton
-                            id="dropdown-basic-button"
-                            title={selectedClaseTelefono || "Clase de telefono"}
-                            onSelect={setSelectedClaseTelefono}
-                            className="custom-dropdown-menu"
-                          >
-                            {[
-                              "Hogar",
-                              "Tercero",
-                              "Familiar",
-                              "Empresa Trabajo",
-                              "Celular",
-                              "Recados",
-                              "Oficina",
-                              "Baja",
-                            ].map((item) => (
-                              <Dropdown.Item key={item} eventKey={item}>
-                                {item}
-                              </Dropdown.Item>
-                            ))}
-                          </DropdownButton>
-                        </>
-                      )}
-
-                      <InputGroup
-                        style={{ width: "35%" }}
-                        className="input-phone"
-                      >
-                        <FormControl
-                          placeholder="Número de teléfono"
-                          value={phoneNumber}
-                          onChange={handlePhoneNumberChange}
-                          className="input-validation"
-                        />
-                        <Button
-                          variant="secondary"
-                          onClick={
-                            isPhoneNew
-                              ? handleSaveNewPhone
-                              : handleValidatePhone
-                          }
-                        >
-                          {isPhoneNew ? "Nuevo" : "Validar"}
-                        </Button>
-                      </InputGroup>
-                    </div>
-                  </th>
+                  <th>T</th>
+                  <th>C</th>
+                  <th>D</th>
+                  <th>S</th>
+                  <th>Seg.</th>
+                  <th>Teléfono</th>
+                  <th>Telefonía</th>
+                  <th>Origen</th>
+                  <th>Clase</th>
+                  <th>Estado</th>
+                  <th>Municipio</th>
+                  <th>Huso Horario</th>
+                  <th>Extensión</th>
+                  <th>Confirmado</th>
+                  <th>Calificación</th>
+                  <th>Activo</th>
                 </tr>
               </thead>
-            </Table>
-          </Col>
-        </Row>
-
-        <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-          <Table hover variant="dark">
-            <thead>
-              <tr>
-                <th>T</th>
-                <th>C</th>
-                <th>D</th>
-                <th>S</th>
-                <th>Teléfono</th>
-                <th>Telefonía</th>
-                <th>Origen</th>
-                <th>Clase</th>
-                <th>Estado</th>
-                <th>Municipio</th>
-                <th>Huso Horario</th>
-                {/* <th>SEG Horario Contacto</th> */}
-                <th>Extensión</th>
-                <th>Confirmado</th>
-                {/* <th>Fecha INSERT</th> */}
-                <th>Calificación</th>
-                <th>Activo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading
-                ? [...Array(4)].map((_, i) => (
-                    <tr key={i}>
-                      {[...Array(18)].map((_, j) => (
-                        <td key={j}>
-                          <Placeholder as="span" animation="glow">
-                            <Placeholder xs={12} />
-                          </Placeholder>
+              <tbody>
+                {isLoading
+                  ? [...Array(4)].map((_, i) => (
+                      <tr key={i}>
+                        {[...Array(18)].map((_, j) => (
+                          <td key={j}>
+                            <Placeholder as="span" animation="glow">
+                              <Placeholder xs={12} />
+                            </Placeholder>
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  : data.map((row, index) => (
+                      <tr key={index}>
+                        <td>{row.titulares || "--"}</td>
+                        <td>{row.conocidos || "--"}</td>
+                        <td>{row.desconocidos || "--"}</td>
+                        <td>{row.sinContacto || "--"}</td>
+                        <td>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            style={{ cursor: "pointer" }}
+                            viewBox="0 0 16 16"
+                            onClick={() => openFollowUpsModal(row)}
+                          >
+                            <path d="M10.854 6.146a.5.5 0 0 1 0 .708L8 9.707l-1.854-1.853a.5.5 0 1 1 .708-.708L8 8.293l2.146-2.147a.5.5 0 0 1 .708 0z" />
+                            <path d="M14 4.5V14a2 2 0 0 1-2 2h-2.5a.5.5 0 0 1-.5-.5V4.5a.5.5 0 0 1 .5-.5H12a2 2 0 0 1 2 2zM13.5 4h-2a.5.5 0 0 0-.5.5V14h-2V4.5A.5.5 0 0 0 9 4H7a.5.5 0 0 0-.5.5v9h-2V4.5A.5.5 0 0 0 4 4H2.5a.5.5 0 0 0-.5.5v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-9a.5.5 0 0 0-.5-.5z" />
+                          </svg>
                         </td>
-                      ))}
-                    </tr>
-                  ))
-                : data.map((row, index) => (
-                    <tr key={index}>
-                      <td>{row.titulares || "--"}</td>
-                      <td>{row.conocidos || "--"}</td>
-                      <td>{row.desconocidos || "--"}</td>
-                      <td>{row.sinContacto || "--"}</td>
-                      <td>
-                        <a
-                          href="#"
-                          className="text-info"
-                          onClick={() => handleRowClick(row)}
-                          data-full-number={row.númeroTelefónico} // Este atributo es esencial
-                        >
-                          {"XXXXXX" + row.númeroTelefónico.slice(6)}
-                        </a>
-                      </td>
-                      <td>{row.telefonia || "--"}</td>{" "}
-                      {/* Muestra el valor de telefonia */}
-                      <td>{row.origen || "--"}</td>{" "}
-                      {/* Muestra el valor de origen */}
-                      <td>{row.clase || "--"}</td>{" "}
-                      {/* Muestra el valor de clase */}
-                      <td>{row.estado || "--"}</td>
-                      <td>{row.municipio || "--"}</td>
-                      <td>{row.husoHorario || "--"}</td>
-                      {/* <td>{row.segHorarioContacto || "--"}</td> */}
-                      <td>{row.extensión || "--"}</td>
-                      <td>{row.confirmado || "--"}</td>
-                      {/* <td>
-                        {new Date(row.fecha_Insert).toLocaleDateString() ||
-                          "--"}
-                      </td> */}
-                      <td>{row.calificacion || "--"}</td>
-                      <td>{row.activo || "--"}</td>
-                    </tr>
-                  ))}
-            </tbody>
-          </Table>
-        </div>
-      </Card.Body>
-    </Card>
+                        <td>
+                          <a
+                            href="#"
+                            className="text-info"
+                            onClick={() => handleRowClick(row)}
+                            data-full-number={row.númeroTelefónico}
+                          >
+                            {"XXXXXX" + row.númeroTelefónico.slice(6)}
+                          </a>
+                        </td>
+                        <td>{row.telefonia || "--"}</td>
+                        <td>{row.origen || "--"}</td>
+                        <td>{row.clase || "--"}</td>
+                        <td>{row.estado || "--"}</td>
+                        <td>{row.municipio || "--"}</td>
+                        <td>{row.husoHorario || "--"}</td>
+                        <td>{row.extensión || "--"}</td>
+                        <td>{row.confirmado || "--"}</td>
+                        <td>{row.calificacion || "--"}</td>
+                        <td>{row.activo || "--"}</td>
+                      </tr>
+                    ))}
+              </tbody>
+            </Table>
+          </div>
+        </Card.Body>
+      </Card>
+      <FollowUps
+        show={showFollowUps}
+        handleClose={() => setShowFollowUps(false)}
+        isFollowUpActive={true}
+      />
+    </>
   );
 };
 
