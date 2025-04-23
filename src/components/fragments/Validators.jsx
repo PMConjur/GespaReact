@@ -274,7 +274,6 @@ const Validators = ({ show, handleClose, handleValidate, modalCase = "" }) => {
         </Modal.Body>
         <Modal.Footer className="p-3 bg-dark text-light">
           <div>
-            <span>¿Desea registrar un cargo en línea?</span>
             <Button
               variant="danger"
               onClick={handleCloseModal}
