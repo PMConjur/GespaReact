@@ -50,8 +50,8 @@ const Payments = ({
                     }
                 }}
                 size="xl"
-                backdrop={allowClose ? true : 'static'}
-                keyboard={allowClose}
+                backdrop="static" // Se reemplaza la prop para desactivar cierre con backdrop
+                keyboard={false} // Se reemplaza la prop para desactivar cierre con teclado
                 contentClassName="d-flex flex-column"
                 dialogClassName="my-custom-modal"
             >

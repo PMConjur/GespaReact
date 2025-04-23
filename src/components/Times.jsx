@@ -34,6 +34,7 @@ const Times = ({ show, handleClose }) => {
     const [isPaused, setIsPaused] = useState(false);
     const [contrasenia, setContrasenia] = useState("");
     const [updatedTimesForTable, setUpdatedTimesForTable] = useState({});
+    const [isStarted, setIsStarted] = useState(false);
 
     const validateForm = () => {
         if (!selectedReason) {
@@ -54,8 +55,10 @@ const Times = ({ show, handleClose }) => {
         }
 
         setIsPaused(true);
+        setIsStarted(true);
         setCurrentTimer(0);
         timerSnapshot.current = 0;
+        toast.success("Se inició el contador con éxito");
         
         if (intervalRef.current) {
             clearInterval(intervalRef.current);
@@ -96,6 +99,7 @@ const Times = ({ show, handleClose }) => {
             setTimers(updatedTimers);
             setUpdatedTimesForTable({ [selectedReason]: timerSnapshot.current });
             setIsPaused(false);
+            setIsStarted(false);
             setContrasenia("");
             setSelectedReason("");
             setCurrentTimer(0);
@@ -155,15 +159,46 @@ const Times = ({ show, handleClose }) => {
                 <Modal.Title>Registro de Tiempos</Modal.Title>
             </Modal.Header>
             <Modal.Body>
+                {/* Agregar estilos para animación */}
+                <style>
+                {`
+                    @keyframes bounce {
+                        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+                        40% { transform: translateY(-20px); }
+                        60% { transform: translateY(-10px); }
+                    }
+                    @keyframes blink {
+                        0% { opacity: 1; }
+                        50% { opacity: 0; }
+                        100% { opacity: 1; }
+                    }
+                    .timer-animation {
+                        display: inline-block;
+                        animation: bounce 2s infinite;
+                        color: #f1a441;
+                    }
+                    .blinking-text {
+                        display: inline-block;
+                        animation: blink 2s linear infinite;
+                        color: #f1a441;
+                    }
+                `}
+                </style>
                 <Container>
                     {/* Primera fila: Título y Temporizador */}
                     <Row className="mb-3 text-center">
                         <Col xs={12}>
-                            <h4>
-                                {selectedReason ? (
-                                    `${selectedReason}: ${formatTime(currentTimer)}`
+                            <h4 style={{ color: "#f1a441" }}>
+                                {isStarted ? (
+                                    <span className="blinking-text">
+                                        {`${selectedReason}: ${formatTime(currentTimer)}`}
+                                    </span>
                                 ) : (
-                                    "Seleccione una razón para comenzar"
+                                    <span className="timer-animation">
+                                        {selectedReason 
+                                            ? `${selectedReason}: ${formatTime(currentTimer)}` 
+                                            : `Seleccione una razón para comenzar: ${formatTime(currentTimer)}`}
+                                    </span>
                                 )}
                             </h4>
                         </Col>

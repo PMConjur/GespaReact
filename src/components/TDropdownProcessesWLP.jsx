@@ -123,7 +123,7 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
             : [];
 
         return (
-            <div className="scroll">
+            <div className="scroll" style={{ maxHeight: "300px", overflowX: "auto" }}>
                 <Table striped bordered hover responsive variant="dark" style={{ padding: ".7rem", width: "100%" }}>
                     <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#343a40" }}>
                         <tr>
@@ -138,12 +138,13 @@ const TDropdownProcessesWLP = ({ data = [] }) => {
                         {productData.map((item, index) => (
                             <tr key={index}>
                                 {columns.map(key => (
-                                    <td key={`${index}-${key}`} style={{ textAlign: "justify" }}>
+                                    <td key={`${index}-${key}`} style={{ textAlign: "center" }}>
                                         {key === "Details" && item[key] ? (
                                             <div style={{
                                                 width: "300px",
                                                 whiteSpace: "pre-wrap",
-                                                wordWrap: "break-word"
+                                                wordWrap: "break-word",
+                                                textAlign: "center"
                                             }}>
                                                 {item[key].toString()}
                                             </div>
