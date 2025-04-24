@@ -1,6 +1,6 @@
 import { useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Button, Form, InputGroup, Col, Row } from "react-bootstrap";
+import { Button, Form, InputGroup, Col, Row, Stack } from "react-bootstrap";
 import {
   fetchSaveExecutive,
   fetchSearchAddDate,
@@ -19,6 +19,12 @@ const FormSearch = () => {
   const [additionalOptions, setAdditionalOptions] = useState([]); // Opciones adicionales
   const [selectedValue, setSelectedValue] = useState("");
   const [isTipoDatoChanged, setIsTipoDatoChanged] = useState(false); // Estado para controlar el cambio
+  const [isSwitchOn, setIsSwitchOn] = useState(false); // Estado para el interruptor
+  const [telephone, setTelephone] = useState("");
+  const [isTelephoneValid, setIsTelephoneValid] = useState(false);
+  const [phoneList, setPhoneList] = useState([]); // Lista de teléfonos agregados
+  const [link, setLink] = useState(""); // Estado para el enlace
+  const [isLinkValid, setIsLinkValid] = useState(false); // Estado para la validación del enlace
 
   const loadDatoOptions = async () => {
     if (!idCuenta) return; // Solo ejecuta si idCuenta no es vacío
@@ -171,6 +177,31 @@ const FormSearch = () => {
     loadDropSources(); // Carga las opciones iniciales de fuentes
   }, [idCuenta]);
 
+  const handleSwitchChange = (e) => {
+    setIsSwitchOn(e.target.checked); // Actualiza el estado del interruptor inmediatamente
+  };
+
+  const handleTelephoneChange = (e) => {
+    const value = e.target.value;
+    const regex = /^[0-9]{0,13}$/; // Permite solo números de hasta 13 dígitos
+    setTelephone(value);
+    setIsTelephoneValid(value.length === 10 && regex.test(value));
+  };
+
+  const handleAddPhone = () => {
+    if (telephone.length === 10) {
+      setPhoneList([...phoneList, telephone]); // Agrega el teléfono a la lista
+      setTelephone(""); // Limpia el campo de entrada
+      setIsTelephoneValid(false); // Resetea la validación
+    }
+  };
+
+  const handleRemovePhone = (index) => {
+    const updatedList = phoneList.filter((_, i) => i !== index); // Elimina el teléfono por índice
+    setPhoneList(updatedList);
+    toast.success("Teléfono eliminado.");
+  };
+
   return (
     <>
       <div>
@@ -207,7 +238,7 @@ const FormSearch = () => {
                         : "Ingresa Domicilio"
                     }
                     aria-label="Empresa"
-                    aria-describedby="basic-addon1"//
+                    aria-describedby="basic-addon1" //
                   />
                 ) : (
                   <Form.Select
@@ -244,48 +275,115 @@ const FormSearch = () => {
             </InputGroup>
           </Col>
         </Row>
-        <Row>
-          <Col xs={12} md={12} lg={12}>
-            <Form.Check type="switch" label="Encontrado" />
-          </Col>
-        </Row>
 
-        <Row>
-          <Col xs={12} md={12} lg={4}>
-            <Form.Label>Nombre</Form.Label>
-            <Form.Control type="text" placeholder="" />
-          </Col>
-          <Col xs={12} md={12} lg={4}>
-            <Form.Label>Puesto</Form.Label>
-            <Form.Control type="text" placeholder="" />
-          </Col>
+        {isSwitchOn && (
+          <div id="additionalFound">
+            <Row>
+              <Col xs={12} md={4} lg={4}>
+                <Form.Label>Nombre</Form.Label>
+                <Form.Control type="text" placeholder="" />
+              </Col>
+              <Col xs={12} md={4} lg={4}>
+                <Form.Label>Puesto</Form.Label>
+                <Form.Control type="text" placeholder="" />
+              </Col>
 
-          <Col xs={12} md={12} lg={4}>
-            <Form.Label>Lugar</Form.Label>
-            <Form.Control type="text" placeholder="" value="" />
-          </Col>
+              <Col xs={12} md={4} lg={4}>
+                <Form.Label>Lugar</Form.Label>
+                <Form.Control type="text" placeholder="" value="" />
+              </Col>
+              <br />
+              <Col xs={12} md={4} lg={4}>
+                <Form.Label>Link de la página</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Ingresa un enlace válido"
+                  value={link}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setLink(value);
+                    const regex =
+                      /^(https?:\/\/)?([\w.-]+)\.([a-z]{2,6}\.?)(\/[^\s]*)?$/i; // Verifica si es un enlace válido
+                    setIsLinkValid(regex.test(value));
+                  }}
+                  isInvalid={!isLinkValid && link.length > 0} // Marca como inválido si no cumple
+                />
+                <Form.Control.Feedback type="invalid">
+                  Por favor, ingresa un enlace válido.
+                </Form.Control.Feedback>
+              </Col>
 
-          <Col xs={12} md={12} lg={4}>
-            <Form.Label>Link de la página</Form.Label>
-            <Form.Control type="text" placeholder="" value="" />
-          </Col>
-          <Col xs={12} md={12} lg={4}>
-            <Form.Label>Teléfonos</Form.Label>
-            <Form.Control type="text" placeholder="" />
-          </Col>
-        </Row>
+              <Col xs={12} md={4} lg={4}>
+                <Form.Label>Teléfonos</Form.Label>
+                <InputGroup>
+                  <Form.Control
+                    type="text"
+                    placeholder="Ingresa el teléfono"
+                    id="frmTelephone"
+                    required
+                    maxLength={10}
+                    value={telephone}
+                    onChange={handleTelephoneChange}
+                    isInvalid={!isTelephoneValid && telephone.length > 0} // Marca como inválido si no cumple
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    El teléfono debe contener 10 dígitos.
+                  </Form.Control.Feedback>
+                  <Button
+                    variant="success  "
+                    onClick={handleAddPhone}
+                    disabled={telephone.length !== 10} // Solo habilita si tiene 10 dígitos
+                  >
+                    Agregar
+                  </Button>
+                </InputGroup>
+              </Col>
 
-        <Form.Group className="mb-3 me-3">
-          <div className="phone-number-list">
-            <Button variant="danger" size="sm" className="remove-button">
-              X
-            </Button>
-            <span id="addPhone">{}</span>
+              <Col xs={12} md={4} lg={4}>
+                <span className="text-success">Agregados:</span>
+                <br />
+
+                <div className="scroll-add-phones">
+                  <Stack direction="horizontal" gap={3} className="flex-wrap">
+                    {phoneList.map((phone, index) => (
+                      <>
+                        <div style={{ flex: "calc(50% - 1rem)" }}>
+                          <InputGroup className="p-2" key={index}>
+                            {" "}
+                            {/* Cada item ocupa el 50% del ancho */}
+                            <InputGroup.Text className="phone-added border border-0">
+                              {phone}
+                            </InputGroup.Text>
+                            <Button
+                              variant="danger"
+                              onClick={() => handleRemovePhone(index)}
+                            >
+                              X
+                            </Button>
+                          </InputGroup>
+                        </div>
+                      </>
+                    ))}
+                  </Stack>
+                </div>
+              </Col>
+            </Row>
           </div>
-        </Form.Group>
-
+        )}
+        <br />
         <Row>
-          <Col>
+          <Col xs={12} md={6} lg={6}>
+            <Form>
+              <Form.Check
+                type="switch"
+                label="Encontrado"
+                id="swtFound"
+                checked={isSwitchOn}
+                onChange={handleSwitchChange}
+              />
+            </Form>
+          </Col>
+          <Col xs={12} md={6} lg={6} className="d-flex justify-content-end">
             <Button variant="primary" type="button">
               Guardar
             </Button>

@@ -21,6 +21,7 @@ const Search = ({ show, handleClose }) => {
 
      
         </Row>
+        <hr />
         <Row>
           <Col xs={12} md={12} lg={12}>
             <h4 className="text-center">Resultados</h4>
