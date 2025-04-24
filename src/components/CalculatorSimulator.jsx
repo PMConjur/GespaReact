@@ -12,7 +12,7 @@ import {
 } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
-import Validators from "./fragments/Validators"; // Importa el modal de Validators
+import Validators from "./fragments/Validators"; 
 
 const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
   const { searchResults, idEjecutivo, isManagment, setNegotiationActive } =
@@ -30,7 +30,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
     descuento: 0
   });
   const [herramientas, setHerramientas] = useState([]); // Estado para almacenar las herramientas
-  const [selectedHerramienta, setSelectedHerramienta] = useState(null); // Estado para almacenar el idHerramienta seleccionado
+  const [selectedHerramienta, setSelectedHerramienta] = useState(136); // Estado para almacenar el idHerramienta seleccionado
   const [calculosData, setCalculosData] = useState({
     plazos: 0,
     primerPago: 0,
@@ -102,72 +102,64 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const idCartera = 1; // Ejemplo de valor
+        const idCartera = 1;
         const idCuenta = searchResults?.[0]?.idCuenta?.trim();
-        if (!idCuenta) {
-          console.error("No se encontró idCuenta en searchResults");
-          return;
-        }
-        const data = await fetchCalFirtsPart(
-          idCartera,
-          idCuenta,
-          selectedHerramienta || 136
-        );
-
+        
+        if (!idCuenta) return;
+  
+        const data = await fetchCalFirtsPart(idCartera, idCuenta, selectedHerramienta);
+  
         if (data) {
-          // Extraer el mensaje de validación
-          if (data.mensaje) {
-            setValidationMessage(data.mensaje); // Actualiza el estado con el mensaje
-          }
-
-          // Actualizar otros datos
-          if (Array.isArray(data.ofrecimientos)) {
-            setTableData(data.ofrecimientos);
-          }
+          setValidationMessage(data.mensaje || "");
+          setTableData(Array.isArray(data.ofrecimientos) ? data.ofrecimientos : []);
+          
           if (Array.isArray(data.herramientas)) {
             setHerramientas(data.herramientas);
+            // Si es la primera carga, seleccionar la primera herramienta por defecto
+            if (data.herramientas.length > 0 && !selectedHerramienta) {
+              setSelectedHerramienta(data.herramientas[0].idHerramienta);
+            }
           }
-          setSummaryData({
-            montoRequerido: data.montoRequerido,
-            montoDescuento: data.montoDescuento,
-            saldo: data.saldo,
-            fechaCorte: data.fechaCorte,
-            descuento: data.descuento,
-            dias1erpago: data.dias1erpago // Corrige el nombre del campo para que coincida con la respuesta del endpoint
-          });
-        } else {
-          console.error(
-            "La respuesta del endpoint no contiene los datos esperados:",
-            data
-          );
-          setTableData([]);
+  
+          const newSummary = {
+            montoRequerido: data.montoRequerido || 0,
+            montoDescuento: data.montoDescuento || 0,
+            saldo: data.saldo || 0,
+            fechaCorte: data.fechaCorte || "",
+            descuento: data.descuento || 0,
+            dias1erpago: data.dias1erpago || 0
+          };
+          
+          setSummaryData(newSummary);
         }
       } catch (error) {
-        console.error("Error al obtener los datos de la calculadora:", error);
-        setTableData([]);
+        console.error("Error fetching calculator data:", error);
       }
     };
-
+  
     if (searchResults?.length > 0) {
       fetchData();
     }
-  }, [searchResults, selectedHerramienta, show]); // Agrega 'show' como dependencia
+  }, [searchResults, selectedHerramienta, show]);
 
   useEffect(() => {
-    // Sincroniza formValues con summaryData cuando summaryData cambia
-    setFormValues({
-      montoRequerido: summaryData.montoRequerido
-        ? summaryData.montoRequerido.toFixed(2)
-        : 0,
-      descuento: summaryData.descuento ? summaryData.descuento.toFixed(2) : 0
-    });
+    // Solo actualizar formValues si los valores son diferentes
+    if (summaryData.montoRequerido !== parseFloat(formValues.montoRequerido || 0) ||
+        summaryData.descuento !== parseFloat(formValues.descuento || 0)) {
+      setFormValues({
+        montoRequerido: summaryData.montoRequerido?.toFixed(2) || "0",
+        descuento: summaryData.descuento?.toFixed(2) || "0"
+      });
+    }
   }, [summaryData]);
 
-  const handleHerramientaChange = (e) => {
+  const handleHerramientaChange = async (e) => {
     const selectedValue = e.target.value;
-    setSelectedHerramienta(Number(selectedValue)); // Actualiza el idHerramienta seleccionado
-
-    // Limpia los campos al cambiar de herramienta
+    const herramientaSeleccionada = herramientas.find(
+      h => h.idHerramienta === Number(selectedValue)
+    );
+  
+    // Resetear estados primero
     setMontoPago("");
     setMontoNegociado("");
     setFormInputs({
@@ -175,72 +167,37 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       fechaPago: "",
       periodos: 1
     });
-
-    // Actualiza formValues con los valores correctos de summaryData
-    setFormValues({
-      montoRequerido: summaryData.montoRequerido
-        ? summaryData.montoRequerido.toFixed(2)
-        : 0,
-      descuento: summaryData.descuento ? summaryData.descuento.toFixed(2) : 0
+    setShowDetails(false);
+    setCalculosData({
+      plazos: 0,
+      primerPago: 0,
+      saldo: 0,
+      montoNegociado: 0,
+      descuento: 0,
+      calculos: [],
+      tasaMensual: 0
     });
-
-    // Habilita el botón "Calcular" si la herramienta seleccionada es válida
-    const validHerramientasCalcular = [
-      "Convenio",
-      "PIF",
-      "PPA",
-      "APR",
-      "PPA+AC"
-    ];
-    const validHerramientasAgregar = ["Parcial", "Ajuste"];
-    const herramientaSeleccionada = herramientas.find(
-      (herramienta) => herramienta.idHerramienta === Number(selectedValue)
-    );
-
-    setIsCalculateButtonEnabled(
-      herramientaSeleccionada &&
-        validHerramientasCalcular.includes(herramientaSeleccionada.nombre)
-    );
-
-    setIsAddButtonEnabled(
-      herramientaSeleccionada &&
-        validHerramientasAgregar.includes(herramientaSeleccionada.nombre)
-    );
-
-    // Habilita los campos si la herramienta seleccionada es "Parcial" o "Ajuste"
-    setAreFieldsEnabled(
-      herramientaSeleccionada &&
-        validHerramientasAgregar.includes(herramientaSeleccionada.nombre)
-    );
-
-    // Actualiza los formularios dinámicamente según la herramienta seleccionada
-    if (herramientaSeleccionada) {
-      switch (herramientaSeleccionada.nombre) {
-        case "Convenio":
-          setFormInputs((prev) => ({
-            ...prev,
-            meses: "" // Ejemplo: valor predeterminado para "Convenio"
-          }));
-          break;
-        case "PIF":
-          setFormInputs((prev) => ({
-            ...prev,
-            periodos: 0 // Ejemplo: valor predeterminado para "PIF"
-          }));
-          break;
-        case "Parcial":
-          setMontoPago(""); // Ejemplo: valor predeterminado para "Parcial"
-          break;
-        default:
-          // Restablece los valores si no hay configuración específica
-          setFormInputs((prev) => ({
-            ...prev,
-            meses: "",
-            periodos: 0
-          }));
-          break;
-      }
-    }
+  
+    // Actualizar la herramienta seleccionada
+    setSelectedHerramienta(Number(selectedValue));
+  
+    // Esperar un ciclo de renderizado
+    await new Promise(resolve => setTimeout(resolve, 0));
+  
+    // Actualizar formValues basado en summaryData actualizado
+    setFormValues({
+      montoRequerido: summaryData.montoRequerido?.toFixed(2) || "0",
+      descuento: summaryData.descuento?.toFixed(2) || "0"
+    });
+  
+    // Determinar qué secciones mostrar
+    const isHerramientaCalculo = ["Convenio", "PIF", "PPA", "APR", "PPA+AC"].includes(herramientaSeleccionada?.nombre);
+    const isHerramientaAcuerdo = ["Parcial", "Ajuste"].includes(herramientaSeleccionada?.nombre);
+  
+    setIsCalculateButtonEnabled(isHerramientaCalculo);
+    setIsAddButtonEnabled(isHerramientaAcuerdo);
+    setAreFieldsEnabled(isHerramientaAcuerdo);
+    setShowCalculator(isHerramientaCalculo);
   };
 
   const handleMontoPagoChange = (e) => {
@@ -690,7 +647,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       // Verifica si fetchData está definida antes de llamarla
       if (typeof fetchData === "function") {
         const idCartera = 1; // Ejemplo de valor
-        fetchData(idCartera, idCuenta, selectedHerramienta || 136); // Llama a fetchData para actualizar los datos del modal
+        fetchData(idCartera, idCuenta, selectedHerramienta); // Llama a fetchData para actualizar los datos del modal
       } else {
         console.warn(
           "fetchData no está definida. No se actualizarán los datos del modal."
@@ -925,7 +882,10 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
             </Col>
 
             <Col className="">
-              {areFieldsEnabled && ( // Muestra el Row solo si la herramienta seleccionada es válida
+            {
+  selectedHerramienta && 
+  ["Parcial", "Ajuste"]
+    .includes(herramientas.find(h => h.idHerramienta === selectedHerramienta)?.nombre) && (
                 <Row className="d-flex gap-4">
                   <Col>
                     <Card>
@@ -1107,8 +1067,11 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                 </Row>
               )}
               <Col className="p-0">
-                {showCalculator &&
-                  !areFieldsEnabled && ( // Oculta la calculadora si los campos están habilitados
+              {
+  (showCalculator || (selectedHerramienta && 
+   ["Convenio", "PIF", "PPA", "APR", "PPA+AC"]
+    .includes(herramientas.find(h => h.idHerramienta === selectedHerramienta)?.nombre))) && 
+  !areFieldsEnabled && (
                     <>
                       {/* Calculadora AMEX */}
                       <h5 style={{ textAlign: "center", color: "#20c997" }}>
@@ -1222,7 +1185,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                   )}
               </Col>
               <Row ref={detailsRef}>
-                {showDetails && (
+                {showDetails && !areFieldsEnabled && (
                   <>
                     {/* Resumen */}
                     <Col>
