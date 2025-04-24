@@ -343,6 +343,11 @@ const Telephones = () => {
   };
 
   const openFollowUpsModal = (row) => {
+    const phoneFromCtx = getContextPhoneNumber();
+    if (row) {
+      // Actualizar el número telefónico del row con el valor correcto del contexto
+      row.númeroTelefónico = phoneFromCtx.raw;
+    }
     console.log("Abriendo modal FollowUps con isFollowUpActive = true", row);
     setShowFollowUps(true);
   };
@@ -460,7 +465,7 @@ const Telephones = () => {
                   <th>C</th>
                   <th>D</th>
                   <th>S</th>
-                  <th>Teléfono</th>
+                  <th>SEG.</th>
                   <th>Telefonía</th>
                   <th>Origen</th>
                   <th>Clase</th>

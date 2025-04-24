@@ -54,37 +54,37 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
     const [loading, setLoading] = useState(false);
     const [existingReminders, setExistingReminders] = useState([]);
 
-    // Inicializar formData en el contexto si no existe
+    // Inicializar o actualizar formData en el contexto
     useEffect(() => {
-        if (!formData) {
-            const phone = getContextPhoneNumber();
-            setFormData({
-                idCartera: 1,
-                idCuenta: idCuenta[0].trim(),
-                idEjecutivo: idEjecutivo,
-                fecha: new Date().toISOString().split('T')[0],
-                segundo: "07:00:00",
-                idAcercamiento: "1601",
-                recordatorio: false,
-                numeroTelefonico: phone.raw,
-                displayedPhone: phone.formatted,
-                datoContacto: "",
-                idMotivoS: "0",
-            });
-        }
-    }, []);
-
-    // Actualizar número telefónico cuando cambie isManagment
-    useEffect(() => {
-        if (formData) {
-            const phone = getContextPhoneNumber();
-            setFormData(prev => ({
-                ...prev,
-                numeroTelefonico: phone.raw,
-                displayedPhone: phone.formatted
-            }));
-        }
-    }, [isManagment]);
+        const phone = getContextPhoneNumber();
+        setFormData(prev => {
+            if (prev) {
+                // Actualiza solo si hay cambio en los valores
+                if (prev.numeroTelefonico !== phone.raw || prev.displayedPhone !== phone.formatted) {
+                    return {
+                        ...prev,
+                        numeroTelefonico: phone.raw,
+                        displayedPhone: phone.formatted
+                    };
+                }
+                return prev;
+            } else {
+                return {
+                    idCartera: 1,
+                    idCuenta: idCuenta[0].trim(),
+                    idEjecutivo: idEjecutivo,
+                    fecha: new Date().toISOString().split('T')[0],
+                    segundo: "07:00:00",
+                    idAcercamiento: "1601",
+                    recordatorio: false,
+                    numeroTelefonico: phone.raw,
+                    displayedPhone: phone.formatted,
+                    datoContacto: "",
+                    idMotivoS: "0"
+                };
+            }
+        });
+    }, [isManagment, selectedAnswer]);
 
     // Cargar y preparar recordatorios existentes
     useEffect(() => {
@@ -111,21 +111,6 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
         
         loadReminders();
     }, [idCuenta]);
-
-    useEffect(() => {
-        const phone = getContextPhoneNumber();
-        setFormData(prev => {
-            // Solo actualiza si alguno de los valores cambia
-            if (prev.numeroTelefonico === phone.raw && prev.displayedPhone === phone.formatted) {
-                return prev;
-            }
-            return {
-                ...prev,
-                numeroTelefonico: phone.raw,
-                displayedPhone: phone.formatted
-            };
-        });
-    }, [isManagment]);
 
     useEffect(() => {
         const logFetchedNotes = async () => {
