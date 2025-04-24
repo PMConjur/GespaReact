@@ -8,7 +8,8 @@ import {
   fetchSaveDeleteDeadlines,
   fetchSaveNegotiationDeadlines,
   fetchIncreasesNegotiation,
-  fetchSaveOffering
+  fetchSaveOffering,
+  fetchValidateNegotiationOffer
 } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
@@ -394,6 +395,51 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
     }
   };
 
+  const validateNegotiationOffer = async () => {
+    try {
+      const idCuenta = searchResults?.[0]?.idCuenta?.trim();
+      
+      if (!idCuenta || !selectedHerramienta) {
+        toast.error("Faltan datos para validar la oferta");
+        return;
+      }
+  
+      // Prepara el objeto con todos los campos requeridos
+      const validationData = {
+        plazos: calculosData.calculos.map(calculo => ({
+          monto: calculo.pago,
+          fecha: calculo.fecha
+        })),
+        montoNegociado: calculosData.montoNegociado || 0,
+        montoRequerido: summaryData.montoRequerido || 0,
+        saldo: summaryData.saldo || 0,
+        descuento: summaryData.descuento || 0,
+        maxDescuento: summaryData.maxDescuento || 0, // Asegúrate de que este campo exista en tu estado
+        idHerramienta: selectedHerramienta,
+        idCuenta: idCuenta,
+        idCartera: 1 // Asumiendo que siempre es 1 según tu código
+      };
+  
+      console.log("Datos enviados para validación:", validationData);
+      
+      const result = await fetchValidateNegotiationOffer(validationData);
+      
+      if (result.valido) {
+        toast.success("Ofrecimiento válido.");
+        setShowValidators(true); // Abre el modal de validadores
+        return true;
+      } else {
+        toast.warning(`${result.mensaje || "Ofrecimiento inválido."}`);
+        setShowValidators(true); // Abre el modal de validadores
+        return false;
+      }
+    } catch (error) {
+      console.error("Error al validar oferta:", error);
+      toast.error(error.response?.data?.message || "Error al validar ofrecer.");
+      throw error;
+    }
+  };
+
   const handleRowClick = (index) => {
     setSelectedRow(index); // Actualiza el índice de la fila seleccionada
     setModifyForm((prev) => ({
@@ -677,7 +723,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
           style={{
             maxHeight: "80vh", // Limitar la altura máxima del cuerpo del modal
             overflowY: "auto", // Habilitar scroll vertical
-            position: "relative" // Necesario para posicionar el indicador
+            position: "relative", // Necesario para posicionar el indicador
           }}
         >
           <Col>
@@ -689,11 +735,12 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
               <Row className="table-responsive d-block">
                 <Col>
                   <div
-                    className="custom-scrollbar"
+                    className="custom-scrollbar me-auto ms-2"
                     style={{
-                      maxHeight: "300px",
-                      overflowY: "auto",
-                      position: "relative" // Necesario para el scroll del tbody
+                      maxHeight: "350px",
+                      maxWidth: "60vw",
+                      overflow: "auto",
+                      position: "relative", // Necesario para el scroll del tbody
                     }}
                   >
                     <Table
@@ -708,7 +755,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                           position: "sticky",
                           top: "0",
                           backgroundColor: "#343a40", // Color de fondo para que coincida con el tema oscuro
-                          zIndex: "1"
+                          zIndex: "1",
                         }}
                       >
                         <tr>
@@ -717,6 +764,16 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                           <th style={{ textAlign: "center" }}>Status</th>
                           <th style={{ textAlign: "center" }}>Vencimiento</th>
                           <th style={{ textAlign: "center" }}>Saldo</th>
+                          <th style={{ textAlign: "center" }}>Descuento</th>
+                          <th style={{ textAlign: "center" }}>Requerido</th>
+                          <th style={{ textAlign: "center" }}>Negociado</th>
+                          <th style={{ textAlign: "center" }}>Pagado</th>
+                          <th style={{ textAlign: "center" }}>plazos</th>
+                          <th style={{ textAlign: "center" }}>Ofreció</th>
+                          <th style={{ textAlign: "center" }}>Validó</th>
+                          <th style={{ textAlign: "center" }}>carta-Convenio</th>
+                          <th style={{ textAlign: "center" }}>Saldo-Interés</th>
+                          <th style={{ textAlign: "center" }}>Remanente</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -736,30 +793,70 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 </td>
                                 <td style={{ textAlign: "left" }}>
                                   {row.herramienta || "--"}
-                                </td>{" "}
+                                </td>
                                 {/* Muestra "--" si no hay valor */}
                                 <td style={{ textAlign: "left" }}>
                                   {row.idEstado || "--"}
-                                </td>{" "}
+                                </td>
                                 {/* Muestra "--" si no hay valor */}
                                 <td style={{ textAlign: "left" }}>
                                   {row.vencimiento || "--"}
-                                </td>{" "}
+                                </td>
                                 {/* Muestra "--" si no hay valor */}
                                 <td style={{ textAlign: "left" }}>
                                   {row.saldoInterés !== undefined
                                     ? `$${parseFloat(row.saldoInterés).toFixed(
                                         2
                                       )}`
-                                    : 0}{" "}
+                                    : 0}
                                   {/* Muestra "0.00" si no hay valor */}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.descuento || "--"} %
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.requerido !== undefined
+                                    ? `$${parseFloat(row.requerido).toFixed(2)}`
+                                    : 0}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.negociado !== undefined
+                                    ? `$${parseFloat(row.negociado).toFixed(2)}`
+                                    : 0}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.pagado || "--"}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.plazos || "--"}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.ofrecio || "--"}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.valido || "--"}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.cartaConvenio === true
+                                    ? "✓"
+                                    : row.cartaConvenio === false
+                                    ? "X"
+                                    : "--"}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.interes !== undefined
+                                    ? `$${parseFloat(row.interes).toFixed(2)}`
+                                    : 0}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.remanente || "--"}
                                 </td>
                               </tr>
                             );
                           })
                         ) : (
                           <tr>
-                            <td colSpan="5" className="text-center">
+                            <td colSpan="15" className="text-start ps-3">
                               {tableData.length === 0 ? (
                                 "No hay datos disponibles"
                               ) : (
@@ -769,7 +866,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                     role="status"
                                   >
                                     <span className="visually-hidden">
-                                      Cargando...
+                                      Cargando Datos...
                                     </span>
                                   </div>
                                 </div>
@@ -836,7 +933,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                           </div>
                           <div className="ps-3">
                             <span className="text-light small pt-1 fw-bold">
-                              45% Desc
+                              Descuento
                             </span>
                             <h5
                               style={{ color: "#07fb70" }}
@@ -880,198 +977,202 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                 </Card>
               </Col>
             </Col>
-
             <Col className="">
-            {
-  selectedHerramienta && 
-  ["Parcial", "Ajuste"]
-    .includes(herramientas.find(h => h.idHerramienta === selectedHerramienta)?.nombre) && (
-                <Row className="d-flex gap-4">
-                  <Col>
-                    <Card>
-                      <Card.Body className="p-0">
-                        <Card.Title className="pt-0">
-                          Acuerdo con el cliente
-                        </Card.Title>
-                        <Form>
-                          <Form.Group className="d-flex w-100">
-                            <Form.Control
-                              className="w-100"
-                              type="text"
-                              placeholder="Monto Pago"
-                              value={montoPago}
-                              onKeyPress={(e) => {
-                                if (!/^\d*\.?\d*$/.test(e.key)) {
-                                  e.preventDefault(); // Evita que se ingresen caracteres no numéricos
-                                }
-                              }}
-                              onChange={handleMontoPagoChange} // Actualiza el estado de "Monto Pago"
-                              disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
-                            />
-                          </Form.Group>
-                          <div className="d-flex gap-3 w-100">
-                            <Form.Group className="mt-3 w-100">
+              {selectedHerramienta &&
+                ["Parcial", "Ajuste"].includes(
+                  herramientas.find(
+                    (h) => h.idHerramienta === selectedHerramienta
+                  )?.nombre
+                ) && (
+                  <Row className="d-flex gap-4">
+                    <Col>
+                      <Card>
+                        <Card.Body className="p-0">
+                          <Card.Title className="pt-0">
+                            Acuerdo con el cliente
+                          </Card.Title>
+                          <Form>
+                            <Form.Group className="d-flex w-100">
                               <Form.Control
+                                className="w-100"
                                 type="text"
-                                placeholder="Monto Negociado"
-                                value={
-                                  montoNegociado ? `$${montoNegociado}` : ""
-                                } // Agrega un '$' al inicio del valor
-                                readOnly // Hace que el campo no sea editable
+                                placeholder="Monto Pago"
+                                value={montoPago}
+                                onKeyPress={(e) => {
+                                  if (!/^\d*\.?\d*$/.test(e.key)) {
+                                    e.preventDefault(); // Evita que se ingresen caracteres no numéricos
+                                  }
+                                }}
+                                onChange={handleMontoPagoChange} // Actualiza el estado de "Monto Pago"
                                 disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
                               />
                             </Form.Group>
-                            <Form.Group className="mt-3 w-100">
-                              <Form.Control
-                                type="date"
-                                name="fechaPago"
-                                value={formInputs.fechaPago}
-                                onChange={handleInputChange} // Actualiza el estado de "Fecha Pago"
-                                disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
-                                min={new Date().toISOString().split("T")[0]} // Fecha mínima: hoy
-                                max={
-                                  new Date(
-                                    new Date().setDate(
-                                      new Date().getDate() + 15
+                            <div className="d-flex gap-3 w-100">
+                              <Form.Group className="mt-3 w-100">
+                                <Form.Control
+                                  type="text"
+                                  placeholder="Monto Negociado"
+                                  value={
+                                    montoNegociado ? `$${montoNegociado}` : ""
+                                  } // Agrega un '$' al inicio del valor
+                                  readOnly // Hace que el campo no sea editable
+                                  disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
+                                />
+                              </Form.Group>
+                              <Form.Group className="mt-3 w-100">
+                                <Form.Control
+                                  type="date"
+                                  name="fechaPago"
+                                  value={formInputs.fechaPago}
+                                  onChange={handleInputChange} // Actualiza el estado de "Fecha Pago"
+                                  disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
+                                  min={new Date().toISOString().split("T")[0]} // Fecha mínima: hoy
+                                  max={
+                                    new Date(
+                                      new Date().setDate(
+                                        new Date().getDate() + 15
+                                      )
                                     )
-                                  )
-                                    .toISOString()
-                                    .split("T")[0]
-                                } 
-                              />
-                              <Form.Label>Máximo 28 días</Form.Label>
-                            </Form.Group>
-                          </div>
-                          <div
+                                      .toISOString()
+                                      .split("T")[0]
+                                  }
+                                />
+                                <Form.Label>Máximo 28 días</Form.Label>
+                              </Form.Group>
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "flex-end",
+                              }}
+                            >
+                              <Button
+                                variant="primary"
+                                onClick={handleAgregarPago} // Llama a la función para agregar el pago
+                                disabled={!isAddButtonEnabled} // Deshabilita el botón si no es válido
+                              >
+                                Agregar
+                              </Button>
+                            </div>
+                          </Form>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                    <Col className="mt-5">
+                      <div
+                        className="table-responsive w-100"
+                        style={{
+                          maxHeight: "300px",
+                          overflowY: "auto",
+                          scrollbarColor: "#343a40 #1a1a1a", // Color de la barra de scroll y el fondo
+                          scrollbarWidth: "thin", // Ancho de la barra de scroll
+                        }}
+                      >
+                        <Table
+                          striped
+                          bordered
+                          hover
+                          variant="dark"
+                          style={{ tableLayout: "fixed" }}
+                        >
+                          <thead
                             style={{
-                              display: "flex",
-                              justifyContent: "flex-end"
+                              position: "sticky",
+                              top: 0,
+                              backgroundColor: "#343a40", // Color de fondo para que coincida con el tema oscuro
+                              zIndex: 1,
                             }}
                           >
-                            <Button
-                              variant="primary"
-                              onClick={handleAgregarPago} // Llama a la función para agregar el pago
-                              disabled={!isAddButtonEnabled} // Deshabilita el botón si no es válido
-                            >
-                              Agregar
-                            </Button>
-                          </div>
-                        </Form>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                  <Col className="mt-5">
-                    <div
-                      className="table-responsive w-100"
-                      style={{
-                        maxHeight: "300px",
-                        overflowY: "auto",
-                        scrollbarColor: "#343a40 #1a1a1a", // Color de la barra de scroll y el fondo
-                        scrollbarWidth: "thin" // Ancho de la barra de scroll
-                      }}
-                    >
-                      <Table
-                        striped
-                        bordered
-                        hover
-                        variant="dark"
-                        style={{ tableLayout: "fixed" }}
-                      >
-                        <thead
-                          style={{
-                            position: "sticky",
-                            top: 0,
-                            backgroundColor: "#343a40", // Color de fondo para que coincida con el tema oscuro
-                            zIndex: 1
-                          }}
-                        >
-                          <tr>
-                            <th>Fecha</th>
-                            <th>Pago</th>
-                            <th>Eliminar</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {tablaPagos.length > 0 ? (
-                            tablaPagos.map((pago, index) => (
-                              <tr key={index}>
-                                <td
-                                  style={{
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap"
-                                  }}
-                                >
-                                  {pago.fecha}{" "}
-                                  {/* Usa la fecha directamente sin convertirla */}
-                                </td>
-                                <td
-                                  style={{
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap"
-                                  }}
-                                >
-                                  ${parseFloat(pago.pago).toFixed(2) || 0}
-                                </td>
-                                <td
-                                  style={{
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap"
-                                  }}
-                                >
-                                  <Button
-                                    style={{ padding: "1px 5px" }}
-                                    variant="danger"
-                                    size="sm"
-                                    onClick={() => handleEliminarPago(index)}
+                            <tr>
+                              <th>Fecha</th>
+                              <th>Pago</th>
+                              <th>Eliminar</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {tablaPagos.length > 0 ? (
+                              tablaPagos.map((pago, index) => (
+                                <tr key={index}>
+                                  <td
+                                    style={{
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                    }}
                                   >
-                                    X
-                                  </Button>
+                                    {pago.fecha}{" "}
+                                    {/* Usa la fecha directamente sin convertirla */}
+                                  </td>
+                                  <td
+                                    style={{
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    ${parseFloat(pago.pago).toFixed(2) || 0}
+                                  </td>
+                                  <td
+                                    style={{
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    <Button
+                                      style={{ padding: "1px 5px" }}
+                                      variant="danger"
+                                      size="sm"
+                                      onClick={() => handleEliminarPago(index)}
+                                    >
+                                      X
+                                    </Button>
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan="3" className="text-center">
+                                  No hay datos
                                 </td>
                               </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan="3" className="text-center">
-                                No hay datos
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </Table>
-                    </div>
-                    <div className="justify-content-end d-flex mt-2">
-                      {!isValidated && ( // Muestra el botón "Validar" solo si no está validado
-                        <Button
-                          variant="primary"
-                          onClick={() => {
-                            setShowValidators(true); // Abre el modal de validación
-                          }}
-                          disabled={tablaPagos.length === 0} // Deshabilita el botón si no hay registros en la tabla
-                        >
-                          Validar
-                        </Button>
-                      )}
-                      {isValidated && ( // Muestra el botón "Ofrecer" solo si está validado
-                        <Button
-                          onClick={handleSaveOffering}
-                          disabled={tablaPagos.length === 0} // Deshabilita el botón si no hay registros en la tabla
-                        >
-                          Ofrecer
-                        </Button>
-                      )}
-                    </div>
-                  </Col>
-                </Row>
-              )}
+                            )}
+                          </tbody>
+                        </Table>
+                      </div>
+                      <div className="justify-content-end d-flex mt-2">
+                        {!isValidated && ( // Muestra el botón "Validar" solo si no está validado
+                          <Button
+                            variant="primary"
+                            onClick={() => {
+                              setShowValidators(true); // Abre el modal de validación
+                            }}
+                            disabled={tablaPagos.length === 0} // Deshabilita el botón si no hay registros en la tabla
+                          >
+                            Validar
+                          </Button>
+                        )}
+                        {isValidated && ( // Muestra el botón "Ofrecer" solo si está validado
+                          <Button
+                            onClick={handleSaveOffering}
+                            disabled={tablaPagos.length === 0} // Deshabilita el botón si no hay registros en la tabla
+                          >
+                            Ofrecer
+                          </Button>
+                        )}
+                      </div>
+                    </Col>
+                  </Row>
+                )}
               <Col className="p-0">
-              {
-  (showCalculator || (selectedHerramienta && 
-   ["Convenio", "PIF", "PPA", "APR", "PPA+AC"]
-    .includes(herramientas.find(h => h.idHerramienta === selectedHerramienta)?.nombre))) && 
-  !areFieldsEnabled && (
+                {(showCalculator ||
+                  (selectedHerramienta &&
+                    ["Convenio", "PIF", "PPA", "APR", "PPA+AC"].includes(
+                      herramientas.find(
+                        (h) => h.idHerramienta === selectedHerramienta
+                      )?.nombre
+                    ))) &&
+                  !areFieldsEnabled && (
                     <>
                       {/* Calculadora AMEX */}
                       <h5 style={{ textAlign: "center", color: "#20c997" }}>
@@ -1097,13 +1198,13 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                       montoRequerido: e.target.value.replace(
                                         /^\$/,
                                         ""
-                                      ) // Elimina el '$' antes de actualizar el estado
+                                      ), // Elimina el '$' antes de actualizar el estado
                                     }))
                                   }
                                   readOnly // Hace que el campo sea de solo lectura
                                   style={{
                                     backgroundColor: "#e9ecef", // Color de fondo para indicar que es no editable
-                                    cursor: "not-allowed" // Cambia el cursor para indicar que no es editable
+                                    cursor: "not-allowed", // Cambia el cursor para indicar que no es editable
                                   }}
                                 />
                               </Form.Group>
@@ -1122,13 +1223,13 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                       descuento: e.target.value.replace(
                                         /%$/,
                                         ""
-                                      ) // Elimina el '%' antes de actualizar el estado
+                                      ), // Elimina el '%' antes de actualizar el estado
                                     }))
                                   }
                                   readOnly // Hace que el campo sea de solo lectura
                                   style={{
                                     backgroundColor: "#e9ecef", // Color de fondo para indicar que es no editable
-                                    cursor: "not-allowed" // Cambia el cursor para indicar que no es editable
+                                    cursor: "not-allowed", // Cambia el cursor para indicar que no es editable
                                   }}
                                 />
                               </Form.Group>
@@ -1225,8 +1326,8 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 </span>
                                 <h5 style={{ color: "#ffc400" }}>
                                   $
-                                  {calculosData.montoNegociado
-                                    ? calculosData.montoNegociado.toFixed(2)
+                                  {summaryData.montoRequerido
+                                    ? summaryData.montoRequerido.toFixed(2)
                                     : 0}
                                 </h5>
                               </Col>
@@ -1261,7 +1362,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                           <div
                             style={{
                               justifyContent: "space-evenly",
-                              paddingLeft: "0"
+                              paddingLeft: "0",
                             }}
                             className="d-flex gap-3 mb-3"
                           >
@@ -1275,7 +1376,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 setModifyForm((prev) => ({
                                   ...prev,
                                   agregarPagos: e.target.checked,
-                                  filaMod: e.target.checked ? 0 : null
+                                  filaMod: e.target.checked ? 0 : null,
                                 }))
                               }
                             />
@@ -1304,7 +1405,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                   ); // Elimina el '$' si ya existe
                                   setModifyForm((prev) => ({
                                     ...prev,
-                                    montoMod: value // Actualiza el estado sin el '$'
+                                    montoMod: value, // Actualiza el estado sin el '$'
                                   }));
                                 }}
                                 onKeyPress={(e) => {
@@ -1334,14 +1435,16 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 onClick={() => {
                                   setModifyForm((prev) => ({
                                     ...prev,
-                                    modificar: 1
+                                    modificar: 1,
                                   }));
                                   handleModifyPayment();
                                   setIsValidated(false); // Asegura que el botón "Validación" se muestre después de modificar
                                 }}
                                 disabled={isValidated} // Deshabilita el botón si ya está validado
                                 style={{
-                                  display: isValidated ? "none" : "inline-block"
+                                  display: isValidated
+                                    ? "none"
+                                    : "inline-block",
                                 }} // Oculta el botón si está validado
                               >
                                 Modificar
@@ -1352,21 +1455,21 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                             style={{
                               display: "flex",
                               justifyContent: "flex-end",
-                              marginTop: "15px"
+                              marginTop: "15px",
                             }}
                           >
                             {!isValidated && (
                               <Button
                                 variant="primary"
                                 onClick={() => {
-                                  handleOpenValidators(); // Abre el modal de validación
+                                  validateNegotiationOffer(); // Abre el modal de validación
                                   setModifyForm((prev) => ({
                                     ...prev,
-                                    modificar: 0 // Oculta el botón "Modificar" después de la validación
+                                    modificar: 0, // Oculta el botón "Modificar" después de la validación
                                   }));
                                 }}
                               >
-                                Validación
+                                Ofrecer
                               </Button>
                             )}
                           </div>
@@ -1374,7 +1477,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                             style={{
                               display: "flex",
                               justifyContent: "flex-end",
-                              marginTop: ""
+                              marginTop: "",
                             }}
                           >
                             {!isSaveDeadlinesClicked &&
@@ -1391,7 +1494,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                             style={{
                               display: "flex",
                               justifyContent: "flex-end",
-                              marginTop: ""
+                              marginTop: "",
                             }}
                           >
                             {isSaveDeadlinesClicked &&
@@ -1409,7 +1512,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                             style={{
                               display: "flex",
                               justifyContent: "flex-end",
-                              marginTop: ""
+                              marginTop: "",
                             }}
                           >
                             {isNegotiationSaved && ( // Muestra el botón "Finalizar" después de guardar la negociación
@@ -1467,7 +1570,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                         style={{
                                           cursor: modifyForm.agregarPagos
                                             ? "not-allowed"
-                                            : "pointer"
+                                            : "pointer",
                                         }}
                                       >
                                         <td>{calculo.no}</td>

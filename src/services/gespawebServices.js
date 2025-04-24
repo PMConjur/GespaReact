@@ -1517,6 +1517,28 @@ export const fetchIncreasesNegotiation = async (increaseRequestData) => {
   }
 };
 
+// validacion ofrecer-negociacion
+export const fetchValidateNegotiationOffer = async (data) => {
+  try {
+    console.log("Enviando datos al endpoint Ofrecer-Negociacion:",data);
+    const response = await servicio.post(
+      `/ejecutivo/Ofrecer-Negociacion`, data 
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+    const result = response.data;
+    console.log("Respuesta del endpoint Ofrecer-Negociacion:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en Ofrecer-Negociacion:", error);
+    throw error;
+  }
+};
+
 // endpoint guarda ofrecimiento
 export const fetchSaveOffering = async (requestData) => {
   try {
@@ -1531,7 +1553,6 @@ export const fetchSaveOffering = async (requestData) => {
         `Error en la respuesta de la API. Estado: ${response.status}`
       );
     }
-
     const result = response.data;
     console.log("Respuesta del endpoint guardar ofrecimiento:", result);
     return result;
