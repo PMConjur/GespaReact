@@ -2102,3 +2102,13 @@ to { border-right-color: transparent; }
   font-weight: bold; // Negrita
 }
 
+.search-result{
+  color: $success;
+  border-bottom: 1px solid #6c757d;
+  background-color: #343a40;
+
+  .result-search-item{
+    color: white;
+  }
+}
+
