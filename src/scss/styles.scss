@@ -661,7 +661,7 @@ $table-border-radius: 8px;
 
 .scroll-search {
   overflow-y: scroll;
-  height: 600px;
+  height: 300px;
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -711,7 +711,6 @@ $table-border-radius: 8px;
   transition: background-color 0.5s;
   color: #ffffff;
   border-radius: 10px;
- 
 }
 
 .phone-added:hover {

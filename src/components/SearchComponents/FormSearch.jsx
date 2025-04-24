@@ -25,6 +25,12 @@ const FormSearch = () => {
   const [phoneList, setPhoneList] = useState([]); // Lista de teléfonos agregados
   const [link, setLink] = useState(""); // Estado para el enlace
   const [isLinkValid, setIsLinkValid] = useState(false); // Estado para la validación del enlace
+  const [additionalFound, setAdditionalFound] = useState({}); // Estado para los datos adicionales
+  const [searchData, setSearchData] = useState({
+    nombre: "",
+    puesto: "",
+    lugar: ""
+  }); // Estado para los datos de búsqueda
 
   const loadDatoOptions = async () => {
     if (!idCuenta) return; // Solo ejecuta si idCuenta no es vacío
@@ -61,10 +67,12 @@ const FormSearch = () => {
     const isAdditional = additionalData ? additionalData : null; // Asigna adicionales si existen en caso de que no este limpia para no mantener las opciones en el drop
     const emailsData = await loadEmailOptions();
     const isEmail = emailsData ? emailsData : null; // Asigna correos si existen en caso de que no este limpia para no mantener las opciones en el drop
+    searchData.ddlDato = value; // Asigna el valor al estado
     // Llenar ddlTipoDato según el valor seleccionado
     switch (value) {
       case "2601": // Nombre
         {
+          
           setIsTipoDatoChanged(true);
           setTipoDatoOptions([
             {
@@ -202,6 +210,67 @@ const FormSearch = () => {
     toast.success("Teléfono eliminado.");
   };
 
+  const handleGuardarClick = async () => {
+    const currentTime = new Date().toLocaleTimeString("en-GB", {
+      hour12: false
+    });
+    const currentDate = new Date().toISOString();
+
+    try {
+      const idCuenta = searchResults[0]?.idCuenta?.trim();
+      const idEjecutivo = searchResults[0]?.idEjecutivo;
+
+      if (!idCuenta || !idEjecutivo) {
+        toast.error("Faltan datos necesarios para guardar.");
+        return;
+      }
+
+      const requestData = {
+        idCartera: 1,
+        idCuenta: idCuenta,
+        idEjecutivo: idEjecutivo,
+        idDato: Number(searchData.ddlDato),
+        idFuente: Number(searchData.ddlFuente),
+        dato: searchData.txtDato,
+        encontrado: isSwitchOn,
+        telefonos: phoneList.map((númeroTelefónico) => ({ númeroTelefónico })),
+        persona: searchData.nombre,
+        puesto: searchData.puesto,
+        lugar: searchData.lugar,
+        link: searchData.link,
+        validador: 0,
+        fecha_Insert: currentDate,
+        segundo_Insert: currentTime
+      };
+
+      await fetchSaveExecutive(requestData);
+      toast.success("Datos guardados correctamente.");
+      setPhoneList([]); // Limpia la lista de teléfonos
+      setSearchData({}); // Limpia los datos del formulario
+      //fetchData(idCuenta); // Recarga los datos
+    } catch (error) {
+      console.error("Error al guardar los datos:", error);
+      toast.error("Hubo un error al guardar los datos.");
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+    const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/; // Permite letras, espacios y caracteres acentuados
+
+    if (regex.test(value)) {
+      setSearchData((prevData) => ({
+        ...prevData,
+        [id]: value // Asigna el valor al campo correspondiente (nombre, puesto o lugar)
+      }));
+      toast.dismiss(); // Elimina cualquier mensaje de advertencia previo
+    } else {
+      toast.warning(
+        "Solo se permiten letras, espacios y caracteres válidos en este campo."
+      ); // Muestra un mensaje de advertencia
+    }
+  };
+
   return (
     <>
       <div>
@@ -212,7 +281,11 @@ const FormSearch = () => {
                 Dato
               </InputGroup.Text>
               <Form.Group as={Col} controlId="formGridState">
-                <Form.Select id="ddlDato" onChange={handleSelectChange}>
+                <Form.Select
+                  id="ddlDato"
+                  onChange={handleSelectChange}
+                
+                >
                   <option value="">Seleccionar...</option>
                   {datoOptions.map((option) => (
                     <option key={option.idValor} value={option.idValor}>
@@ -245,6 +318,7 @@ const FormSearch = () => {
                     id="ddlTipoDato"
                     className={isTipoDatoChanged === true ? "pulse-search" : ""}
                     onChange={handleTipoDatoChange}
+                    value={searchData.ddlDato || ""}
                   >
                     <option value="">Seleccionar...</option>
                     {tipoDatoOptions.map((option, index) => (
@@ -263,7 +337,7 @@ const FormSearch = () => {
                 Fuente
               </InputGroup.Text>
               <Form.Group as={Col} controlId="formGridState">
-                <Form.Select>
+                <Form.Select value={searchData.ddlFuente || ""}>
                   <option value="">Seleccionar...</option>
                   {datoSources.map((option) => (
                     <option key={option.idValor} value={option.idValor}>
@@ -281,16 +355,37 @@ const FormSearch = () => {
             <Row>
               <Col xs={12} md={4} lg={4}>
                 <Form.Label>Nombre</Form.Label>
-                <Form.Control type="text" placeholder="" />
+                <Form.Control
+                  onKeyDown={(e) => e.key === " " && e.stopPropagation()}
+                  id="nombre"
+                  type="text"
+                  placeholder="Ingresa el nombre"
+                  value={searchData.nombre || ""} // Vincula el valor al estado
+                  onChange={handleInputChange} // Maneja el cambio
+                />
               </Col>
               <Col xs={12} md={4} lg={4}>
                 <Form.Label>Puesto</Form.Label>
-                <Form.Control type="text" placeholder="" />
+                <Form.Control
+                  onKeyDown={(e) => e.key === " " && e.stopPropagation()}
+                  id="puesto"
+                  type="text"
+                  placeholder="Ingresa el puesto"
+                  value={searchData.puesto || ""} // Vincula el valor al estado
+                  onChange={handleInputChange} // Maneja el cambio
+                />
               </Col>
 
               <Col xs={12} md={4} lg={4}>
                 <Form.Label>Lugar</Form.Label>
-                <Form.Control type="text" placeholder="" value="" />
+                <Form.Control
+                  onKeyDown={(e) => e.key === " " && e.stopPropagation()}
+                  id="lugar"
+                  type="text"
+                  placeholder="Ingresa el lugar"
+                  value={searchData.lugar || ""} // Vincula el valor al estado
+                  onChange={handleInputChange} // Maneja el cambio
+                />
               </Col>
               <br />
               <Col xs={12} md={4} lg={4}>
@@ -384,7 +479,11 @@ const FormSearch = () => {
             </Form>
           </Col>
           <Col xs={12} md={6} lg={6} className="d-flex justify-content-end">
-            <Button variant="primary" type="button">
+            <Button
+              variant="primary"
+              type="button"
+              onClick={handleGuardarClick}
+            >
               Guardar
             </Button>
           </Col>
