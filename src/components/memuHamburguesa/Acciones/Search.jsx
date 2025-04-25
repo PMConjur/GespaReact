@@ -15,17 +15,14 @@ const Search = ({ show, handleClose }) => {
       <Modal.Body className="modal-body">
         <Row>
           <Col xs={12} md={12} lg={12}>
-            <h4 className="text-center">Buscar datos</h4>
             <FormSearch />
           </Col>
-
-     
         </Row>
         <hr />
         <Row>
           <Col xs={12} md={12} lg={12}>
             <h4 className="text-center">Resultados</h4>
-            <SearchTable /> {/* Cambiado a PascalCase */}
+            <SearchTable />
           </Col>
         </Row>
       </Modal.Body>

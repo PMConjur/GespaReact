@@ -35,37 +35,37 @@ const SearchTable = () => {
 
   const mapResponseToTableData = (response) => {
     return response.map((item) => ({
-      Fecha: item.Fecha_Insert || "--",
-      Hora: item.Segundo_Insert || "--",
-      Ejecutivo: item.Ejecutivo || "--",
-      Dato: item.Dato || "--",
-      DatoBuscado: item.DatoBuscado || "--",
-      Fuente: item.Fuente || "--",
-      Encontrado: item._Encontrado === "✓" ? "Sí" : "No",
-      Telefonos: item.Teléfonos || "--",
+      Fecha: JSON.stringify(item.Fecha_Insert || "--"),
+      Hora: JSON.stringify(item.Segundo_Insert || "--"),
+      Ejecutivo: JSON.stringify(item.Ejecutivo || "--"),
+      Dato: JSON.stringify(item.Dato || "--"),
+      DatoBuscado: JSON.stringify(item.DatoBuscado || "--"),
+      Fuente: JSON.stringify(item.Fuente || "--"),
+      Encontrado: JSON.stringify(item._Encontrado === "✓" ? "Sí" : "No"),
+      Telefonos: JSON.stringify(item.Teléfonos || "--"),
       Persona:
         typeof item.Persona === "string" && item.Persona.trim() !== ""
-          ? item.Persona
-          : "--",
+          ? JSON.stringify(item.Persona)
+          : JSON.stringify("--"),
       Puesto:
         typeof item.Puesto === "string" && item.Puesto.trim() !== ""
-          ? item.Puesto
-          : "--",
+          ? JSON.stringify(item.Puesto)
+          : JSON.stringify("--"),
       Lugar:
         typeof item.Lugar === "string" && item.Lugar.trim() !== ""
-          ? item.Lugar
-          : "--",
-      idEjecutivo: item.idEjecutivo || "--",
+          ? JSON.stringify(item.Lugar)
+          : JSON.stringify("--"),
+      idEjecutivo: JSON.stringify(item.idEjecutivo || "--"),
       InfoEncontrada:
         item.InfoEncontrada && Object.keys(item.InfoEncontrada).length > 0
           ? JSON.stringify(item.InfoEncontrada)
-          : "--",
-      Confirmado: item._Confirmado === "✓" ? "Sí" : "No",
+          :"--",
+      Confirmado: JSON.stringify(item._Confirmado === "✓" ? "Sí" : "No"),
       Link:
         typeof item.Link === "string" && item.Link.trim() !== ""
-          ? item.Link.replace("string", " ")
-          : "--",
-      idDato: item.idDato || "--"
+          ? JSON.stringify(item.Link.replace("string", " "))
+          : JSON.stringify("--"),
+      idDato: JSON.stringify(item.idDato || "--")
     }));
   };
 

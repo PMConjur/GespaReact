@@ -11,7 +11,10 @@ import {
 import { AppContext } from "../../pages/Managment"; // Importa el contexto
 
 const FormSearch = () => {
-  const { searchResults, isDataAllPhones } = useContext(AppContext);
+  const responseData =
+    location.state || JSON.parse(localStorage.getItem("responseData"));
+  const { searchResults, isDataAllPhones, stoppedTimeSticky } =
+    useContext(AppContext);
   const idCuenta = searchResults?.[0]?.idCuenta;
   const [datoOptions, setDatoOptions] = useState([]);
   const [datoSources, setDatoSources] = useState([]);
@@ -23,15 +26,16 @@ const FormSearch = () => {
   const [telephone, setTelephone] = useState("");
   const [isTelephoneValid, setIsTelephoneValid] = useState(false);
   const [phoneList, setPhoneList] = useState([]); // Lista de teléfonos agregados
+  const [phoneData, setPhoneData] = useState(new Set()); // Conjunto para almacenar los datos de phoneList
   const [link, setLink] = useState(""); // Estado para el enlace
   const [isLinkValid, setIsLinkValid] = useState(false); // Estado para la validación del enlace
-  const [additionalFound, setAdditionalFound] = useState({}); // Estado para los datos adicionales
+
   const [searchData, setSearchData] = useState({
     nombre: "",
     puesto: "",
     lugar: ""
   }); // Estado para los datos de búsqueda
-
+  //console.log("telefonos", phoneData);
   const loadDatoOptions = async () => {
     if (!idCuenta) return; // Solo ejecuta si idCuenta no es vacío
     try {
@@ -67,12 +71,15 @@ const FormSearch = () => {
     const isAdditional = additionalData ? additionalData : null; // Asigna adicionales si existen en caso de que no este limpia para no mantener las opciones en el drop
     const emailsData = await loadEmailOptions();
     const isEmail = emailsData ? emailsData : null; // Asigna correos si existen en caso de que no este limpia para no mantener las opciones en el drop
-    searchData.ddlDato = value; // Asigna el valor al estado
+    setSearchData((prevData) => ({
+      ...prevData,
+      ddlDato: value // Asigna el valor seleccionado a searchData.ddlDato
+    }));
+    searchData.txtDato = ""; // Asigna el valor al estado
     // Llenar ddlTipoDato según el valor seleccionado
     switch (value) {
       case "2601": // Nombre
         {
-          
           setIsTipoDatoChanged(true);
           setTipoDatoOptions([
             {
@@ -175,8 +182,23 @@ const FormSearch = () => {
   };
   const handleTipoDatoChange = (e) => {
     const value = e.target.value;
+    const text = e.target.options[e.target.selectedIndex].text; // Obtiene el texto del elemento seleccionado
     if (value !== "Seleccionar..." && value !== "") {
       setIsTipoDatoChanged(false); // Marca que se realizó un cambio y activa animación de pulso
+      setSearchData((prevData) => ({
+        ...prevData,
+        txtDato: text // Asigna el valor seleccionado a searchData.txtDato
+      }));
+    }
+  };
+
+  const handleFuenteChange = (e) => {
+    const value = e.target.value;
+    if (value !== "Seleccionar..." && value !== "") {
+      setSearchData((prevData) => ({
+        ...prevData,
+        ddlFuente: value // Asigna el valor seleccionado a searchData.ddlFuente
+      }));
     }
   };
 
@@ -198,56 +220,82 @@ const FormSearch = () => {
 
   const handleAddPhone = () => {
     if (telephone.length === 10) {
+      if (phoneData.has(telephone)) {
+        toast.warning("El teléfono ya existe en la lista."); // Muestra un mensaje de error si el teléfono ya existe
+        return;
+      }
+
       setPhoneList([...phoneList, telephone]); // Agrega el teléfono a la lista
+      setPhoneData((prevData) => new Set([...prevData, telephone])); // Agrega el teléfono al conjunto
       setTelephone(""); // Limpia el campo de entrada
       setIsTelephoneValid(false); // Resetea la validación
     }
   };
 
   const handleRemovePhone = (index) => {
+    const phoneToRemove = phoneList[index]; // Obtiene el teléfono a eliminar
     const updatedList = phoneList.filter((_, i) => i !== index); // Elimina el teléfono por índice
     setPhoneList(updatedList);
+
+    setPhoneData((prevData) => {
+      const updatedData = new Set(prevData);
+      updatedData.delete(phoneToRemove); // Elimina el teléfono del conjunto
+      return updatedData;
+    });
+
     toast.success("Teléfono eliminado.");
   };
 
-  const handleGuardarClick = async () => {
-    const currentTime = new Date().toLocaleTimeString("en-GB", {
-      hour12: false
+  const resetFormData = () => {
+    setSearchData({
+      nombre: "",
+      puesto: "",
+      lugar: "",
+      ddlDato: "",
+      ddlFuente: "",
+      txtDato: ""
     });
-    const currentDate = new Date().toISOString();
+    setPhoneList([]); // Limpia la lista de teléfonos
+    setPhoneData(new Set()); // Limpia el conjunto de teléfonos
+    setTelephone(""); // Limpia el campo de teléfono
+    setLink(""); // Limpia el enlace
+    setIsSwitchOn(false); // Resetea el interruptor
+  };
 
+  const handleGuardarClick = async () => {
     try {
       const idCuenta = searchResults[0]?.idCuenta?.trim();
-      const idEjecutivo = searchResults[0]?.idEjecutivo;
-
+      const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+      const tiempoEnCuenta = stoppedTimeSticky || "00:00:00"; // Usa el tiempo capturado por TimmerAccount
       if (!idCuenta || !idEjecutivo) {
         toast.error("Faltan datos necesarios para guardar.");
         return;
       }
 
       const requestData = {
-        idCartera: 1,
         idCuenta: idCuenta,
         idEjecutivo: idEjecutivo,
+        idCartera: 1,
+        dato: searchData.txtDato,
         idDato: Number(searchData.ddlDato),
         idFuente: Number(searchData.ddlFuente),
-        dato: searchData.txtDato,
         encontrado: isSwitchOn,
-        telefonos: phoneList.map((númeroTelefónico) => ({ númeroTelefónico })),
-        persona: searchData.nombre,
-        puesto: searchData.puesto,
-        lugar: searchData.lugar,
-        link: searchData.link,
-        validador: 0,
-        fecha_Insert: currentDate,
-        segundo_Insert: currentTime
+        numeroTelefonosEncontrados: phoneData ? phoneData : 0, // Usa el conjunto de teléfonos
+        nombrePersona: searchData.nombre ? searchData.nombre : null,
+        puesto: searchData.puesto ? searchData.puesto : null,
+        nombreLugar: searchData.lugar ? searchData.lugar : null,
+        domicilioLugar: null,
+        tiempoEnCuenta: tiempoEnCuenta,
+        link: link ? link : null,
+        validador: "18967"
       };
-
+      console.log("requestData", requestData);
       await fetchSaveExecutive(requestData);
       toast.success("Datos guardados correctamente.");
       setPhoneList([]); // Limpia la lista de teléfonos
       setSearchData({}); // Limpia los datos del formulario
-      //fetchData(idCuenta); // Recarga los datos
+      resetFormData(); // Limpia los datos del formulario
+      setSelectedValue(""); // Limpia el valor seleccionado
     } catch (error) {
       console.error("Error al guardar los datos:", error);
       toast.error("Hubo un error al guardar los datos.");
@@ -271,6 +319,23 @@ const FormSearch = () => {
     }
   };
 
+  const handleInputChangeTxtDato = (e) => {
+    const { value } = e.target;
+    const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/; // Permite letras, espacios y caracteres acentuados
+
+    if (regex.test(value)) {
+      setSearchData((prevData) => ({
+        ...prevData,
+        txtDato: value // Asigna el texto ingresado a txtDato
+      }));
+      toast.dismiss(); // Elimina cualquier mensaje de advertencia previo
+    } else {
+      toast.warning(
+        "Solo se permiten letras, espacios y caracteres válidos en este campo."
+      ); // Muestra un mensaje de advertencia
+    }
+  };
+
   return (
     <>
       <div>
@@ -280,11 +345,11 @@ const FormSearch = () => {
               <InputGroup.Text className="bg-dark text-white">
                 Dato
               </InputGroup.Text>
-              <Form.Group as={Col} controlId="formGridState">
+              <Form.Group as={Col}>
                 <Form.Select
                   id="ddlDato"
                   onChange={handleSelectChange}
-                
+                  value={searchData.ddlDato || ""} // Vincula el valor al estado actualizado
                 >
                   <option value="">Seleccionar...</option>
                   {datoOptions.map((option) => (
@@ -301,7 +366,7 @@ const FormSearch = () => {
               <InputGroup.Text className="bg-dark text-white">
                 <span>-</span>
               </InputGroup.Text>
-              <Form.Group as={Col} controlId="formGridState">
+              <Form.Group as={Col}>
                 {selectedValue === "2603" || selectedValue === "2604" ? (
                   <Form.Control
                     id="txtDato"
@@ -312,13 +377,14 @@ const FormSearch = () => {
                     }
                     aria-label="Empresa"
                     aria-describedby="basic-addon1" //
+                    onChange={handleInputChangeTxtDato} // Maneja el cambio
+                    onKeyDown={(e) => e.key === " " && e.stopPropagation()}
                   />
                 ) : (
                   <Form.Select
                     id="ddlTipoDato"
                     className={isTipoDatoChanged === true ? "pulse-search" : ""}
                     onChange={handleTipoDatoChange}
-                    value={searchData.ddlDato || ""}
                   >
                     <option value="">Seleccionar...</option>
                     {tipoDatoOptions.map((option, index) => (
@@ -336,8 +402,8 @@ const FormSearch = () => {
               <InputGroup.Text className="bg-dark text-white">
                 Fuente
               </InputGroup.Text>
-              <Form.Group as={Col} controlId="formGridState">
-                <Form.Select value={searchData.ddlFuente || ""}>
+              <Form.Group as={Col}>
+                <Form.Select onChange={handleFuenteChange} id="ddlFuente">
                   <option value="">Seleccionar...</option>
                   {datoSources.map((option) => (
                     <option key={option.idValor} value={option.idValor}>
