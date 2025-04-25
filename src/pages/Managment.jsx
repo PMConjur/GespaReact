@@ -46,6 +46,8 @@ const Managment = () => {
   const [triggerUpdateStickyTime, setTriggerUpdateStickyTime] = useState(false); // Estado para accionar la actualización del tiempo
   const [userActiveFlow, setUserActiveFlow] = useState(false); // Asegurar que el estado inicial sea false
   const [isManagment, setManagment] = useState([]); // Estado para la gestión
+  const [isDataAllPhones, setIsDataAllPhones] = useState([]); // Estado para manejar los teléfonos
+  const token = responseData?.ejecutivo?.token;
   const nombreEjecutivo =
     responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
@@ -199,6 +201,8 @@ const handleAutomaticSearch = async () => {
     phoneData, // Enviar datos de teléfono al contexto
     formData, // Enviar datos del formulario al contexto
     setFormData, // Enviar función para actualizar los datos de teléfono al contexto
+    isDataAllPhones, // Agregar al contexto
+    setIsDataAllPhones // Agregar setter al contexto
   };
 
   return (

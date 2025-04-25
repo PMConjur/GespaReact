@@ -438,13 +438,10 @@ export const getTalksData = async (idCartera, idCuenta) => {
 export const fetchActionsSearch = async (idCuenta) => {
   try {
     console.log("Iniciando llamada a la API...");
-    console.log(
-      "URL de la API:",
-      `${apiUrl}/ejecutivo/busqueda/1/${idCuenta}/0`
-    );
+    console.log("URL de la API:", `${apiUrl}/ejecutivo/busqueda/1/${idCuenta}`);
 
     const response = await servicio.get(
-      `${apiUrl}/ejecutivo/busqueda/1/${idCuenta}/0`
+      `${apiUrl}/ejecutivo/busqueda/1/${idCuenta}`
     );
 
     const message = getErrorStatus(response.status);
@@ -852,7 +849,7 @@ export const fetchCalFirtsPart = async (Cartera, NoCuenta, idHerr) => {
 
     const result = response.data;
     console.log("Validación recibida:", result);
-    
+
     return result;
   } catch (error) {
     console.error("Error en fetchCalFirtsPart:", error);
@@ -1390,14 +1387,12 @@ export const createOnlineCharge = async (data) => {
   }
 };
 
-
 //endpoint buscar-tipo de queja y origen de queja
 export const fetchSearchAddDate = async () => {
   try {
-    console.log("Llamando al endpoint /ejecutivo/ddDatos");
     const response = await servicio.get(`/ejecutivo/ddDatos`);
 
-    console.log("Respuesta recibida:", response);
+    console.log("Respuesta recibida endpoint /ejecutivo/ddDatos:", response);
 
     if (response.status !== 200) {
       throw new Error(
@@ -1414,7 +1409,27 @@ export const fetchSearchAddDate = async () => {
   }
 };
 
-//endpoint carga correos
+//endpoint Catalogo de fuentes para Busquedas
+export const fetchDropSources = async () => {
+  try {
+    const response = await servicio.get(`/ejecutivo/ddFuentes`);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+
+    return result;
+  } catch (error) {
+    console.error("Error en fetchValidators:", error);
+    throw error;
+  }
+};
+
+//endpoint carga telefonos
 export const fetchEmailsCharging = async (idCartera, idCuenta) => {
   try {
     console.log(
@@ -1493,10 +1508,13 @@ export const fetchSaveNegotiationDeadlines = async (requestData) => {
   }
 };
 
-// endpoint incrementa negociacion 
+// endpoint incrementa negociacion
 export const fetchIncreasesNegotiation = async (increaseRequestData) => {
   try {
-    console.log("Enviando datos al endpoint IncrementaNegociacion:", increaseRequestData);
+    console.log(
+      "Enviando datos al endpoint IncrementaNegociacion:",
+      increaseRequestData
+    );
     const response = await servicio.post(
       `/ejecutivo/IncrementaNegociacion`,
       increaseRequestData // Envía los datos al endpoint
@@ -1541,7 +1559,6 @@ export const fetchSaveOffering = async (requestData) => {
   }
 };
 
-
 export const createPayments = async (data) => {
   try {
     const response = await servicio.post(`/ejecutivo/GuardarPagos`, data);
@@ -1558,10 +1575,8 @@ export const createPayments = async (data) => {
   }
 };
 
-
 export const getRelaciones = async () => {
   try {
-  
     const url = `/ejecutivo/relaciones`;
     console.log("Solicitando datos de Relaciones a:", url); // Depurar URL"
 

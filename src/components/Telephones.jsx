@@ -24,10 +24,15 @@ import { TelephoneFill } from "react-bootstrap-icons";
 import FollowUps from "./memuHamburguesa/Acciones/FollowUps";
 
 const Telephones = () => {
-  const { userActiveFlow, setSelectedAnswer } = useContext(AppContext);
+  const {
+    userActiveFlow,
+    setSelectedAnswer,
+    isDataAllPhones,
+    setIsDataAllPhones
+  } = useContext(AppContext);
   const { searchResults, lastPhoneNumberFromToast } = useContext(AppContext);
   const { isManagment, selectedAnswer } = useContext(AppContext);
-  const [data, setData] = useState([]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isPhoneNew, setIsPhoneNew] = useState(false);
@@ -60,10 +65,12 @@ const Telephones = () => {
         formatted: formatPhoneNumber(isManagment.gestion.numeroTelefonico)
       };
     }
-    if (selectedAnswer?.dataPhone?.númeroTelefónico) {
+    if (selectedAnswer?.isDataAllPhonesPhone?.númeroTelefónico) {
       return {
-        raw: selectedAnswer.dataPhone.númeroTelefónico.toString(),
-        formatted: formatPhoneNumber(selectedAnswer.dataPhone.númeroTelefónico)
+        raw: selectedAnswer.isDataAllPhonesPhone.númeroTelefónico.toString(),
+        formatted: formatPhoneNumber(
+          selectedAnswer.isDataAllPhonesPhone.númeroTelefónico
+        )
       };
     }
     return { raw: "", formatted: "" };
@@ -158,7 +165,7 @@ const Telephones = () => {
     const idCuenta = searchResults[0].idCuenta;
     const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
 
-    const newPhoneData = {
+    const newPhoneisDataAllPhones = {
       cuenta: idCuenta,
       idEjecutivo: idEjecutivo,
       phoneNumber: phoneNumber,
@@ -169,17 +176,17 @@ const Telephones = () => {
     };
 
     console.log("Horario de contacto:", horarioContacto);
-    console.log("Datos enviados:", newPhoneData);
+    console.log("Datos enviados:", newPhoneisDataAllPhones);
 
     try {
-      await fetchNewTel(newPhoneData);
+      await fetchNewTel(newPhoneisDataAllPhones);
       toast.success("Nuevo número de teléfono guardado", {
         position: "top-right",
         style: { transform: "translateY(80vh)" }
       });
       setIsPhoneNew(false);
       setPhoneNumber("");
-      loadData();
+      loadisDataAllPhones();
     } catch (error) {
       console.error("Error al guardar el nuevo teléfono:", error);
       toast.error("Error 408: Error al guardar el nuevo teléfono", {
@@ -190,12 +197,14 @@ const Telephones = () => {
   };
 
   const processPhoneCall = (phoneNumber) => {
-    const foundRow = data.find((row) => row.númeroTelefónico === phoneNumber);
+    const foundRow = isDataAllPhones.find(
+      (row) => row.númeroTelefónico === phoneNumber
+    );
 
     if (foundRow) {
       setSelectedAnswer({
         value: 2,
-        dataPhone: {
+        isDataAllPhonesPhone: {
           idClase: foundRow.idClase,
           titulares: foundRow.titulares,
           conocidos: foundRow.conocidos,
@@ -232,9 +241,9 @@ const Telephones = () => {
     if (lastPhoneNumberFromToast) {
       processPhoneCall(lastPhoneNumberFromToast);
     }
-  }, [lastPhoneNumberFromToast, data]);
+  }, [lastPhoneNumberFromToast, isDataAllPhones]);
 
-  const loadData = async () => {
+  const loadisDataAllPhones = async () => {
     setIsLoading(true);
     try {
       const phones = await Promise.all(
@@ -245,7 +254,7 @@ const Telephones = () => {
         })
       );
       const flatPhones = phones.flat();
-      setData(flatPhones);
+      setIsDataAllPhones(flatPhones);
       if (flatPhones.length === 0 && !toastShown) {
         toast.error("Error 404: No hay carga de teléfonos", {
           position: "top-right"
@@ -263,7 +272,7 @@ const Telephones = () => {
 
   useEffect(() => {
     if (searchResults.length > 0) {
-      loadData();
+      loadisDataAllPhones();
     }
   }, [searchResults]);
 
@@ -484,7 +493,7 @@ const Telephones = () => {
                         ))}
                       </tr>
                     ))
-                  : data.map((row, index) => (
+                  : isDataAllPhones.map((row, index) => (
                       <tr key={index}>
                         <td>{row.titulares || "--"}</td>
                         <td>{row.conocidos || "--"}</td>

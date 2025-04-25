@@ -24,7 +24,7 @@ const InformationClient = () => {
               toast.error(
                 `No hay carga de información para la cuenta ${result.idCuenta}`,
                 {
-                  position: "top-right" // Mostrar toast en el lado derecho
+                  position: "top-right", // Mostrar toast en el lado derecho
                 }
               );
               setToastShown(true); // Marcar que el toast ya se mostró
@@ -58,16 +58,12 @@ const InformationClient = () => {
       rows.push(
         <tr key={i}>
           {entries.slice(i, i + 3).map(([key, value], index) => (
-            <td key={index}>
-              {key}:{" "}
-              <span
-                style={{
-                  fontWeight: value.fontWeight || undefined,
-                  color: "#" + value.color || undefined
-                }}
-              >
-                {value.valor || "--"}
-              </span>
+            <td
+              key={index}
+             
+          
+            >
+              {key}: {value.valor || "--"}
             </td>
           ))}
         </tr>
@@ -84,27 +80,31 @@ const InformationClient = () => {
         </i>
       </Card.Header>
       <Card.Body>
-        <Table hover className="table table-borderless table-custom2">
-          <tbody>
-            {isLoading
-              ? [...Array(4)].map((_, i) => (
-                  <tr key={i}>
-                    {[...Array(2)].map((_, j) => (
-                      <td key={j}>
-                        <Placeholder as="span" animation="glow">
-                          <Placeholder xs={12} />
-                        </Placeholder>
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              : data.length === 0
-              ? renderRow({})
-              : data.map((item, index) => (
-                  <React.Fragment key={index}>{renderRow(item)}</React.Fragment>
-                ))}
-          </tbody>
-        </Table>
+       
+          <Table hover className="table table-borderless table-custom2">
+            <tbody>
+              {isLoading
+                ? [...Array(4)].map((_, i) => (
+                    <tr key={i}>
+                      {[...Array(2)].map((_, j) => (
+                        <td key={j}>
+                          <Placeholder as="span" animation="glow">
+                            <Placeholder xs={12} />
+                          </Placeholder>
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                : data.length === 0
+                ? renderRow({})
+                : data.map((item, index) => (
+                    <React.Fragment key={index}>
+                      {renderRow(item)}
+                    </React.Fragment>
+                  ))}
+            </tbody>
+          </Table>
+      
       </Card.Body>
     </Card>
   );

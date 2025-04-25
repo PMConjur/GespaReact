@@ -2,7 +2,6 @@
 
 body {
   background-color: #000000;
-
 }
 $card-bg: #f8f9fa;
 $card-border-width: 0;
@@ -658,6 +657,65 @@ $table-border-radius: 8px;
   &::-webkit-scrollbar-track {
     background-color: #343a40;
   }
+}
+
+.scroll-search {
+  overflow-y: scroll;
+  height: 300px;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #adadad;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #495057;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: #343a40;
+  }
+}
+
+.scroll-add-phones {
+  overflow-y: scroll;
+  height: 70px;
+  overflow-x: auto scroll;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #adadad;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #495057;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: #343a40;
+  }
+}
+
+.phone-added {
+  background-color: rgb(55, 55, 55);
+  transition: background-color 0.5s;
+  color: #ffffff;
+  border-radius: 10px;
+}
+
+.phone-added:hover {
+  background-color: #000000; // Cambia el color de fondo al hacer hover
+  color: #39fc8d; // Cambia el color del texto al hacer hover
 }
 
 // Configuración base
@@ -1813,6 +1871,8 @@ $color-white: #f8f9fa;
 $color-white-secondary: #a5d2ff;
 $color-gray: #6c757d;
 $color-green-secondary: #17ff1f;
+$color-purple: #cac0ff;
+$color-purple-secondary: #935eff;
 
 // Mixin común para los estilos de texto animado
 @mixin monochromatic-gradient-text {
@@ -1844,16 +1904,17 @@ $color-green-secondary: #17ff1f;
   @include monochromatic-gradient-text;
   background-image: linear-gradient(
     92deg,
-    $color-red,
-    color.adjust($color-red-secondary, $lightness: 35%),
+    $color-white,
+    color.adjust($color-red-secondary, $lightness: -1%),
     // Reemplaza lighten
-    color.adjust($color-red, $lightness: -5%),
+    color.adjust($color-red, $lightness: 35%),
     // Reemplaza darken
-    color.adjust($color-red, $saturation: 55%),
+    color.adjust($color-red, $saturation: 5%),
     // Reemplaza saturate
-    color.adjust($color-red-secondary, $saturation: -35%)
+    color.adjust($color-white-secondary, $saturation: -35%)
       // Reemplaza desaturate
   );
+  text-shadow: 0 0 10px rgba(255, 74, 74, 0.302);
 }
 
 // Gradiente VERDE (solo tonos de verde)
@@ -1862,15 +1923,16 @@ $color-green-secondary: #17ff1f;
   background-image: linear-gradient(
     92deg,
     $color-green,
-    color.adjust($color-green-secondary, $lightness: 10%),
+    color.adjust($color-green-secondary, $lightness: -1%),
     // Reemplaza lighten
-    color.adjust($color-green, $lightness: -20%),
+    color.adjust($color-green, $lightness: 35%),
     // Reemplaza darken
-    color.adjust($color-green, $saturation: 35%),
+    color.adjust($color-green, $saturation: 5%),
     // Reemplaza saturate
-    color.adjust($color-green-secondary, $saturation: -35%)
+    color.adjust($color-white-secondary, $saturation: -35%)
       // Reemplaza desaturate
   );
+  text-shadow: 0 0 10px rgba(61, 234, 39, 0.302);
 }
 
 // Gradiente BLANCO (solo variaciones neutras)
@@ -1884,8 +1946,22 @@ $color-green-secondary: #17ff1f;
     color.adjust($color-white, $lightness: 5%),
     color.adjust($color-white-secondary, $saturation: -35%)
   );
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 0 10px rgba(212, 212, 212, 0.302);
 }
+// Gradiente Morado (solo variaciones neutras)
+.header-purple {
+  @include monochromatic-gradient-text;
+  background-image: linear-gradient(
+    82deg,
+    $color-white,
+    color.adjust($color-purple-secondary, $lightness: -1%),
+    color.adjust($color-purple, $lightness: 35%),
+    color.adjust($color-purple, $lightness: 5%),
+    color.adjust($color-white-secondary, $saturation: -35%)
+  );
+  text-shadow: 0 0 10px rgba(188, 163, 255, 0.302);
+}
+
 .table-auto-width {
   table-layout: auto; // Permite que las celdas se ajusten al contenido
   word-wrap: break-word; // Evita que el contenido se desborde
@@ -2102,3 +2178,208 @@ to { border-right-color: transparent; }
   font-weight: bold; // Negrita
 }
 
+@keyframes rotate {
+  100% {
+    transform: rotate(1turn);
+  }
+}
+.example-1,
+.example-2 {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.example-1 .inner,
+.example-2 .inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+.example-1 .inner {
+  margin: 5px;
+}
+
+.example-1::before {
+  content: "";
+  display: block;
+  background: linear-gradient(
+    90deg,
+    hsla(197, 100%, 64%, 1) 0%,
+    hsla(339, 100%, 55%, 1) 100%
+  );
+  height: 500px;
+  width: 500px;
+  position: absolute;
+  animation: rotate 8s linear infinite;
+  z-index: 0;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.example-2 .inner {
+  margin: 2px;
+}
+
+.example-2::before {
+  content: "";
+  display: block;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(102, 102, 102, 0.75) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  height: 300px;
+  width: 100px;
+  transform: translate(0);
+  position: absolute;
+  animation: rotate 5s linear forwards infinite;
+  z-index: 0;
+  top: 50%;
+  transform-origin: top center;
+}
+
+.example-3 {
+  position: relative;
+  border-radius: var(--border-radius);
+  padding: 4px;
+}
+
+.example-3 .inner {
+  border-radius: 4px;
+}
+
+.example-3::before,
+.example-3::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(
+    45deg,
+    #ff595e,
+    #ffca3a,
+    #8ac926,
+    #1982c4,
+    #6a4c93,
+    #ff6700
+  );
+  background-size: 400%;
+  z-index: -1;
+  animation: glow 20s linear infinite;
+  width: 100%;
+  border-radius: var(--border-radius);
+}
+
+.example-3::after {
+  filter: blur(25px);
+  transform: translate3d(0, 0, 0);
+}
+
+@keyframes glow {
+  0% {
+    background-position: 0 0;
+  }
+
+  50% {
+    background-position: 100% 0;
+  }
+
+  100% {
+    background-position: 0 0;
+  }
+}
+
+.pulse-search {
+  outline-width: 1px;
+  outline-offset: 0;
+  outline-color: #39fc8d;
+  outline-style: solid;
+  animation: animateOutline 3s cubic-bezier(0.82, -0.46, 0, 1.26) infinite;
+}
+
+@keyframes animateOutline {
+  0% {
+    outline-width: 1px;
+    outline-offset: 0;
+    outline-color: rgba(0, 130, 206, 0);
+  }
+
+  10% {
+    outline-color: #39fc8d;
+  }
+
+  /* The animation finishes at 50% */
+  50% {
+    outline-width: 7px;
+    outline-offset: 4px;
+    outline-color: rgba(0, 130, 206, 0);
+  }
+
+  100% {
+    outline-width: 7px;
+    outline-offset: 4px;
+    outline-color: rgba(102, 102, 102, 0);
+  }
+}
+
+.example-5 {
+  position: relative;
+}
+
+.example-5 svg {
+  position: absolute;
+}
+
+.example-5 .line {
+  stroke-dasharray: 260;
+  stroke-width: 1px;
+  fill: transparent;
+  stroke: rgba(78, 255, 13, 0.3);
+  animation: svgAnimation 2.5s linear infinite;
+}
+
+@keyframes svgAnimation {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 1000;
+  }
+}
+
+/* Estilos para barra de scroll */
+.progress {
+  height: 1rem;
+  background: blue;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  transform-origin: 0 50%;
+  animation: scaleProgress auto linear;
+  animation-timeline: scroll(root);
+}
+
+@keyframes scaleProgress {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
