@@ -574,7 +574,9 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       const duracionObtenida = response?.duración || "";
       console.log("Duración obtenida de la respuesta:", duracionObtenida);
       setDuracion(duracionObtenida); // Almacena la duración en el estado
-
+  
+      // 2. Abrir modal de validadores
+      setShowValidators(true);
       // Cambia el estado para mostrar el botón "Finalizar"
       setIsNegotiationSaved(true);
     } catch (error) {
@@ -702,6 +704,67 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
     } catch (error) {
       console.error("Error al guardar el ofrecimiento:", error);
       toast.error("Error al guardar el ofrecimiento.");
+    }
+  };
+
+  const handleSaveNegotiation2 = async () => {
+    try {
+      const idCuenta = searchResults?.[0]?.idCuenta?.trim();
+      const fechaInsert = isManagment?.storeOutput?.Fecha_Insert?.split("T")[0];
+      const segundoInsert = isManagment?.storeOutput?.Segundo_Insert;
+      // Validar datos antes de enviarlos
+      if (!idCuenta || !selectedHerramienta || !calculosData.montoNegociado) {
+        toast.error("Faltan datos requeridos para guardar la negociación.");
+        console.error("Datos faltantes:", {
+          idCuenta,
+          selectedHerramienta,
+          montoNegociado: calculosData.montoNegociado
+        });
+        return;
+      }
+
+      const requestData = {
+        idCartera: 1,
+        idCuenta: idCuenta,
+        idEjecutivo: idEjecutivo,
+        idHerramienta: selectedHerramienta,
+        montoNegociado: parseFloat(montoNegociado),
+        plazos: parseInt(tablaPagos.pago.pago, 10), // Asegura que plazos sea un número entero
+        cartaConvenio: cartaConvenio, // Usa el valor del estado
+        correo: selectedEmail || "", // Usa el correo seleccionado o vacío
+        fechaPago: formInputs.fechaPago || "",
+        fechaFinNegociacion: formInputs.fechaFinNegociacion, // Usa la nueva fecha calculada
+        idEjecutivoValidador: parseInt(idEjecutivoValidador, 10), // Asegura que sea un número entero
+        contrasena: validatorPassword || "", // Usa la contraseña del validador o vacío
+        fechaInsert: fechaInsert,
+        segundoInsert: segundoInsert,
+        reestructura: 0,
+        condonacion: 0,
+        idGrabacion: "" // Cambiar si es necesario
+      };
+
+      console.log(
+        "Datos enviados al endpoint fetchSaveNegotiationDeadlines:",
+        requestData
+      );
+
+      const response = await fetchSaveNegotiationDeadlines(requestData);
+      toast.success("Negociación guardada correctamente.");
+      console.log(
+        "Respuesta del endpoint fetchSaveNegotiationDeadlines:",
+        response
+      );
+
+      // Extraer el campo duración de la respuesta y almacenarlo en el estado
+      const duracionObtenida = response?.duración || "";
+      console.log("Duración obtenida de la respuesta:", duracionObtenida);
+      setDuracion(duracionObtenida); // Almacena la duración en el estado
+
+      // Cambia el estado para mostrar el botón "Finalizar"
+      setIsNegotiationSaved(true);
+    } catch (error) {
+      console.error("Error al guardar la negociación:", error);
+      toast.error("Error al guardar la negociación.");
     }
   };
 
@@ -1141,23 +1204,21 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                         </Table>
                       </div>
                       <div className="justify-content-end d-flex mt-2">
-                        {!isValidated && ( // Muestra el botón "Validar" solo si no está validado
-                          <Button
-                            variant="primary"
-                            onClick={() => {
-                              setShowValidators(true); // Abre el modal de validación
-                            }}
-                            disabled={tablaPagos.length === 0} // Deshabilita el botón si no hay registros en la tabla
-                          >
-                            Validar
-                          </Button>
-                        )}
                         {isValidated && ( // Muestra el botón "Ofrecer" solo si está validado
                           <Button
                             onClick={handleSaveOffering}
                             disabled={tablaPagos.length === 0} // Deshabilita el botón si no hay registros en la tabla
                           >
                             Ofrecer
+                          </Button>
+                        )}
+                         {!isValidated && ( // Muestra el botón "Validar" solo si no está validado
+                          <Button
+                            variant="primary"
+                            onClick={handleSaveNegotiation2}
+                            disabled={tablaPagos.length === 0} // Deshabilita el botón si no hay registros en la tabla
+                          >
+                           Guardar Negociacion
                           </Button>
                         )}
                       </div>
