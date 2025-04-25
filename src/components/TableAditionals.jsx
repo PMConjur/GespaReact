@@ -1,18 +1,40 @@
 import { useState, useCallback, useEffect, useContext, useRef } from "react";
-import { Table, Form, Spinner } from "react-bootstrap";
+import { Table, Spinner } from "react-bootstrap";
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
 import { getAditionalsData } from "../services/gespawebServices";
 import { reemplazarValores } from "./ValoresCatalogos.js"; // Importa el método
 
-const TableAditionals = ({ customColumnNames = {} }) => {
-  const { searchResults } = useContext(AppContext); // Hook 1
-  const [sortedData, setSortedData] = useState([]); // Hook 2
-  const [sortByOldest, setSortByOldest] = useState(false); // Hook 3
-  const [toastShown, setToastShown] = useState(false); // Hook 4
+const TableAditionals = ({ customColumnNames = {}, onRowClick,  selectedAnswer, autoSelect = true }) => {
+  const { searchResults, setUserActiveFlow, setSelectedAnswer } = useContext(AppContext); // Se agregan setUserActiveFlow y setSelectedAnswer
+  const [sortedData, setSortedData] = useState([]);
+  const [sortByOldest, setSortByOldest] = useState(false);
+  const [toastShown, setToastShown] = useState(false);
   const [loading, setLoading] = useState(true);
   const hasShownToast = useRef(false);
 
+  // NUEVO: Función para emitir acción por defecto o flujo con teléfono
+  const handleItemClick = (row) => {
+    if (onRowClick) {
+      onRowClick(row);
+    } else {
+      window.dispatchEvent(new CustomEvent("itemSelected", { detail: row.NúmeroTelefónico || 0 }));
+    }
+  };
+
+
+  // NUEVO: Función que activa el flujo al hacer clic en el enlace del teléfono
+  const handlePhoneFlow = (row, e) => {
+    e.preventDefault();
+    setUserActiveFlow(true);
+    setSelectedAnswer({
+      value: 2,
+      dataPhone: { 
+        númeroTelefónico: row["NúmeroTelefónico"],
+        idClase: row.idClase // Se agrega idClase para evitar que sea undefined
+      }
+    });
+  };
 
   // Hook 5: useEffect para obtener datos
   useEffect(() => {
@@ -35,12 +57,16 @@ const TableAditionals = ({ customColumnNames = {} }) => {
           return;
         }
 
-          const aditionalsData = await getAditionalsData(1, idCuenta); // idCartera fijo como 1
-          setSortedData(aditionalsData);
+        const aditionalsData = await getAditionalsData(1, idCuenta); // idCartera fijo como 1
+        setSortedData(aditionalsData);
+        // NUEVO: Si hay datos, emitir el evento con el "Numero" del primer item (o índice si no existe)
+        if (aditionalsData.length > 0 && autoSelect) {
+          handleItemClick(aditionalsData[0]);
+        }
       } catch (error) {
-          console.error("Error al obtener los datos de Adicionales:", error);
+        console.error("Error al obtener los datos de Adicionales:", error);
       } finally {
-          setLoading(false);
+        setLoading(false);
       }
     };
 
@@ -92,7 +118,7 @@ const TableAditionals = ({ customColumnNames = {} }) => {
   const defaultColumnNames = {
     NombreAdicional: "Nombre",
     idParentesco: "Parentesco",
-    "N\u00FAmeroTelef\u00F3nico": "Teléfono",
+    NúmeroTelefónico: "Teléfono",
     CorreoAdicional: "Correo",
     RFCAdicional: "RFC",
     Domiclio: "Domicilio",
@@ -117,27 +143,24 @@ const TableAditionals = ({ customColumnNames = {} }) => {
 
   return (
     <>
-
-      <div
-        className="scroll-container"
-        style={{
-          width: "100%",
-          maxHeight: "500px",
-          overflowY: "auto",
-          display: "flex",
-          backgroundColor: "#343a40", // Fondo oscuro
-          color: "#ffffff", // Texto claro
-          scrollbarColor: "#6c757d #343a40", // Colores del scroll
-          scrollbarWidth: "thin", // Scroll más delgado
-        }}
-      >
+    <div
+      className="scroll-container"
+      style={{
+        overflowX: "hhidden",
+        overflowY: "auto",
+        width: "100%",
+        height: "100%", // Asegura que ocupe todo el espacio del contenedor padre
+        maxHeight: "100%", // No exceder la altura del contenedor padre
+      }}
+    >
         <Table
           striped
           bordered
           hover
           responsive
           variant="dark"
-          style={{ fontSize: "13px" }}
+          style={{ fontSize: "13px"
+            }}
         >
           <thead
             style={{
@@ -170,7 +193,11 @@ const TableAditionals = ({ customColumnNames = {} }) => {
             }}
           >
             {sortedData.map((item, index) => (
-              <tr key={index} style={{ height: "24px" }}>
+              <tr
+                key={index}
+                style={{ height: "24px", cursor: "pointer" }}
+                onClick={() => handleItemClick(item)} // NUEVO: Se emite el evento con el identificador
+              >
                 {" "}
                 {/* Reducimos la altura de cada fila */}
                 {headers.map((header) => {
@@ -191,6 +218,12 @@ const TableAditionals = ({ customColumnNames = {} }) => {
                     value = "--";
                   }
 
+                  // 🔹 Enmascarar números: mostrar solo los últimos 4 dígitos
+                  const strValue = String(value);
+                  if (/^\d+$/.test(strValue) && strValue.length > 4) {
+                    value = "X".repeat(strValue.length - 4) + strValue.slice(-4);
+                  }
+
                   return (
                     <td
                       key={header}
@@ -198,12 +231,19 @@ const TableAditionals = ({ customColumnNames = {} }) => {
                         padding: ".7rem",
                         minHeight: "20px",
                         textAlign: "center",
-                        whiteSpace: "nowrap", // 🔹 Evita saltos de línea
-                        overflow: "hidden", // 🔹 Oculta contenido desbordado
-                        textOverflow: "ellipsis", // 🔹 Agrega puntos suspensivos si el texto es muy largo
+                        overflowY: "hidden",
                       }}
                     >
-                      {value}
+                      {header === "NúmeroTelefónico" ? (
+                        <a
+                          href="#"
+                          onClick={(e) => handlePhoneFlow(item, e)}
+                        >
+                          {value}
+                        </a>
+                      ) : (
+                        value
+                      )}
                     </td>
                   );
                 })}

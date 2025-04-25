@@ -6,7 +6,8 @@ import FormFollowUps from "./FormFollowUps";
 const FollowUps = ({ 
   show, 
   handleClose,
-  isFollowUpActive = false
+  isFollowUpActive = false,
+  pureDisplay = false  // nuevo prop para mostrar sin lógica
 }) => {
   const [hasRegistered, setHasRegistered] = useState(false);
   const [refreshTable, setRefreshTable] = useState(0);
@@ -22,6 +23,59 @@ const FollowUps = ({
   useEffect(() => {
     setHasRegistered(false);
   }, [isFollowUpActive]);
+
+  // Agregar console log para saber si el modal abrió o cerró
+  useEffect(() => {
+    if(show) {
+      console.log("FollowUps modal opened");
+    } else {
+      console.log("FollowUps modal closed");
+    }
+  }, [show]);
+
+  // Nuevo return para modo puro (sin condicionar el botón cerrar ni activar flujo)
+  if(pureDisplay) {
+    return (
+      <Modal 
+        show={show}
+        onHide={handleClose} 
+        size="xl"
+        backdrop="static"
+        keyboard={true}
+        contentClassName="d-flex flex-column"
+        dialogClassName="my-custom-modal"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Seguimiento</Modal.Title>
+        </Modal.Header>
+        <Modal.Body 
+          className="flex-grow-1 p-0 d-flex flex-column"
+          style={{ overflowY: "auto" }}
+        >
+          <Row className="flex-grow-1 g-0" style={{ height: "100%" }}>
+            <Col 
+              md={6} 
+              className="h-100 d-flex flex-column" 
+              style={{ maxHeight: "700px", overflowY: "auto" }}
+            >
+              <TableFollowUps />
+            </Col>
+            <Col 
+              md={6} 
+              className="h-100 d-flex flex-column"
+              style={{ maxHeight: "700px", overflowY: "auto" }}
+            >
+              <FormFollowUps 
+                handleClose={handleClose} 
+                isFollowUpsActive={false}
+                onSuccessfulRegister={() => {}}
+              />
+            </Col>
+          </Row>
+        </Modal.Body>
+      </Modal>
+    );
+  }
 
   // Función para manejar el cierre condicional
   const handleConditionalClose = () => {

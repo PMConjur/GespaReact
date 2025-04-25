@@ -62,7 +62,8 @@ const Telephones = () => {
     if (isManagment?.gestion?.numeroTelefonico) {
       return {
         raw: isManagment.gestion.numeroTelefonico.toString(),
-        formatted: formatPhoneNumber(isManagment.gestion.numeroTelefonico)
+        formatted: formatPhoneNumber(isManagment.gestion.numeroTelefonico),
+        source: "management" // nuevo
       };
     }
     if (selectedAnswer?.isDataAllPhonesPhone?.númeroTelefónico) {
@@ -73,15 +74,8 @@ const Telephones = () => {
         )
       };
     }
-    return { raw: "", formatted: "" };
+    return { raw: "", formatted: "", source: "none" }; // nuevo
   };
-
-  useEffect(() => {
-    const phoneFromCtx = getContextPhoneNumber();
-    if (phoneFromCtx.raw) {
-      setPhoneNumber(phoneFromCtx.raw);
-    }
-  }, [isManagment, selectedAnswer]);
 
   const handleValidatePhone = async () => {
     if (!phoneNumber.trim()) {
@@ -351,9 +345,24 @@ const Telephones = () => {
     }
   };
 
+  // 2. Función que abre el modal + usa el número actualizado del row
   const openFollowUpsModal = (row) => {
-    console.log("Abriendo modal FollowUps con isFollowUpActive = true", row);
-    setShowFollowUps(true);
+    let newPhone = { raw: "", formatted: "", source: "none" };
+    if (row && row.númeroTelefónico) {
+      const phoneValue = row.númeroTelefónico;
+      newPhone = {
+        raw: phoneValue,
+        formatted: formatPhoneNumber(phoneValue),
+        source: "row"
+      };
+      // Actualizar el contexto usando "numeroTelefonico" (sin acento)
+
+    } else {
+      newPhone = getContextPhoneNumber();
+      console.log("Se usa número del contexto:", newPhone);
+    }
+    console.log("Abriendo modal FollowUps con:", { phone: newPhone, rowData: row });
+    setShowFollowUps(true); // Abre el modal
   };
 
   return (
@@ -469,7 +478,7 @@ const Telephones = () => {
                   <th>C</th>
                   <th>D</th>
                   <th>S</th>
-                  <th>Teléfono</th>
+                  <th>SEG.</th>
                   <th>Telefonía</th>
                   <th>Origen</th>
                   <th>Clase</th>

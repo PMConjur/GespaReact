@@ -5,13 +5,15 @@ import { createFollows, fetchNotes } from "../../../services/gespawebServices";
 import { AppContext } from "../../../pages/Managment";
 
 const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister }) => {
-    const { 
-        isManagment, 
-        searchResults, 
-        setManagment, 
+    const {
+        isManagment,
+        searchResults,
+        setManagment,
         nombreEjecutivo,
-        formData, 
-        setFormData 
+        formData,
+        setFormData,
+        selectedAnswer,   // nuevo: obtener seleccionado del contexto
+        responseData      // opcional: si se requiere
     } = useContext(AppContext);
 
     if (!searchResults || searchResults.length === 0) {
@@ -20,10 +22,9 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
     }
 
     const idCuenta = searchResults.map((result) => result.idCuenta);
-    const responseData = JSON.parse(localStorage.getItem("responseData"));
-    const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo.idEjecutivo;
-    const selectedAnswer = responseData?.selectedAnswer;
-    
+    // Eliminar lectura desde localStorage y obtener idEjecutivo del contexto
+    const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+
     const formatPhoneNumber = (phone) => {
         if (!phone) return "";
         const phoneStr = phone.toString();
@@ -34,57 +35,63 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
     };
 
     const getContextPhoneNumber = () => {
-        if (isManagment?.gestion?.numeroTelefonico) {
+        // Primero verifica en isManagment
+        const managementPhone = isManagment?.gestion?.númeroTelefónico || isManagment?.gestion?.numeroTelefonico;
+        if (managementPhone) {
             return {
-                raw: isManagment.gestion.numeroTelefonico.toString(),
-                formatted: formatPhoneNumber(isManagment.gestion.numeroTelefonico)
+                raw: managementPhone.toString(),
+                formatted: formatPhoneNumber(managementPhone),
+                source: "management"
             };
         }
-        
-        if (selectedAnswer?.dataPhone?.númeroTelefónico) {
+
+        // Luego verifica en selectedAnswer
+        const answerPhone = selectedAnswer?.dataPhone?.númeroTelefónico || selectedAnswer?.dataPhone?.numeroTelefonico;
+        if (answerPhone) {
             return {
-                raw: selectedAnswer.dataPhone.númeroTelefónico.toString(),
-                formatted: formatPhoneNumber(selectedAnswer.dataPhone.númeroTelefónico)
+                raw: answerPhone.toString(),
+                formatted: formatPhoneNumber(answerPhone),
+                source: "selectedAnswer"
             };
         }
-        
-        return { raw: "", formatted: "" };
+
+        return { raw: "", formatted: "", source: "none" };
     };
 
     const [loading, setLoading] = useState(false);
     const [existingReminders, setExistingReminders] = useState([]);
 
-    // Inicializar formData en el contexto si no existe
+    // Inicializar o actualizar formData en el contexto
     useEffect(() => {
-        if (!formData) {
-            const phone = getContextPhoneNumber();
-            setFormData({
-                idCartera: 1,
-                idCuenta: idCuenta[0].trim(),
-                idEjecutivo: idEjecutivo,
-                fecha: new Date().toISOString().split('T')[0],
-                segundo: "07:00:00",
-                idAcercamiento: "1601",
-                recordatorio: false,
-                numeroTelefonico: phone.raw,
-                displayedPhone: phone.formatted,
-                datoContacto: "",
-                idMotivoS: "0",
-            });
-        }
-    }, []);
-
-    // Actualizar número telefónico cuando cambie isManagment
-    useEffect(() => {
-        if (formData) {
-            const phone = getContextPhoneNumber();
-            setFormData(prev => ({
-                ...prev,
-                numeroTelefonico: phone.raw,
-                displayedPhone: phone.formatted
-            }));
-        }
-    }, [isManagment]);
+        const phone = getContextPhoneNumber();
+        setFormData(prev => {
+            if (prev) {
+                // Actualiza solo si hay cambio en los valores
+                if (prev.numeroTelefonico !== phone.raw || prev.displayedPhone !== phone.formatted) {
+                    return {
+                        ...prev,
+                        numeroTelefonico: phone.raw,
+                        displayedPhone: phone.formatted
+                    };
+                }
+                return prev;
+            } else {
+                return {
+                    idCartera: 1,
+                    idCuenta: idCuenta[0].trim(),
+                    idEjecutivo: idEjecutivo,
+                    fecha: new Date().toISOString().split('T')[0],
+                    segundo: "07:00:00",
+                    idAcercamiento: "1601",
+                    recordatorio: false,
+                    numeroTelefonico: phone.raw,
+                    displayedPhone: phone.formatted,
+                    datoContacto: "",
+                    idMotivoS: "0"
+                };
+            }
+        });
+    }, [isManagment, selectedAnswer]);
 
     // Cargar y preparar recordatorios existentes
     useEffect(() => {
@@ -94,8 +101,8 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 const reminders = notes
                     .filter(note => note.recordatorio)
                     .map(note => {
-                        const fechaPago = note.FechaPago.endsWith('Z') 
-                            ? note.FechaPago 
+                        const fechaPago = note.FechaPago.endsWith('Z')
+                            ? note.FechaPago
                             : `${note.FechaPago}Z`;
                         return {
                             ...note,
@@ -108,24 +115,9 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 console.error("Error al cargar recordatorios:", error);
             }
         };
-        
+
         loadReminders();
     }, [idCuenta]);
-
-    useEffect(() => {
-        const phone = getContextPhoneNumber();
-        setFormData(prev => {
-            // Solo actualiza si alguno de los valores cambia
-            if (prev.numeroTelefonico === phone.raw && prev.displayedPhone === phone.formatted) {
-                return prev;
-            }
-            return {
-                ...prev,
-                numeroTelefonico: phone.raw,
-                displayedPhone: phone.formatted
-            };
-        });
-    }, [isManagment]);
 
     useEffect(() => {
         const logFetchedNotes = async () => {
@@ -148,13 +140,13 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
         try {
             const newRecordDateTime = new Date(`${date}T${time}`);
             newRecordDateTime.setSeconds(0, 0);
-            
+
             for (const reminder of existingReminders) {
-                const reminderDateTime = reminder.date 
+                const reminderDateTime = reminder.date
                     ? new Date(reminder.date)
                     : new Date(`${date}T${reminder.segundo}`);
                 reminderDateTime.setSeconds(0, 0);
-                
+
                 // Verificar si la diferencia es menor a 5 minutos
                 const diff = Math.abs(newRecordDateTime - reminderDateTime);
                 if (diff < 5 * 60 * 1000) {
@@ -208,7 +200,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
 
     const handleSave = async () => {
         if (!formData) return;
-        
+
         setLoading(true);
         try {
             // Validación de número telefónico
@@ -217,7 +209,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 setLoading(false);
                 return;
             }
-    
+
             // Validación de fecha
             const todayStr = new Date().toISOString().split('T')[0];
             if (formData.fecha < todayStr) {
@@ -237,18 +229,18 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                     return;
                 }
             }
-    
+
             // Validación: si el checkbox de recordatorio es true, validar rango de horas
             if (formData.recordatorio === true) {
                 const [hours, minutes] = formData.segundo.split(':').map(Number);
                 const period = hours >= 12 ? "PM" : "AM";
-    
+
                 if (period === "AM" && (hours < 7 || hours > 11)) {
                     toast.error("Horario AM inválido. Debe ser entre 7:00 AM y 11:59 AM");
                     setLoading(false);
                     return;
                 }
-    
+
                 // Validar horario PM (12:00 - 21:00) (máximo 21 hrs)
                 if (period === "PM" && (hours < 12 || hours > 22)) {
                     toast.error("Horario PM inválido. Debe ser entre 12:00 PM y 9:59 PM");
@@ -269,7 +261,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 const newDateTime = `${formData.fecha}T${formData.segundo}`;
                 const existingNonReminder = existingReminders.find(reminder => {
                     return reminder.date && reminder.recordatorio === false &&
-                           reminder.date.substring(0,16) === newDateTime.substring(0,16);
+                        reminder.date.substring(0, 16) === newDateTime.substring(0, 16);
                 });
                 if (existingNonReminder) {
                     toast.error("Ya existe un seguimiento sin recordatorio para la misma fecha y hora");
@@ -277,7 +269,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                     return;
                 }
             }
-    
+
             // 4. Preparar datos para enviar al servidor
             const normalizedTime = normalizeTime(formData.segundo);
             const dataToSend = {
@@ -295,9 +287,9 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
             // 6. Actualizar existingReminders para incluir el nuevo seguimiento
             setExistingReminders(prev => [
                 ...prev,
-                { 
-                    date: dataToSend.fecha, 
-                    recordatorio: formData.recordatorio  
+                {
+                    date: dataToSend.fecha,
+                    recordatorio: formData.recordatorio
                 }
             ]);
 
@@ -314,14 +306,14 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                     }
                 }
             }));
-    
+
             // 7. Notificar éxito
             toast.success(<div>
                 <strong>Seguimiento registrado</strong>
                 <div>Cuenta: {formData.idCuenta}</div>
                 <div>Fecha: {formData.fecha} {formData.segundo}</div>
             </div>);
-    
+
             // Resetear formulario manteniendo datos esenciales
             setFormData(prev => ({
                 ...prev,
@@ -331,26 +323,21 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 datoContacto: "",
                 idMotivoS: "0"
             }));
-    
+
             // 9. Ejecutar callback de éxito y cerrar modal
             if (onSuccessfulRegister) onSuccessfulRegister();
             if (handleClose) handleClose();
-    
+
             // 10. Debug: Verificar contexto actualizado
-            console.log("Contexto actualizado:", {
-                gestion: {
-                    ...dataToSend,
-                    timestamp: new Date().toISOString()
-                }
-            });
-    
+
+
         } catch (error) {
             console.error("Error en handleSave:", error);
-            
-            const errorMessage = error.response?.data?.message || 
-                                error.message || 
-                                "Error al guardar el seguimiento";
-            
+
+            const errorMessage = error.response?.data?.message ||
+                error.message ||
+                "Error al guardar el seguimiento";
+
             toast.error(<div>
                 <strong>Error</strong>
                 <div>{errorMessage}</div>
@@ -358,7 +345,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                     <div>{JSON.stringify(error.response.data.details)}</div>
                 )}
             </div>);
-    
+
         } finally {
             setLoading(false);
         }
