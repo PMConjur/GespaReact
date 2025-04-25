@@ -57,24 +57,19 @@ const Telephones = () => {
     if (isManagment?.gestion?.numeroTelefonico) {
       return {
         raw: isManagment.gestion.numeroTelefonico.toString(),
-        formatted: formatPhoneNumber(isManagment.gestion.numeroTelefonico)
+        formatted: formatPhoneNumber(isManagment.gestion.numeroTelefonico),
+        source: "management" // nuevo
       };
     }
-    if (selectedAnswer?.dataPhone?.númeroTelefónico) {
+    if (selectedAnswer?.dataPhone?.numeroTelefonico) {
       return {
-        raw: selectedAnswer.dataPhone.númeroTelefónico.toString(),
-        formatted: formatPhoneNumber(selectedAnswer.dataPhone.númeroTelefónico)
+        raw: selectedAnswer.dataPhone.numeroTelefonico.toString(),
+        formatted: formatPhoneNumber(selectedAnswer.dataPhone.numeroTelefonico),
+        source: "selectedAnswer" // nuevo
       };
     }
-    return { raw: "", formatted: "" };
+    return { raw: "", formatted: "", source: "none" }; // nuevo
   };
-
-  useEffect(() => {
-    const phoneFromCtx = getContextPhoneNumber();
-    if (phoneFromCtx.raw) {
-      setPhoneNumber(phoneFromCtx.raw);
-    }
-  }, [isManagment, selectedAnswer]);
 
   const handleValidatePhone = async () => {
     if (!phoneNumber.trim()) {
@@ -342,14 +337,24 @@ const Telephones = () => {
     }
   };
 
+  // 2. Función que abre el modal + usa el número actualizado del row
   const openFollowUpsModal = (row) => {
-    const phoneFromCtx = getContextPhoneNumber();
-    if (row) {
-      // Actualizar el número telefónico del row con el valor correcto del contexto
-      row.númeroTelefónico = phoneFromCtx.raw;
+    let newPhone = { raw: "", formatted: "", source: "none" };
+    if (row && row.númeroTelefónico) {
+      const phoneValue = row.númeroTelefónico;
+      newPhone = {
+        raw: phoneValue,
+        formatted: formatPhoneNumber(phoneValue),
+        source: "row"
+      };
+      // Actualizar el contexto usando "numeroTelefonico" (sin acento)
+
+    } else {
+      newPhone = getContextPhoneNumber();
+      console.log("Se usa número del contexto:", newPhone);
     }
-    console.log("Abriendo modal FollowUps con isFollowUpActive = true", row);
-    setShowFollowUps(true);
+    console.log("Abriendo modal FollowUps con:", { phone: newPhone, rowData: row });
+    setShowFollowUps(true); // Abre el modal
   };
 
   return (

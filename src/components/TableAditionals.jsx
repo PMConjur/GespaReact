@@ -1,21 +1,39 @@
 import { useState, useCallback, useEffect, useContext, useRef } from "react";
-import { Table, Form, Spinner } from "react-bootstrap";
+import { Table, Spinner } from "react-bootstrap";
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
 import { getAditionalsData } from "../services/gespawebServices";
 import { reemplazarValores } from "./ValoresCatalogos.js"; // Importa el método
 
-const TableAditionals = ({ customColumnNames = {} }) => {
-  const { searchResults } = useContext(AppContext); // Hook 1
-  const [sortedData, setSortedData] = useState([]); // Hook 2
-  const [sortByOldest, setSortByOldest] = useState(false); // Hook 3
-  const [toastShown, setToastShown] = useState(false); // Hook 4
+const TableAditionals = ({ customColumnNames = {}, onRowClick,  selectedAnswer, autoSelect = true }) => {
+  const { searchResults, setUserActiveFlow, setSelectedAnswer } = useContext(AppContext); // Se agregan setUserActiveFlow y setSelectedAnswer
+  const [sortedData, setSortedData] = useState([]);
+  const [sortByOldest, setSortByOldest] = useState(false);
+  const [toastShown, setToastShown] = useState(false);
   const [loading, setLoading] = useState(true);
   const hasShownToast = useRef(false);
 
-  // NUEVO: Función para emitir el número del item seleccionado usando "Numero" o, en su defecto, el índice
-  const handleItemClick = (NúmeroTelefónico) => {
-    window.dispatchEvent(new CustomEvent("itemSelected", { detail: NúmeroTelefónico }));
+  // NUEVO: Función para emitir acción por defecto o flujo con teléfono
+  const handleItemClick = (row) => {
+    if (onRowClick) {
+      onRowClick(row);
+    } else {
+      window.dispatchEvent(new CustomEvent("itemSelected", { detail: row.NúmeroTelefónico || 0 }));
+    }
+  };
+
+
+  // NUEVO: Función que activa el flujo al hacer clic en el enlace del teléfono
+  const handlePhoneFlow = (row, e) => {
+    e.preventDefault();
+    setUserActiveFlow(true);
+    setSelectedAnswer({
+      value: 2,
+      dataPhone: { 
+        númeroTelefónico: row["NúmeroTelefónico"],
+        idClase: row.idClase // Se agrega idClase para evitar que sea undefined
+      }
+    });
   };
 
   // Hook 5: useEffect para obtener datos
@@ -42,8 +60,8 @@ const TableAditionals = ({ customColumnNames = {} }) => {
         const aditionalsData = await getAditionalsData(1, idCuenta); // idCartera fijo como 1
         setSortedData(aditionalsData);
         // NUEVO: Si hay datos, emitir el evento con el "Numero" del primer item (o índice si no existe)
-if (aditionalsData.length > 0) {
-        handleItemClick(aditionalsData[0].númeroTelefónico || 0);
+        if (aditionalsData.length > 0 && autoSelect) {
+          handleItemClick(aditionalsData[0]);
         }
       } catch (error) {
         console.error("Error al obtener los datos de Adicionales:", error);
@@ -178,7 +196,7 @@ if (aditionalsData.length > 0) {
               <tr
                 key={index}
                 style={{ height: "24px", cursor: "pointer" }}
-                onClick={() => handleItemClick(item.NúmeroTelefónico || index)} // NUEVO: Se emite el evento con el identificador
+                onClick={() => handleItemClick(item)} // NUEVO: Se emite el evento con el identificador
               >
                 {" "}
                 {/* Reducimos la altura de cada fila */}
@@ -216,7 +234,16 @@ if (aditionalsData.length > 0) {
                         overflowY: "hidden",
                       }}
                     >
-                      {value}
+                      {header === "NúmeroTelefónico" ? (
+                        <a
+                          href="#"
+                          onClick={(e) => handlePhoneFlow(item, e)}
+                        >
+                          {value}
+                        </a>
+                      ) : (
+                        value
+                      )}
                     </td>
                   );
                 })}
