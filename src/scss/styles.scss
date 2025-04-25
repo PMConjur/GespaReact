@@ -725,7 +725,6 @@ $list-group-border-radius: 0.75rem;
 $list-group-item-padding-y: 1rem;
 $list-group-item-padding-x: 1.5rem;
 
-
 // Colores y estados
 $list-group-hover-bg: rgba(#4a9dff, 0.05);
 $list-group-active-bg: #4a9dff;
@@ -2124,7 +2123,7 @@ $accent-color: #000000d2;
 }
 
 /* Cursor */
-.cursor{
+.cursor {
   position: relative;
   width: 10em;
   margin: 0 auto;
@@ -2133,31 +2132,43 @@ $accent-color: #000000d2;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
-  transform: translateY(-50%);    
+  transform: translateY(-50%);
 }
 /* Animation */
 .typewriter-animation {
   margin-top: 1rem;
   color: yellow;
-  animation: 
-  typewriter 2s steps(50) 1s 1 normal both, 
-  blinkingCursor 500ms steps(50) infinite normal;
+  animation: typewriter 2s steps(50) 1s 1 normal both,
+    blinkingCursor 500ms steps(50) infinite normal;
 }
 @keyframes typewriter {
-from { width: 0; }
-to { width: 100%; }
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
 }
-@keyframes blinkingCursor{
-from { border-right-color: rgba(248, 244, 6, 0.75)}
-to { border-right-color: transparent; }
+@keyframes blinkingCursor {
+  from {
+    border-right-color: rgba(248, 244, 6, 0.75);
+  }
+  to {
+    border-right-color: transparent;
+  }
 }
-
 
 /* Animación de parpadeo */
 @keyframes border-blink {
-  0% { border-color: transparent; }
-  50% { border-color: $warning; }
-  100% { border-color: transparent; }
+  0% {
+    border-color: transparent;
+  }
+  50% {
+    border-color: $warning;
+  }
+  100% {
+    border-color: transparent;
+  }
 }
 
 .blinking-border {
@@ -2166,9 +2177,18 @@ to { border-right-color: transparent; }
 }
 
 @keyframes shakeX {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-5px); }
-  40%, 80% { transform: translateX(5px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-5px);
+  }
+  40%,
+  80% {
+    transform: translateX(5px);
+  }
 }
 
 .shake-animation {
@@ -2382,6 +2402,7 @@ to { border-right-color: transparent; }
   100% {
     transform: scaleX(1);
   }
+}
 .custom-scroll {
   scrollbar-width: thin;
   scrollbar-color: #888 #1c1c1c;
