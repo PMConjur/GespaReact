@@ -20,7 +20,7 @@ import {
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
 import "../scss/styles.scss";
-import { TelephoneFill } from "react-bootstrap-icons";
+import { TelephoneFill, Eye, Clipboard2Data } from "react-bootstrap-icons";
 import FollowUps from "./memuHamburguesa/Acciones/FollowUps";
 
 const Telephones = () => {
@@ -66,6 +66,7 @@ const Telephones = () => {
         source: "management" // nuevo
       };
     }
+    // Nota: En la versión 2 se utiliza isDataAllPhonesPhone en selectedAnswer en lugar de dataPhone de la versión 1.
     if (selectedAnswer?.isDataAllPhonesPhone?.númeroTelefónico) {
       return {
         raw: selectedAnswer.isDataAllPhonesPhone.númeroTelefónico.toString(),
@@ -191,6 +192,7 @@ const Telephones = () => {
   };
 
   const processPhoneCall = (phoneNumber) => {
+    // En la versión 2 se busca en isDataAllPhones (anteriormente se usaba "data" en la versión 1)
     const foundRow = isDataAllPhones.find(
       (row) => row.númeroTelefónico === phoneNumber
     );
@@ -356,10 +358,11 @@ const Telephones = () => {
         source: "row"
       };
       // Actualizar el contexto usando "numeroTelefonico" (sin acento)
-
+      setSelectedAnswer(prev => ({ ...prev, numeroTelefonico: newPhone.raw }));
     } else {
       newPhone = getContextPhoneNumber();
       console.log("Se usa número del contexto:", newPhone);
+      setSelectedAnswer(prev => ({ ...prev, numeroTelefonico: newPhone.raw }));
     }
     console.log("Abriendo modal FollowUps con:", { phone: newPhone, rowData: row });
     setShowFollowUps(true); // Abre el modal
@@ -478,15 +481,14 @@ const Telephones = () => {
                   <th>C</th>
                   <th>D</th>
                   <th>S</th>
-                  <th>SEG.</th>
+                  <th>Telefóno</th>
                   <th>Telefonía</th>
                   <th>Origen</th>
                   <th>Clase</th>
                   <th>Estado</th>
                   <th>Municipio</th>
-                  <th>Huso Horario</th>
-                  {/* <th>SEG Horario Contacto</th> */}
-                  <th>Extensión</th>
+                  <th>Uso Horario</th>
+                  <th>Extensión</th> {/* Nuevo campo */}
                 </tr>
               </thead>
               <tbody>
@@ -509,28 +511,24 @@ const Telephones = () => {
                         <td>{row.desconocidos || "--"}</td>
                         <td>{row.sinContacto || "--"}</td>
                         <td>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            style={{ cursor: "pointer" }}
-                            viewBox="0 0 16 16"
-                            onClick={() => openFollowUpsModal(row)}
-                          >
-                            <path d="M10.854 6.146a.5.5 0 0 1 0 .708L8 9.707l-1.854-1.853a.5.5 0 1 1 .708-.708L8 8.293l2.146-2.147a.5.5 0 0 1 .708 0z" />
-                            <path d="M14 4.5V14a2 2 0 0 1-2 2h-2.5a.5.5 0 0 1-.5-.5V4.5a.5.5 0 0 1 .5-.5H12a2 2 0 0 1 2 2zM13.5 4h-2a.5.5 0 0 0-.5.5V14h-2V4.5A.5.5 0 0 0 9 4H7a.5.5 0 0 0-.5.5v9h-2V4.5A.5.5 0 0 0 4 4H2.5a.5.5 0 0 0-.5.5v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-9a.5.5 0 0 0-.5-.5z" />
-                          </svg>
-                        </td>
-                        <td>
-                          <a
-                            href="#"
-                            className="text-info"
-                            onClick={() => handleRowClick(row)}
-                            data-full-number={row.númeroTelefónico} // Este atributo es esencial
-                          >
-                            {"XXXXXX" + row.númeroTelefónico.slice(6)}
-                          </a>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <Eye
+                              style={{ cursor: "pointer", color: "#d3bbf8" }}
+                              onClick={() => console.log("Eye icon clicked", row)}
+                            />
+                            <a
+                              href="#"
+                              className="text-info"
+                              onClick={() => handleRowClick(row)}
+                              data-full-number={row.númeroTelefónico} // Este atributo es esencial
+                            >
+                              {"XXXXXX" + row.númeroTelefónico.slice(6)}
+                            </a>
+                            <Clipboard2Data
+                              style={{ cursor: "pointer", color: "#fce959" }}
+                              onClick={() => openFollowUpsModal(row)}
+                            />
+                          </div>
                         </td>
                         <td>{row.telefonia || "--"}</td>{" "}
                         {/* Muestra el valor de telefonia */}
@@ -541,7 +539,6 @@ const Telephones = () => {
                         <td>{row.estado || "--"}</td>
                         <td>{row.municipio || "--"}</td>
                         <td>{row.husoHorario || "--"}</td>
-                        {/* <td>{row.segHorarioContacto || "--"}</td> */}
                         <td>{row.extensión || "--"}</td>
                       </tr>
                     ))}

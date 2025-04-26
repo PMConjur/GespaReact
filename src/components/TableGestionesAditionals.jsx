@@ -94,6 +94,8 @@ const Managments = () => {
         return field;
     };
 
+
+
     // Manejar la selección de un registro
     const handleRowClick = (gestion) => {
         const relatedGestiones = sortedData.filter(item => item.NúmeroTelefónico === gestion.NúmeroTelefónico);
@@ -107,6 +109,8 @@ const Managments = () => {
             setSelectedGestion(gestion);
         }
     };
+
+    
 
     // Calcular el número total de páginas basado en los resultados obtenidos
     const totalPages = calculateTotalPages(totalResults, itemsPerPage);
@@ -256,7 +260,7 @@ const Managments = () => {
                                             backgroundColor: "#343a40"
                                         }}
                                     >
-                                        Telefono
+                                        Telefóno
                                     </th>
                                     <th
                                         scope="col"

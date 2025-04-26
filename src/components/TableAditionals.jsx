@@ -6,11 +6,12 @@ import { getAditionalsData } from "../services/gespawebServices";
 import { reemplazarValores } from "./ValoresCatalogos.js"; // Importa el método
 
 const TableAditionals = ({ customColumnNames = {}, onRowClick,  selectedAnswer, autoSelect = true }) => {
-  const { searchResults, setUserActiveFlow, setSelectedAnswer } = useContext(AppContext); // Se agregan setUserActiveFlow y setSelectedAnswer
+  const { searchResults, setUserActiveFlow, setSelectedAnswer, isDataAllPhones } = useContext(AppContext); // Se agregan setUserActiveFlow y setSelectedAnswer
   const [sortedData, setSortedData] = useState([]);
   const [sortByOldest, setSortByOldest] = useState(false);
   const [toastShown, setToastShown] = useState(false);
   const [loading, setLoading] = useState(true);
+  
   const hasShownToast = useRef(false);
 
   // NUEVO: Función para emitir acción por defecto o flujo con teléfono
@@ -21,17 +22,19 @@ const TableAditionals = ({ customColumnNames = {}, onRowClick,  selectedAnswer, 
       window.dispatchEvent(new CustomEvent("itemSelected", { detail: row.NúmeroTelefónico || 0 }));
     }
   };
-
-
   // NUEVO: Función que activa el flujo al hacer clic en el enlace del teléfono
   const handlePhoneFlow = (row, e) => {
     e.preventDefault();
     setUserActiveFlow(true);
+
+    const idClase = isDataAllPhones?.gestion?.idClase || isDataAllPhones?.gestion?.idClase; // Fallback a row.idClase si no existe en el contexto
+
+    
     setSelectedAnswer({
       value: 2,
       dataPhone: { 
         númeroTelefónico: row["NúmeroTelefónico"],
-        idClase: row.idClase // Se agrega idClase para evitar que sea undefined
+        idClase: idClase // Se agrega idClase para evitar que sea undefined
       }
     });
   };
