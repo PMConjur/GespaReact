@@ -42,7 +42,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
     tasaMensual: 0 // Agregar tasa mensual al estado
   });
   const [formValues, setFormValues] = useState({
-    montoRequerido: "",
+    montoNegociado: "",
     descuento: ""
   });
   const [formInputs, setFormInputs] = useState({
@@ -542,8 +542,8 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         idCuenta: idCuenta,
         idEjecutivo: idEjecutivo,
         idHerramienta: selectedHerramienta,
-        montoNegociado: parseFloat(),
-        plazos: parseInt(calculosData.plazos, 10), // Asegura que plazos sea un número entero
+        montoNegociado: parseFloat(calculosData.montoNegociado),
+        plazos: parseInt(response.plazos, 10), // Asegura que plazos sea un número entero
         cartaConvenio: cartaConvenio, // Usa el valor del estado
         correo: selectedEmail || "", // Usa el correo seleccionado o vacío
         fechaPago: formInputs.fechaPago || "",
@@ -725,7 +725,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         idEjecutivo: idEjecutivo,
         idHerramienta: selectedHerramienta,
         montoNegociado: parseFloat(montoPago),
-        plazos: parseInt(calculosData.plazos, 10) || 1, // Asegura que plazos sea un número entero
+        plazos: 1, // Asegura que plazos sea un número entero
         cartaConvenio: cartaConvenio, // Usa el valor del estado
         correo: selectedEmail || "", // Usa el correo seleccionado o vacío
         fechaPago: formInputs.fechaPago || "",
@@ -783,6 +783,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
             maxHeight: "80vh", // Limitar la altura máxima del cuerpo del modal
             overflowY: "auto", // Habilitar scroll vertical
             position: "relative", // Necesario para posicionar el indicador
+            marginBottom: "1rem"
           }}
         >
           <Col>
@@ -946,7 +947,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                   {validationMessage}
                 </h5>
               )}
-              <Col className="mt-4">
+              <Col className="mt-5">
                 <Card className="rounded-lg mb-0">
                   <Card.Body className="d-flex p-0 pb-1 w-100">
                     <Form
@@ -992,7 +993,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                           </div>
                           <div className="ps-3">
                             <span className="text-light small pt-1 fw-bold">
-                              Descuento
+                              45% Desc
                             </span>
                             <h5
                               style={{ color: "#07fb70" }}
@@ -1051,11 +1052,14 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                             Acuerdo con el cliente
                           </Card.Title>
                           <Form>
-                            <Form.Group className="d-flex w-100">
+                            <Form.Group className="d-block">
+                              <Form.Label>
+                                Monto Pago
+                              </Form.Label>
                               <Form.Control
-                                className="w-100"
+                                required
                                 type="text"
-                                placeholder="Monto Pago"
+                                placeholder=""
                                 value={montoPago}
                                 onKeyPress={(e) => {
                                   if (!/^\d*\.?\d*$/.test(e.key)) {
@@ -1068,9 +1072,12 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                             </Form.Group>
                             <div className="d-flex gap-3 w-100">
                               <Form.Group className="mt-3 w-100">
+                              <Form.Label>
+                                Monto Negociado
+                              </Form.Label>
                                 <Form.Control
                                   type="text"
-                                  placeholder="Monto Negociado"
+                                  placeholder="$ 0"
                                   value={
                                     montoNegociado ? `$${montoNegociado}` : ""
                                   } // Agrega un '$' al inicio del valor
@@ -1079,7 +1086,11 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 />
                               </Form.Group>
                               <Form.Group className="mt-3 w-100">
+                              <Form.Label>
+                                Fecha Pago
+                              </Form.Label>
                                 <Form.Control
+                                  required
                                   type="date"
                                   name="fechaPago"
                                   value={formInputs.fechaPago}
@@ -1232,32 +1243,22 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                   !areFieldsEnabled && (
                     <>
                       {/* Calculadora AMEX */}
-                      <h5 style={{ textAlign: "center", color: "#20c997" }}>
+                      <h5 style={{color: "#20c997", marginLeft: "1rem", marginTop: "1rem"}}>
                         Calculadora AMEX
                       </h5>
                       <Card className="p-3 mb-0" ref={calculatorRef}>
                         <Card.Body className="p-0">
-                          <Card.Title className="pt-0 ms-3">Datos</Card.Title>
+                          <Card.Title className="pt-0 text-center">Datos</Card.Title>
                           <Form className="d-flex gap-4 w-100">
                             <Row className="d-flex w-100">
                               <Form.Group>
+                              <Form.Label>
+                                Monto Requerido
+                              </Form.Label>
                                 <Form.Control
-                                  placeholder="Monto Requerido"
+                                  placeholder=""
                                   name="montoRequerido"
-                                  value={
-                                    formValues.montoRequerido
-                                      ? `$${formValues.montoRequerido}`
-                                      : ""
-                                  }
-                                  onChange={(e) =>
-                                    setFormValues((prev) => ({
-                                      ...prev,
-                                      montoRequerido: e.target.value.replace(
-                                        /^\$/,
-                                        ""
-                                      ), // Elimina el '$' antes de actualizar el estado
-                                    }))
-                                  }
+                                  value={calculosData.montoNegociado || ""}
                                   readOnly // Hace que el campo sea de solo lectura
                                   style={{
                                     backgroundColor: "#e9ecef", // Color de fondo para indicar que es no editable
@@ -1266,19 +1267,22 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 />
                               </Form.Group>
                               <Form.Group className="mt-3">
+                              <Form.Label>
+                                Descuento
+                              </Form.Label>
                                 <Form.Control
-                                  placeholder="Descuento"
+                                  placeholder=""
                                   name="descuento"
                                   value={
                                     formValues.descuento
-                                      ? `${parseInt(formValues.descuento, 10)}%`
+                                      ? `${parseInt(formValues.descuento, 10)}`
                                       : ""
                                   }
                                   onChange={(e) =>
                                     setFormValues((prev) => ({
                                       ...prev,
                                       descuento: e.target.value.replace(
-                                        /%$/,
+                                        /$/,
                                         ""
                                       ), // Elimina el '%' antes de actualizar el estado
                                     }))
@@ -1291,6 +1295,9 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 />
                               </Form.Group>
                               <Form.Group className="mt-3">
+                              <Form.Label>
+                                Periodo
+                              </Form.Label>
                                 <Form.Select
                                   name="periodos"
                                   value={formInputs.periodos || 1} // Valor por defecto: 1 (Mes)
@@ -1304,9 +1311,12 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                             </Row>
                             <Row className="d-flex w-100">
                               <Form.Group className="mt-3">
+                              <Form.Label>
+                                Meses
+                              </Form.Label>
                                 <Form.Control
                                   type="text"
-                                  placeholder="Meses"
+                                  placeholder=""
                                   name="meses"
                                   value={formInputs.meses}
                                   onChange={handleInputChange} // Actualiza el estado formInputs
@@ -1318,6 +1328,9 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 />
                               </Form.Group>
                               <Form.Group className="mt-3">
+                              <Form.Label>
+                                Fecha Pago
+                              </Form.Label>
                                 <Form.Control
                                   type="date"
                                   placeholder="Fecha Pago"
@@ -1327,13 +1340,20 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                   min={new Date().toISOString().split("T")[0]} // Fecha mínima: hoy
                                 />
                               </Form.Group>
-                              <div className="mt-4">
-                                <Button
+                              <div className="d-flex justify-content-between mt-4">
+                                <div className="">
+                                <h5 className="text-light pt-1 fw-bold d-inline-flex">
+                                  Tasa Mensual: {calculosData.tasaMensual ? `${calculosData.tasaMensual}%` : "0%"}
+                                </h5>
+                                </div>
+                               <div>
+                               <Button
                                   variant="primary"
                                   onClick={handleCalculateSecondPart}
                                 >
                                   Calcular
                                 </Button>
+                               </div>
                               </div>
                             </Row>
                           </Form>
@@ -1383,8 +1403,8 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 </span>
                                 <h5 style={{ color: "#ffc400" }}>
                                   $
-                                  {summaryData.montoRequerido
-                                    ? summaryData.montoRequerido.toFixed(2)
+                                  {calculosData.montoNegociado
+                                    ? calculosData.montoNegociado.toFixed(2)
                                     : 0}
                                 </h5>
                               </Col>
@@ -1393,20 +1413,11 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                   Descuento
                                 </span>
                                 <h5 style={{ color: "#6dd6ff" }}>
-                                  {calculosData.descuento
-                                    ? calculosData.descuento
+                                  $
+                                  {summaryData.MontoDescuento
+                                    ? summaryData.MontoDescuento
                                     : 0}
-                                  %
-                                </h5>
-                              </Col>
-                              <Col>
-                                <span className="text-light small pt-1 fw-bold">
-                                  Tasa mensual
-                                </span>
-                                <h5 className="text-light">
-                                  {calculosData.tasaMensual
-                                    ? `${calculosData.tasaMensual}%`
-                                    : "0"}
+                                  
                                 </h5>
                               </Col>
                             </Row>
