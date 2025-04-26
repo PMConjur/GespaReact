@@ -423,14 +423,13 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       console.log("Datos enviados para validación:", validationData);
       
       const result = await fetchValidateNegotiationOffer(validationData);
-      
+
       if (result.valido) {
         toast.success("Ofrecimiento válido.");
-        setShowValidators(true); // Abre el modal de validadores
-        return true;
+        const saveSuccess = await handleSaveOffering();
+        return saveSuccess; // Llama a la función para guardar el ofrecimiento
       } else {
         toast.warning(`${result.mensaje || "Ofrecimiento inválido."}`);
-        setShowValidators(true); // Abre el modal de validadores
         return false;
       }
     } catch (error) {
@@ -574,9 +573,6 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       const duracionObtenida = response?.duración || "";
       console.log("Duración obtenida de la respuesta:", duracionObtenida);
       setDuracion(duracionObtenida); // Almacena la duración en el estado
-  
-      // 2. Abrir modal de validadores
-      setShowValidators(true);
       // Cambia el estado para mostrar el botón "Finalizar"
       setIsNegotiationSaved(true);
     } catch (error) {
@@ -626,8 +622,8 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         increaseResponse?.status === 200 ||
         increaseResponse?.status === 204
       ) {
-        handleClose(false); // Cierra el modal solo si el status es 204
         setNegotiationActive(false);
+        handleClose(false); // Cierra el modal solo si el status es 204
         toast.success("Negociación incrementada correctamente.");
       } else {
         toast.warning("La respuesta del servidor no fue la esperada.");
@@ -654,7 +650,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
 
       if (!idCuenta || !selectedHerramienta || !montoNegociado) {
         toast.error("Faltan datos requeridos para guardar el ofrecimiento.");
-        return;
+        return false;
       }
 
       const requestData = {
@@ -663,22 +659,22 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         idProducto: producto,
         idEjecutivo: idEjecutivo,
         idHerramienta: selectedHerramienta,
-        montoRequerido: summaryData.montoRequerido, // Respetar decimales
-        montoNegociado: parseFloat(montoNegociado), // Convertir a número respetando decimales
-        descuento: summaryData.montoDescuento, // Respetar decimales
-        saldo: summaryData.saldo, // Respetar decimales
+        montoRequerido: summaryData.montoRequerido,
+        montoNegociado: parseFloat(montoNegociado),
+        descuento: summaryData.montoDescuento,
+        saldo: summaryData.saldo,
         plazos: tablaPagos.map((pago) => ({
-          monto: parseFloat(pago.pago), // Convertir a número respetando decimales
-          fecha: new Date(pago.fecha).toISOString().split("T")[0] // Formato YYYY-MM-DD
+          monto: parseFloat(pago.pago),
+          fecha: new Date(pago.fecha).toISOString().split("T")[0]
         })),
-        dias1erPago: summaryData.dias1erpago,
+        dias1erPago: summaryData.dias1erpago || 0,
         fechaCorte: (() => {
-          const [datePart] = summaryData.fechaCorte.split(" "); // Extrae solo la parte de la fecha antes del espacio
-          const [day, month, year] = datePart.split("/"); // Divide la fecha en día, mes y año
-          return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`; // Reorganiza en formato YYYY-MM-DD
+          const [datePart] = summaryData.fechaCorte.split(" ");
+          const [day, month, year] = datePart.split("/");
+          return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
         })(),
         fechaInsert: fechaInsert,
-        segundoInsert: segundoInsert, // Cambia el valor a un objeto vacío
+        segundoInsert: segundoInsert,
         cartaConvenio: cartaConvenio,
         correo: selectedEmail || "",
         idEjecutivoValidador: parseInt(idEjecutivoValidador, 10)
@@ -689,21 +685,21 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       const response = await fetchSaveOffering(requestData);
       toast.success("Ofrecimiento guardado correctamente.");
       console.log("Respuesta del endpoint fetchSaveOffering:", response);
-
-      handleClose(false);
-      setNegotiationActive(false);
-      // Verifica si fetchData está definida antes de llamarla
+      
+      setShowValidators(true);
       if (typeof fetchData === "function") {
-        const idCartera = 1; // Ejemplo de valor
-        fetchData(idCartera, idCuenta, selectedHerramienta); // Llama a fetchData para actualizar los datos del modal
+        const idCartera = 1;
+        await fetchData(idCartera, idCuenta, selectedHerramienta);
       } else {
         console.warn(
           "fetchData no está definida. No se actualizarán los datos del modal."
         );
       }
+      return true;
     } catch (error) {
       console.error("Error al guardar el ofrecimiento:", error);
       toast.error("Error al guardar el ofrecimiento.");
+      return false;
     }
   };
 
@@ -713,7 +709,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       const fechaInsert = isManagment?.storeOutput?.Fecha_Insert?.split("T")[0];
       const segundoInsert = isManagment?.storeOutput?.Segundo_Insert;
       // Validar datos antes de enviarlos
-      if (!idCuenta || !selectedHerramienta || !calculosData.montoNegociado) {
+      if (!idCuenta || !selectedHerramienta || !montoPago) {
         toast.error("Faltan datos requeridos para guardar la negociación.");
         console.error("Datos faltantes:", {
           idCuenta,
@@ -728,8 +724,11 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         idCuenta: idCuenta,
         idEjecutivo: idEjecutivo,
         idHerramienta: selectedHerramienta,
-        montoNegociado: parseFloat(montoNegociado),
-        plazos: parseInt(tablaPagos.pago.pago, 10), // Asegura que plazos sea un número entero
+        montoNegociado: parseFloat(montoPago),
+        plazos: tablaPagos.map((pago) => ({
+          monto: parseFloat(pago.pago), // Convertir a número respetando decimales
+          fecha: new Date(pago.fecha).toISOString().split("T")[0] // Formato YYYY-MM-DD
+        })),
         cartaConvenio: cartaConvenio, // Usa el valor del estado
         correo: selectedEmail || "", // Usa el correo seleccionado o vacío
         fechaPago: formInputs.fechaPago || "",
@@ -760,8 +759,8 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       console.log("Duración obtenida de la respuesta:", duracionObtenida);
       setDuracion(duracionObtenida); // Almacena la duración en el estado
 
-      // Cambia el estado para mostrar el botón "Finalizar"
-      setIsNegotiationSaved(true);
+      setNegotiationActive(false);
+      handleClose(false); // Cierra el modal solo si el status es 204
     } catch (error) {
       console.error("Error al guardar la negociación:", error);
       toast.error("Error al guardar la negociación.");
@@ -1204,7 +1203,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                         </Table>
                       </div>
                       <div className="justify-content-end d-flex mt-2">
-                        {isValidated && ( // Muestra el botón "Ofrecer" solo si está validado
+                        {!isValidated && ( // Muestra el botón "Ofrecer" solo si está validado
                           <Button
                             onClick={handleSaveOffering}
                             disabled={tablaPagos.length === 0} // Deshabilita el botón si no hay registros en la tabla
@@ -1212,7 +1211,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                             Ofrecer
                           </Button>
                         )}
-                         {!isValidated && ( // Muestra el botón "Validar" solo si no está validado
+                         {isValidated && ( // Muestra el botón "Guardar Negociacion" solo si no está validado
                           <Button
                             variant="primary"
                             onClick={handleSaveNegotiation2}
