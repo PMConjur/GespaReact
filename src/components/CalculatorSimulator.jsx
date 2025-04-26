@@ -542,7 +542,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         idCuenta: idCuenta,
         idEjecutivo: idEjecutivo,
         idHerramienta: selectedHerramienta,
-        montoNegociado: parseFloat(calculosData.montoNegociado),
+        montoNegociado: parseFloat(),
         plazos: parseInt(calculosData.plazos, 10), // Asegura que plazos sea un número entero
         cartaConvenio: cartaConvenio, // Usa el valor del estado
         correo: selectedEmail || "", // Usa el correo seleccionado o vacío
@@ -667,7 +667,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
           monto: parseFloat(pago.pago),
           fecha: new Date(pago.fecha).toISOString().split("T")[0]
         })),
-        dias1erPago: summaryData.dias1erpago || 0,
+        dias1erPago: summaryData.dias1erpago,
         fechaCorte: (() => {
           const [datePart] = summaryData.fechaCorte.split(" ");
           const [day, month, year] = datePart.split("/");
@@ -725,14 +725,11 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         idEjecutivo: idEjecutivo,
         idHerramienta: selectedHerramienta,
         montoNegociado: parseFloat(montoPago),
-        plazos: tablaPagos.map((pago) => ({
-          monto: parseFloat(pago.pago), // Convertir a número respetando decimales
-          fecha: new Date(pago.fecha).toISOString().split("T")[0] // Formato YYYY-MM-DD
-        })),
+        plazos: parseInt(calculosData.plazos, 10) || 1, // Asegura que plazos sea un número entero
         cartaConvenio: cartaConvenio, // Usa el valor del estado
         correo: selectedEmail || "", // Usa el correo seleccionado o vacío
         fechaPago: formInputs.fechaPago || "",
-        fechaFinNegociacion: formInputs.fechaFinNegociacion, // Usa la nueva fecha calculada
+        fechaFinNegociacion: formInputs.fechaFinNegociacion || "0001-01-01", // Usa la nueva fecha calculada
         idEjecutivoValidador: parseInt(idEjecutivoValidador, 10), // Asegura que sea un número entero
         contrasena: validatorPassword || "", // Usa la contraseña del validador o vacío
         fechaInsert: fechaInsert,
@@ -1359,7 +1356,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                   Plazos
                                 </span>
                                 <h5 style={{ color: "#4a9dff" }}>
-                                  {calculosData.plazos || 0}
+                                  {calculosData.plazos}
                                 </h5>
                               </Col>
                               <Col>
