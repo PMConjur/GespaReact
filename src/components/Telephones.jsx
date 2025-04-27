@@ -347,6 +347,11 @@ const Telephones = () => {
     }
   };
 
+  const handleEyeClick = (phoneNumber) => {
+    console.log("Número de teléfono seleccionado:", phoneNumber);
+    setSelectedAnswer({ numeroTelefonico: phoneNumber }); // Actualizar el contexto con el nuevo número
+  };
+
   // 2. Función que abre el modal + usa el número actualizado del row
   const openFollowUpsModal = (row) => {
     let newPhone = { raw: "", formatted: "", source: "none" };
@@ -514,7 +519,7 @@ const Telephones = () => {
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                             <Eye
                               style={{ cursor: "pointer", color: "#d3bbf8" }}
-                              onClick={() => console.log("Eye icon clicked", row)}
+                              onClick={() => handleEyeClick(row.númeroTelefónico)}
                             />
                             <a
                               href="#"

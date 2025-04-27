@@ -6,7 +6,7 @@ import { ClockHistory } from "react-bootstrap-icons";
 import { toast } from "sonner"; // Importar la librería sonner
 
 const Managments = () => {
-  const { searchResults } = useContext(AppContext); // Consumir el contexto
+  const { searchResults, selectedAnswer } = useContext(AppContext); // Consumir el contexto
   const [sortedData, setSortedData] = useState([]); // Estado para los datos ordenados
   const [selectedGestion, setSelectedGestion] = useState(null); // Estado para el registro seleccionado
   const [showToast, setShowToast] = useState(false); // Estado para mostrar el toast
@@ -65,6 +65,30 @@ const Managments = () => {
     setCurrentPage(1); // Reiniciar la página actual
     fetchData(); // Llamar a fetchData para cargar los nuevos datos
   }, [searchResults]);
+
+  useEffect(() => {
+    const fetchFilteredData = async () => {
+      if (selectedAnswer?.numeroTelefonico) {
+        const selectedPhone = selectedAnswer.numeroTelefonico;
+        try {
+          setIsLoading(true);
+          const idCuenta = searchResults[0]?.idCuenta;
+          const gestionData = await getGestionTeData(1, idCuenta); // Cargar datos originales
+          const filteredData = gestionData.filter(
+            (gestion) => gestion.NúmeroTelefónico === selectedPhone
+          );
+          setSortedData(filteredData); // Aplicar el filtro
+          setIsLoading(false);
+        } catch (error) {
+          console.error("Error al filtrar los datos:", error);
+          toast.error("Error al filtrar los datos. Intente nuevamente.");
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchFilteredData();
+  }, [selectedAnswer, searchResults]);
 
   // Validar campos para evitar errores al renderizar
   const validateField = (field) => {
