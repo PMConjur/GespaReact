@@ -2,12 +2,13 @@ import { useState, useCallback, useEffect, useContext, useRef } from "react";
 import { Table, Spinner } from "react-bootstrap";
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
-import { getAditionalsData } from "../services/gespawebServices";
+import { getAditionalsData, fetchPhones } from "../services/gespawebServices"; // Importa fetchPhones
 import { reemplazarValores } from "./ValoresCatalogos.js"; // Importa el método
 
 const TableAditionals = ({ customColumnNames = {}, onRowClick, selectedAnswer, autoSelect = true, handleCloseAditionals }) => {
-  const { searchResults, setUserActiveFlow, setSelectedAnswer, isDataAllPhones } = useContext(AppContext); // Se agregan setUserActiveFlow y setSelectedAnswer
+  const { searchResults, setUserActiveFlow, setSelectedAnswer } = useContext(AppContext);
   const [sortedData, setSortedData] = useState([]);
+  const [phoneData, setPhoneData] = useState([]); // Estado para almacenar los datos de teléfonos
   const [sortByOldest, setSortByOldest] = useState(false);
   const [toastShown, setToastShown] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -22,18 +23,66 @@ const TableAditionals = ({ customColumnNames = {}, onRowClick, selectedAnswer, a
       window.dispatchEvent(new CustomEvent("itemSelected", { detail: row.NúmeroTelefónico || 0 }));
     }
   };
+
+  // NUEVO: Función para cargar los datos de teléfonos
+  const loadPhoneData = async () => {
+    if (!searchResults || searchResults.length === 0) {
+      toast.error("Error 428: Primero debes buscar una Cuenta");
+      return;
+    }
+
+    try {
+      const phones = await Promise.all(
+        searchResults.map(async (result) => {
+          const response = await fetchPhones(result.idCuenta);
+          console.log("Respuesta de fetchPhones:", response); // Verifica los datos obtenidos
+          return response;
+        })
+      );
+      const flatPhones = phones.flat();
+      console.log("Datos planos de teléfonos:", flatPhones); // Verifica los datos planos
+      setPhoneData(flatPhones || []); // Almacena los datos en el estado
+    } catch (error) {
+      console.error("Error al cargar los datos de teléfonos:", error);
+      setPhoneData([]); // En caso de error, asegura que sea un arreglo vacío
+    }
+  };
+
   // NUEVO: Función que activa el flujo al hacer clic en el enlace del teléfono
   const handlePhoneFlow = (row, e) => {
     e.preventDefault();
     setUserActiveFlow(true);
 
-    const idClase = isDataAllPhones?.gestion?.idClase || isDataAllPhones?.gestion?.idClase; // Fallback a row.idClase si no existe en el contexto
+    console.log("Datos de teléfonos cargados:", phoneData); // Verifica el contenido completo de phoneData
+    console.log("Número telefónico seleccionado (original):", row["NúmeroTelefónico"]);
 
+    // Normaliza el número telefónico seleccionado
+    const normalizedSelectedPhone = String(row["NúmeroTelefónico"]).replace(/\D/g, ""); // Asegúrate de que sea una cadena
+    console.log("Número telefónico seleccionado (normalizado):", normalizedSelectedPhone);
+
+    // Busca el idClase asociado al número telefónico seleccionado
+    const selectedPhone = phoneData?.find(
+      (phone) => String(phone.númeroTelefónico).replace(/\D/g, "") === normalizedSelectedPhone
+    );
+
+    const idClase = selectedPhone?.idClase;
+
+    console.log("idClase asociado:", idClase); // Verifica si se encuentra el idClase
+
+    if (!idClase) {
+      console.warn(
+        `No se encontró idClase para el número: ${normalizedSelectedPhone}. Verifica que los datos coincidan.`
+      );
+    } else {
+      console.log(`idClase encontrado: ${idClase} para el número: ${normalizedSelectedPhone}`);
+    }
+
+    // Pasa el idClase al flujo
     setSelectedAnswer({
       value: 2,
       dataPhone: { 
         númeroTelefónico: row["NúmeroTelefónico"],
-        idClase: idClase // Se agrega idClase para evitar que sea undefined
+        idClase: idClase || 0 // Asegúrate de que idClase no sea undefined
       }
     });
 
@@ -41,6 +90,11 @@ const TableAditionals = ({ customColumnNames = {}, onRowClick, selectedAnswer, a
       handleCloseAditionals(); // Cierra el modal Aditionals
     }
   };
+
+  // Hook para cargar los datos de teléfonos al montar el componente
+  useEffect(() => {
+    loadPhoneData();
+  }, [searchResults]);
 
   // Hook 5: useEffect para obtener datos
   useEffect(() => {
