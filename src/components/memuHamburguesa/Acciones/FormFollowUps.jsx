@@ -13,7 +13,9 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
         formData,
         setFormData,
         selectedAnswer,   // nuevo: obtener seleccionado del contexto
-        responseData      // opcional: si se requiere
+        responseData,     // opcional: si se requiere
+        isDataAllPhones,   // nuevo: obtener isDataAllPhones del contexto
+        setAllPhones, // nuevo: obtener setAllPhones del contexto
     } = useContext(AppContext);
 
     if (!searchResults || searchResults.length === 0) {
@@ -58,6 +60,23 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
         return { raw: "", formatted: "", source: "none" };
     };
 
+    //// OBTIENE EL NUMERO TELEF DEL CONMTEXTO DE ALL PHONES //// 
+    const getPhoneFromDataAllPhones = () => {
+        // Verifica si isDataAllPhones es un arreglo y contiene datos
+        if (Array.isArray(isDataAllPhones) && isDataAllPhones.length > 0) {
+            const phoneFromDataAllPhones = isDataAllPhones[0]?.númeroTelefónico || ""; // Obtén el primer número disponible
+            if (phoneFromDataAllPhones) {
+                return {
+                    raw: phoneFromDataAllPhones.toString(),
+                    formatted: formatPhoneNumber(phoneFromDataAllPhones),
+                    source: "isDataAllPhones"
+                };
+            }
+        }
+        console.warn("isDataAllPhones no contiene un número de teléfono válido.");
+        return { raw: "", formatted: "", source: "none" }; // Retorna valores predeterminados si no hay datos
+    };
+
     const [loading, setLoading] = useState(false);
     const [existingReminders, setExistingReminders] = useState([]);
 
@@ -92,6 +111,41 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
             }
         });
     }, [isManagment, selectedAnswer]);
+
+    useEffect(() => {
+        const phone = getPhoneFromDataAllPhones(); // Llama a la función corregida
+        if (phone.raw) { // Asegúrate de que el número no esté vacío
+            setFormData(prev => {
+                if (prev) {
+                    // Actualiza solo si hay cambios en los valores
+                    if (prev.numeroTelefonico !== phone.raw || prev.displayedPhone !== phone.formatted) {
+                        return {
+                            ...prev,
+                            numeroTelefonico: phone.raw,
+                            displayedPhone: phone.formatted
+                        };
+                    }
+                    return prev;
+                } else {
+                    return {
+                        idCartera: 1,
+                        idCuenta: idCuenta[0]?.trim() || "",
+                        idEjecutivo: idEjecutivo || "",
+                        fecha: new Date().toISOString().split('T')[0],
+                        segundo: "07:00:00",
+                        idAcercamiento: "1601",
+                        recordatorio: false,
+                        numeroTelefonico: phone.raw,
+                        displayedPhone: phone.formatted,
+                        datoContacto: "",
+                        idMotivoS: "0"
+                    };
+                }
+            });
+        } else {
+            console.warn("No se encontró un número de teléfono válido en isDataAllPhones.");
+        }
+    }, [isDataAllPhones]); // Escucha cambios en isDataAllPhones
 
     // Cargar y preparar recordatorios existentes
     useEffect(() => {
@@ -327,6 +381,14 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
             // 9. Ejecutar callback de éxito y cerrar modal
             if (onSuccessfulRegister) onSuccessfulRegister();
             if (handleClose) handleClose();
+
+            // Limpiar el número del contexto
+            setFormData(prev => ({
+                ...prev,
+                numeroTelefonico: "",
+                displayedPhone: ""
+            }));
+            console.log("Número del contexto limpiado después del registro.");
 
             // 10. Debug: Verificar contexto actualizado
 

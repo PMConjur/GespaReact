@@ -5,7 +5,7 @@ import { AppContext } from "../pages/Managment";
 import { getAditionalsData } from "../services/gespawebServices";
 import { reemplazarValores } from "./ValoresCatalogos.js"; // Importa el método
 
-const TableAditionals = ({ customColumnNames = {}, onRowClick,  selectedAnswer, autoSelect = true }) => {
+const TableAditionals = ({ customColumnNames = {}, onRowClick, selectedAnswer, autoSelect = true, handleCloseAditionals }) => {
   const { searchResults, setUserActiveFlow, setSelectedAnswer, isDataAllPhones } = useContext(AppContext); // Se agregan setUserActiveFlow y setSelectedAnswer
   const [sortedData, setSortedData] = useState([]);
   const [sortByOldest, setSortByOldest] = useState(false);
@@ -29,7 +29,6 @@ const TableAditionals = ({ customColumnNames = {}, onRowClick,  selectedAnswer, 
 
     const idClase = isDataAllPhones?.gestion?.idClase || isDataAllPhones?.gestion?.idClase; // Fallback a row.idClase si no existe en el contexto
 
-    
     setSelectedAnswer({
       value: 2,
       dataPhone: { 
@@ -37,6 +36,10 @@ const TableAditionals = ({ customColumnNames = {}, onRowClick,  selectedAnswer, 
         idClase: idClase // Se agrega idClase para evitar que sea undefined
       }
     });
+
+    if (handleCloseAditionals) {
+      handleCloseAditionals(); // Cierra el modal Aditionals
+    }
   };
 
   // Hook 5: useEffect para obtener datos

@@ -40,6 +40,7 @@ const Telephones = () => {
   const [selectedClaseTelefono, setSelectedClaseTelefono] = useState("");
   const [horarioContacto, setHorarioContacto] = useState("00:00:00");
   const [showFollowUps, setShowFollowUps] = useState(false);
+  const [selectedPhone, setSelectedPhone] = useState(null); // Estado para el número seleccionado
   const responseData =
     location.state || JSON.parse(localStorage.getItem("responseData"));
 
@@ -250,7 +251,7 @@ const Telephones = () => {
         })
       );
       const flatPhones = phones.flat();
-      setIsDataAllPhones(flatPhones);
+      setIsDataAllPhones(flatPhones || []); // Asegúrate de que sea un arreglo
       if (flatPhones.length === 0 && !toastShown) {
         toast.error("Error 404: No hay carga de teléfonos", {
           position: "top-right"
@@ -259,6 +260,7 @@ const Telephones = () => {
       }
     } catch (error) {
       console.error("Error al cargar los teléfonos:", error);
+      setIsDataAllPhones([]); // En caso de error, asegúrate de que sea un arreglo vacío
     } finally {
       setTimeout(() => {
         setIsLoading(false);
@@ -348,8 +350,21 @@ const Telephones = () => {
   };
 
   const handleEyeClick = (phoneNumber) => {
-    console.log("Número de teléfono seleccionado:", phoneNumber);
-    setSelectedAnswer({ numeroTelefonico: phoneNumber }); // Actualizar el contexto con el nuevo número
+    if (selectedPhone === phoneNumber) {
+      console.log("Deseleccionando número de teléfono:", phoneNumber);
+      setSelectedPhone(null); // Deseleccionar
+      setSelectedAnswer(null); // Restablecer el filtro en el contexto
+      setIsDataAllPhones((prev) => [...prev]); // Restablecer el estado inicial de los teléfonos
+    } else {
+      console.log("Número de teléfono seleccionado:", phoneNumber);
+      setSelectedPhone(phoneNumber); // Seleccionar
+      setSelectedAnswer({ numeroTelefonico: phoneNumber }); // Actualizar el contexto con el nuevo número
+    }
+  };
+
+  const handleSendPhoneToFormFollowUps = (phoneNumber) => {
+    console.log("Número de teléfono enviado al formulario FormFollowUps:", phoneNumber);
+    setIsDataAllPhones(prev => ({ ...prev, númeroTelefónico: phoneNumber })); // Actualizar el contexto con el número
   };
 
   // 2. Función que abre el modal + usa el número actualizado del row
@@ -363,11 +378,11 @@ const Telephones = () => {
         source: "row"
       };
       // Actualizar el contexto usando "numeroTelefonico" (sin acento)
-      setSelectedAnswer(prev => ({ ...prev, numeroTelefonico: newPhone.raw }));
+      setSelectedAnswer(prev => ({ ...prev, númeroTelefónico: newPhone.raw }));
     } else {
       newPhone = getContextPhoneNumber();
       console.log("Se usa número del contexto:", newPhone);
-      setSelectedAnswer(prev => ({ ...prev, numeroTelefonico: newPhone.raw }));
+      setSelectedAnswer(prev => ({ ...prev, númeroTelefónico: newPhone.raw }));
     }
     console.log("Abriendo modal FollowUps con:", { phone: newPhone, rowData: row });
     setShowFollowUps(true); // Abre el modal
@@ -509,7 +524,8 @@ const Telephones = () => {
                         ))}
                       </tr>
                     ))
-                  : isDataAllPhones.map((row, index) => (
+                  : Array.isArray(isDataAllPhones) // Validar que sea un arreglo
+                  ? isDataAllPhones.map((row, index) => (
                       <tr key={index}>
                         <td>{row.titulares || "--"}</td>
                         <td>{row.conocidos || "--"}</td>
@@ -518,20 +534,26 @@ const Telephones = () => {
                         <td>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                             <Eye
-                              style={{ cursor: "pointer", color: "#d3bbf8" }}
+                              style={{
+                                cursor: "pointer",
+                                color: selectedPhone === row.númeroTelefónico ? "rgb(57, 252, 141)" : "#d3bbf8"
+                              }}
                               onClick={() => handleEyeClick(row.númeroTelefónico)}
                             />
                             <a
                               href="#"
                               className="text-info"
                               onClick={() => handleRowClick(row)}
-                              data-full-number={row.númeroTelefónico} // Este atributo es esencial
+                              data-full-number={row.númeroTelefónico}
                             >
                               {"XXXXXX" + row.númeroTelefónico.slice(6)}
                             </a>
                             <Clipboard2Data
                               style={{ cursor: "pointer", color: "#fce959" }}
-                              onClick={() => openFollowUpsModal(row)}
+                              onClick={() => {
+                                openFollowUpsModal(row);
+                                handleSendPhoneToFormFollowUps(row.númeroTelefónico);
+                              }}
                             />
                           </div>
                         </td>
@@ -546,7 +568,14 @@ const Telephones = () => {
                         <td>{row.husoHorario || "--"}</td>
                         <td>{row.extensión || "--"}</td>
                       </tr>
-                    ))}
+                    ))
+                  : (
+                      <tr>
+                        <td colSpan="12" className="text-center">
+                          No hay datos disponibles.
+                        </td>
+                      </tr>
+                    )}
               </tbody>
             </Table>
           </div>

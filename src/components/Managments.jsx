@@ -84,6 +84,19 @@ const Managments = () => {
           toast.error("Error al filtrar los datos. Intente nuevamente.");
           setIsLoading(false);
         }
+      } else {
+        // Restablecer los datos iniciales si no hay filtro
+        try {
+          setIsLoading(true);
+          const idCuenta = searchResults[0]?.idCuenta;
+          const gestionData = await getGestionTeData(1, idCuenta); // Cargar datos originales
+          setSortedData(gestionData); // Restablecer los datos iniciales
+          setIsLoading(false);
+        } catch (error) {
+          console.error("Error al restablecer los datos:", error);
+          toast.error("Error al restablecer los datos. Intente nuevamente.");
+          setIsLoading(false);
+        }
       }
     };
 
