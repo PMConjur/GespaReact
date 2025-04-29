@@ -19,6 +19,7 @@ using NoriAPI.Models.CargaGestionamiento;
 using System.ComponentModel.DataAnnotations;
 using NoriAPI.Models.Ofrecimiento;
 using NoriAPI.Models;
+using static NoriAPI.Models.CargaGestionamiento.SeguimientoModel;
 
 namespace NoriAPI.Controllers
 {
@@ -169,46 +170,36 @@ namespace NoriAPI.Controllers
 
 
 
-        #endregion
+		#endregion
 
-        #region Recordatorios
+		#region Recordatorios
 
-        [HttpGet("recordatorios/{idEjecutivo}")]
-        public async Task<IActionResult> GetRecordatorios(int idEjecutivo)
-        {
-            try
-            {
-                DataSet dsTablas = new DataSet();
-                DataTable ejecutivosTable = dsTablas.Tables.Add("Ejecutivos");
-                ejecutivosTable.Columns.Add("idEjecutivo", typeof(int));
-                DataRow drDatos = ejecutivosTable.NewRow();
-                drDatos["idEjecutivo"] = idEjecutivo;
+		[HttpGet("recordatorios/{idEjecutivo}")]
+		public async Task<IActionResult> GetRecordatorios(int idEjecutivo)
+		{
+			try
+			{
+				// Obtener los seguimientos del servicio
+				var seguimientos = await _ejecutivoService.ObtenerSeguimientosEjecutivoAsync(idEjecutivo);
 
-                await _ejecutivoService.ObtieneRecordatoriosAsync(drDatos, dsTablas);
+				if (seguimientos == null || !seguimientos.Any())
+				{
+					return NotFound("No se encontraron recordatorios para este ejecutivo.");
+				}
 
-                if (!dsTablas.Tables.Contains("Seguimientos") || dsTablas.Tables["Seguimientos"].Rows.Count == 0)
-                {
-                    return NotFound("No se encontraron recordatorios para este ejecutivo.");
-                }
+				// Convertir los seguimientos en JSON y devolver la respuesta
+				return Ok(seguimientos);
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+			}
+		}
 
-                // Convertimos el DataTable a una lista de diccionarios
-                var listaSeguimientos = ConvertDataTableToList(dsTablas.Tables["Seguimientos"]);
+		#endregion
 
-                // Serializamos la lista a JSON
-                string jsonString = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
-
-                return Ok(jsonString);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
-            }
-        }
-
-        #endregion
-
-        #region Accionamientos
-        [HttpGet("accionamientos/{idCartera}/{idCuenta}")]
+		#region Accionamientos
+		[HttpGet("accionamientos/{idCartera}/{idCuenta}")]
         public async Task<IActionResult> GetAccionamiento(int idCartera, string idCuenta)
         {
             try
@@ -400,7 +391,7 @@ namespace NoriAPI.Controllers
             }
 
             return Ok(result);
-        }       
+        }
 
         [HttpPost("save-ofrecimiento-general")]
         public async Task<ActionResult> SaveOfrecimientoGeneral([FromBody] SaveOfrecimientoGeneralRequest ofrecimientoInfo)
@@ -481,6 +472,7 @@ namespace NoriAPI.Controllers
 
             await _ejecutivoService.ObtenerBusquedaEJE(drDatos, dsTablas);
 
+
             if (!dsTablas.Tables.Contains("Busqueda") || dsTablas.Tables["Busqueda"].Rows.Count == 0)
             {
                 return NotFound("No se encontraron Busquedas para este ejecutivo.");
@@ -494,6 +486,7 @@ namespace NoriAPI.Controllers
             string jsonBusqueda = JsonSerializer.Serialize(listaSeguimientos, new JsonSerializerOptions { WriteIndented = true });
 
             return Content(jsonBusqueda, "application/json; charset=utf-8");
+
 
         }
 
