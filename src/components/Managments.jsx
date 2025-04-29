@@ -34,36 +34,25 @@ const Managments = () => {
       }
 
       try {
-        const idCuenta = searchResults[0]?.idCuenta; // Obtener el primer idCuenta como ejemplo
-        if (!idCuenta) {
-          setToastMessage("No se encontró un idCuenta válido.");
-          setShowToast(true);
-          setSortedData([]); // Limpiar datos si no hay idCuenta válido
-          setTotalResults(0); // Ajustar totalResults a 0 si no hay idCuenta válido
-          setSelectedGestion(null); // Limpiar selección previa
+        const idCartera = searchResults[0]?.idCartera;
+        const idCuenta = searchResults[0]?.idCuenta;
+
+        if (!idCartera || !idCuenta) {
+          console.error("Error: idCartera o idCuenta no son válidos.");
           return;
         }
 
-        // Limpiar estados antes de realizar la llamada
-        setSortedData([]);
-        setSelectedGestion(null);
-        setCurrentTablePage(1); // Reiniciar la página actual de la tabla
-        setPaginationGroup(0); // Reiniciar el grupo de paginación
-        setIsLoading(true);
+        const gestionData = await getGestionTeData(idCartera, idCuenta);
+        console.log("Datos obtenidos de getGestionTeData:", gestionData);
 
-        const gestionData = await getGestionTeData(1, idCuenta); // Reiniciar a la página 1
-        setSortedData(gestionData); // Actualizar datos con los nuevos resultados
-        setTotalResults(gestionData.length); // Ajustar totalResults dinámicamente
-        setIsLoading(false); // Finalizar carga
+        setSortedData(gestionData);
+        setTotalResults(gestionData.length);
       } catch (error) {
-        toast.error("Error al obtener los datos de gestión. Intente nuevamente."); // Mostrar toast de error
-        setIsLoading(false); // Finalizar carga en caso de error
+        console.error("Error al obtener los datos de gestión:", error);
       }
     };
 
-    // Reiniciar el estado cuando cambie searchResults
-    setCurrentPage(1); // Reiniciar la página actual
-    fetchData(); // Llamar a fetchData para cargar los nuevos datos
+    fetchData();
   }, [searchResults]);
 
   useEffect(() => {

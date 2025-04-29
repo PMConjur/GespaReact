@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useContext, useRef } from "react";
 import { Table, Spinner } from "react-bootstrap";
 import { toast } from "sonner";
 import { AppContext } from "../pages/Managment";
-import { getAditionalsData, fetchPhones } from "../services/gespawebServices"; // Importa fetchPhones
+import { getAditionalsData, fetchPhones, getGestionTeData } from "../services/gespawebServices"; // Importa fetchPhones y getGestionTeData
 import { reemplazarValores } from "./ValoresCatalogos.js"; // Importa el método
 
 const TableAditionals = ({ customColumnNames = {}, onRowClick, selectedAnswer, autoSelect = true, handleCloseAditionals }) => {
@@ -35,59 +35,77 @@ const TableAditionals = ({ customColumnNames = {}, onRowClick, selectedAnswer, a
       const phones = await Promise.all(
         searchResults.map(async (result) => {
           const response = await fetchPhones(result.idCuenta);
-          console.log("Respuesta de fetchPhones:", response); // Verifica los datos obtenidos
+          console.log("Datos de teléfonos:", response); // Verifica los datos obtenidos
           return response;
         })
       );
       const flatPhones = phones.flat();
-      console.log("Datos planos de teléfonos:", flatPhones); // Verifica los datos planos
+      console.log("Teléfonos planos:", flatPhones); // Verifica los datos planos
       setPhoneData(flatPhones || []); // Almacena los datos en el estado
     } catch (error) {
-      console.error("Error al cargar los datos de teléfonos:", error);
+      console.error("Error cargando teléfonos:", error);
       setPhoneData([]); // En caso de error, asegura que sea un arreglo vacío
     }
   };
 
   // NUEVO: Función que activa el flujo al hacer clic en el enlace del teléfono
-  const handlePhoneFlow = (row, e) => {
+  const handlePhoneFlow = async (row, e) => {
     e.preventDefault();
     setUserActiveFlow(true);
 
-    console.log("Datos de teléfonos cargados:", phoneData); // Verifica el contenido completo de phoneData
-    console.log("Número telefónico seleccionado (original):", row["NúmeroTelefónico"]);
+    console.log("Teléfono seleccionado:", row["NúmeroTelefónico"]);
 
-    // Normaliza el número telefónico seleccionado
-    const normalizedSelectedPhone = String(row["NúmeroTelefónico"]).replace(/\D/g, ""); // Asegúrate de que sea una cadena
-    console.log("Número telefónico seleccionado (normalizado):", normalizedSelectedPhone);
+    const normalizedSelectedPhone = String(row["NúmeroTelefónico"]).replace(/\D/g, "");
+    const idCartera = searchResults?.[0]?.idCartera;
+    const idCuenta = searchResults?.[0]?.idCuenta;
 
-    // Busca el idClase asociado al número telefónico seleccionado
-    const selectedPhone = phoneData?.find(
-      (phone) => String(phone.númeroTelefónico).replace(/\D/g, "") === normalizedSelectedPhone
-    );
-
-    const idClase = selectedPhone?.idClase;
-
-    console.log("idClase asociado:", idClase); // Verifica si se encuentra el idClase
-
-    if (!idClase) {
-      console.warn(
-        `No se encontró idClase para el número: ${normalizedSelectedPhone}. Verifica que los datos coincidan.`
-      );
-    } else {
-      console.log(`idClase encontrado: ${idClase} para el número: ${normalizedSelectedPhone}`);
+    if (!idCartera || !idCuenta) {
+      console.error("Faltan idCartera o idCuenta.");
+      toast.error("Error: No se pudo obtener idCartera o idCuenta.");
+      return;
     }
 
-    // Pasa el idClase al flujo
+    let idModo = null;
+    try {
+      const gestionData = await getGestionTeData(idCartera, idCuenta);
+      const selectedGestion = gestionData.find(
+        (gestion) => String(gestion.NúmeroTelefónico).replace(/\D/g, "") === normalizedSelectedPhone
+      );
+      idModo = selectedGestion?.idModo || null;
+      console.log("idModo obtenido:", idModo);
+    } catch (error) {
+      console.error("Error obteniendo idModo:", error);
+    }
+
+    let idClase = null;
+    try {
+      const phoneData = await fetchPhones(idCuenta);
+      const selectedPhone = phoneData.find(
+        (phone) => String(phone.númeroTelefónico).replace(/\D/g, "") === normalizedSelectedPhone
+      );
+      idClase = selectedPhone?.idClase || null;
+      console.log("idClase obtenido:", idClase);
+    } catch (error) {
+      console.error("Error obteniendo idClase:", error);
+    }
+
+    if (!idModo || !idClase) {
+      console.warn("No se encontró idModo o idClase.");
+      toast.error("Error: No se pudo obtener el idModo o idClase.");
+      return;
+    }
+
     setSelectedAnswer({
       value: 2,
-      dataPhone: { 
+      dataPhone: {
         númeroTelefónico: row["NúmeroTelefónico"],
-        idClase: idClase || 0 // Asegúrate de que idClase no sea undefined
+        idClase: idClase,
+        idModo: idModo
       }
     });
 
     if (handleCloseAditionals) {
-      handleCloseAditionals(); // Cierra el modal Aditionals
+      handleCloseAditionals();
     }
   };
 
@@ -118,13 +136,20 @@ const TableAditionals = ({ customColumnNames = {}, onRowClick, selectedAnswer, a
         }
 
         const aditionalsData = await getAditionalsData(1, idCuenta); // idCartera fijo como 1
+        console.log("Datos de adicionales:", aditionalsData); // Verifica los datos obtenidos
+
+        // Asegúrate de que idModo esté presente en los datos
+        aditionalsData.forEach((item) => {
+          console.log(`idModo para ${item.NúmeroTelefónico}:`, item.idModo);
+        });
+
         setSortedData(aditionalsData);
         // NUEVO: Si hay datos, emitir el evento con el "Numero" del primer item (o índice si no existe)
         if (aditionalsData.length > 0 && autoSelect) {
           handleItemClick(aditionalsData[0]);
         }
       } catch (error) {
-        console.error("Error al obtener los datos de Adicionales:", error);
+        console.error("Error obteniendo adicionales:", error);
       } finally {
         setLoading(false);
       }
