@@ -1547,10 +1547,7 @@ namespace NoriAPI.Repositories
             Regex ValidEmailRegex = new Regex(validEmailPattern, RegexOptions.IgnoreCase);
             return ValidEmailRegex.IsMatch(correoElectronico);
         }
-
-        
-
-
+       
         #region Datos
         public int ObtenerIdCartera()
         {

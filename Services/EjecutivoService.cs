@@ -1568,6 +1568,10 @@ namespace NoriAPI.Services
                             dPago = nuevoPago;
                         }
                     }
+
+
+
+
                 }
             }
             //Muestra cálculos
@@ -1575,7 +1579,17 @@ namespace NoriAPI.Services
             double MontoNegociado_ = Convert.ToDouble(InfoCalculadora.montoRequerido.ToString());
             double MontoDescuento =  saldo - MontoNegociado_;
             string MontoDescuento_ = MontoDescuento.ToString("N2");
-            double Pago = Convert.ToDouble(tblPlazos.Rows[0]["Pago"].ToString());
+            double Pago;
+            if (InfoCalculadora.filaModificar == 0)
+            {
+                Pago = Convert.ToDouble(tblPlazos.Rows[0]["Pago"].ToString());
+            }
+            else
+            {
+                int fila = InfoCalculadora.filaModificar;
+                fila = fila + 1;
+                Pago = Convert.ToDouble(tblPlazos.Rows[fila]["Pago"].ToString());
+            }            
             double Saldo = saldo;
             string Plazos = tblPlazos.Rows.Count.ToString();
             //double Remanente = Math.Round(Convert.ToDouble(Math.Max(saldo - MontoNegociado_, 0).ToString()));
