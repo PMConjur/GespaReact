@@ -248,6 +248,35 @@ useEffect(() => {
     setActiveNote(null);
   };
 
+    // Función para verificar si una nota es de hoy o anterior
+    const isTodayOrBefore = (noteDate) => {
+      if (!noteDate) return false;
+      
+      try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Parsear la fecha de la nota (formato DD/MM/YYYY)
+        const [day, month, year] = noteDate.split('/').map(Number);
+        const noteDateObj = new Date(year, month - 1, day);
+        noteDateObj.setHours(0, 0, 0, 0);
+        
+        return noteDateObj <= today;
+      } catch (error) {
+        console.error("Error al verificar fecha:", error);
+        return false;
+      }
+    };
+  
+    // Filtrar y ordenar notas
+    const filteredAndSortedNotes = useMemo(() => {
+      // 1. Filtrar solo notas de hoy o anteriores
+      const filteredNotes = notes.filter(note => isTodayOrBefore(note.date));
+      
+      // 2. Ordenar por proximidad (manteniendo la lógica actual)
+      return sortNotesByDateTime(filteredNotes);
+    }, [notes]);
+
 
   return (
     <div className="notes-widget card shadow">

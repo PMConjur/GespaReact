@@ -1520,17 +1520,39 @@ export const fetchIncreasesNegotiation = async (increaseRequestData) => {
       increaseRequestData // Envía los datos al endpoint
     );
 
+    // Manejar el estado 204 como una respuesta válida
+    if (response.status === 204) {
+      console.log("La API devolvió un estado 204 (No Content).");
+      return { status: 204 }; // Devuelve un objeto con el estado
+    }
+
+    return response.data; // Devuelve los datos si el estado no es 204
+  } catch (error) {
+    console.error("Error en fetchIncreasesNegotiation:", error);
+    throw new Error(
+      `Error en la respuesta de la API. Estado: ${error.response?.status || "desconocido"}`
+    );
+  }
+};
+
+// validacion ofrecer-negociacion
+export const fetchValidateNegotiationOffer = async (data) => {
+  try {
+    console.log("Enviando datos al endpoint Ofrecer-Negociacion:",data);
+    const response = await servicio.post(
+      `/ejecutivo/Ofrecer-Negociacion`, data 
+    );
+
     if (response.status !== 200) {
       throw new Error(
         `Error en la respuesta de la API. Estado: ${response.status}`
       );
     }
-
     const result = response.data;
-    console.log("Respuesta del endpoint IncrementaNegociacion:", result);
+    console.log("Respuesta del endpoint Ofrecer-Negociacion:", result);
     return result;
   } catch (error) {
-    console.error("Error en fetchIncreasesNegotiation:", error);
+    console.error("Error en Ofrecer-Negociacion:", error);
     throw error;
   }
 };
@@ -1549,7 +1571,6 @@ export const fetchSaveOffering = async (requestData) => {
         `Error en la respuesta de la API. Estado: ${response.status}`
       );
     }
-
     const result = response.data;
     console.log("Respuesta del endpoint guardar ofrecimiento:", result);
     return result;

@@ -8,11 +8,12 @@ import {
   fetchSaveDeleteDeadlines,
   fetchSaveNegotiationDeadlines,
   fetchIncreasesNegotiation,
-  fetchSaveOffering
+  fetchSaveOffering,
+  fetchValidateNegotiationOffer
 } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
-import Validators from "./fragments/Validators"; // Importa el modal de Validators
+import Validators from "./fragments/Validators"; 
 
 const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
   const { searchResults, idEjecutivo, isManagment, setNegotiationActive } =
@@ -30,7 +31,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
     descuento: 0
   });
   const [herramientas, setHerramientas] = useState([]); // Estado para almacenar las herramientas
-  const [selectedHerramienta, setSelectedHerramienta] = useState(null); // Estado para almacenar el idHerramienta seleccionado
+  const [selectedHerramienta, setSelectedHerramienta] = useState(136); // Estado para almacenar el idHerramienta seleccionado
   const [calculosData, setCalculosData] = useState({
     plazos: 0,
     primerPago: 0,
@@ -41,7 +42,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
     tasaMensual: 0 // Agregar tasa mensual al estado
   });
   const [formValues, setFormValues] = useState({
-    montoRequerido: "",
+    montoNegociado: "",
     descuento: ""
   });
   const [formInputs, setFormInputs] = useState({
@@ -78,6 +79,9 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
   const [validationMessage, setValidationMessage] = useState("");
   const calculatorRef = useRef(null); // Referencia para la sección de la calculadora
   const detailsRef = useRef(null); // Referencia para la sección de "Resumen y Plazos"
+  const [isSelectDisabled, setIsSelectDisabled] = useState(false); // Estado para habilitar/deshabilitar el select de herramientas
+  const [isSelectDisabled2, setIsSelectDisabled2] = useState(false); // Estado para habilitar/deshabilitar el select de herramientas
+  const [isSelectDisabled3, setIsSelectDisabled3] = useState(false); // Estado para habilitar/deshabilitar el select de herramientas
 
   useEffect(() => {
     if (showCalculator && calculatorRef.current) {
@@ -102,72 +106,64 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const idCartera = 1; // Ejemplo de valor
+        const idCartera = 1;
         const idCuenta = searchResults?.[0]?.idCuenta?.trim();
-        if (!idCuenta) {
-          console.error("No se encontró idCuenta en searchResults");
-          return;
-        }
-        const data = await fetchCalFirtsPart(
-          idCartera,
-          idCuenta,
-          selectedHerramienta || 136
-        );
-
+        
+        if (!idCuenta) return;
+  
+        const data = await fetchCalFirtsPart(idCartera, idCuenta, selectedHerramienta);
+  
         if (data) {
-          // Extraer el mensaje de validación
-          if (data.mensaje) {
-            setValidationMessage(data.mensaje); // Actualiza el estado con el mensaje
-          }
-
-          // Actualizar otros datos
-          if (Array.isArray(data.ofrecimientos)) {
-            setTableData(data.ofrecimientos);
-          }
+          setValidationMessage(data.mensaje || "");
+          setTableData(Array.isArray(data.ofrecimientos) ? data.ofrecimientos : []);
+          
           if (Array.isArray(data.herramientas)) {
             setHerramientas(data.herramientas);
+            // Si es la primera carga, seleccionar la primera herramienta por defecto
+            if (data.herramientas.length > 0 && !selectedHerramienta) {
+              setSelectedHerramienta(data.herramientas[0].idHerramienta);
+            }
           }
-          setSummaryData({
-            montoRequerido: data.montoRequerido,
-            montoDescuento: data.montoDescuento,
-            saldo: data.saldo,
-            fechaCorte: data.fechaCorte,
-            descuento: data.descuento,
-            dias1erpago: data.dias1erpago // Corrige el nombre del campo para que coincida con la respuesta del endpoint
-          });
-        } else {
-          console.error(
-            "La respuesta del endpoint no contiene los datos esperados:",
-            data
-          );
-          setTableData([]);
+  
+          const newSummary = {
+            montoRequerido: data.montoRequerido || 0,
+            montoDescuento: data.montoDescuento || 0,
+            saldo: data.saldo || 0,
+            fechaCorte: data.fechaCorte || "",
+            descuento: data.descuento || 0,
+            dias1erpago: data.dias1erpago || 0
+          };
+          
+          setSummaryData(newSummary);
         }
       } catch (error) {
-        console.error("Error al obtener los datos de la calculadora:", error);
-        setTableData([]);
+        console.error("Error fetching calculator data:", error);
       }
     };
-
+  
     if (searchResults?.length > 0) {
       fetchData();
     }
-  }, [searchResults, selectedHerramienta, show]); // Agrega 'show' como dependencia
+  }, [searchResults, selectedHerramienta, show]);
 
   useEffect(() => {
-    // Sincroniza formValues con summaryData cuando summaryData cambia
-    setFormValues({
-      montoRequerido: summaryData.montoRequerido
-        ? summaryData.montoRequerido.toFixed(2)
-        : 0,
-      descuento: summaryData.descuento ? summaryData.descuento.toFixed(2) : 0
-    });
+    // Solo actualizar formValues si los valores son diferentes
+    if (summaryData.montoRequerido !== parseFloat(formValues.montoRequerido || 0) ||
+        summaryData.descuento !== parseFloat(formValues.descuento || 0)) {
+      setFormValues({
+        montoRequerido: summaryData.montoRequerido?.toFixed(2) || "0",
+        descuento: summaryData.descuento?.toFixed(2) || "0"
+      });
+    }
   }, [summaryData]);
 
-  const handleHerramientaChange = (e) => {
+  const handleHerramientaChange = async (e) => {
     const selectedValue = e.target.value;
-    setSelectedHerramienta(Number(selectedValue)); // Actualiza el idHerramienta seleccionado
-
-    // Limpia los campos al cambiar de herramienta
+    const herramientaSeleccionada = herramientas.find(
+      h => h.idHerramienta === Number(selectedValue)
+    );
+  
+    // Resetear estados primero
     setMontoPago("");
     setMontoNegociado("");
     setFormInputs({
@@ -175,72 +171,37 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       fechaPago: "",
       periodos: 1
     });
-
-    // Actualiza formValues con los valores correctos de summaryData
-    setFormValues({
-      montoRequerido: summaryData.montoRequerido
-        ? summaryData.montoRequerido.toFixed(2)
-        : 0,
-      descuento: summaryData.descuento ? summaryData.descuento.toFixed(2) : 0
+    setShowDetails(false);
+    setCalculosData({
+      plazos: 0,
+      primerPago: 0,
+      saldo: 0,
+      montoNegociado: 0,
+      descuento: 0,
+      calculos: [],
+      tasaMensual: 0
     });
-
-    // Habilita el botón "Calcular" si la herramienta seleccionada es válida
-    const validHerramientasCalcular = [
-      "Convenio",
-      "PIF",
-      "PPA",
-      "APR",
-      "PPA+AC"
-    ];
-    const validHerramientasAgregar = ["Parcial", "Ajuste"];
-    const herramientaSeleccionada = herramientas.find(
-      (herramienta) => herramienta.idHerramienta === Number(selectedValue)
-    );
-
-    setIsCalculateButtonEnabled(
-      herramientaSeleccionada &&
-        validHerramientasCalcular.includes(herramientaSeleccionada.nombre)
-    );
-
-    setIsAddButtonEnabled(
-      herramientaSeleccionada &&
-        validHerramientasAgregar.includes(herramientaSeleccionada.nombre)
-    );
-
-    // Habilita los campos si la herramienta seleccionada es "Parcial" o "Ajuste"
-    setAreFieldsEnabled(
-      herramientaSeleccionada &&
-        validHerramientasAgregar.includes(herramientaSeleccionada.nombre)
-    );
-
-    // Actualiza los formularios dinámicamente según la herramienta seleccionada
-    if (herramientaSeleccionada) {
-      switch (herramientaSeleccionada.nombre) {
-        case "Convenio":
-          setFormInputs((prev) => ({
-            ...prev,
-            meses: "" // Ejemplo: valor predeterminado para "Convenio"
-          }));
-          break;
-        case "PIF":
-          setFormInputs((prev) => ({
-            ...prev,
-            periodos: 0 // Ejemplo: valor predeterminado para "PIF"
-          }));
-          break;
-        case "Parcial":
-          setMontoPago(""); // Ejemplo: valor predeterminado para "Parcial"
-          break;
-        default:
-          // Restablece los valores si no hay configuración específica
-          setFormInputs((prev) => ({
-            ...prev,
-            meses: "",
-            periodos: 0
-          }));
-          break;
-      }
-    }
+  
+    // Actualizar la herramienta seleccionada
+    setSelectedHerramienta(Number(selectedValue));
+  
+    // Esperar un ciclo de renderizado
+    await new Promise(resolve => setTimeout(resolve, 0));
+  
+    // Actualizar formValues basado en summaryData actualizado
+    setFormValues({
+      montoRequerido: summaryData.montoRequerido?.toFixed(2) || "0",
+      descuento: summaryData.descuento?.toFixed(2) || "0"
+    });
+  
+    // Determinar qué secciones mostrar
+    const isHerramientaCalculo = ["Convenio", "PIF", "PPA", "APR", "PPA+AC"].includes(herramientaSeleccionada?.nombre);
+    const isHerramientaAcuerdo = ["Parcial", "Ajuste"].includes(herramientaSeleccionada?.nombre);
+  
+    setIsCalculateButtonEnabled(isHerramientaCalculo);
+    setIsAddButtonEnabled(isHerramientaAcuerdo);
+    setAreFieldsEnabled(isHerramientaAcuerdo);
+    setShowCalculator(isHerramientaCalculo);
   };
 
   const handleMontoPagoChange = (e) => {
@@ -437,6 +398,54 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
     }
   };
 
+  const validateNegotiationOffer = async () => {
+    try {
+      const idCuenta = searchResults?.[0]?.idCuenta?.trim();
+  
+      if (!idCuenta || !selectedHerramienta) {
+        toast.error("Faltan datos para validar la oferta");
+        return;
+      }
+  
+      // Prepara el objeto con todos los campos requeridos
+      const validationData = {
+        plazos: calculosData.calculos.map((calculo) => ({
+          monto: calculo.pago,
+          fecha: calculo.fecha,
+        })),
+        montoNegociado: calculosData.montoNegociado || 0,
+        montoRequerido: summaryData.montoRequerido || 0,
+        saldo: summaryData.saldo || 0,
+        descuento: summaryData.descuento || 0,
+        maxDescuento: summaryData.maxDescuento || 0, // Asegúrate de que este campo exista en tu estado
+        idHerramienta: selectedHerramienta,
+        idCuenta: idCuenta,
+        idCartera: 1, // Asumiendo que siempre es 1 según tu código
+      };
+  
+      console.log("Datos enviados para validación:", validationData);
+  
+      const result = await fetchValidateNegotiationOffer(validationData);
+  
+      if (result.mensaje === "No hay problema") {
+        toast.success("Validación exitosa: No hay problema.");
+        const saveSuccess = await handleSaveOffering2();
+        return saveSuccess; // Llama a la función para guardar el ofrecimiento
+      } else if (result.valido) {
+        toast.success("Ofrecimiento válido.");
+        const saveSuccess = await handleSaveOffering2();
+        return saveSuccess; // Llama a la función para guardar el ofrecimiento
+      } else {
+        toast.warning(`${result.mensaje || "Ofrecimiento inválido."}`);
+        return false;
+      }
+    } catch (error) {
+      console.error("Error al validar oferta:", error);
+      toast.error(error.response?.data?.message || "Error al validar ofrecer.");
+      throw error;
+    }
+  };
+
   const handleRowClick = (index) => {
     setSelectedRow(index); // Actualiza el índice de la fila seleccionada
     setModifyForm((prev) => ({
@@ -541,7 +550,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         idEjecutivo: idEjecutivo,
         idHerramienta: selectedHerramienta,
         montoNegociado: parseFloat(calculosData.montoNegociado),
-        plazos: parseInt(calculosData.plazos, 10), // Asegura que plazos sea un número entero
+        plazos: calculosData.plazos, // Asegura que plazos sea un número entero
         cartaConvenio: cartaConvenio, // Usa el valor del estado
         correo: selectedEmail || "", // Usa el correo seleccionado o vacío
         fechaPago: formInputs.fechaPago || "",
@@ -571,9 +580,10 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       const duracionObtenida = response?.duración || "";
       console.log("Duración obtenida de la respuesta:", duracionObtenida);
       setDuracion(duracionObtenida); // Almacena la duración en el estado
+      
+      // Llamar a sendIncreaseNegotiation después de recibir la respuesta
+      await sendIncreaseNegotiation();
 
-      // Cambia el estado para mostrar el botón "Finalizar"
-      setIsNegotiationSaved(true);
     } catch (error) {
       console.error("Error al guardar la negociación:", error);
       toast.error("Error al guardar la negociación.");
@@ -616,18 +626,18 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         increaseRequestData
       );
 
-      // Verificar si la respuesta es 204 antes de cerrar
-      if (
-        increaseResponse?.status === 200 ||
-        increaseResponse?.status === 204
-      ) {
-        handleClose(false); // Cierra el modal solo si el status es 204
-        setNegotiationActive(false);
-        toast.success("Negociación incrementada correctamente.");
-      } else {
-        toast.warning("La respuesta del servidor no fue la esperada.");
-      }
-
+         // Manejar el estado 204 como una respuesta válida
+    if (increaseResponse?.status === 204) {
+      setNegotiationActive(false);
+      setIsSelectDisabled(true); // Deshabilita el select de herramientas
+      setIsSelectDisabled3(true); // Deshabilita boton calcular
+      handleClose(false); // Cierra el modal solo si el status es 204
+      toast.success("Negociación incrementada correctamente.");
+    } else if (increaseResponse?.status === 200) {
+      toast.success("Negociación incrementada correctamente.");
+    } else {
+      toast.warning("La respuesta del servidor no fue la esperada.");
+    }
       console.log(
         "Respuesta del endpoint IncrementaNegociacion:",
         increaseResponse
@@ -640,6 +650,8 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
     }
   };
 
+
+
   const handleSaveOffering = async () => {
     try {
       const idCuenta = searchResults?.[0]?.idCuenta?.trim();
@@ -648,7 +660,11 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       const producto = 1;
 
       if (!idCuenta || !selectedHerramienta || !montoNegociado) {
-        toast.error("Faltan datos requeridos para guardar el ofrecimiento.");
+        console.log("Datos faltantes:", {
+          idCuenta,
+          selectedHerramienta,
+          montoNegociado: calculosData.montoNegociado
+        });
         return;
       }
 
@@ -658,22 +674,22 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         idProducto: producto,
         idEjecutivo: idEjecutivo,
         idHerramienta: selectedHerramienta,
-        montoRequerido: summaryData.montoRequerido, // Respetar decimales
-        montoNegociado: parseFloat(montoNegociado), // Convertir a número respetando decimales
-        descuento: summaryData.montoDescuento, // Respetar decimales
-        saldo: summaryData.saldo, // Respetar decimales
+        montoRequerido: summaryData.montoRequerido,
+        montoNegociado: parseFloat(montoNegociado),
+        descuento: summaryData.montoDescuento,
+        saldo: summaryData.saldo,
         plazos: tablaPagos.map((pago) => ({
-          monto: parseFloat(pago.pago), // Convertir a número respetando decimales
-          fecha: new Date(pago.fecha).toISOString().split("T")[0] // Formato YYYY-MM-DD
+          monto: parseFloat(pago.pago),
+          fecha: new Date(pago.fecha).toISOString().split("T")[0]
         })),
         dias1erPago: summaryData.dias1erpago,
         fechaCorte: (() => {
-          const [datePart] = summaryData.fechaCorte.split(" "); // Extrae solo la parte de la fecha antes del espacio
-          const [day, month, year] = datePart.split("/"); // Divide la fecha en día, mes y año
-          return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`; // Reorganiza en formato YYYY-MM-DD
+          const [datePart] = summaryData.fechaCorte.split(" ");
+          const [day, month, year] = datePart.split("/");
+          return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
         })(),
         fechaInsert: fechaInsert,
-        segundoInsert: segundoInsert, // Cambia el valor a un objeto vacío
+        segundoInsert: segundoInsert,
         cartaConvenio: cartaConvenio,
         correo: selectedEmail || "",
         idEjecutivoValidador: parseInt(idEjecutivoValidador, 10)
@@ -684,13 +700,82 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       const response = await fetchSaveOffering(requestData);
       toast.success("Ofrecimiento guardado correctamente.");
       console.log("Respuesta del endpoint fetchSaveOffering:", response);
-
-      handleClose(false);
-      setNegotiationActive(false);
-      // Verifica si fetchData está definida antes de llamarla
+      
+      setShowValidators(true);
+      setIsSelectDisabled(true); // Deshabilita el select de herramientas
+      setIsSelectDisabled2(true); // Deshabilita boton eliminar
       if (typeof fetchData === "function") {
-        const idCartera = 1; // Ejemplo de valor
-        fetchData(idCartera, idCuenta, selectedHerramienta || 136); // Llama a fetchData para actualizar los datos del modal
+        const idCartera = 1;
+        await fetchData(idCartera, idCuenta, selectedHerramienta);
+      } else {
+        console.warn(
+          "fetchData no está definida. No se actualizarán los datos del modal."
+        );
+      }
+      return true;
+    } catch (error) {
+      console.error("Error al guardar el ofrecimiento:", error);
+      toast.error("Error al guardar el ofrecimiento.");
+      return false;
+    }
+  };
+
+  const handleSaveOffering2 = async () => {
+    try {
+      const idCuenta = searchResults?.[0]?.idCuenta?.trim();
+      const fechaInsert = isManagment?.storeOutput?.Fecha_Insert?.split("T")[0];
+      const segundoInsert = isManagment?.storeOutput?.Segundo_Insert;
+      const producto = 1;
+
+      if (!idCuenta || !selectedHerramienta || !calculosData.montoNegociado) {
+        console.log("Datos faltantes:", {
+          idCuenta,
+          selectedHerramienta,
+          montoNegociado: calculosData.montoNegociado
+        });
+        return;
+      }
+
+      const requestData = {
+        idCartera: 1,
+        idCuenta: idCuenta,
+        idProducto: producto,
+        idEjecutivo: idEjecutivo,
+        idHerramienta: selectedHerramienta,
+        montoRequerido: summaryData.montoRequerido,
+        montoNegociado: calculosData.montoNegociado,
+        descuento: summaryData.montoDescuento,
+        saldo: summaryData.saldo,
+        plazos: calculosData.calculos.map(calculo => ({
+          monto: calculo.pago,
+          fecha: new Date(calculo.fecha).toISOString().split("T")[0]
+        })),
+        dias1erPago: summaryData.dias1erpago,
+        fechaCorte: (() => {
+          const [datePart] = summaryData.fechaCorte.split(" ");
+          const [day, month, year] = datePart.split("/");
+          return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+        })(),
+        fechaInsert: fechaInsert,
+        segundoInsert: segundoInsert,
+        cartaConvenio: cartaConvenio,
+        correo: selectedEmail || "",
+        idEjecutivoValidador: parseInt(idEjecutivoValidador, 10)
+      };
+
+      console.log("Datos enviados al endpoint fetchSaveOffering:", requestData);
+
+      const response = await fetchSaveOffering(requestData);
+      toast.success("Ofrecimiento guardado correctamente.");
+      console.log("Respuesta del endpoint fetchSaveOffering:", response);
+      
+      setShowValidators(true);
+      setIsSelectDisabled(true); // Deshabilita el select de herramientas
+      setIsSelectDisabled3(true); // Deshabilita boton calcular
+
+      if (typeof fetchData === "function") {
+        const idCartera = 1;
+        await fetchData(idCartera, idCuenta, selectedHerramienta);
       } else {
         console.warn(
           "fetchData no está definida. No se actualizarán los datos del modal."
@@ -699,15 +784,147 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
     } catch (error) {
       console.error("Error al guardar el ofrecimiento:", error);
       toast.error("Error al guardar el ofrecimiento.");
+      return false;
     }
   };
+
+  const handleSaveNegotiation2 = async () => {
+    try {
+      const idCuenta = searchResults?.[0]?.idCuenta?.trim();
+      const fechaInsert = isManagment?.storeOutput?.Fecha_Insert?.split("T")[0];
+      const segundoInsert = isManagment?.storeOutput?.Segundo_Insert;
+      // Validar datos antes de enviarlos
+      if (!idCuenta || !selectedHerramienta || !montoPago) {
+        toast.error("Faltan datos requeridos para guardar la negociación.");
+        console.error("Datos faltantes:", {
+          idCuenta,
+          selectedHerramienta,
+          montoNegociado: calculosData.montoNegociado
+        });
+        return;
+      }
+
+      const requestData = {
+        idCartera: 1,
+        idCuenta: idCuenta,
+        idEjecutivo: idEjecutivo,
+        idHerramienta: selectedHerramienta,
+        montoNegociado: parseFloat(montoPago),
+        plazos: 1, // Asegura que plazos sea un número entero
+        cartaConvenio: cartaConvenio, // Usa el valor del estado
+        correo: selectedEmail || "", // Usa el correo seleccionado o vacío
+        fechaPago: formInputs.fechaPago || "",
+        fechaFinNegociacion: formInputs.fechaFinNegociacion || formInputs.fechaPago, // Usa la nueva fecha calculada
+        idEjecutivoValidador: parseInt(idEjecutivoValidador, 10), // Asegura que sea un número entero
+        contrasena: validatorPassword || "", // Usa la contraseña del validador o vacío
+        fechaInsert: fechaInsert,
+        segundoInsert: segundoInsert,
+        reestructura: 0,
+        condonacion: 0,
+        idGrabacion: "" // Cambiar si es necesario
+      };
+
+      console.log(
+        "Datos enviados al endpoint fetchSaveNegotiationDeadlines:",
+        requestData
+      );
+
+      const response = await fetchSaveNegotiationDeadlines(requestData);
+      toast.success("Negociación guardada correctamente.");
+      console.log(
+        "Respuesta del endpoint fetchSaveNegotiationDeadlines:",
+        response
+      );
+
+      // Extraer el campo duración de la respuesta y almacenarlo en el estado
+      const duracionObtenida = response?.duración || "";
+      console.log("Duración obtenida de la respuesta:", duracionObtenida);
+      setDuracion(duracionObtenida); // Almacena la duración en el estado
+      setIsSelectDisabled(true); // Deshabilita el select de herramientas
+      setIsSelectDisabled2(true); // Deshabilita boton eliminar
+      setNegotiationActive(false);
+      handleClose(false); // Cierra el modal solo si el status es 204
+    } catch (error) {
+      console.error("Error al guardar la negociación:", error);
+      toast.error("Error al guardar la negociación.");
+    }
+  };
+
+  const resetStates = () => {
+    setTableData([]);
+    setSummaryData({
+      montoRequerido: 0,
+      montoDescuento: 0,
+      saldo: 0,
+      fechaCorte: "",
+      descuento: 0,
+    });
+    setHerramientas([]);
+    setSelectedHerramienta(136);
+    setCalculosData({
+      plazos: 0,
+      primerPago: 0,
+      saldo: 0,
+      montoNegociado: 0,
+      descuento: 0,
+      calculos: [],
+      tasaMensual: 0,
+    });
+    setFormValues({
+      montoNegociado: "",
+      descuento: "",
+    });
+    setFormInputs({
+      meses: "",
+      fechaPago: "",
+      periodos: 1,
+    });
+    setIsCalculateButtonEnabled(false);
+    setIsAddButtonEnabled(false);
+    setMontoPago("");
+    setMontoNegociado("");
+    setTablaPagos([]);
+    setAreFieldsEnabled(false);
+    setModifyForm({
+      modificar: false,
+      montoMod: "",
+      fechaPagoMod: "",
+      agregarPagos: false,
+      filaMod: null,
+    });
+    setSelectedRow(null);
+    setShowDetails(false);
+    setShowCalculator(false);
+    setShowValidators(false);
+    setIsValidated(false);
+    setIdEjecutivoValidador(0);
+    setValidatorPassword("");
+    setCartaConvenio(0);
+    setSelectedEmail("");
+    setDuracion("");
+    setIsSaveDeadlinesClicked(false);
+    setIsNegotiationSaved(false);
+    setValidationMessage("");
+    setIsSelectDisabled(false);
+    setIsSelectDisabled2(false);
+    setIsSelectDisabled3(false);
+  };
+  
+  useEffect(() => {
+    if (!show) {
+      resetStates(); // Reinicia los estados cuando el modal se cierra
+    }
+  }, [show]);
 
   return (
     <>
       <Modal
         key={show ? "modal-open" : "modal-closed"}
         show={show}
-        onHide={handleClose}
+        onHide={() => {
+          resetStates(); // Reinicia todos los estados
+          handleClose(); // Llama a la función para cerrar el modal
+        }}
         size="xl"
         backdrop="static"
       >
@@ -720,7 +937,8 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
           style={{
             maxHeight: "80vh", // Limitar la altura máxima del cuerpo del modal
             overflowY: "auto", // Habilitar scroll vertical
-            position: "relative" // Necesario para posicionar el indicador
+            position: "relative", // Necesario para posicionar el indicador
+            marginBottom: "1rem",
           }}
         >
           <Col>
@@ -732,11 +950,12 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
               <Row className="table-responsive d-block">
                 <Col>
                   <div
-                    className="custom-scrollbar"
+                    className="custom-scrollbar me-auto ms-2"
                     style={{
-                      maxHeight: "300px",
-                      overflowY: "auto",
-                      position: "relative" // Necesario para el scroll del tbody
+                      maxHeight: "350px",
+                      maxWidth: "60vw",
+                      overflow: "auto",
+                      position: "relative", // Necesario para el scroll del tbody
                     }}
                   >
                     <Table
@@ -751,7 +970,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                           position: "sticky",
                           top: "0",
                           backgroundColor: "#343a40", // Color de fondo para que coincida con el tema oscuro
-                          zIndex: "1"
+                          zIndex: "1",
                         }}
                       >
                         <tr>
@@ -760,6 +979,18 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                           <th style={{ textAlign: "center" }}>Status</th>
                           <th style={{ textAlign: "center" }}>Vencimiento</th>
                           <th style={{ textAlign: "center" }}>Saldo</th>
+                          <th style={{ textAlign: "center" }}>Descuento</th>
+                          <th style={{ textAlign: "center" }}>Requerido</th>
+                          <th style={{ textAlign: "center" }}>Negociado</th>
+                          <th style={{ textAlign: "center" }}>Pagado</th>
+                          <th style={{ textAlign: "center" }}>plazos</th>
+                          <th style={{ textAlign: "center" }}>Ofreció</th>
+                          <th style={{ textAlign: "center" }}>Validó</th>
+                          <th style={{ textAlign: "center" }}>
+                            carta-Convenio
+                          </th>
+                          <th style={{ textAlign: "center" }}>Saldo-Interés</th>
+                          <th style={{ textAlign: "center" }}>Remanente</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -779,30 +1010,70 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 </td>
                                 <td style={{ textAlign: "left" }}>
                                   {row.herramienta || "--"}
-                                </td>{" "}
+                                </td>
                                 {/* Muestra "--" si no hay valor */}
                                 <td style={{ textAlign: "left" }}>
                                   {row.idEstado || "--"}
-                                </td>{" "}
+                                </td>
                                 {/* Muestra "--" si no hay valor */}
                                 <td style={{ textAlign: "left" }}>
                                   {row.vencimiento || "--"}
-                                </td>{" "}
+                                </td>
                                 {/* Muestra "--" si no hay valor */}
                                 <td style={{ textAlign: "left" }}>
                                   {row.saldoInterés !== undefined
                                     ? `$${parseFloat(row.saldoInterés).toFixed(
                                         2
                                       )}`
-                                    : 0}{" "}
+                                    : 0}
                                   {/* Muestra "0.00" si no hay valor */}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.descuento || "--"} %
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.requerido !== undefined
+                                    ? `$${parseFloat(row.requerido).toFixed(2)}`
+                                    : 0}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.negociado !== undefined
+                                    ? `$${parseFloat(row.negociado).toFixed(2)}`
+                                    : 0}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.pagado || "--"}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.plazos || "--"}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.ofrecio || "--"}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.valido || "--"}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.cartaConvenio === true
+                                    ? "✓"
+                                    : row.cartaConvenio === false
+                                    ? "X"
+                                    : "--"}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.interes !== undefined
+                                    ? `$${parseFloat(row.interes).toFixed(2)}`
+                                    : 0}
+                                </td>
+                                <td style={{ textAlign: "left" }}>
+                                  {row.remanente || "--"}
                                 </td>
                               </tr>
                             );
                           })
                         ) : (
                           <tr>
-                            <td colSpan="5" className="text-center">
+                            <td colSpan="15" className="text-start ps-3">
                               {tableData.length === 0 ? (
                                 "No hay datos disponibles"
                               ) : (
@@ -812,7 +1083,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                     role="status"
                                   >
                                     <span className="visually-hidden">
-                                      Cargando...
+                                      Cargando Datos...
                                     </span>
                                   </div>
                                 </div>
@@ -833,7 +1104,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                   {validationMessage}
                 </h5>
               )}
-              <Col className="mt-4">
+              <Col className="mt-5">
                 <Card className="rounded-lg mb-0">
                   <Card.Body className="d-flex p-0 pb-1 w-100">
                     <Form
@@ -847,6 +1118,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                               handleHerramientaChange(e); // Maneja el cambio de herramienta
                               handleSetFormValues(); // Llama a handleSetFormValues al seleccionar una herramienta
                             }}
+                            disabled={isSelectDisabled} // Deshabilita el select si es necesario
                           >
                             <option value="">Seleccionar Herramienta</option>
                             {herramientas.map((herramienta) => (
@@ -923,253 +1195,264 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                 </Card>
               </Col>
             </Col>
-
             <Col className="">
-              {areFieldsEnabled && ( // Muestra el Row solo si la herramienta seleccionada es válida
-                <Row className="d-flex gap-4">
-                  <Col>
-                    <Card>
-                      <Card.Body className="p-0">
-                        <Card.Title className="pt-0">
-                          Acuerdo con el cliente
-                        </Card.Title>
-                        <Form>
-                          <Form.Group className="d-flex w-100">
-                            <Form.Control
-                              className="w-100"
-                              type="text"
-                              placeholder="Monto Pago"
-                              value={montoPago}
-                              onKeyPress={(e) => {
-                                if (!/^\d*\.?\d*$/.test(e.key)) {
-                                  e.preventDefault(); // Evita que se ingresen caracteres no numéricos
-                                }
-                              }}
-                              onChange={handleMontoPagoChange} // Actualiza el estado de "Monto Pago"
-                              disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
-                            />
-                          </Form.Group>
-                          <div className="d-flex gap-3 w-100">
-                            <Form.Group className="mt-3 w-100">
+              {selectedHerramienta &&
+                ["Parcial", "Ajuste"].includes(
+                  herramientas.find(
+                    (h) => h.idHerramienta === selectedHerramienta
+                  )?.nombre
+                ) && (
+                  <Row className="d-flex gap-4">
+                    <Col>
+                      <Card>
+                        <Card.Body className="p-0">
+                          <Card.Title className="pt-0">
+                            Acuerdo con el cliente
+                          </Card.Title>
+                          <Form>
+                            <Form.Group className="d-block">
+                              <Form.Label>Monto Pago</Form.Label>
                               <Form.Control
+                                required
                                 type="text"
-                                placeholder="Monto Negociado"
-                                value={
-                                  montoNegociado ? `$${montoNegociado}` : ""
-                                } // Agrega un '$' al inicio del valor
-                                readOnly // Hace que el campo no sea editable
+                                placeholder=""
+                                value={montoPago}
+                                onKeyPress={(e) => {
+                                  if (!/^\d*\.?\d*$/.test(e.key)) {
+                                    e.preventDefault(); // Evita que se ingresen caracteres no numéricos
+                                  }
+                                }}
+                                onChange={handleMontoPagoChange} // Actualiza el estado de "Monto Pago"
                                 disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
                               />
                             </Form.Group>
-                            <Form.Group className="mt-3 w-100">
-                              <Form.Control
-                                type="date"
-                                name="fechaPago"
-                                value={formInputs.fechaPago}
-                                onChange={handleInputChange} // Actualiza el estado de "Fecha Pago"
-                                disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
-                                min={new Date().toISOString().split("T")[0]} // Fecha mínima: hoy
-                                max={
-                                  new Date(
-                                    new Date().setDate(
-                                      new Date().getDate() + 15
+                            <div className="d-flex gap-3 w-100">
+                              <Form.Group className="mt-3 w-100">
+                                <Form.Label>Monto Negociado</Form.Label>
+                                <Form.Control
+                                  type="text"
+                                  placeholder="$ 0"
+                                  value={
+                                    montoNegociado ? `$${montoNegociado}` : ""
+                                  } // Agrega un '$' al inicio del valor
+                                  readOnly // Hace que el campo no sea editable
+                                  disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
+                                />
+                              </Form.Group>
+                              <Form.Group className="mt-3 w-100">
+                                <Form.Label>Fecha Pago</Form.Label>
+                                <Form.Control
+                                  required
+                                  type="date"
+                                  name="fechaPago"
+                                  value={formInputs.fechaPago}
+                                  onChange={handleInputChange} // Actualiza el estado de "Fecha Pago"
+                                  disabled={!areFieldsEnabled} // Deshabilita el campo si no está habilitado
+                                  min={new Date().toISOString().split("T")[0]} // Fecha mínima: hoy
+                                  max={
+                                    new Date(
+                                      new Date().setDate(
+                                        new Date().getDate() + 15
+                                      )
                                     )
-                                  )
-                                    .toISOString()
-                                    .split("T")[0]
-                                } 
-                              />
-                              <Form.Label>Máximo 28 días</Form.Label>
-                            </Form.Group>
-                          </div>
-                          <div
+                                      .toISOString()
+                                      .split("T")[0]
+                                  }
+                                />
+                                <Form.Label>Máximo 28 días</Form.Label>
+                              </Form.Group>
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "flex-end",
+                              }}
+                            >
+                              <Button
+                                variant="primary"
+                                onClick={handleAgregarPago} // Llama a la función para agregar el pago
+                                disabled={!isAddButtonEnabled} // Deshabilita el botón si no es válido
+                              >
+                                Agregar
+                              </Button>
+                            </div>
+                          </Form>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                    <Col className="mt-5">
+                      <div
+                        className="table-responsive w-100"
+                        style={{
+                          maxHeight: "300px",
+                          overflowY: "auto",
+                          scrollbarColor: "#343a40 #1a1a1a", // Color de la barra de scroll y el fondo
+                          scrollbarWidth: "thin", // Ancho de la barra de scroll
+                        }}
+                      >
+                        <Table
+                          striped
+                          bordered
+                          hover
+                          variant="dark"
+                          style={{ tableLayout: "fixed" }}
+                        >
+                          <thead
                             style={{
-                              display: "flex",
-                              justifyContent: "flex-end"
+                              position: "sticky",
+                              top: 0,
+                              backgroundColor: "#343a40", // Color de fondo para que coincida con el tema oscuro
+                              zIndex: 1,
                             }}
                           >
-                            <Button
-                              variant="primary"
-                              onClick={handleAgregarPago} // Llama a la función para agregar el pago
-                              disabled={!isAddButtonEnabled} // Deshabilita el botón si no es válido
-                            >
-                              Agregar
-                            </Button>
-                          </div>
-                        </Form>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                  <Col className="mt-5">
-                    <div
-                      className="table-responsive w-100"
-                      style={{
-                        maxHeight: "300px",
-                        overflowY: "auto",
-                        scrollbarColor: "#343a40 #1a1a1a", // Color de la barra de scroll y el fondo
-                        scrollbarWidth: "thin" // Ancho de la barra de scroll
-                      }}
-                    >
-                      <Table
-                        striped
-                        bordered
-                        hover
-                        variant="dark"
-                        style={{ tableLayout: "fixed" }}
-                      >
-                        <thead
-                          style={{
-                            position: "sticky",
-                            top: 0,
-                            backgroundColor: "#343a40", // Color de fondo para que coincida con el tema oscuro
-                            zIndex: 1
-                          }}
-                        >
-                          <tr>
-                            <th>Fecha</th>
-                            <th>Pago</th>
-                            <th>Eliminar</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {tablaPagos.length > 0 ? (
-                            tablaPagos.map((pago, index) => (
-                              <tr key={index}>
-                                <td
-                                  style={{
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap"
-                                  }}
-                                >
-                                  {pago.fecha}{" "}
-                                  {/* Usa la fecha directamente sin convertirla */}
-                                </td>
-                                <td
-                                  style={{
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap"
-                                  }}
-                                >
-                                  ${parseFloat(pago.pago).toFixed(2) || 0}
-                                </td>
-                                <td
-                                  style={{
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap"
-                                  }}
-                                >
-                                  <Button
-                                    style={{ padding: "1px 5px" }}
-                                    variant="danger"
-                                    size="sm"
-                                    onClick={() => handleEliminarPago(index)}
+                            <tr>
+                              <th>Fecha</th>
+                              <th>Pago</th>
+                              <th>Eliminar</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {tablaPagos.length > 0 ? (
+                              tablaPagos.map((pago, index) => (
+                                <tr key={index}>
+                                  <td
+                                    style={{
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                    }}
                                   >
-                                    X
-                                  </Button>
+                                    {pago.fecha}{" "}
+                                    {/* Usa la fecha directamente sin convertirla */}
+                                  </td>
+                                  <td
+                                    style={{
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    ${parseFloat(pago.pago).toFixed(2) || 0}
+                                  </td>
+                                  <td
+                                    style={{
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    <Button
+                                      style={{ padding: "1px 5px" }}
+                                      variant="danger"
+                                      size="sm"
+                                      onClick={() => handleEliminarPago(index)}
+                                      disabled={isSelectDisabled2} // Deshabilita el botón si es necesario
+                                    >
+                                      X
+                                    </Button>
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan="3" className="text-center">
+                                  No hay datos
                                 </td>
                               </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan="3" className="text-center">
-                                No hay datos
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </Table>
-                    </div>
-                    <div className="justify-content-end d-flex mt-2">
-                      {!isValidated && ( // Muestra el botón "Validar" solo si no está validado
-                        <Button
-                          variant="primary"
-                          onClick={() => {
-                            setShowValidators(true); // Abre el modal de validación
-                          }}
-                          disabled={tablaPagos.length === 0} // Deshabilita el botón si no hay registros en la tabla
-                        >
-                          Validar
-                        </Button>
-                      )}
-                      {isValidated && ( // Muestra el botón "Ofrecer" solo si está validado
-                        <Button
-                          onClick={handleSaveOffering}
-                          disabled={tablaPagos.length === 0} // Deshabilita el botón si no hay registros en la tabla
-                        >
-                          Ofrecer
-                        </Button>
-                      )}
-                    </div>
-                  </Col>
-                </Row>
-              )}
+                            )}
+                          </tbody>
+                        </Table>
+                      </div>
+                      <div className="justify-content-end d-flex mt-2">
+                        {!isValidated && ( // Muestra el botón "Ofrecer" solo si está validado
+                          <Button
+                            onClick={handleSaveOffering}
+                            disabled={tablaPagos.length === 0} // Deshabilita el botón si no hay registros en la tabla
+                          >
+                            Ofrecer
+                          </Button>
+                        )}
+                        {isValidated && ( // Muestra el botón "Guardar Negociacion" solo si no está validado
+                          <Button
+                            variant="primary"
+                            onClick={handleSaveNegotiation2}
+                            disabled={tablaPagos.length === 0} // Deshabilita el botón si no hay registros en la tabla
+                          >
+                            Negociar
+                          </Button>
+                        )}
+                      </div>
+                    </Col>
+                  </Row>
+                )}
               <Col className="p-0">
-                {showCalculator &&
-                  !areFieldsEnabled && ( // Oculta la calculadora si los campos están habilitados
+                {(showCalculator ||
+                  (selectedHerramienta &&
+                    ["Convenio", "PIF", "PPA", "APR", "PPA+AC"].includes(
+                      herramientas.find(
+                        (h) => h.idHerramienta === selectedHerramienta
+                      )?.nombre
+                    ))) &&
+                  !areFieldsEnabled && (
                     <>
                       {/* Calculadora AMEX */}
-                      <h5 style={{ textAlign: "center", color: "#20c997" }}>
+                      <h5
+                        style={{
+                          color: "#20c997",
+                          marginLeft: "1rem",
+                          marginTop: "1rem",
+                        }}
+                      >
                         Calculadora AMEX
                       </h5>
                       <Card className="p-3 mb-0" ref={calculatorRef}>
                         <Card.Body className="p-0">
-                          <Card.Title className="pt-0 ms-3">Datos</Card.Title>
+                          <Card.Title className="pt-0 text-center">
+                            Datos
+                          </Card.Title>
                           <Form className="d-flex gap-4 w-100">
                             <Row className="d-flex w-100">
                               <Form.Group>
+                                <Form.Label>Monto Requerido</Form.Label>
                                 <Form.Control
-                                  placeholder="Monto Requerido"
+                                  placeholder=""
                                   name="montoRequerido"
-                                  value={
-                                    formValues.montoRequerido
-                                      ? `$${formValues.montoRequerido}`
-                                      : ""
-                                  }
-                                  onChange={(e) =>
-                                    setFormValues((prev) => ({
-                                      ...prev,
-                                      montoRequerido: e.target.value.replace(
-                                        /^\$/,
-                                        ""
-                                      ) // Elimina el '$' antes de actualizar el estado
-                                    }))
-                                  }
+                                  value={calculosData.montoNegociado || ""}
                                   readOnly // Hace que el campo sea de solo lectura
                                   style={{
                                     backgroundColor: "#e9ecef", // Color de fondo para indicar que es no editable
-                                    cursor: "not-allowed" // Cambia el cursor para indicar que no es editable
+                                    cursor: "not-allowed", // Cambia el cursor para indicar que no es editable
                                   }}
                                 />
                               </Form.Group>
                               <Form.Group className="mt-3">
+                                <Form.Label>Descuento</Form.Label>
                                 <Form.Control
-                                  placeholder="Descuento"
+                                  placeholder=""
                                   name="descuento"
                                   value={
                                     formValues.descuento
-                                      ? `${parseInt(formValues.descuento, 10)}%`
+                                      ? `${parseInt(formValues.descuento, 10)}`
                                       : ""
                                   }
                                   onChange={(e) =>
                                     setFormValues((prev) => ({
                                       ...prev,
                                       descuento: e.target.value.replace(
-                                        /%$/,
+                                        /$/,
                                         ""
-                                      ) // Elimina el '%' antes de actualizar el estado
+                                      ), // Elimina el '%' antes de actualizar el estado
                                     }))
                                   }
                                   readOnly // Hace que el campo sea de solo lectura
                                   style={{
                                     backgroundColor: "#e9ecef", // Color de fondo para indicar que es no editable
-                                    cursor: "not-allowed" // Cambia el cursor para indicar que no es editable
+                                    cursor: "not-allowed", // Cambia el cursor para indicar que no es editable
                                   }}
                                 />
                               </Form.Group>
                               <Form.Group className="mt-3">
+                                <Form.Label>Periodo</Form.Label>
                                 <Form.Select
                                   name="periodos"
                                   value={formInputs.periodos || 1} // Valor por defecto: 1 (Mes)
@@ -1183,9 +1466,10 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                             </Row>
                             <Row className="d-flex w-100">
                               <Form.Group className="mt-3">
+                                <Form.Label>Meses</Form.Label>
                                 <Form.Control
                                   type="text"
-                                  placeholder="Meses"
+                                  placeholder=""
                                   name="meses"
                                   value={formInputs.meses}
                                   onChange={handleInputChange} // Actualiza el estado formInputs
@@ -1197,6 +1481,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 />
                               </Form.Group>
                               <Form.Group className="mt-3">
+                                <Form.Label>Fecha Pago</Form.Label>
                                 <Form.Control
                                   type="date"
                                   placeholder="Fecha Pago"
@@ -1206,13 +1491,24 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                   min={new Date().toISOString().split("T")[0]} // Fecha mínima: hoy
                                 />
                               </Form.Group>
-                              <div className="mt-4">
-                                <Button
-                                  variant="primary"
-                                  onClick={handleCalculateSecondPart}
-                                >
-                                  Calcular
-                                </Button>
+                              <div className="d-flex justify-content-between mt-4">
+                                <div className="">
+                                  <h5 className="text-light pt-1 fw-bold d-inline-flex">
+                                    Tasa Mensual:{" "}
+                                    {calculosData.tasaMensual
+                                      ? `${calculosData.tasaMensual}%`
+                                      : "0%"}
+                                  </h5>
+                                </div>
+                                <div>
+                                  <Button
+                                    variant="primary"
+                                    onClick={handleCalculateSecondPart}
+                                    disabled={isSelectDisabled3} // Deshabilita el botón si no es válido
+                                  >
+                                    Calcular
+                                  </Button>
+                                </div>
                               </div>
                             </Row>
                           </Form>
@@ -1222,7 +1518,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                   )}
               </Col>
               <Row ref={detailsRef}>
-                {showDetails && (
+                {showDetails && !areFieldsEnabled && (
                   <>
                     {/* Resumen */}
                     <Col>
@@ -1235,7 +1531,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                   Plazos
                                 </span>
                                 <h5 style={{ color: "#4a9dff" }}>
-                                  {calculosData.plazos || 0}
+                                  {calculosData.plazos}
                                 </h5>
                               </Col>
                               <Col>
@@ -1272,20 +1568,10 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                   Descuento
                                 </span>
                                 <h5 style={{ color: "#6dd6ff" }}>
-                                  {calculosData.descuento
-                                    ? calculosData.descuento
+                                  $
+                                  {summaryData.MontoDescuento
+                                    ? summaryData.MontoDescuento
                                     : 0}
-                                  %
-                                </h5>
-                              </Col>
-                              <Col>
-                                <span className="text-light small pt-1 fw-bold">
-                                  Tasa mensual
-                                </span>
-                                <h5 className="text-light">
-                                  {calculosData.tasaMensual
-                                    ? `${calculosData.tasaMensual}%`
-                                    : "0"}
                                 </h5>
                               </Col>
                             </Row>
@@ -1298,7 +1584,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                           <div
                             style={{
                               justifyContent: "space-evenly",
-                              paddingLeft: "0"
+                              paddingLeft: "0",
                             }}
                             className="d-flex gap-3 mb-3"
                           >
@@ -1312,7 +1598,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 setModifyForm((prev) => ({
                                   ...prev,
                                   agregarPagos: e.target.checked,
-                                  filaMod: e.target.checked ? 0 : null
+                                  filaMod: e.target.checked ? 0 : null,
                                 }))
                               }
                             />
@@ -1341,7 +1627,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                   ); // Elimina el '$' si ya existe
                                   setModifyForm((prev) => ({
                                     ...prev,
-                                    montoMod: value // Actualiza el estado sin el '$'
+                                    montoMod: value, // Actualiza el estado sin el '$'
                                   }));
                                 }}
                                 onKeyPress={(e) => {
@@ -1371,14 +1657,16 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 onClick={() => {
                                   setModifyForm((prev) => ({
                                     ...prev,
-                                    modificar: 1
+                                    modificar: 1,
                                   }));
                                   handleModifyPayment();
                                   setIsValidated(false); // Asegura que el botón "Validación" se muestre después de modificar
                                 }}
                                 disabled={isValidated} // Deshabilita el botón si ya está validado
                                 style={{
-                                  display: isValidated ? "none" : "inline-block"
+                                  display: isValidated
+                                    ? "none"
+                                    : "inline-block",
                                 }} // Oculta el botón si está validado
                               >
                                 Modificar
@@ -1389,21 +1677,21 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                             style={{
                               display: "flex",
                               justifyContent: "flex-end",
-                              marginTop: "15px"
+                              marginTop: "15px",
                             }}
                           >
                             {!isValidated && (
                               <Button
                                 variant="primary"
                                 onClick={() => {
-                                  handleOpenValidators(); // Abre el modal de validación
+                                  validateNegotiationOffer();
                                   setModifyForm((prev) => ({
                                     ...prev,
-                                    modificar: 0 // Oculta el botón "Modificar" después de la validación
+                                    modificar: 0, // Oculta el botón "Modificar" después de la validación
                                   }));
                                 }}
                               >
-                                Validación
+                                Ofrecer
                               </Button>
                             )}
                           </div>
@@ -1411,7 +1699,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                             style={{
                               display: "flex",
                               justifyContent: "flex-end",
-                              marginTop: ""
+                              marginTop: "",
                             }}
                           >
                             {!isSaveDeadlinesClicked &&
@@ -1428,7 +1716,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                             style={{
                               display: "flex",
                               justifyContent: "flex-end",
-                              marginTop: ""
+                              marginTop: "",
                             }}
                           >
                             {isSaveDeadlinesClicked &&
@@ -1438,25 +1726,9 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                   onClick={handleSaveNegotiation} // Llama a la función para guardar la negociación
                                   disabled={!isValidated} // Deshabilita el botón si no está validado
                                 >
-                                  Guardar Negociación
+                                  Negociar
                                 </Button>
                               )}
-                          </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "flex-end",
-                              marginTop: ""
-                            }}
-                          >
-                            {isNegotiationSaved && ( // Muestra el botón "Finalizar" después de guardar la negociación
-                              <Button
-                                variant="success"
-                                onClick={sendIncreaseNegotiation} // Llama a la función para finalizar
-                              >
-                                Finalizar
-                              </Button>
-                            )}
                           </div>
                         </Card.Body>
                       </Card>
@@ -1504,7 +1776,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                         style={{
                                           cursor: modifyForm.agregarPagos
                                             ? "not-allowed"
-                                            : "pointer"
+                                            : "pointer",
                                         }}
                                       >
                                         <td>{calculo.no}</td>

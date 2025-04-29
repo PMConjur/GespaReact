@@ -79,9 +79,9 @@ const SearchForm = () => {
         }
         break;
       case "Telefono":
-        if (!/^\d{0,10}$/.test(value)) {
+        if (!/^\d{0,13}$/.test(value)) {
           setInputError(
-            "Solo se permiten números y un máximo de 10 caracteres."
+            "Solo se permiten números y un máximo de 13 caracteres."
           );
           return false;
         }
@@ -156,10 +156,13 @@ const SearchForm = () => {
 
           {inputError && (
             <Alert
-              variant="danger"
               className="position-absolute w-auto mt-5"
               style={{
-                zIndex: 10
+                zIndex: 10,
+                backgroundColor: "#343a40",
+                color: "red",
+                border: "none",
+                borderRadius: "0.3rem",
               }}
             >
               {inputError}
@@ -167,10 +170,13 @@ const SearchForm = () => {
           )}
           {errorMessage && (
             <Alert
-              variant="danger"
               className="position-absolute w-auto mt-5"
               style={{
-                zIndex: 10
+                zIndex: 10,
+                backgroundColor: "#343a40",
+                color: "red",
+                border: "none",
+                borderRadius: "0.3rem",
               }}
             >
               {errorMessage}
@@ -186,23 +192,22 @@ const SearchForm = () => {
                 overflowY: "auto",
                 zIndex: 10,
                 color: "black",
-                fontSize: "13px"
+                fontSize: "14px"
               }}
             >
               {suggestions.map((suggestion, index) => (
                 <div
-                  style={{borderBottom: "1px solid #ccc"}}
                   key={index}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="p-2 cursor-pointer"
+                  className="search-result p-2 cursor-pointer"
                 >
-                  Cuenta: <span className="fw-bold">{suggestion.idCuenta} </span>/
-                  Cartera: <span className="fw-bold">{suggestion.cartera} </span>/
-                  Producto: <span className="fw-bold">{suggestion.producto} </span>/
-                  Nombre: <span className="fw-bold">{suggestion.nombreDeudor} </span> /
-                  RFC: <span className="fw-bold">{suggestion.rfc} </span>/
-                  Numero Cliente: <span className="fw-bold">{suggestion.numeroCliente ||"-"} </span>/
-                  Situacion: <span className="fw-bold">{suggestion.situacion}</span> 
+                 <span className="result-search-item"> Cuenta: </span><span className="">{suggestion.idCuenta} </span>/
+                 <span className="result-search-item"> Cartera: </span><span className="">{suggestion.cartera} </span>/
+                 <span className="result-search-item"> Producto: </span><span className="">{suggestion.producto} </span>/
+                 <span className="result-search-item"> Nombre: </span><span className="">{suggestion.nombreDeudor} </span> /
+                 <span className="result-search-item"> RFC: </span> <span className="">{suggestion.rfc} </span>/
+                 <span className="result-search-item"> Numero Cliente: </span><span className="">{suggestion.numeroCliente ||"-" } </span>/
+                 <span className="result-search-item"> Situacion: </span><span className="">{suggestion.situacion}</span> 
                 </div>
               ))}
             </div>
