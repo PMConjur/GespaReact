@@ -1502,18 +1502,18 @@ export const fetchIncreasesNegotiation = async (increaseRequestData) => {
       increaseRequestData // Envía los datos al endpoint
     );
 
-    if (response.status !== 200) {
-      throw new Error(
-        `Error en la respuesta de la API. Estado: ${response.status}`
-      );
+    // Manejar el estado 204 como una respuesta válida
+    if (response.status === 204) {
+      console.log("La API devolvió un estado 204 (No Content).");
+      return { status: 204 }; // Devuelve un objeto con el estado
     }
 
-    const result = response.data;
-    console.log("Respuesta del endpoint IncrementaNegociacion:", result);
-    return result;
+    return response.data; // Devuelve los datos si el estado no es 204
   } catch (error) {
     console.error("Error en fetchIncreasesNegotiation:", error);
-    throw error;
+    throw new Error(
+      `Error en la respuesta de la API. Estado: ${error.response?.status || "desconocido"}`
+    );
   }
 };
 

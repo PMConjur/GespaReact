@@ -79,6 +79,9 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
   const [validationMessage, setValidationMessage] = useState("");
   const calculatorRef = useRef(null); // Referencia para la sección de la calculadora
   const detailsRef = useRef(null); // Referencia para la sección de "Resumen y Plazos"
+  const [isSelectDisabled, setIsSelectDisabled] = useState(false); // Estado para habilitar/deshabilitar el select de herramientas
+  const [isSelectDisabled2, setIsSelectDisabled2] = useState(false); // Estado para habilitar/deshabilitar el select de herramientas
+  const [isSelectDisabled3, setIsSelectDisabled3] = useState(false); // Estado para habilitar/deshabilitar el select de herramientas
 
   useEffect(() => {
     if (showCalculator && calculatorRef.current) {
@@ -398,7 +401,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
   const validateNegotiationOffer = async () => {
     try {
       const idCuenta = searchResults?.[0]?.idCuenta?.trim();
-      
+  
       if (!idCuenta || !selectedHerramienta) {
         toast.error("Faltan datos para validar la oferta");
         return;
@@ -406,9 +409,9 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
   
       // Prepara el objeto con todos los campos requeridos
       const validationData = {
-        plazos: calculosData.calculos.map(calculo => ({
+        plazos: calculosData.calculos.map((calculo) => ({
           monto: calculo.pago,
-          fecha: calculo.fecha
+          fecha: calculo.fecha,
         })),
         montoNegociado: calculosData.montoNegociado || 0,
         montoRequerido: summaryData.montoRequerido || 0,
@@ -417,16 +420,20 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         maxDescuento: summaryData.maxDescuento || 0, // Asegúrate de que este campo exista en tu estado
         idHerramienta: selectedHerramienta,
         idCuenta: idCuenta,
-        idCartera: 1 // Asumiendo que siempre es 1 según tu código
+        idCartera: 1, // Asumiendo que siempre es 1 según tu código
       };
   
       console.log("Datos enviados para validación:", validationData);
-      
+  
       const result = await fetchValidateNegotiationOffer(validationData);
-
-      if (result.valido) {
+  
+      if (result.mensaje === "No hay problema") {
+        toast.success("Validación exitosa: No hay problema.");
+        const saveSuccess = await handleSaveOffering2();
+        return saveSuccess; // Llama a la función para guardar el ofrecimiento
+      } else if (result.valido) {
         toast.success("Ofrecimiento válido.");
-        const saveSuccess = await handleSaveOffering();
+        const saveSuccess = await handleSaveOffering2();
         return saveSuccess; // Llama a la función para guardar el ofrecimiento
       } else {
         toast.warning(`${result.mensaje || "Ofrecimiento inválido."}`);
@@ -543,7 +550,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         idEjecutivo: idEjecutivo,
         idHerramienta: selectedHerramienta,
         montoNegociado: parseFloat(calculosData.montoNegociado),
-        plazos: parseInt(response.plazos, 10), // Asegura que plazos sea un número entero
+        plazos: calculosData.plazos, // Asegura que plazos sea un número entero
         cartaConvenio: cartaConvenio, // Usa el valor del estado
         correo: selectedEmail || "", // Usa el correo seleccionado o vacío
         fechaPago: formInputs.fechaPago || "",
@@ -573,8 +580,10 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       const duracionObtenida = response?.duración || "";
       console.log("Duración obtenida de la respuesta:", duracionObtenida);
       setDuracion(duracionObtenida); // Almacena la duración en el estado
-      // Cambia el estado para mostrar el botón "Finalizar"
-      setIsNegotiationSaved(true);
+      
+      // Llamar a sendIncreaseNegotiation después de recibir la respuesta
+      await sendIncreaseNegotiation();
+
     } catch (error) {
       console.error("Error al guardar la negociación:", error);
       toast.error("Error al guardar la negociación.");
@@ -617,18 +626,18 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         increaseRequestData
       );
 
-      // Verificar si la respuesta es 204 antes de cerrar
-      if (
-        increaseResponse?.status === 200 ||
-        increaseResponse?.status === 204
-      ) {
-        setNegotiationActive(false);
-        handleClose(false); // Cierra el modal solo si el status es 204
-        toast.success("Negociación incrementada correctamente.");
-      } else {
-        toast.warning("La respuesta del servidor no fue la esperada.");
-      }
-
+         // Manejar el estado 204 como una respuesta válida
+    if (increaseResponse?.status === 204) {
+      setNegotiationActive(false);
+      setIsSelectDisabled(true); // Deshabilita el select de herramientas
+      setIsSelectDisabled3(true); // Deshabilita boton calcular
+      handleClose(false); // Cierra el modal solo si el status es 204
+      toast.success("Negociación incrementada correctamente.");
+    } else if (increaseResponse?.status === 200) {
+      toast.success("Negociación incrementada correctamente.");
+    } else {
+      toast.warning("La respuesta del servidor no fue la esperada.");
+    }
       console.log(
         "Respuesta del endpoint IncrementaNegociacion:",
         increaseResponse
@@ -641,6 +650,8 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
     }
   };
 
+
+
   const handleSaveOffering = async () => {
     try {
       const idCuenta = searchResults?.[0]?.idCuenta?.trim();
@@ -649,8 +660,12 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       const producto = 1;
 
       if (!idCuenta || !selectedHerramienta || !montoNegociado) {
-        toast.error("Faltan datos requeridos para guardar el ofrecimiento.");
-        return false;
+        console.log("Datos faltantes:", {
+          idCuenta,
+          selectedHerramienta,
+          montoNegociado: calculosData.montoNegociado
+        });
+        return;
       }
 
       const requestData = {
@@ -687,6 +702,8 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       console.log("Respuesta del endpoint fetchSaveOffering:", response);
       
       setShowValidators(true);
+      setIsSelectDisabled(true); // Deshabilita el select de herramientas
+      setIsSelectDisabled2(true); // Deshabilita boton eliminar
       if (typeof fetchData === "function") {
         const idCartera = 1;
         await fetchData(idCartera, idCuenta, selectedHerramienta);
@@ -696,6 +713,74 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         );
       }
       return true;
+    } catch (error) {
+      console.error("Error al guardar el ofrecimiento:", error);
+      toast.error("Error al guardar el ofrecimiento.");
+      return false;
+    }
+  };
+
+  const handleSaveOffering2 = async () => {
+    try {
+      const idCuenta = searchResults?.[0]?.idCuenta?.trim();
+      const fechaInsert = isManagment?.storeOutput?.Fecha_Insert?.split("T")[0];
+      const segundoInsert = isManagment?.storeOutput?.Segundo_Insert;
+      const producto = 1;
+
+      if (!idCuenta || !selectedHerramienta || !calculosData.montoNegociado) {
+        console.log("Datos faltantes:", {
+          idCuenta,
+          selectedHerramienta,
+          montoNegociado: calculosData.montoNegociado
+        });
+        return;
+      }
+
+      const requestData = {
+        idCartera: 1,
+        idCuenta: idCuenta,
+        idProducto: producto,
+        idEjecutivo: idEjecutivo,
+        idHerramienta: selectedHerramienta,
+        montoRequerido: summaryData.montoRequerido,
+        montoNegociado: calculosData.montoNegociado,
+        descuento: summaryData.montoDescuento,
+        saldo: summaryData.saldo,
+        plazos: calculosData.calculos.map(calculo => ({
+          monto: calculo.pago,
+          fecha: new Date(calculo.fecha).toISOString().split("T")[0]
+        })),
+        dias1erPago: summaryData.dias1erpago,
+        fechaCorte: (() => {
+          const [datePart] = summaryData.fechaCorte.split(" ");
+          const [day, month, year] = datePart.split("/");
+          return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+        })(),
+        fechaInsert: fechaInsert,
+        segundoInsert: segundoInsert,
+        cartaConvenio: cartaConvenio,
+        correo: selectedEmail || "",
+        idEjecutivoValidador: parseInt(idEjecutivoValidador, 10)
+      };
+
+      console.log("Datos enviados al endpoint fetchSaveOffering:", requestData);
+
+      const response = await fetchSaveOffering(requestData);
+      toast.success("Ofrecimiento guardado correctamente.");
+      console.log("Respuesta del endpoint fetchSaveOffering:", response);
+      
+      setShowValidators(true);
+      setIsSelectDisabled(true); // Deshabilita el select de herramientas
+      setIsSelectDisabled3(true); // Deshabilita boton calcular
+
+      if (typeof fetchData === "function") {
+        const idCartera = 1;
+        await fetchData(idCartera, idCuenta, selectedHerramienta);
+      } else {
+        console.warn(
+          "fetchData no está definida. No se actualizarán los datos del modal."
+        );
+      }
     } catch (error) {
       console.error("Error al guardar el ofrecimiento:", error);
       toast.error("Error al guardar el ofrecimiento.");
@@ -729,7 +814,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         cartaConvenio: cartaConvenio, // Usa el valor del estado
         correo: selectedEmail || "", // Usa el correo seleccionado o vacío
         fechaPago: formInputs.fechaPago || "",
-        fechaFinNegociacion: formInputs.fechaFinNegociacion || "0001-01-01", // Usa la nueva fecha calculada
+        fechaFinNegociacion: formInputs.fechaFinNegociacion || formInputs.fechaPago, // Usa la nueva fecha calculada
         idEjecutivoValidador: parseInt(idEjecutivoValidador, 10), // Asegura que sea un número entero
         contrasena: validatorPassword || "", // Usa la contraseña del validador o vacío
         fechaInsert: fechaInsert,
@@ -755,7 +840,8 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       const duracionObtenida = response?.duración || "";
       console.log("Duración obtenida de la respuesta:", duracionObtenida);
       setDuracion(duracionObtenida); // Almacena la duración en el estado
-
+      setIsSelectDisabled(true); // Deshabilita el select de herramientas
+      setIsSelectDisabled2(true); // Deshabilita boton eliminar
       setNegotiationActive(false);
       handleClose(false); // Cierra el modal solo si el status es 204
     } catch (error) {
@@ -764,12 +850,81 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
     }
   };
 
+  const resetStates = () => {
+    setTableData([]);
+    setSummaryData({
+      montoRequerido: 0,
+      montoDescuento: 0,
+      saldo: 0,
+      fechaCorte: "",
+      descuento: 0,
+    });
+    setHerramientas([]);
+    setSelectedHerramienta(136);
+    setCalculosData({
+      plazos: 0,
+      primerPago: 0,
+      saldo: 0,
+      montoNegociado: 0,
+      descuento: 0,
+      calculos: [],
+      tasaMensual: 0,
+    });
+    setFormValues({
+      montoNegociado: "",
+      descuento: "",
+    });
+    setFormInputs({
+      meses: "",
+      fechaPago: "",
+      periodos: 1,
+    });
+    setIsCalculateButtonEnabled(false);
+    setIsAddButtonEnabled(false);
+    setMontoPago("");
+    setMontoNegociado("");
+    setTablaPagos([]);
+    setAreFieldsEnabled(false);
+    setModifyForm({
+      modificar: false,
+      montoMod: "",
+      fechaPagoMod: "",
+      agregarPagos: false,
+      filaMod: null,
+    });
+    setSelectedRow(null);
+    setShowDetails(false);
+    setShowCalculator(false);
+    setShowValidators(false);
+    setIsValidated(false);
+    setIdEjecutivoValidador(0);
+    setValidatorPassword("");
+    setCartaConvenio(0);
+    setSelectedEmail("");
+    setDuracion("");
+    setIsSaveDeadlinesClicked(false);
+    setIsNegotiationSaved(false);
+    setValidationMessage("");
+    setIsSelectDisabled(false);
+    setIsSelectDisabled2(false);
+    setIsSelectDisabled3(false);
+  };
+  
+  useEffect(() => {
+    if (!show) {
+      resetStates(); // Reinicia los estados cuando el modal se cierra
+    }
+  }, [show]);
+
   return (
     <>
       <Modal
         key={show ? "modal-open" : "modal-closed"}
         show={show}
-        onHide={handleClose}
+        onHide={() => {
+          resetStates(); // Reinicia todos los estados
+          handleClose(); // Llama a la función para cerrar el modal
+        }}
         size="xl"
         backdrop="static"
       >
@@ -783,7 +938,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
             maxHeight: "80vh", // Limitar la altura máxima del cuerpo del modal
             overflowY: "auto", // Habilitar scroll vertical
             position: "relative", // Necesario para posicionar el indicador
-            marginBottom: "1rem"
+            marginBottom: "1rem",
           }}
         >
           <Col>
@@ -831,7 +986,9 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                           <th style={{ textAlign: "center" }}>plazos</th>
                           <th style={{ textAlign: "center" }}>Ofreció</th>
                           <th style={{ textAlign: "center" }}>Validó</th>
-                          <th style={{ textAlign: "center" }}>carta-Convenio</th>
+                          <th style={{ textAlign: "center" }}>
+                            carta-Convenio
+                          </th>
                           <th style={{ textAlign: "center" }}>Saldo-Interés</th>
                           <th style={{ textAlign: "center" }}>Remanente</th>
                         </tr>
@@ -961,6 +1118,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                               handleHerramientaChange(e); // Maneja el cambio de herramienta
                               handleSetFormValues(); // Llama a handleSetFormValues al seleccionar una herramienta
                             }}
+                            disabled={isSelectDisabled} // Deshabilita el select si es necesario
                           >
                             <option value="">Seleccionar Herramienta</option>
                             {herramientas.map((herramienta) => (
@@ -1053,9 +1211,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                           </Card.Title>
                           <Form>
                             <Form.Group className="d-block">
-                              <Form.Label>
-                                Monto Pago
-                              </Form.Label>
+                              <Form.Label>Monto Pago</Form.Label>
                               <Form.Control
                                 required
                                 type="text"
@@ -1072,9 +1228,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                             </Form.Group>
                             <div className="d-flex gap-3 w-100">
                               <Form.Group className="mt-3 w-100">
-                              <Form.Label>
-                                Monto Negociado
-                              </Form.Label>
+                                <Form.Label>Monto Negociado</Form.Label>
                                 <Form.Control
                                   type="text"
                                   placeholder="$ 0"
@@ -1086,9 +1240,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 />
                               </Form.Group>
                               <Form.Group className="mt-3 w-100">
-                              <Form.Label>
-                                Fecha Pago
-                              </Form.Label>
+                                <Form.Label>Fecha Pago</Form.Label>
                                 <Form.Control
                                   required
                                   type="date"
@@ -1194,6 +1346,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                       variant="danger"
                                       size="sm"
                                       onClick={() => handleEliminarPago(index)}
+                                      disabled={isSelectDisabled2} // Deshabilita el botón si es necesario
                                     >
                                       X
                                     </Button>
@@ -1219,13 +1372,13 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                             Ofrecer
                           </Button>
                         )}
-                         {isValidated && ( // Muestra el botón "Guardar Negociacion" solo si no está validado
+                        {isValidated && ( // Muestra el botón "Guardar Negociacion" solo si no está validado
                           <Button
                             variant="primary"
                             onClick={handleSaveNegotiation2}
                             disabled={tablaPagos.length === 0} // Deshabilita el botón si no hay registros en la tabla
                           >
-                           Guardar Negociacion
+                            Negociar
                           </Button>
                         )}
                       </div>
@@ -1243,18 +1396,24 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                   !areFieldsEnabled && (
                     <>
                       {/* Calculadora AMEX */}
-                      <h5 style={{color: "#20c997", marginLeft: "1rem", marginTop: "1rem"}}>
+                      <h5
+                        style={{
+                          color: "#20c997",
+                          marginLeft: "1rem",
+                          marginTop: "1rem",
+                        }}
+                      >
                         Calculadora AMEX
                       </h5>
                       <Card className="p-3 mb-0" ref={calculatorRef}>
                         <Card.Body className="p-0">
-                          <Card.Title className="pt-0 text-center">Datos</Card.Title>
+                          <Card.Title className="pt-0 text-center">
+                            Datos
+                          </Card.Title>
                           <Form className="d-flex gap-4 w-100">
                             <Row className="d-flex w-100">
                               <Form.Group>
-                              <Form.Label>
-                                Monto Requerido
-                              </Form.Label>
+                                <Form.Label>Monto Requerido</Form.Label>
                                 <Form.Control
                                   placeholder=""
                                   name="montoRequerido"
@@ -1267,9 +1426,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 />
                               </Form.Group>
                               <Form.Group className="mt-3">
-                              <Form.Label>
-                                Descuento
-                              </Form.Label>
+                                <Form.Label>Descuento</Form.Label>
                                 <Form.Control
                                   placeholder=""
                                   name="descuento"
@@ -1295,9 +1452,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 />
                               </Form.Group>
                               <Form.Group className="mt-3">
-                              <Form.Label>
-                                Periodo
-                              </Form.Label>
+                                <Form.Label>Periodo</Form.Label>
                                 <Form.Select
                                   name="periodos"
                                   value={formInputs.periodos || 1} // Valor por defecto: 1 (Mes)
@@ -1311,9 +1466,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                             </Row>
                             <Row className="d-flex w-100">
                               <Form.Group className="mt-3">
-                              <Form.Label>
-                                Meses
-                              </Form.Label>
+                                <Form.Label>Meses</Form.Label>
                                 <Form.Control
                                   type="text"
                                   placeholder=""
@@ -1328,9 +1481,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 />
                               </Form.Group>
                               <Form.Group className="mt-3">
-                              <Form.Label>
-                                Fecha Pago
-                              </Form.Label>
+                                <Form.Label>Fecha Pago</Form.Label>
                                 <Form.Control
                                   type="date"
                                   placeholder="Fecha Pago"
@@ -1342,18 +1493,22 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                               </Form.Group>
                               <div className="d-flex justify-content-between mt-4">
                                 <div className="">
-                                <h5 className="text-light pt-1 fw-bold d-inline-flex">
-                                  Tasa Mensual: {calculosData.tasaMensual ? `${calculosData.tasaMensual}%` : "0%"}
-                                </h5>
+                                  <h5 className="text-light pt-1 fw-bold d-inline-flex">
+                                    Tasa Mensual:{" "}
+                                    {calculosData.tasaMensual
+                                      ? `${calculosData.tasaMensual}%`
+                                      : "0%"}
+                                  </h5>
                                 </div>
-                               <div>
-                               <Button
-                                  variant="primary"
-                                  onClick={handleCalculateSecondPart}
-                                >
-                                  Calcular
-                                </Button>
-                               </div>
+                                <div>
+                                  <Button
+                                    variant="primary"
+                                    onClick={handleCalculateSecondPart}
+                                    disabled={isSelectDisabled3} // Deshabilita el botón si no es válido
+                                  >
+                                    Calcular
+                                  </Button>
+                                </div>
                               </div>
                             </Row>
                           </Form>
@@ -1417,7 +1572,6 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                   {summaryData.MontoDescuento
                                     ? summaryData.MontoDescuento
                                     : 0}
-                                  
                                 </h5>
                               </Col>
                             </Row>
@@ -1530,7 +1684,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                               <Button
                                 variant="primary"
                                 onClick={() => {
-                                  validateNegotiationOffer(); // Abre el modal de validación
+                                  validateNegotiationOffer();
                                   setModifyForm((prev) => ({
                                     ...prev,
                                     modificar: 0, // Oculta el botón "Modificar" después de la validación
@@ -1572,25 +1726,9 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                   onClick={handleSaveNegotiation} // Llama a la función para guardar la negociación
                                   disabled={!isValidated} // Deshabilita el botón si no está validado
                                 >
-                                  Guardar Negociación
+                                  Negociar
                                 </Button>
                               )}
-                          </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "flex-end",
-                              marginTop: "",
-                            }}
-                          >
-                            {isNegotiationSaved && ( // Muestra el botón "Finalizar" después de guardar la negociación
-                              <Button
-                                variant="success"
-                                onClick={sendIncreaseNegotiation} // Llama a la función para finalizar
-                              >
-                                Finalizar
-                              </Button>
-                            )}
                           </div>
                         </Card.Body>
                       </Card>
