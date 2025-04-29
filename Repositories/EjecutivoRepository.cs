@@ -17,6 +17,7 @@ using NoriAPI.Models.Flujo;
 using NoriAPI.Models.Ofrecimiento;
 using NoriAPI.Models;
 using static NoriAPI.Services.EjecutivoService;
+using System.Drawing;
 
 namespace NoriAPI.Repositories
 {
@@ -605,7 +606,11 @@ namespace NoriAPI.Repositories
                 "FR.[Seguimiento],\r\n" +
                 "FR.[Negociación],\r\n" +
                 "FR.[Identificador],\r\n" +
-                "VC.[Valor],\r\n" +
+                "case when\r\n" +
+                "VC.[Valor] = 'Confirmar negociación '\r\n" +
+                "THEN 'Negociación'\r\n" +
+                "ELSE VC.[Valor]\r\n" +
+                "END[Valor],\r\n" +
                 "VC.[ValorActivo]\r\n" +
                 "from FlujoPreguntas FP\r\n" +
                 "inner join FlujoRespuestas FR\r\n" +
@@ -1524,11 +1529,11 @@ namespace NoriAPI.Repositories
         {
             return dt.AsEnumerable().Select(row => new CalculosInfo
             {
-                No = row.Field<string>("No."),
+                No = row.Field<int>("No"),
                 Fecha = row.Field<DateTime>("Fecha"),
-                saldo = row.Field<decimal>("saldo"),
-                pago = row.Field<decimal>("pago"),
-                SaldoFinal = row.Field<decimal>("Saldo Final")
+                saldo = row.Field<double>("saldo"),
+                pago = row.Field<double>("pago"),
+                SaldoFinal = row.Field<double>("SaldoFinal")
             }).ToList();
 
         }        

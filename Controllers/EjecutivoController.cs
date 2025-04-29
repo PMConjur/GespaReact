@@ -352,10 +352,10 @@ namespace NoriAPI.Controllers
             }          
         }
 
-        [HttpGet("Calculadora-2daParte")]
-        public async Task<ActionResult<ResultadoCalculadora2>> Calculadora([FromQuery] int idHerramienta, string NoCuenta, int IdCartera, double MontoRequerido, int Descuento, int iMeses, string dtpFecha, int periodos, int modificar, double montoMod, string fechaPagoMod, int agregarPagos, int filaMod)
+        [HttpPost("Calculadora-2daParte")]
+        public async Task<ActionResult<ResultadoCalculadora2>> Calculadora([FromBody] Calculadora2 InfoCalculadora)
         {
-            var InfoCalucladora2 = await _ejecutivoService.ValidateInfoCalculadora2(idHerramienta, NoCuenta, IdCartera, MontoRequerido, Descuento, iMeses, dtpFecha, periodos, modificar, montoMod, fechaPagoMod, agregarPagos, filaMod);
+            var InfoCalucladora2 = await _ejecutivoService.ValidateInfoCalculadora2(InfoCalculadora);
             if (InfoCalucladora2.mensaje == "")
                 return Ok(InfoCalucladora2);
             else
