@@ -54,33 +54,6 @@ const Telephones = () => {
     }
   };
 
-  const formatPhoneNumber = (phone) => {
-    const phoneStr = phone.toString();
-    if (phoneStr.length <= 4) return phoneStr;
-    const last4 = phoneStr.slice(-4);
-    const masked = phoneStr.slice(0, -4).replace(/./g, "X");
-    return masked + last4;
-  };
-
-  const getContextPhoneNumber = () => {
-    if (isManagment?.gestion?.numeroTelefonico) {
-      return {
-        raw: isManagment.gestion.numeroTelefonico.toString(),
-        formatted: formatPhoneNumber(isManagment.gestion.numeroTelefonico),
-        source: "management" // nuevo
-      };
-    }
-    // Nota: En la versión 2 se utiliza isDataAllPhonesPhone en selectedAnswer en lugar de dataPhone de la versión 1.
-    if (selectedAnswer?.isDataAllPhonesPhone?.númeroTelefónico) {
-      return {
-        raw: selectedAnswer.isDataAllPhonesPhone.númeroTelefónico.toString(),
-        formatted: formatPhoneNumber(
-          selectedAnswer.isDataAllPhonesPhone.númeroTelefónico
-        )
-      };
-    }
-    return { raw: "", formatted: "", source: "none" }; // nuevo
-  };
 
   const handleValidatePhone = async () => {
     if (!phoneNumber.trim()) {

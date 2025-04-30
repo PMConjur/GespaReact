@@ -234,8 +234,8 @@ const TableAditionals = ({ customColumnNames = {}, onRowClick, selectedAnswer, a
         overflowX: "hhidden",
         overflowY: "auto",
         width: "100%",
-        height: "100%", // Asegura que ocupe todo el espacio del contenedor padre
-        maxHeight: "100%", // No exceder la altura del contenedor padre
+        height: "400px", // Asegura que ocupe todo el espacio del contenedor padre
+        maxHeight: "400px", // No exceder la altura del contenedor padre
       }}
     >
         <Table
