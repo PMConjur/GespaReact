@@ -28,7 +28,8 @@ const Telephones = () => {
     userActiveFlow,
     setSelectedAnswer,
     isDataAllPhones,
-    setIsDataAllPhones
+    setIsDataAllPhones,
+    setSelectedPhoneFilter // Agregar setSelectedPhoneFilter del contexto
   } = useContext(AppContext);
   const { searchResults, lastPhoneNumberFromToast } = useContext(AppContext);
   const { isManagment, selectedAnswer } = useContext(AppContext);
@@ -353,12 +354,12 @@ const Telephones = () => {
     if (selectedPhone === phoneNumber) {
       console.log("Deseleccionando número de teléfono:", phoneNumber);
       setSelectedPhone(null); // Deseleccionar
-      setSelectedAnswer(null); // Restablecer el filtro en el contexto
+      setSelectedPhoneFilter(null); // Restablecer el filtro en el contexto
       setIsDataAllPhones((prev) => [...prev]); // Restablecer el estado inicial de los teléfonos
     } else {
       console.log("Número de teléfono seleccionado:", phoneNumber);
       setSelectedPhone(phoneNumber); // Seleccionar
-      setSelectedAnswer({ numeroTelefonico: phoneNumber }); // Actualizar el contexto con el nuevo número
+      setSelectedPhoneFilter(phoneNumber); // Actualizar el filtro en el contexto
     }
   };
 

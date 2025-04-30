@@ -6,7 +6,7 @@ import { ClockHistory } from "react-bootstrap-icons";
 import { toast } from "sonner"; // Importar la librería sonner
 
 const Managments = () => {
-  const { searchResults, selectedAnswer } = useContext(AppContext); // Consumir el contexto
+  const { searchResults, selectedPhoneFilter } = useContext(AppContext); // Usar selectedPhoneFilter del contexto
   const [sortedData, setSortedData] = useState([]); // Estado para los datos ordenados
   const [selectedGestion, setSelectedGestion] = useState(null); // Estado para el registro seleccionado
   const [showToast, setShowToast] = useState(false); // Estado para mostrar el toast
@@ -57,8 +57,8 @@ const Managments = () => {
 
   useEffect(() => {
     const fetchFilteredData = async () => {
-      if (selectedAnswer?.numeroTelefonico) {
-        const selectedPhone = selectedAnswer.numeroTelefonico;
+      if (selectedPhoneFilter) {
+        const selectedPhone = selectedPhoneFilter;
         try {
           setIsLoading(true);
           const idCuenta = searchResults[0]?.idCuenta;
@@ -90,7 +90,7 @@ const Managments = () => {
     };
 
     fetchFilteredData();
-  }, [selectedAnswer, searchResults]);
+  }, [selectedPhoneFilter, searchResults]); // Usar selectedPhoneFilter como dependencia
 
   // Validar campos para evitar errores al renderizar
   const validateField = (field) => {

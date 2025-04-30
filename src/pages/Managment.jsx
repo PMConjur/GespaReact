@@ -47,6 +47,7 @@ const Managment = () => {
   const [userActiveFlow, setUserActiveFlow] = useState(false); // Asegurar que el estado inicial sea false
   const [isManagment, setManagment] = useState([]); // Estado para la gestión
   const [isDataAllPhones, setIsDataAllPhones] = useState([]); // Estado para manejar los teléfonos
+  const [selectedPhoneFilter, setSelectedPhoneFilter] = useState(null); // Nueva variable para el filtro de teléfonos
   const token = responseData?.ejecutivo?.token;
   const nombreEjecutivo =
     responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
@@ -202,7 +203,9 @@ const handleAutomaticSearch = async () => {
     formData, // Enviar datos del formulario al contexto
     setFormData, // Enviar función para actualizar los datos de teléfono al contexto
     isDataAllPhones, // Agregar al contexto
-    setIsDataAllPhones // Agregar setter al contexto
+    setIsDataAllPhones, // Agregar setter al contexto
+    selectedPhoneFilter, // Agregar al contexto
+    setSelectedPhoneFilter // Agregar setter al contexto
   };
 
   return (
