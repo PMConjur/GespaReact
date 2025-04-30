@@ -631,23 +631,35 @@ export const getGestionTeData = async (idCartera, idCuenta) => {
 
 export const fetchNotes = async (numEmpleado) => {
   try {
-    const response = await servicio.get(
-      `/ejecutivo/recordatorios/${numEmpleado}`,
-    );
-    // formato de los datos
+    const response = await servicio.get(`/ejecutivo/recordatorios/${numEmpleado}`);
     const data = response.data;
-    const formattedNotes = data.map((item) => ({
-      id: item.idCuenta,
-      title: item.Nombre,
-      content: `Saldo: ${item.Saldo}\nTeléfono: ${item.NúmeroTelefónico}\nSituación: ${item.idSituación}\nFecha Seguimiento: ${item.FechaSeguimiento}\nHora Seguimiento: ${item.SegundoSeguimiento}`,
-      date: item.FechaHoraSeguimiento
-    }));
+    
+    const formattedNotes = data.map((item) => {
+      // Parsear la fecha ISO (ej: "2025-04-30T12:30:00")
+      const fechaHora = new Date(item.FechaHoraSeguimiento);
+      const fechaLocal = fechaHora.toLocaleDateString('es-MX'); // -> "30/4/2025"
+      const horaLocal = fechaHora.toLocaleTimeString('es-MX', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false 
+      }); // -> "12:30"
+      
+      return {
+        id: item.idCuenta,
+        title: item.Nombre,
+        content: `Saldo: ${item.Saldo}\nTeléfono: ${item.NúmeroTelefónico}\nSituación: ${item.Situacion}`,
+        date: fechaLocal,  // -> "30/04/2025"
+        time: horaLocal,    // -> "12:30"
+        rawDate: fechaHora, // Conservamos el Date original para comparaciones
+        segundo: item.SegundoSeguimiento // Por si necesitas este campo
+      };
+    });
 
     return formattedNotes;
   } catch (error) {
     console.error("Error fetching notes:", error);
     throw error;
-  }
+  };
 };
 
 // endpoint ejecutivo quejas post
