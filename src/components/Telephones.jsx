@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import "../scss/styles.scss";
 import { TelephoneFill, Eye, Clipboard2Data } from "react-bootstrap-icons";
 import FollowUps from "./memuHamburguesa/Acciones/FollowUps";
+import { getPhoneNumberFromContext } from "../utils/phoneUtils"; // Importa la función centralizada
 
 const Telephones = () => {
   const {
@@ -29,7 +30,8 @@ const Telephones = () => {
     setSelectedAnswer,
     isDataAllPhones,
     setIsDataAllPhones,
-    setSelectedPhoneFilter // Agregar setSelectedPhoneFilter del contexto
+    setSelectedPhoneFilter, // Agregar setSelectedPhoneFilter del contexto
+    setSelectedPhoneForFollowUps // Importar setter del contexto
   } = useContext(AppContext);
   const { searchResults, lastPhoneNumberFromToast } = useContext(AppContext);
   const { isManagment, selectedAnswer } = useContext(AppContext);
@@ -107,6 +109,7 @@ const Telephones = () => {
     const idCuenta = searchResults[0].idCuenta;
 
     try {
+      console.log("Enviando solicitud a fetchValidationTel con:", { telefono: phoneNumber, idCuenta });
       const response = await fetchValidationTel({
         telefono: phoneNumber,
         idCuenta
@@ -128,8 +131,7 @@ const Telephones = () => {
     } catch (error) {
       console.error("Error al validar el teléfono:", error);
       toast.error("Error 404: El número de teléfono no existe en la cuenta", {
-        position: "top-right",
-        style: { transform: "translateY(80vh)" }
+        position: "top-right"
       });
       setIsPhoneNew(true);
     }
@@ -172,8 +174,7 @@ const Telephones = () => {
       extension: 0
     };
 
-    console.log("Horario de contacto:", horarioContacto);
-    console.log("Datos enviados:", newPhoneisDataAllPhones);
+    console.log("Enviando solicitud a fetchNewTel con:", newPhoneisDataAllPhones);
 
     try {
       await fetchNewTel(newPhoneisDataAllPhones);
@@ -244,10 +245,11 @@ const Telephones = () => {
   const loadisDataAllPhones = async () => {
     setIsLoading(true);
     try {
+      console.log("Enviando solicitudes a fetchPhones para searchResults:", searchResults);
       const phones = await Promise.all(
         searchResults.map(async (result) => {
           const response = await fetchPhones(result.idCuenta);
-          console.log("Respuesta de fetchPhones:", response);
+          console.log("Respuesta de fetchPhones para idCuenta:", result.idCuenta, response);
           return response;
         })
       );
@@ -365,27 +367,27 @@ const Telephones = () => {
 
   const handleSendPhoneToFormFollowUps = (phoneNumber) => {
     console.log("Número de teléfono enviado al formulario FormFollowUps:", phoneNumber);
-    setIsDataAllPhones(prev => ({ ...prev, númeroTelefónico: phoneNumber })); // Actualizar el contexto con el número
+
+    // Actualiza el número telefónico en el contexto antes de abrir el modal
+    setSelectedPhoneForFollowUps(null); // Limpia cualquier número previo
+    const phone = getPhoneNumberFromContext({
+        isManagment,
+        selectedAnswer,
+        isDataAllPhones,
+        selectedPhoneForFollowUps: phoneNumber
+    });
+    setSelectedPhoneForFollowUps(phone.raw); // Establece el número correcto
   };
 
   // 2. Función que abre el modal + usa el número actualizado del row
   const openFollowUpsModal = (row) => {
-    let newPhone = { raw: "", formatted: "", source: "none" };
-    if (row && row.númeroTelefónico) {
-      const phoneValue = row.númeroTelefónico;
-      newPhone = {
-        raw: phoneValue,
-        formatted: formatPhoneNumber(phoneValue),
-        source: "row"
-      };
-      // Actualizar el contexto usando "numeroTelefonico" (sin acento)
-      setSelectedAnswer(prev => ({ ...prev, númeroTelefónico: newPhone.raw }));
-    } else {
-      newPhone = getContextPhoneNumber();
-      console.log("Se usa número del contexto:", newPhone);
-      setSelectedAnswer(prev => ({ ...prev, númeroTelefónico: newPhone.raw }));
-    }
-    console.log("Abriendo modal FollowUps con:", { phone: newPhone, rowData: row });
+    const phone = getPhoneNumberFromContext({
+        isManagment,
+        selectedAnswer,
+        isDataAllPhones,
+        selectedPhoneForFollowUps: row?.númeroTelefónico
+    }); // Usa la función centralizada
+    setSelectedAnswer(prev => ({ ...prev, númeroTelefonico: phone.raw }));
     setShowFollowUps(true); // Abre el modal
   };
 
@@ -553,7 +555,7 @@ const Telephones = () => {
                               style={{ cursor: "pointer", color: "#fce959" }}
                               onClick={() => {
                                 openFollowUpsModal(row);
-                                handleSendPhoneToFormFollowUps(row.númeroTelefónico);
+                                handleSendPhoneToFormFollowUps(row.númeroTelefónico); // Usar la función actualizada
                               }}
                             />
                           </div>
