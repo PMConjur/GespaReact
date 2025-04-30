@@ -51,6 +51,8 @@ const Managment = () => {
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
   const [phoneData, setPhoneData] = useState([]);
   const [formData, setFormData] = useState(null); // Estado para el flujo activo del usuario
+  const [selectedDate, setSelectedDate] = useState(null);
+
   const handleSearch = async () => {
     try {
       const response = await searchCustomer(filter, searchTerm);
@@ -199,6 +201,9 @@ const handleAutomaticSearch = async () => {
     phoneData, // Enviar datos de teléfono al contexto
     formData, // Enviar datos del formulario al contexto
     setFormData, // Enviar función para actualizar los datos de teléfono al contexto
+    selectedDate, // Enviar fecha seleccionada al contexto
+    setSelectedDate, // Enviar función para actualizar la fecha seleccionada al contexto
+    reminders: [], // Puedes inicializarlo como un array vacío o con los datos que necesites
   };
 
   return (

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useContext} from "react";
+import { useState, useEffect, useMemo, useContext } from "react";
 import { fetchNotes, saveNotesToAPI } from "../services/gespawebServices";
 import DatePicker from "react-datepicker";
 import TimePicker from "react-time-picker";
@@ -35,7 +35,38 @@ function NotesWidget() {
   const [date, setDate] = useState(new Date());
   const [time, setTime] = useState("");
   const [option, setOption] = useState("");
-  const { formData} = useContext(AppContext);
+  const { formData } = useContext(AppContext);
+  const { selectedDate } = useContext(AppContext);
+  const [filteredNotes, setFilteredNotes] = useState([]);
+
+  // Función para filtrar notas por la fecha seleccionada
+  const filterNotesBySelectedDate = (notes, selectedDate) => {
+    if (!selectedDate) return notes; // Si no hay fecha seleccionada, mostrar todas las notas
+
+    // Convertir la fecha seleccionada a formato YYYY-MM-DD
+    const selectedDateString = selectedDate.toISOString().split("T")[0];
+
+    return notes.filter((note) => {
+      // Asegurarse de que la fecha de la nota esté en el mismo formato
+      const noteDate = note.date?.includes("/")
+        ? convertToISODate(note.date)
+        : note.date?.split("T")[0];
+      return noteDate === selectedDateString;
+    });
+  };
+
+  // Función para convertir fechas en formato DD/MM/YYYY a YYYY-MM-DD
+  const convertToISODate = (dateString) => {
+    const [day, month, year] = dateString.split("/").map(Number);
+    return new Date(year, month - 1, day).toISOString().split("T")[0];
+  };
+
+  // Actualizar las notas filtradas cuando cambie selectedDate o notes
+  useEffect(() => {
+    const filtered = filterNotesBySelectedDate(notes, selectedDate);
+    console.log("Notas fechas:", selectedDate, filtered);
+    setFilteredNotes(filtered);
+  }, [notes, selectedDate]);
 
   // Cargar notas cuando cambia numEmpleado o formData
   useEffect(() => {
@@ -43,14 +74,16 @@ function NotesWidget() {
       try {
         console.log("Cargando notas...", { numEmpleado, formData });
         const fetchedNotes = await fetchNotes(numEmpleado);
-        
+
         // Asegurar que cada nota tenga un ID único
         const notesWithUniqueIds = fetchedNotes.map((note, index) => ({
           ...note,
           id: note.id || `note-${Date.now()}-${index}`, // Generar ID si no existe
-          uniqueKey: `${note.idCuenta?.trim()}-${note.FechaPago}-${note.segundo}-${index}` // Clave única compuesta
+          uniqueKey: `${note.idCuenta?.trim()}-${note.FechaPago}-${
+            note.segundo
+          }-${index}`, // Clave única compuesta
         }));
-        
+
         setNotes(notesWithUniqueIds);
       } catch (error) {
         console.error("Error fetching notes:", error);
@@ -76,7 +109,13 @@ function NotesWidget() {
         if (note.time && note.date) {
           const [hours, minutes] = note.time.split(":").map(Number);
           const [day, month, year] = note.date.split("/").map(Number);
-          const followUpDateTime = new Date(year, month - 1, day, hours, minutes);
+          const followUpDateTime = new Date(
+            year,
+            month - 1,
+            day,
+            hours,
+            minutes
+          );
 
           if (
             currentDate.getFullYear() === followUpDateTime.getFullYear() &&
@@ -96,29 +135,33 @@ function NotesWidget() {
   }, [notes]);
 
   // Guardar notas en el endpoint cuando cambian
-useEffect(() => {
-  const handleSaveNotes = async () => {
-    try {
-      await saveNotesToAPI(notes);
-    } catch (error) {
-      console.error("Error en el guardado de notas:", error);
-      // Puedes agregar notificaciones al usuario aquí si lo deseas
-    }
-  };
+  useEffect(() => {
+    const handleSaveNotes = async () => {
+      try {
+        await saveNotesToAPI(notes);
+      } catch (error) {
+        console.error("Error en el guardado de notas:", error);
+        // Puedes agregar notificaciones al usuario aquí si lo deseas
+      }
+    };
 
-  if (notes.length > 0) {
-    handleSaveNotes();
-  }
-}, [notes]);
+    if (notes.length > 0) {
+      handleSaveNotes();
+    }
+  }, [notes]);
 
   // Función para ordenar notas por fecha y hora más próxima
   const sortNotesByDateTime = (notes) => {
     return [...notes].sort((a, b) => {
       try {
         // Crear objetos Date para comparación
-        const dateA = a.time ? new Date(`${a.date} ${a.time}`) : new Date(a.date);
-        const dateB = b.time ? new Date(`${b.date} ${b.time}`) : new Date(b.date);
-        
+        const dateA = a.time
+          ? new Date(`${a.date}T${a.time}`)
+          : new Date(a.date);
+        const dateB = b.time
+          ? new Date(`${b.date}T${b.time}`)
+          : new Date(b.date);
+
         // Orden ascendente (más próximo primero)
         return dateA - dateB;
       } catch (error) {
@@ -129,8 +172,11 @@ useEffect(() => {
   };
 
   // Notas ordenadas memoizadas
-  const sortedNotes = useMemo(() => sortNotesByDateTime(notes), [notes]);
 
+  const sortedNotes = useMemo(
+    () => sortNotesByDateTime(filteredNotes),
+    [filteredNotes]
+  );
   // Función para extraer número de teléfono
   const extractFullPhoneNumber = (content) => {
     if (!content) return null;
@@ -142,17 +188,19 @@ useEffect(() => {
   const handleRealizarClick = (note) => {
     try {
       const phoneNumber = extractFullPhoneNumber(note.content);
-      
+
       if (!phoneNumber) {
         toast.warning("No se encontró número de teléfono válido");
         return;
       }
 
-      const phoneLinks = document.querySelectorAll('a.text-info[data-full-number]');
+      const phoneLinks = document.querySelectorAll(
+        "a.text-info[data-full-number]"
+      );
       let foundPhone = null;
 
-      phoneLinks.forEach(link => {
-        const fullNumber = link.getAttribute('data-full-number');
+      phoneLinks.forEach((link) => {
+        const fullNumber = link.getAttribute("data-full-number");
         if (fullNumber === phoneNumber) {
           foundPhone = link;
         }
@@ -160,9 +208,11 @@ useEffect(() => {
 
       if (foundPhone) {
         foundPhone.click();
-        toast.success(`Llamando a: ${'XXXXXX' + phoneNumber.slice(-4)}`);
+        toast.success(`Llamando a: ${"XXXXXX" + phoneNumber.slice(-4)}`);
       } else {
-        toast.error(`Número no encontrado: ${'XXXXXX' + phoneNumber.slice(-4)}`);
+        toast.error(
+          `Número no encontrado: ${"XXXXXX" + phoneNumber.slice(-4)}`
+        );
       }
     } catch (error) {
       console.error("Error en handleRealizarClick:", error);
@@ -222,7 +272,7 @@ useEffect(() => {
         date: dateTime,
         time,
         option,
-        uniqueKey: `note-${Date.now()}-${notes.length}` // Clave única para renderizado
+        uniqueKey: `note-${Date.now()}-${notes.length}`, // Clave única para renderizado
       };
       setNotes([newNote, ...notes]);
     }
@@ -248,43 +298,16 @@ useEffect(() => {
     setActiveNote(null);
   };
 
-    // Función para verificar si una nota es de hoy o anterior
-    const isTodayOrBefore = (noteDate) => {
-      if (!noteDate) return false;
-      
-      try {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        // Parsear la fecha de la nota (formato DD/MM/YYYY)
-        const [day, month, year] = noteDate.split('/').map(Number);
-        const noteDateObj = new Date(year, month - 1, day);
-        noteDateObj.setHours(0, 0, 0, 0);
-        
-        return noteDateObj <= today;
-      } catch (error) {
-        console.error("Error al verificar fecha:", error);
-        return false;
-      }
-    };
-  
-    // Filtrar y ordenar notas
-    const filteredAndSortedNotes = useMemo(() => {
-      // 1. Filtrar solo notas de hoy o anteriores
-      const filteredNotes = notes.filter(note => isTodayOrBefore(note.date));
-      
-      // 2. Ordenar por proximidad (manteniendo la lógica actual)
-      return sortNotesByDateTime(filteredNotes);
-    }, [notes]);
-
-
   return (
     <div className="notes-widget card shadow">
       <div
         style={{}}
         className="card-header text-white d-flex justify-content-between align-items-center"
       >
-        <h5 className="mb-0 gap-3"><BellFill className=" me-1"/>Mis Recordatorios</h5>
+        <h5 className="mb-0 gap-3">
+          <BellFill className=" me-1" />
+          Mis Recordatorios
+        </h5>
         {/* 
         <button
           className="btn btn-sm btn-light"
@@ -375,55 +398,61 @@ useEffect(() => {
               </button>
             </div>
           </div>
-       ) : (
-        <div className="notes-list">
-        {sortedNotes.length === 0 ? (
-          <div className="text-center text-muted py-5 mb-0 text-white">
-            <p className="text-white">No hay Recordatorios.</p>
-          </div>
         ) : (
-          <div className="list-group overflow-auto" style={{ maxHeight: "400px" }}>
-            {sortedNotes.map((note, index) => {
-              // Determinar si es el recordatorio más próximo
-              const isClosestNote = index === 0;
-              
-              return (
-                <div
-                  key={note.uniqueKey || note.id}
-                  className={`list-group-item list-group-item-action ${isClosestNote ? 'blinking-border' : ''}`}
-                  style={{ marginBottom: "2rem" }}
-                >
-                  <div className="d-flex justify-content-between align-items-center">
-                    <h6 className="mb-1">{note.title || "Sin título"}</h6>
-                  </div>
-                  <p className="mb-1">
-                    <span style={{ whiteSpace: "none" }}>
-                      {note.content || "Sin contenido"}
-                    </span>
-                  </p>
-                  {isClosestNote && note.date && (
-                    <div className="d-flex justify-content-between align-items-center mt-2">
-                      <span className="shake-animation">
-                        SEGUIMIENTO PENDIENTE
-                      </span>
-                      <Button 
-                        className="mt-2 btn-success"
-                        onClick={() => handleRealizarClick(note)}
-                      >
-                        Realizar
-                      </Button>
+          <div className="notes-list">
+            {filteredNotes.length === 0 ? (
+              <div className="text-center text-muted py-5 mb-0 text-white">
+                <p className="text-white">
+                  No hay recordatorios para la fecha seleccionada.
+                </p>
+              </div>
+            ) : (
+              <div
+                className="list-group overflow-auto"
+                style={{ maxHeight: "400px" }}
+              >
+                {sortedNotes.map((note, index) => {
+                  const isClosestNote = index === 0;
+
+                  return (
+                    <div
+                      key={note.uniqueKey || note.id}
+                      className={`list-group-item list-group-item-action ${
+                        isClosestNote ? "blinking-border" : ""
+                      }`}
+                      style={{ marginBottom: "2rem" }}
+                    >
+                      <div className="d-flex justify-content-between align-items-center">
+                        <h6 className="mb-1">{note.title || "Sin título"}</h6>
+                      </div>
+                      <p className="mb-1">
+                        <span style={{ whiteSpace: "none" }}>
+                          {note.content || "Sin contenido"}
+                        </span>
+                      </p>
+                      {isClosestNote && note.date && (
+                        <div className="d-flex justify-content-between align-items-center mt-2">
+                          <span className="shake-animation">
+                            SEGUIMIENTO PENDIENTE
+                          </span>
+                          <Button
+                            className="mt-2 btn-success"
+                            onClick={() => handleRealizarClick(note)}
+                          >
+                            Realizar
+                          </Button>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>
-    )}
-  </div>
-</div>
-);
+    </div>
+  );
 }
 
 export default NotesWidget;

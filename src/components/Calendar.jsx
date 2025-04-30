@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useContext } from "react";
 import { DayPicker } from "react-day-picker";
 import { es } from "date-fns/locale";
+import { AppContext } from "../pages/Managment";
 
 export const DatePickerComponent = () => {
-  const [selectedDate, setSelectedDate] = useState();
+  const { selectedDate, setSelectedDate } = useContext(AppContext);
 
   return (
     <div className="calendar">
