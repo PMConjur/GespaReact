@@ -9,6 +9,7 @@ import {
 import { toast } from "sonner"; // Import toast and Toaster
 import { AppContext } from "../pages/Managment"; // Import AppContext
 import { getResponse, getValidateResponse } from "../utils/flowLogic"; // Import Response function, para la logica del funcionamiento del flujo
+import { getPhoneNumberFromContext } from "../utils/phoneUtils"; // Importa la función centralizada
 import Comment from "./flowComponents/Comment";
 import FollowUps from "./memuHamburguesa/Acciones/FollowUps"; // Importa el componente FollowUps
 import CommunicationPhone from "./flowComponents/CommunicationPhone"; // Importa el componente CommunicationPhone
@@ -31,7 +32,9 @@ const Flow = () => {
     setStoppedTime,
     stoppedTimeSticky,
     setUserActiveFlow, // Agregar función del contexto para actualizar userActiveFlow
-    setManagment // Agregar función del contexto para actualizar la gestión
+    setManagment, // Agregar función del contexto para actualizar la gestión
+    setSelectedPhoneForFollowUps, // Agregar función del contexto para actualizar el número telefónico
+    isDataAllPhones // Agregar estado del contexto para verificar si hay datos de todos los teléfonos
   } = useContext(AppContext); // Agrega funciones del contexto para manejar estados
 
   const [userFlowData, setUserFlowData] = useState([]);
@@ -197,10 +200,20 @@ const Flow = () => {
       } else if (lastAnswer.seguimiento === 1 && lastAnswer.negociación === 0) {
         console.log("Entró a seguimiento.");
         setIsFollowUpActive(true); // Activa la variable de seguimiento
-        setShowFollowUps(true); // Muestra el modal de FollowUps
 
+        // Actualiza el número telefónico en el contexto antes de abrir el modal
+        setSelectedPhoneForFollowUps(null); // Limpia cualquier número previo
+        const phone = getPhoneNumberFromContext({
+          isManagment,
+          selectedAnswer,
+          isDataAllPhones,
+          selectedPhoneForFollowUps: null
+        });
+        setSelectedPhoneForFollowUps(phone.raw); // Establece el número correcto
+
+        setShowFollowUps(true); // Muestra el modal de FollowUps
         toast.info("Flujo preparado para seguimiento.");
-        clearStatesManagment(); //Limpia solo para renderizar el formulario vacio
+        clearStatesManagment(); // Limpia solo para renderizar el formulario vacío
         return renderMainContent(); // Renderiza el contenido principal
       } else if (idReportePago === 1013) {
         console.log("Entró a Reporte de Pago.");

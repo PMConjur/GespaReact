@@ -606,20 +606,19 @@ export const getGestionTeData = async (idCartera, idCuenta) => {
 
     const Top = 10000;
     const url = `/ejecutivo/gestionTe/${idCartera}/${idCuenta}/${Top}`;
-    //console.log("Solicitando datos de gestion Telefonica a:", url); // Depurar URL
-
     const response = await servicio.get(url);
-    const message = getErrorStatus(response.status);
-    //console.log("Respuesta de gestiones. Estado:", response.status);
+
     if (response.status !== 200) {
-      toast.error(message, { position: "top-right" });
-      throw new Error(message);
+      throw new Error(`Error en la respuesta de la API. Estado: ${response.status}`);
     }
-    //console.log("Datos obtenidos de la API:", response.data);
-    return response.data;
+
+    // Verifica que los datos contengan idModo
+    const data = response.data;
+    console.log("Datos obtenidos de getGestionTeData:", data);
+
+    return data; // Asegúrate de que los datos devueltos incluyan idModo
   } catch (error) {
     console.error("Error en getGestionTeData:", error);
-
     throw error;
   }
 };

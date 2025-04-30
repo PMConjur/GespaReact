@@ -22,13 +22,16 @@ import { toast } from "sonner";
 import "../scss/styles.scss";
 import { TelephoneFill, Eye, Clipboard2Data } from "react-bootstrap-icons";
 import FollowUps from "./memuHamburguesa/Acciones/FollowUps";
+import { getPhoneNumberFromContext } from "../utils/phoneUtils"; // Importa la función centralizada
 
 const Telephones = () => {
   const {
     userActiveFlow,
     setSelectedAnswer,
     isDataAllPhones,
-    setIsDataAllPhones
+    setIsDataAllPhones,
+    setSelectedPhoneFilter, // Agregar setSelectedPhoneFilter del contexto
+    setSelectedPhoneForFollowUps // Importar setter del contexto
   } = useContext(AppContext);
   const { searchResults, lastPhoneNumberFromToast } = useContext(AppContext);
   const { isManagment, selectedAnswer } = useContext(AppContext);
@@ -40,6 +43,7 @@ const Telephones = () => {
   const [selectedClaseTelefono, setSelectedClaseTelefono] = useState("");
   const [horarioContacto, setHorarioContacto] = useState("00:00:00");
   const [showFollowUps, setShowFollowUps] = useState(false);
+  const [selectedPhone, setSelectedPhone] = useState(null); // Estado para el número seleccionado
   const responseData =
     location.state || JSON.parse(localStorage.getItem("responseData"));
 
@@ -105,6 +109,7 @@ const Telephones = () => {
     const idCuenta = searchResults[0].idCuenta;
 
     try {
+      console.log("Enviando solicitud a fetchValidationTel con:", { telefono: phoneNumber, idCuenta });
       const response = await fetchValidationTel({
         telefono: phoneNumber,
         idCuenta
@@ -126,8 +131,7 @@ const Telephones = () => {
     } catch (error) {
       console.error("Error al validar el teléfono:", error);
       toast.error("Error 404: El número de teléfono no existe en la cuenta", {
-        position: "top-right",
-        style: { transform: "translateY(80vh)" }
+        position: "top-right"
       });
       setIsPhoneNew(true);
     }
@@ -170,8 +174,7 @@ const Telephones = () => {
       extension: 0
     };
 
-    console.log("Horario de contacto:", horarioContacto);
-    console.log("Datos enviados:", newPhoneisDataAllPhones);
+    console.log("Enviando solicitud a fetchNewTel con:", newPhoneisDataAllPhones);
 
     try {
       await fetchNewTel(newPhoneisDataAllPhones);
@@ -242,15 +245,16 @@ const Telephones = () => {
   const loadisDataAllPhones = async () => {
     setIsLoading(true);
     try {
+      console.log("Enviando solicitudes a fetchPhones para searchResults:", searchResults);
       const phones = await Promise.all(
         searchResults.map(async (result) => {
           const response = await fetchPhones(result.idCuenta);
-          console.log("Respuesta de fetchPhones:", response);
+          console.log("Respuesta de fetchPhones para idCuenta:", result.idCuenta, response);
           return response;
         })
       );
       const flatPhones = phones.flat();
-      setIsDataAllPhones(flatPhones);
+      setIsDataAllPhones(flatPhones || []); // Asegúrate de que sea un arreglo
       if (flatPhones.length === 0 && !toastShown) {
         toast.error("Error 404: No hay carga de teléfonos", {
           position: "top-right"
@@ -259,6 +263,7 @@ const Telephones = () => {
       }
     } catch (error) {
       console.error("Error al cargar los teléfonos:", error);
+      setIsDataAllPhones([]); // En caso de error, asegúrate de que sea un arreglo vacío
     } finally {
       setTimeout(() => {
         setIsLoading(false);
@@ -348,28 +353,41 @@ const Telephones = () => {
   };
 
   const handleEyeClick = (phoneNumber) => {
-    console.log("Número de teléfono seleccionado:", phoneNumber);
-    setSelectedAnswer({ numeroTelefonico: phoneNumber }); // Actualizar el contexto con el nuevo número
+    if (selectedPhone === phoneNumber) {
+      console.log("Deseleccionando número de teléfono:", phoneNumber);
+      setSelectedPhone(null); // Deseleccionar
+      setSelectedPhoneFilter(null); // Restablecer el filtro en el contexto
+      setIsDataAllPhones((prev) => [...prev]); // Restablecer el estado inicial de los teléfonos
+    } else {
+      console.log("Número de teléfono seleccionado:", phoneNumber);
+      setSelectedPhone(phoneNumber); // Seleccionar
+      setSelectedPhoneFilter(phoneNumber); // Actualizar el filtro en el contexto
+    }
+  };
+
+  const handleSendPhoneToFormFollowUps = (phoneNumber) => {
+    console.log("Número de teléfono enviado al formulario FormFollowUps:", phoneNumber);
+
+    // Actualiza el número telefónico en el contexto antes de abrir el modal
+    setSelectedPhoneForFollowUps(null); // Limpia cualquier número previo
+    const phone = getPhoneNumberFromContext({
+        isManagment,
+        selectedAnswer,
+        isDataAllPhones,
+        selectedPhoneForFollowUps: phoneNumber
+    });
+    setSelectedPhoneForFollowUps(phone.raw); // Establece el número correcto
   };
 
   // 2. Función que abre el modal + usa el número actualizado del row
   const openFollowUpsModal = (row) => {
-    let newPhone = { raw: "", formatted: "", source: "none" };
-    if (row && row.númeroTelefónico) {
-      const phoneValue = row.númeroTelefónico;
-      newPhone = {
-        raw: phoneValue,
-        formatted: formatPhoneNumber(phoneValue),
-        source: "row"
-      };
-      // Actualizar el contexto usando "numeroTelefonico" (sin acento)
-      setSelectedAnswer(prev => ({ ...prev, numeroTelefonico: newPhone.raw }));
-    } else {
-      newPhone = getContextPhoneNumber();
-      console.log("Se usa número del contexto:", newPhone);
-      setSelectedAnswer(prev => ({ ...prev, numeroTelefonico: newPhone.raw }));
-    }
-    console.log("Abriendo modal FollowUps con:", { phone: newPhone, rowData: row });
+    const phone = getPhoneNumberFromContext({
+        isManagment,
+        selectedAnswer,
+        isDataAllPhones,
+        selectedPhoneForFollowUps: row?.númeroTelefónico
+    }); // Usa la función centralizada
+    setSelectedAnswer(prev => ({ ...prev, númeroTelefonico: phone.raw }));
     setShowFollowUps(true); // Abre el modal
   };
 
@@ -509,7 +527,8 @@ const Telephones = () => {
                         ))}
                       </tr>
                     ))
-                  : isDataAllPhones.map((row, index) => (
+                  : Array.isArray(isDataAllPhones) // Validar que sea un arreglo
+                  ? isDataAllPhones.map((row, index) => (
                       <tr key={index}>
                         <td>{row.titulares || "--"}</td>
                         <td>{row.conocidos || "--"}</td>
@@ -518,20 +537,26 @@ const Telephones = () => {
                         <td>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                             <Eye
-                              style={{ cursor: "pointer", color: "#d3bbf8" }}
+                              style={{
+                                cursor: "pointer",
+                                color: selectedPhone === row.númeroTelefónico ? "rgb(57, 252, 141)" : "#d3bbf8"
+                              }}
                               onClick={() => handleEyeClick(row.númeroTelefónico)}
                             />
                             <a
                               href="#"
                               className="text-info"
                               onClick={() => handleRowClick(row)}
-                              data-full-number={row.númeroTelefónico} // Este atributo es esencial
+                              data-full-number={row.númeroTelefónico}
                             >
                               {"XXXXXX" + row.númeroTelefónico.slice(6)}
                             </a>
                             <Clipboard2Data
                               style={{ cursor: "pointer", color: "#fce959" }}
-                              onClick={() => openFollowUpsModal(row)}
+                              onClick={() => {
+                                openFollowUpsModal(row);
+                                handleSendPhoneToFormFollowUps(row.númeroTelefónico); // Usar la función actualizada
+                              }}
                             />
                           </div>
                         </td>
@@ -546,7 +571,14 @@ const Telephones = () => {
                         <td>{row.husoHorario || "--"}</td>
                         <td>{row.extensión || "--"}</td>
                       </tr>
-                    ))}
+                    ))
+                  : (
+                      <tr>
+                        <td colSpan="12" className="text-center">
+                          No hay datos disponibles.
+                        </td>
+                      </tr>
+                    )}
               </tbody>
             </Table>
           </div>

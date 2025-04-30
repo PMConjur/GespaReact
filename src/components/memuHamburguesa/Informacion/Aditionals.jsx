@@ -1,4 +1,4 @@
-import { Modal, Button } from "react-bootstrap";
+import { Modal } from "react-bootstrap";
 import TableAditionals from "../../TableAditionals";
 import TableGestionesAditionals from "../../TableGestionesAditionals";
 
@@ -25,9 +25,8 @@ const Aditionals = ({ show, handleClose }) => {
                 flexDirection: 'column',
                 gap: '10px'
             }}>
-                {/* Se elimina el contenedor de scroll. El scroll se maneja en cada componente de tabla */}
-                <TableAditionals/>
-                <TableGestionesAditionals/>
+                <TableAditionals handleCloseAditionals={handleClose} />
+                <TableGestionesAditionals />
             </Modal.Body>
         </Modal>
     );
