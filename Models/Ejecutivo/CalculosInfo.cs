@@ -4,10 +4,10 @@ namespace NoriAPI.Models.Ejecutivo
 {
     public class CalculosInfo
     {
-        public string No { get; set; }
+        public int No { get; set; }
         public DateTime Fecha { get; set; }
-        public decimal saldo { get; set; }
-        public decimal pago { get; set; }
-        public decimal SaldoFinal { get; set; }
+        public double saldo { get; set; }
+        public double pago { get; set; }
+        public double SaldoFinal { get; set; }
     }
 }

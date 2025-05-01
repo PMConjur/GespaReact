@@ -17,6 +17,7 @@ using NoriAPI.Models.Flujo;
 using NoriAPI.Models.Ofrecimiento;
 using NoriAPI.Models;
 using static NoriAPI.Services.EjecutivoService;
+using System.Drawing;
 
 namespace NoriAPI.Repositories
 {
@@ -89,7 +90,7 @@ namespace NoriAPI.Repositories
 
         #region GuardaNegociacion
         Task<dynamic> Guarda_Plazos(EliminaGuardaPlazos PlazosInfo, Pago_ pago_, DateTime dtInicio, DateTime dtFin, int iNúmPago);
-        Task<dynamic> Elimina_Plazos(EliminaGuardaPlazos PlazosInfo);        
+        Task<dynamic> Elimina_Plazos(EliminaGuardaPlazos PlazosInfo);
         Task<dynamic> IncrementaNegociacion(IncrementoNegociacion incrementaNegInfo);
         bool ValidaCorreo(string correoElectronico);
         #endregion
@@ -596,23 +597,7 @@ namespace NoriAPI.Repositories
         public async Task<List<PreguntasRespuestasInfo>> ValidatePreguntas_Respuestas()
         {
             using var connection = GetConnection("Piso2Amex");
-            string preg_resp_Query = "select FP.[idPregunta],\r\n" +
-                "FP.[Pregunta],\r\n" +
-                "FR.[idRespuesta],\r\n" +
-                "FR.[idValor],\r\n" +
-                "FR.[Respuesta],\r\n" +
-                "FR.[idSiguientePregunta],\r\n" +
-                "FR.[Seguimiento],\r\n" +
-                "FR.[Negociación],\r\n" +
-                "FR.[Identificador],\r\n" +
-                "VC.[Valor],\r\n" +
-                "VC.[ValorActivo]\r\n" +
-                "from FlujoPreguntas FP\r\n" +
-                "inner join FlujoRespuestas FR\r\n" +
-                "on FR.idPregunta = FP.idPregunta \r\n" +
-                "left join ValoresCatálogo VC\r\n" +
-                "on VC.idValor = FR.idValor \r\n" +
-                "order by fr.idPregunta";
+            string preg_resp_Query = "SELECT * FROM [dbCollection].[dbo].[vw_Flujo]";
 
             var preg_resp_list = await connection.QueryAsync<PreguntasRespuestasInfo>(
                 preg_resp_Query,
@@ -880,7 +865,7 @@ namespace NoriAPI.Repositories
 
         #endregion
 
-        #region Ofrecer 
+        #region Ofrecer
         public string ValidaOfrecer(OfrecerNegociacionRequest ofrecerInfo, int iMaxDias, DateTime fechaCorte, DateTime fechaAsignacion, bool PrimesLending, DataTable dtPagos)
         {
             string mensaje = "";
@@ -1524,14 +1509,14 @@ namespace NoriAPI.Repositories
         {
             return dt.AsEnumerable().Select(row => new CalculosInfo
             {
-                No = row.Field<string>("No."),
+                No = row.Field<int>("No"),
                 Fecha = row.Field<DateTime>("Fecha"),
-                saldo = row.Field<decimal>("saldo"),
-                pago = row.Field<decimal>("pago"),
-                SaldoFinal = row.Field<decimal>("Saldo Final")
+                saldo = row.Field<double>("saldo"),
+                pago = row.Field<double>("pago"),
+                SaldoFinal = row.Field<double>("SaldoFinal")
             }).ToList();
 
-        }        
+        }
         public bool ValidaCorreo(string correoElectronico)
         {
             string validEmailPattern =
@@ -1542,9 +1527,6 @@ namespace NoriAPI.Repositories
             Regex ValidEmailRegex = new Regex(validEmailPattern, RegexOptions.IgnoreCase);
             return ValidEmailRegex.IsMatch(correoElectronico);
         }
-
-        
-
 
         #region Datos
         public int ObtenerIdCartera()
