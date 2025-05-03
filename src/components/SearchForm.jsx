@@ -184,7 +184,7 @@ const SearchForm = () => {
           )}
           {showSuggestions && suggestions.length > 0 && (
             <div
-              className="position-absolute w-auto bg-white mt-5"
+              className="position-absolute w-auto mt-5"
               style={{
                 borderBottom: "1px solid black",
                 cursor: "pointer",
@@ -194,6 +194,7 @@ const SearchForm = () => {
                 color: "black",
                 fontSize: "14px",
                 borderRadius: "0.375rem",
+                backgroundColor: "#2c3034",
               }}
             >
               {suggestions.map((suggestion, index) => (
