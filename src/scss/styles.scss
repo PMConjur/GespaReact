@@ -1082,6 +1082,10 @@ $btn-transition: background-color 0.5s ease, color 0.5s ease;
   color: #fff; /* Cambia el color del texto si es necesario */
 }
 
+.custom-dropdown-menu{
+  border: solid 1px $success; /* Cambia el color del borde al que prefieras */
+}
+
 /* estilos time telephone */
 .time-input {
   width: 150px;
@@ -2117,7 +2121,7 @@ to { border-right-color: transparent; }
     border-color: $success; // Cambia el color del borde inferior
     
     .result-search-item {
-      color: lighten(white, 10%); // Aclara el texto un 10%
+      color: light(white, 10%); // Aclara el texto un 10%
     }
   }
 }
