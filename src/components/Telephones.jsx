@@ -406,7 +406,7 @@ const Telephones = () => {
                                 "Celular",
                                 "Recados",
                                 "Oficina",
-                                "Baja"
+                                "Baja",
                               ].map((item) => (
                                 <Dropdown.Item key={item} eventKey={item}>
                                   {item}
@@ -444,7 +444,6 @@ const Telephones = () => {
               </Table>
             </Col>
           </Row>
-
           <div style={{ maxHeight: "300px", overflowY: "auto" }}>
             <Table hover variant="dark">
               <thead>
@@ -453,7 +452,7 @@ const Telephones = () => {
                     position: "sticky",
                     top: "0",
                     backgroundColor: "#343a40", // Color de fondo para que coincida con el tema oscuro
-                    zIndex: "10"
+                    zIndex: "10",
                   }}
                 >
                   <th>T</th>
@@ -509,21 +508,17 @@ const Telephones = () => {
                             href="#"
                             className="text-info"
                             onClick={() => handleRowClick(row)}
-                            data-full-number={row.númeroTelefónico} // Este atributo es esencial
+                            data-full-number={row.númeroTelefónico}
                           >
                             {"XXXXXX" + row.númeroTelefónico.slice(6)}
                           </a>
                         </td>
-                        <td>{row.telefonia || "--"}</td>{" "}
-                        {/* Muestra el valor de telefonia */}
-                        <td>{row.origen || "--"}</td>{" "}
-                        {/* Muestra el valor de origen */}
-                        <td>{row.clase || "--"}</td>{" "}
-                        {/* Muestra el valor de clase */}
+                        <td>{row.telefonia || "--"}</td>
+                        <td>{row.origen || "--"}</td>
+                        <td>{row.clase || "--"}</td>
                         <td>{row.estado || "--"}</td>
                         <td>{row.municipio || "--"}</td>
                         <td>{row.husoHorario || "--"}</td>
-                        {/* <td>{row.segHorarioContacto || "--"}</td> */}
                         <td>{row.extensión || "--"}</td>
                       </tr>
                     ))}
