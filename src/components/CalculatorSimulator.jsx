@@ -380,9 +380,13 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         "Error al enviar los datos al endpoint fetchCalSecondPartModify:",
         error
       );
+    
+      // Verifica si el error tiene una respuesta del servidor
       const errorMessage =
-        error.response?.data?.title || "Error desconocido al enviar los datos.";
-      toast.error(errorMessage);
+        error.response?.data || "Error desconocido al enviar los datos.";
+    
+      // Muestra el mensaje de error en el toast
+      toast.warning(errorMessage);
     }
   };
 

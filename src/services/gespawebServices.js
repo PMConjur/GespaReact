@@ -961,7 +961,6 @@ export const fetchCalSecondPartModify = async (requestData) => {
     return response.data;
   } catch (error) {
     console.error("Error en fetchCalSecondPartModify:", error);
-    toast.error("Detalles del error:", error.response?.data || error.message);
     throw error;
   }
 };
