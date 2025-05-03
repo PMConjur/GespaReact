@@ -891,43 +891,16 @@ export async function Relations() {
 }
 
 // endpoint calculadora primera parte
-export const fetchCalSecondPart = async (
-  idCartera,
-  NoCuenta,
-  idHerramienta,
-  MontoRequerido,
-  Descuento,
-  iMeses,
-  dtpFecha,
-  periodos
-) => {
-  try {
-    console.log("Llamando al endpoint /ejecutivo/Calculadora-2daParte");
-    console.log("Datos enviados:", {
-      idCartera,
-      NoCuenta,
-      idHerramienta,
-      MontoRequerido,
-      Descuento,
-      iMeses,
-      dtpFecha,
-      periodos
-    });
 
-    const response = await servicio.get(`/ejecutivo/Calculadora-2daParte`, {
-      params: {
-        idHerramienta,
-        NoCuenta,
-        idCartera,
-        MontoRequerido,
-        Descuento,
-        iMeses,
-        dtpFecha,
-        periodos
+// endpoint calculadora segunda parte
+export const fetchCalSecondPart = async (requestData) => {
+  try {
+    console.log("Datos enviados:", requestData);
+    const response = await servicio.post(`/ejecutivo/Calculadora-2daParte`, requestData, {
+      headers: {
+        'Content-Type': 'application/json'
       }
     });
-
-    console.log("Respuesta recibida:", response);
 
     if (response.status !== 200) {
       throw new Error(
@@ -942,6 +915,7 @@ export const fetchCalSecondPart = async (
     throw error;
   }
 };
+
 
 export const closeSession = async (idEjecutivo, idLogIngreso) => {
   try {
@@ -968,58 +942,15 @@ export const closeSession = async (idEjecutivo, idLogIngreso) => {
   }
 };
 
-export const fetchCalSecondPartModify = async (
-  idCartera,
-  NoCuenta,
-  idHerramienta,
-  MontoRequerido,
-  Descuento,
-  iMeses,
-  dtpFecha,
-  periodos,
-  modificar,
-  montoMod,
-  fechaPagoMod,
-  agregarPagos,
-  filaMod
-) => {
+// endpoint de modificar plazos
+export const fetchCalSecondPartModify = async (requestData) => {
   try {
-    console.log("Llamando al endpoint /ejecutivo/Calculadora-2daParte");
-    console.log("Datos enviados:", {
-      idCartera,
-      NoCuenta,
-      idHerramienta,
-      MontoRequerido,
-      Descuento,
-      iMeses,
-      dtpFecha,
-      periodos,
-      modificar,
-      montoMod,
-      fechaPagoMod,
-      agregarPagos,
-      filaMod
-    });
-
-    const response = await servicio.get(`/ejecutivo/Calculadora-2daParte`, {
-      params: {
-        idHerramienta,
-        NoCuenta,
-        idCartera,
-        MontoRequerido,
-        Descuento,
-        iMeses,
-        dtpFecha,
-        periodos,
-        modificar,
-        montoMod,
-        fechaPagoMod,
-        agregarPagos,
-        filaMod
+    console.log("Datos enviados:", requestData);
+    const response = await servicio.post(`/ejecutivo/Calculadora-2daParte`, requestData, {
+      headers: {
+        'Content-Type': 'application/json'
       }
     });
-
-    console.log("Respuesta recibida:", response);
 
     if (response.status !== 200) {
       throw new Error(
@@ -1030,7 +961,7 @@ export const fetchCalSecondPartModify = async (
     return response.data;
   } catch (error) {
     console.error("Error en fetchCalSecondPartModify:", error);
-    console.error("Detalles del error:", error.response?.data || error.message);
+    toast.error("Detalles del error:", error.response?.data || error.message);
     throw error;
   }
 };

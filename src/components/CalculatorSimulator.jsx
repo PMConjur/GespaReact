@@ -230,13 +230,14 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
 
       const requestData = {
         idHerramienta: selectedHerramienta,
-        NoCuenta: idCuenta,
+        noCuenta: idCuenta,
         idCartera: 1,
-        MontoRequerido: parseFloat(formValues.montoRequerido) || 0,
-        Descuento: parseFloat(formValues.descuento) || 0,
+        montoRequerido: parseFloat(formValues.montoRequerido) || 0,
+        descuento: parseFloat(formValues.descuento) || 0,
         iMeses: parseInt(formInputs.meses, 10) || 0,
-        dtpFecha: formInputs.fechaPago || "",
-        periodos: parseInt(formInputs.periodos, 10) || 1
+        fechaPago: formInputs.fechaPago || "",
+        periodos: parseInt(formInputs.periodos, 10) || 1,
+        plazos: []
       };
 
       console.log(
@@ -244,16 +245,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         requestData
       );
 
-      const response = await fetchCalSecondPart(
-        requestData.idCartera,
-        requestData.NoCuenta,
-        requestData.idHerramienta,
-        requestData.MontoRequerido,
-        requestData.Descuento,
-        requestData.iMeses,
-        requestData.dtpFecha,
-        requestData.periodos
-      );
+      const response = await fetchCalSecondPart(requestData);
 
       console.log("Respuesta del endpoint fetchCalSecondPart:", response);
       toast.success("Cálculo realizado correctamente.");
@@ -335,46 +327,42 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         toast.error("Por favor, completa todos los campos requeridos.");
         return;
       }
-
+  
+      // Mapear los datos de la tabla al formato requerido por el endpoint
+      const plazos = calculosData.calculos.map((calculo) => ({
+        no: calculo.no,
+        fecha: new Date(calculo.fecha).toISOString(), // Convertir a formato ISO
+        saldo: calculo.saldo || 0,
+        pago: calculo.pago || 0,
+        saldoFinal: calculo.saldoFinal || 0,
+      }));
+  
       const requestData = {
         idHerramienta: selectedHerramienta,
-        NoCuenta: idCuenta,
+        noCuenta: idCuenta,
         idCartera: 1,
-        MontoRequerido: parseFloat(formValues.montoRequerido) || 0,
-        Descuento: parseFloat(formValues.descuento) || 0,
+        montoRequerido: parseFloat(formValues.montoRequerido) || 0,
+        descuento: parseFloat(formValues.descuento) || 0,
         iMeses: parseInt(formInputs.meses, 10) || 0,
-        dtpFecha: formInputs.fechaPago || "",
+        fechaPago: formInputs.fechaPago || "",
         periodos: parseInt(formInputs.periodos, 10) || 1, // Asigna el valor seleccionado en el select
         modificar: 1, // Siempre se envía 1 al hacer clic en el botón "Modificar"
-        montoMod: parseFloat(modifyForm.montoMod) || 0,
-        fechaPagoMod: modifyForm.fechaPagoMod,
-        agregarPagos: modifyForm.agregarPagos ? 1 : 0, // 1 si el checkbox está marcado, 0 si no
-        filaMod: modifyForm.filaMod
+        montoModificar: parseFloat(modifyForm.montoMod) || 0,
+        fechaPagoModificar: modifyForm.fechaPagoMod,
+        pagoInicial: modifyForm.agregarPagos ? 1 : 0, // 1 si el checkbox está marcado, 0 si no
+        filaModificar: modifyForm.filaMod,
+        plazos: plazos, // Agregar los plazos mapeados
       };
-
+  
       console.log(
         "Datos enviados al endpoint fetchCalSecondPartModify:",
         requestData
       );
-
-      const response = await fetchCalSecondPartModify(
-        requestData.idCartera,
-        requestData.NoCuenta,
-        requestData.idHerramienta,
-        requestData.MontoRequerido,
-        requestData.Descuento,
-        requestData.iMeses,
-        requestData.dtpFecha,
-        requestData.periodos,
-        requestData.modificar,
-        requestData.montoMod,
-        requestData.fechaPagoMod,
-        requestData.agregarPagos,
-        requestData.filaMod
-      );
-
-      console.log("Respuesta del endpoint fetchCalSecondPartModify:", response);
-
+  
+      const response = await fetchCalSecondPartModify(requestData);
+  
+      toast.success("Respuesta del endpoint al modificar", response);
+  
       // Actualizar los datos en la tabla y el formulario
       setCalculosData({
         plazos: response.plazos,
@@ -383,9 +371,9 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         montoNegociado: response.montoNegociado,
         descuento: response.descuento,
         calculos: response.calculos,
-        tasaMensual: response.tasaMensual // Agregar la tasa mensual al estado
+        tasaMensual: response.tasaMensual, // Agregar la tasa mensual al estado
       });
-
+  
       toast.success("Datos enviados correctamente.");
     } catch (error) {
       console.error(

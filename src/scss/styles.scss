@@ -2104,11 +2104,21 @@ to { border-right-color: transparent; }
 
 .search-result{
   color: $success;
-  border-bottom: 1px solid #6c757d;
-  background-color: #343a40;
+  border: 1px solid #6c757d;
+  background-color: #2c3034;
+  border-radius: 0.375rem;
 
   .result-search-item{
     color: white;
+  }
+
+  &:hover {
+    background-color: black; // Oscurece el color de fondo un 10%
+    border-color: $success; // Cambia el color del borde inferior
+    
+    .result-search-item {
+      color: lighten(white, 10%); // Aclara el texto un 10%
+    }
   }
 }
 

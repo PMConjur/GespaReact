@@ -192,7 +192,8 @@ const SearchForm = () => {
                 overflowY: "auto",
                 zIndex: 10,
                 color: "black",
-                fontSize: "14px"
+                fontSize: "14px",
+                borderRadius: "0.375rem",
               }}
             >
               {suggestions.map((suggestion, index) => (
