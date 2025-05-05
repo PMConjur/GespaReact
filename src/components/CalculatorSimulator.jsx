@@ -945,7 +945,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                     className="custom-scrollbar me-auto ms-2"
                     style={{
                       maxHeight: "350px",
-                      maxWidth: "60vw",
+                      maxWidth: "100vw",
                       overflow: "auto",
                       position: "relative", // Necesario para el scroll del tbody
                     }}
