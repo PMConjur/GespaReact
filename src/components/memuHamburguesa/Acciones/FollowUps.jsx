@@ -7,7 +7,8 @@ const FollowUps = ({
   show, 
   handleClose,
   isFollowUpActive = false,
-  pureDisplay = false  // nuevo prop para mostrar sin lógica
+  pureDisplay = false,  // nuevo prop para mostrar sin lógica
+  FollowClipboardActive = false // Nueva variable para manejar el caso del ícono Clipboard2Data
 }) => {
   const [hasRegistered, setHasRegistered] = useState(false);
   const [refreshTable, setRefreshTable] = useState(0);
@@ -69,6 +70,52 @@ const FollowUps = ({
                 handleClose={handleClose} 
                 isFollowUpsActive={false}
                 onSuccessfulRegister={() => {}}
+                FollowClipboardActive={FollowClipboardActive} // Pasar la nueva propiedad
+              />
+            </Col>
+          </Row>
+        </Modal.Body>
+      </Modal>
+    );
+  }
+
+  // Nuevo return para FollowClipboardActive
+  if (FollowClipboardActive) {
+    return (
+      <Modal 
+        show={show}
+        onHide={handleClose} 
+        size="xl"
+        backdrop="static"
+        keyboard={true}
+        contentClassName="d-flex flex-column"
+        dialogClassName="my-custom-modal"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Seguimiento desde Telefonos</Modal.Title>
+        </Modal.Header>
+        <Modal.Body 
+          className="flex-grow-1 p-0 d-flex flex-column"
+          style={{ overflowY: "auto" }}
+        >
+          <Row className="flex-grow-1 g-0" style={{ height: "100%" }}>
+            <Col 
+              md={6} 
+              className="h-100 d-flex flex-column" 
+              style={{ maxHeight: "700px", overflowY: "auto" }}
+            >
+              <TableFollowUps />
+            </Col>
+            <Col 
+              md={6} 
+              className="h-100 d-flex flex-column"
+              style={{ maxHeight: "700px", overflowY: "auto" }}
+            >
+              <FormFollowUps 
+                handleClose={handleClose} 
+                isFollowUpsActive={false}
+                onSuccessfulRegister={() => {}}
+                FollowClipboardActive={FollowClipboardActive} // Pasar la nueva propiedad
               />
             </Col>
           </Row>

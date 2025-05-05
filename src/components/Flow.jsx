@@ -267,18 +267,23 @@ const Flow = () => {
     const tiempoEnCuenta = stoppedTimeSticky || "00:00:00"; // Usa el tiempo capturado por TimmerAccount
     const duracion = stoppedTime || "00:00:00"; // Usa el tiempo detenido del cronómetro interno de Flow.jsx
 
+    // Verifica si los datos provienen de TableAditionals
+    const isFromTableAditionals = selectedAnswer?.source === "TableAditionals";
+
     const dataManagment = {
       idCartera: searchResults?.[0].idCartera,
       idCuenta: searchResults?.[0].idCuenta,
       idEjecutivo: idEjecutivo,
-      numeroTelefonico: communicationData?.telephone
-        ? communicationData.telephone
-        : selectedAnswer.dataPhone.númeroTelefónico,
+      numeroTelefonico: String(
+        communicationData?.telephone
+          ? communicationData.telephone
+          : selectedAnswer.dataPhone.númeroTelefónico
+      ), // Asegura que sea string
       idContacto: idContacto ? idContacto : null,
       idSituacion: idSituacion ? idSituacion : null,
       idSucursal: 0,
       extension: 0,
-      idModo: selectedAnswer.dataPhone.idModo,
+      idModo: isFromTableAditionals ? 2206 : parseInt(selectedAnswer.dataPhone.idModo, 10), // Asegura que sea int y usa 2206 si es de TableAditionals
       idAcercamiento: idAcercamiento ? idAcercamiento : null,
       duracion, // Usa el tiempo del cronómetro interno
       tiempoEnCuenta, // Usa el tiempo capturado por TimmerAccount
@@ -289,7 +294,7 @@ const Flow = () => {
     };
 
     console.log("Datos de gestión a guardar:", dataManagment);
-    if (dataManagment.numeroTelefonico === 0 && dataManagment.idModo === 2201) {
+    if (dataManagment.numeroTelefonico === "0" && dataManagment.idModo === 2201) {
       toast.error("El número telefónico no puede quedar vacío.");
       return;
     } else {
