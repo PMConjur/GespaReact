@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useContext} from "react";
+import { useState, useEffect, useMemo, useContext } from "react";
 import { fetchNotes, saveNotesToAPI } from "../services/gespawebServices";
 import DatePicker from "react-datepicker";
 import TimePicker from "react-time-picker";
@@ -35,22 +35,66 @@ function NotesWidget() {
   const [date, setDate] = useState(new Date());
   const [time, setTime] = useState("");
   const [option, setOption] = useState("");
-  const { formData} = useContext(AppContext);
+  const { formData } = useContext(AppContext);
+  const { selectedDate } = useContext(AppContext);
+  const [filteredNotes, setFilteredNotes] = useState([]);
 
+  // Función para filtrar notas por la fecha seleccionada
+  const filterNotesBySelectedDate = (notes, selectedDate) => {
+    if (!selectedDate) return notes; // Si no hay fecha seleccionada, mostrar todas las notas
+
+    // Convertir la fecha seleccionada a formato YYYY-MM-DD
+    const selectedDateString = selectedDate.toISOString().split("T")[0];
+
+    return notes.filter((note) => {
+      // Asegurarse de que la fecha de la nota esté en el mismo formato
+      const noteDate = note.date?.includes("/")
+        ? convertToISODate(note.date)
+        : note.date?.split("T")[0];
+      return noteDate === selectedDateString;
+    });
+  };
+
+  // Función para convertir fechas en formato DD/MM/YYYY a YYYY-MM-DD
+  const convertToISODate = (dateString) => {
+    const [day, month, year] = dateString.split("/").map(Number);
+    return new Date(year, month - 1, day).toISOString().split("T")[0];
+  };
+
+  useEffect(() => {
+    const filtered = filterNotesBySelectedDate(notes, selectedDate)
+      .filter(note => shouldDisplayNote(note));
+    
+    const sorted = sortNotesByDateTime(filtered);
+    
+    console.log("Notas ordenadas:", sorted.map(n => ({
+      title: n.title,
+      date: n.date,
+      time: n.time,
+      sortKey: new Date(
+        n.date.includes('T') ? n.date : 
+        n.date.split('/').reverse().join('-') + (n.time ? `T${n.time}` : '')
+      ).toString()
+    })));
+    
+    setFilteredNotes(sorted);
+  }, [notes, selectedDate]);
   // Cargar notas cuando cambia numEmpleado o formData
   useEffect(() => {
     const loadNotes = async () => {
       try {
         console.log("Cargando notas...", { numEmpleado, formData });
         const fetchedNotes = await fetchNotes(numEmpleado);
-        
+
         // Asegurar que cada nota tenga un ID único
         const notesWithUniqueIds = fetchedNotes.map((note, index) => ({
           ...note,
           id: note.id || `note-${Date.now()}-${index}`, // Generar ID si no existe
-          uniqueKey: `${note.idCuenta?.trim()}-${note.FechaPago}-${note.segundo}-${index}` // Clave única compuesta
+          uniqueKey: `${note.idCuenta?.trim()}-${note.FechaPago}-${
+            note.segundo
+          }-${index}`, // Clave única compuesta
         }));
-        
+
         setNotes(notesWithUniqueIds);
       } catch (error) {
         console.error("Error fetching notes:", error);
@@ -76,7 +120,13 @@ function NotesWidget() {
         if (note.time && note.date) {
           const [hours, minutes] = note.time.split(":").map(Number);
           const [day, month, year] = note.date.split("/").map(Number);
-          const followUpDateTime = new Date(year, month - 1, day, hours, minutes);
+          const followUpDateTime = new Date(
+            year,
+            month - 1,
+            day,
+            hours,
+            minutes
+          );
 
           if (
             currentDate.getFullYear() === followUpDateTime.getFullYear() &&
@@ -85,7 +135,7 @@ function NotesWidget() {
             currentDate.getHours() === followUpDateTime.getHours() &&
             currentDate.getMinutes() === followUpDateTime.getMinutes()
           ) {
-            alert(`¡Es hora de seguimiento para la nota: ${note.title}!`);
+            toast.warning(`¡Es hora de seguimiento para la nota: ${note.title}!`);
           }
         }
       });
@@ -96,29 +146,50 @@ function NotesWidget() {
   }, [notes]);
 
   // Guardar notas en el endpoint cuando cambian
-useEffect(() => {
-  const handleSaveNotes = async () => {
-    try {
-      await saveNotesToAPI(notes);
-    } catch (error) {
-      console.error("Error en el guardado de notas:", error);
-      // Puedes agregar notificaciones al usuario aquí si lo deseas
-    }
-  };
+  useEffect(() => {
+    const handleSaveNotes = async () => {
+      try {
+        await saveNotesToAPI(notes);
+      } catch (error) {
+        console.error("Error en el guardado de notas:", error);
+        // Puedes agregar notificaciones al usuario aquí si lo deseas
+      }
+    };
 
-  if (notes.length > 0) {
-    handleSaveNotes();
-  }
-}, [notes]);
+    if (notes.length > 0) {
+      handleSaveNotes();
+    }
+  }, [notes]);
 
   // Función para ordenar notas por fecha y hora más próxima
   const sortNotesByDateTime = (notes) => {
     return [...notes].sort((a, b) => {
       try {
-        // Crear objetos Date para comparación
-        const dateA = a.time ? new Date(`${a.date} ${a.time}`) : new Date(a.date);
-        const dateB = b.time ? new Date(`${b.date} ${b.time}`) : new Date(b.date);
-        
+        // Crear fechas comparables para ambas notas
+        const getComparableDate = (note) => {
+          if (!note.date) return new Date(0); // Fecha muy antigua si no hay fecha
+          
+          // Parsear fecha según formato
+          let dateObj;
+          if (note.date.includes('T')) {
+            dateObj = new Date(note.date);
+          } else {
+            const [day, month, year] = note.date.split('/').map(Number);
+            dateObj = new Date(year, month - 1, day);
+          }
+          
+          // Si tiene hora, agregarla
+          if (note.time) {
+            const [hours, minutes] = note.time.split(':').map(Number);
+            dateObj.setHours(hours, minutes, 0, 0);
+          }
+          
+          return dateObj;
+        };
+  
+        const dateA = getComparableDate(a);
+        const dateB = getComparableDate(b);
+  
         // Orden ascendente (más próximo primero)
         return dateA - dateB;
       } catch (error) {
@@ -129,8 +200,11 @@ useEffect(() => {
   };
 
   // Notas ordenadas memoizadas
-  const sortedNotes = useMemo(() => sortNotesByDateTime(notes), [notes]);
 
+  const sortedNotes = useMemo(
+    () => sortNotesByDateTime(filteredNotes),
+    [filteredNotes]
+  );
   // Función para extraer número de teléfono
   const extractFullPhoneNumber = (content) => {
     if (!content) return null;
@@ -142,17 +216,19 @@ useEffect(() => {
   const handleRealizarClick = (note) => {
     try {
       const phoneNumber = extractFullPhoneNumber(note.content);
-      
+
       if (!phoneNumber) {
         toast.warning("No se encontró número de teléfono válido");
         return;
       }
 
-      const phoneLinks = document.querySelectorAll('a.text-info[data-full-number]');
+      const phoneLinks = document.querySelectorAll(
+        "a.text-info[data-full-number]"
+      );
       let foundPhone = null;
 
-      phoneLinks.forEach(link => {
-        const fullNumber = link.getAttribute('data-full-number');
+      phoneLinks.forEach((link) => {
+        const fullNumber = link.getAttribute("data-full-number");
         if (fullNumber === phoneNumber) {
           foundPhone = link;
         }
@@ -160,9 +236,11 @@ useEffect(() => {
 
       if (foundPhone) {
         foundPhone.click();
-        toast.success(`Llamando a: ${'XXXXXX' + phoneNumber.slice(-4)}`);
+        toast.success(`Llamando a: ${"XXXXXX" + phoneNumber.slice(-4)}`);
       } else {
-        toast.error(`Número no encontrado: ${'XXXXXX' + phoneNumber.slice(-4)}`);
+        toast.error(
+          `Número no encontrado: ${"XXXXXX" + phoneNumber.slice(-4)}`
+        );
       }
     } catch (error) {
       console.error("Error en handleRealizarClick:", error);
@@ -222,7 +300,7 @@ useEffect(() => {
         date: dateTime,
         time,
         option,
-        uniqueKey: `note-${Date.now()}-${notes.length}` // Clave única para renderizado
+        uniqueKey: `note-${Date.now()}-${notes.length}`, // Clave única para renderizado
       };
       setNotes([newNote, ...notes]);
     }
@@ -248,35 +326,59 @@ useEffect(() => {
     setActiveNote(null);
   };
 
-    // Función para verificar si una nota es de hoy o anterior
-    const isTodayOrBefore = (noteDate) => {
-      if (!noteDate) return false;
-      
-      try {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        // Parsear la fecha de la nota (formato DD/MM/YYYY)
-        const [day, month, year] = noteDate.split('/').map(Number);
-        const noteDateObj = new Date(year, month - 1, day);
-        noteDateObj.setHours(0, 0, 0, 0);
-        
-        return noteDateObj <= today;
-      } catch (error) {
-        console.error("Error al verificar fecha:", error);
-        return false;
-      }
-    };
+  const shouldDisplayNote = (note) => {
+    // Si no hay fecha, ocultar
+    if (!note.date) return false;
   
-    // Filtrar y ordenar notas
-    const filteredAndSortedNotes = useMemo(() => {
-      // 1. Filtrar solo notas de hoy o anteriores
-      const filteredNotes = notes.filter(note => isTodayOrBefore(note.date));
-      
-      // 2. Ordenar por proximidad (manteniendo la lógica actual)
-      return sortNotesByDateTime(filteredNotes);
-    }, [notes]);
+    try {
+      // Parsear fecha ISO (2025-04-30T12:30:00) o local (30/04/2025)
+      const dateObj = note.date.includes('T') 
+        ? new Date(note.date)  // Usar constructor Date para formato ISO
+        : new Date(note.date.split('/').reverse().join('-')); // Convertir dd/mm/yyyy a yyyy-mm-dd
+  
+      // Si no hay hora definida, mostrar solo si es hoy/futuro (comparando fechas sin hora)
+      if (!note.time) {
+        return dateObj >= new Date().setHours(0, 0, 0, 0);
+      }
+  
+      // Combinar fecha + hora
+      const [hours, minutes] = note.time.split(':').map(Number);
+      dateObj.setHours(hours, minutes, 0, 0);
+  
+      return dateObj >= new Date();
+    } catch (error) {
+      console.error("Error al parsear fecha:", note.date, error);
+      return false; // Ocultar si hay error
+    }
+  };
 
+  const isWithinFiveMinutes = (note) => {
+    if (!note.time || !note.date) return false;
+  
+    try {
+      const [day, month, year] = note.date.split('/').map(Number);
+      const [hours, minutes] = note.time.split(':').map(Number);
+      
+      const noteDateTime = new Date(year, month - 1, day, hours, minutes);
+      const currentTime = new Date();
+      const fiveMinutesMs = 5 * 60 * 1000;
+      
+      // Animación solo para los próximos 5 minutos
+      return Math.abs(noteDateTime - currentTime) <= fiveMinutesMs;
+    } catch (error) {
+      console.error("Error al verificar tiempo de seguimiento:", error);
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    console.log("Notas filtradas:", filteredNotes.map(n => ({
+      title: n.title,
+      date: n.date,
+      time: n.time,
+      shouldShow: shouldDisplayNote(n)
+    })));
+  }, [filteredNotes]);
 
   return (
     <div className="notes-widget card shadow">
@@ -284,16 +386,10 @@ useEffect(() => {
         style={{}}
         className="card-header text-white d-flex justify-content-between align-items-center"
       >
-        <h5 className="mb-0 gap-3"><BellFill className=" me-1"/>Mis Recordatorios</h5>
-        {/* 
-        <button
-          className="btn btn-sm btn-light"
-          onClick={handleAddNote}
-          aria-label="Añadir nota"
-        >
-          <PlusIcon />
-        </button>
-        */}
+        <h5 className="mb-0 gap-3">
+          <BellFill className=" me-1" />
+          Mis Recordatorios
+        </h5>
       </div>
       <div className="card-body">
         {isEditing ? (
@@ -375,55 +471,59 @@ useEffect(() => {
               </button>
             </div>
           </div>
-       ) : (
-        <div className="notes-list">
-        {sortedNotes.length === 0 ? (
-          <div className="text-center text-muted py-5 mb-0 text-white">
-            <p className="text-white">No hay Recordatorios.</p>
-          </div>
         ) : (
-          <div className="list-group overflow-auto" style={{ maxHeight: "400px" }}>
-            {sortedNotes.map((note, index) => {
-              // Determinar si es el recordatorio más próximo
-              const isClosestNote = index === 0;
-              
-              return (
-                <div
-                  key={note.uniqueKey || note.id}
-                  className={`list-group-item list-group-item-action ${isClosestNote ? 'blinking-border' : ''}`}
-                  style={{ marginBottom: "2rem" }}
-                >
-                  <div className="d-flex justify-content-between align-items-center">
-                    <h6 className="mb-1">{note.title || "Sin título"}</h6>
-                  </div>
-                  <p className="mb-1">
-                    <span style={{ whiteSpace: "none" }}>
-                      {note.content || "Sin contenido"}
-                    </span>
-                  </p>
-                  {isClosestNote && note.date && (
-                    <div className="d-flex justify-content-between align-items-center mt-2">
-                      <span className="shake-animation">
-                        SEGUIMIENTO PENDIENTE
-                      </span>
-                      <Button 
-                        className="mt-2 btn-success"
-                        onClick={() => handleRealizarClick(note)}
+          <div className="notes-list">
+            {filteredNotes.length === 0 ? (
+              <div className="text-center text-muted py-5 mb-0 text-white">
+                <p className="text-white">
+                  No hay recordatorios para la fecha seleccionada.
+                </p>
+              </div>
+            ) : (
+              <div
+                className="list-group overflow-auto"
+                style={{ maxHeight: "400px" }}
+              >
+                {sortedNotes
+                  .filter((note) => shouldDisplayNote(note))
+                  .map((note, index) => {
+                    const shouldAnimate = isWithinFiveMinutes(note);
+                    const isClosestNote = index === 0;
+                    return (
+                      <div
+                        key={note.uniqueKey || note.id}
+                        className={`list-group-item list-group-item-action ${
+                          shouldAnimate ? "blinking-border" : ""
+                        }`}
+                      
                       >
-                        Realizar
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                       <div className="d-flex justify-content-between align-items-center overflow-auto">
+                          <span className="mb-2 mt-2 text-nowrap">Hora: {note.time }, Cuenta: {note.id}, {note.content|| "Sin contenido"}, Fecha: {note.date}, {note.title || "Sin título"}</span>
+                        </div>
+                        <div className="d-flex justify-content-between align-items-center mt-1">
+                          {shouldAnimate && note.date && (
+                            <span className="shake-animation">
+                              SEGUIMIENTO PENDIENTE
+                            </span>
+                          )}
+                          {isClosestNote && note.date && (
+                            <Button
+                              className="mt-2 btn-success justify-content-end ms-auto"
+                              onClick={() => handleRealizarClick(note)}
+                            >
+                              Realizar
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
           </div>
         )}
       </div>
-    )}
-  </div>
-</div>
-);
-}
-
+    </div>
+  );
+};
 export default NotesWidget;

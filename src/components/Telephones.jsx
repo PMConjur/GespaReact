@@ -450,7 +450,7 @@ const Telephones = () => {
                                 "Celular",
                                 "Recados",
                                 "Oficina",
-                                "Baja"
+                                "Baja",
                               ].map((item) => (
                                 <Dropdown.Item key={item} eventKey={item}>
                                   {item}
@@ -488,7 +488,6 @@ const Telephones = () => {
               </Table>
             </Col>
           </Row>
-
           <div style={{ maxHeight: "300px", overflowY: "auto" }}>
             <Table hover variant="dark">
               <thead>
@@ -497,7 +496,7 @@ const Telephones = () => {
                     position: "sticky",
                     top: "0",
                     backgroundColor: "#343a40", // Color de fondo para que coincida con el tema oscuro
-                    zIndex: "10"
+                    zIndex: "10",
                   }}
                 >
                   <th>T</th>
@@ -559,13 +558,32 @@ const Telephones = () => {
                               }}
                             />
                           </div>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            style={{ cursor: "pointer" }}
+                            viewBox="0 0 16 16"
+                            onClick={() => openFollowUpsModal(row)}
+                          >
+                            <path d="M10.854 6.146a.5.5 0 0 1 0 .708L8 9.707l-1.854-1.853a.5.5 0 1 1 .708-.708L8 8.293l2.146-2.147a.5.5 0 0 1 .708 0z" />
+                            <path d="M14 4.5V14a2 2 0 0 1-2 2h-2.5a.5.5 0 0 1-.5-.5V4.5a.5.5 0 0 1 .5-.5H12a2 2 0 0 1 2 2zM13.5 4h-2a.5.5 0 0 0-.5.5V14h-2V4.5A.5.5 0 0 0 9 4H7a.5.5 0 0 0-.5.5v9h-2V4.5A.5.5 0 0 0 4 4H2.5a.5.5 0 0 0-.5.5v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-9a.5.5 0 0 0-.5-.5z" />
+                          </svg>
                         </td>
-                        <td>{row.telefonia || "--"}</td>{" "}
-                        {/* Muestra el valor de telefonia */}
-                        <td>{row.origen || "--"}</td>{" "}
-                        {/* Muestra el valor de origen */}
-                        <td>{row.clase || "--"}</td>{" "}
-                        {/* Muestra el valor de clase */}
+                        <td>
+                          <a
+                            href="#"
+                            className="text-info"
+                            onClick={() => handleRowClick(row)}
+                            data-full-number={row.númeroTelefónico}
+                          >
+                            {"XXXXXX" + row.númeroTelefónico.slice(6)}
+                          </a>
+                        </td>
+                        <td>{row.telefonia || "--"}</td>
+                        <td>{row.origen || "--"}</td>
+                        <td>{row.clase || "--"}</td>
                         <td>{row.estado || "--"}</td>
                         <td>{row.municipio || "--"}</td>
                         <td>{row.husoHorario || "--"}</td>

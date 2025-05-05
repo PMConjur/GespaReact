@@ -60,7 +60,7 @@ function DropdownExecutive() {
           </span>
         </Dropdown.Toggle>
         <Dropdown.Menu
-          style={{ backgroundColor: "#1d1f20", border: "none" }}
+          style={{ backgroundColor: "#1d1f20"}}
           className="custom-dropdown-menu"
         >
           <Dropdown.Item

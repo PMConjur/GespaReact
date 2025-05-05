@@ -59,7 +59,7 @@ const DropdownActions = () => {
 
   return (
     <>
-      <Dropdown className="">
+      <Dropdown className="aqui">
         <Dropdown.Toggle
           className="custom-dropdown-toggle d-flex align-items-center"
           id="dropdown-basic"
@@ -69,7 +69,7 @@ const DropdownActions = () => {
           </span>
         </Dropdown.Toggle>
         <Dropdown.Menu
-          style={{ backgroundColor: "#1d1f20", border: "none" }}
+          style={{ backgroundColor: "#1d1f20"}}
           className="custom-dropdown-menu"
         >
           <Dropdown.Item
