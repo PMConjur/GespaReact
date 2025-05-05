@@ -378,7 +378,7 @@ const Complaints = ({ show, handleClose }) => {
             )}
         </div>
       </Modal.Header>
-      <Modal.Body className="d-block gap-1">
+      <Modal.Body className="d-block gap-1"  style={{maxHeight: "80vh"}}>
         <Row className="d-block d-lg-flex">
           {complaints.length > 0 ? ( // Verifica si hay datos en la tabla
             <Col Col xs={12} lg={6}>
