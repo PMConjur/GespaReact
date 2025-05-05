@@ -62,22 +62,22 @@ function NotesWidget() {
   };
 
   useEffect(() => {
-    const filtered = filterNotesBySelectedDate(notes, selectedDate)
-      .filter(note => shouldDisplayNote(note));
+    // Filtrar notas futuras primero
+    const futureNotes = filterNotesBySelectedDate(notes, selectedDate)
+      .filter(note => shouldDisplayNote(note, false));
     
-    const sorted = sortNotesByDateTime(filtered);
-    
-    console.log("Notas ordenadas:", sorted.map(n => ({
-      title: n.title,
-      date: n.date,
-      time: n.time,
-      sortKey: new Date(
-        n.date.includes('T') ? n.date : 
-        n.date.split('/').reverse().join('-') + (n.time ? `T${n.time}` : '')
-      ).toString()
-    })));
-    
-    setFilteredNotes(sorted);
+    if (futureNotes.length > 0) {
+      // Si hay notas futuras, mostrarlas
+      const sorted = sortNotesByDateTime(futureNotes);
+      setFilteredNotes(sorted);
+    } else {
+      // Si no hay notas futuras, mostrar historial de hoy
+      const todayHistory = filterNotesBySelectedDate(notes, new Date())
+        .filter(note => shouldDisplayNote(note, true));
+      
+      const sortedHistory = sortNotesByDateTime(todayHistory).reverse(); // Más reciente primero
+      setFilteredNotes(sortedHistory);
+    }
   }, [notes, selectedDate]);
   // Cargar notas cuando cambia numEmpleado o formData
   useEffect(() => {
@@ -326,35 +326,49 @@ function NotesWidget() {
     setActiveNote(null);
   };
 
-  const shouldDisplayNote = (note) => {
-    // Si no hay fecha, ocultar
+  const shouldDisplayNote = (note, showPastNotes = false) => {
     if (!note.date) return false;
-  
+    
     try {
-      // Parsear fecha ISO (2025-04-30T12:30:00) o local (30/04/2025)
       const dateObj = note.date.includes('T') 
-        ? new Date(note.date)  // Usar constructor Date para formato ISO
-        : new Date(note.date.split('/').reverse().join('-')); // Convertir dd/mm/yyyy a yyyy-mm-dd
+        ? new Date(note.date)
+        : new Date(note.date.split('/').reverse().join('-'));
   
-      // Si no hay hora definida, mostrar solo si es hoy/futuro (comparando fechas sin hora)
-      if (!note.time) {
-        return dateObj >= new Date().setHours(0, 0, 0, 0);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const isToday = dateObj.setHours(0, 0, 0, 0) === today.getTime();
+  
+      if (showPastNotes) {
+        // Lógica existente para historial
+        return isToday && (!note.time || new Date(
+          dateObj.getFullYear(),
+          dateObj.getMonth(),
+          dateObj.getDate(),
+          ...(note.time ? note.time.split(':').map(Number) : [0, 0])
+        ) < new Date());
+      } else {
+        // Para notas futuras/activas
+        if (!note.time) {
+          return dateObj >= today;
+        }
+        
+        const [hours, minutes] = note.time.split(':').map(Number);
+        dateObj.setHours(hours, minutes, 0, 0);
+        
+        // Mostrar nota 5 minutos antes y después
+        const fiveMinutesMs = 5 * 60 * 1000;
+        return dateObj.getTime() + fiveMinutesMs >= new Date().getTime();
       }
-  
-      // Combinar fecha + hora
-      const [hours, minutes] = note.time.split(':').map(Number);
-      dateObj.setHours(hours, minutes, 0, 0);
-  
-      return dateObj >= new Date();
     } catch (error) {
       console.error("Error al parsear fecha:", note.date, error);
-      return false; // Ocultar si hay error
+      return false;
     }
   };
 
   const isWithinFiveMinutes = (note) => {
     if (!note.time || !note.date) return false;
-  
+    
     try {
       const [day, month, year] = note.date.split('/').map(Number);
       const [hours, minutes] = note.time.split(':').map(Number);
@@ -363,7 +377,6 @@ function NotesWidget() {
       const currentTime = new Date();
       const fiveMinutesMs = 5 * 60 * 1000;
       
-      // Animación solo para los próximos 5 minutos
       return Math.abs(noteDateTime - currentTime) <= fiveMinutesMs;
     } catch (error) {
       console.error("Error al verificar tiempo de seguimiento:", error);
@@ -379,6 +392,20 @@ function NotesWidget() {
       shouldShow: shouldDisplayNote(n)
     })));
   }, [filteredNotes]);
+
+  const formatPhoneNumber = (text) => {
+    if (!text) return text;
+    
+    // Busca números de 10 dígitos en el texto
+    return text.replace(/\b\d{10,13}\b/g, (phone) => {
+      return 'XXXXXX' + phone.slice(-4);
+    });
+  };
+
+  const formatAccountId = (id, isHistory = false) => {
+    if (!id) return id;
+    return isHistory ? `${id.slice(-5)}` : id;
+  };
 
   return (
     <div className="notes-widget card shadow">
@@ -484,40 +511,43 @@ function NotesWidget() {
                 className="list-group overflow-auto"
                 style={{ maxHeight: "400px" }}
               >
-                {sortedNotes
-                  .filter((note) => shouldDisplayNote(note))
-                  .map((note, index) => {
-                    const shouldAnimate = isWithinFiveMinutes(note);
-                    const isClosestNote = index === 0;
-                    return (
-                      <div
-                        key={note.uniqueKey || note.id}
-                        className={`list-group-item list-group-item-action ${
-                          shouldAnimate ? "blinking-border" : ""
-                        }`}
+                {filteredNotes.map((note, index) => {
+                  const isFutureNote = shouldDisplayNote(note, false);
+                  const isHistoryNote = !isFutureNote;
+                  const shouldAnimate = isFutureNote && isWithinFiveMinutes(note);
+                  const isClosestNote = isFutureNote && index === 0;
+                  return (
+                    <div
+                      key={note.uniqueKey || note.id}
+                      className={`list-group-item list-group-item-action ${
+                        shouldAnimate ? "blinking-border" : ""
+                      } ${!isFutureNote ? "opacity-50" : ""}`} // Reducir opacidad para notas pasadas
+                    >
+                      <div className="d-flex justify-content-between align-items-center overflow-auto">
+                        <span className="mb-2 mt-2 text-nowrap">
+                        {note.title || "Sin título"} / {note.time} / {formatAccountId(note.id, isHistoryNote)} / {formatPhoneNumber(note.content) || "Sin contenido"}
                       
-                      >
-                       <div className="d-flex justify-content-between align-items-center overflow-auto">
-                          <span className="mb-2 mt-2 text-nowrap">Hora: {note.time }, Cuenta: {note.id}, {note.content|| "Sin contenido"}, Fecha: {note.date}, {note.title || "Sin título"}</span>
-                        </div>
-                        <div className="d-flex justify-content-between align-items-center mt-1">
-                          {shouldAnimate && note.date && (
-                            <span className="shake-animation">
-                              SEGUIMIENTO PENDIENTE
-                            </span>
-                          )}
-                          {isClosestNote && note.date && (
-                            <Button
-                              className="mt-2 btn-success justify-content-end ms-auto"
-                              onClick={() => handleRealizarClick(note)}
-                            >
-                              Realizar
-                            </Button>
-                          )}
-                        </div>
+                        </span>
                       </div>
-                    );
-                  })}
+                      <div className="d-flex justify-content-between align-items-center mt-1">
+                        {shouldAnimate && note.date && (
+                          <span className="shake-animation">
+                            SEGUIMIENTO PENDIENTE
+                          </span>
+                        )}
+                        {isClosestNote && isFutureNote && note.date && (
+                          <Button
+                            className="mt-2 btn-success justify-content-end ms-auto"
+                            onClick={() => handleRealizarClick(note)}
+                          >
+                            Realizar
+                          </Button>
+                        )}
+
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
