@@ -70,6 +70,7 @@ const FollowUps = ({
                 handleClose={handleClose} 
                 isFollowUpsActive={false}
                 onSuccessfulRegister={() => {}}
+                FollowClipboardActive={FollowClipboardActive} // Pasar la nueva propiedad
               />
             </Col>
           </Row>
@@ -91,7 +92,7 @@ const FollowUps = ({
         dialogClassName="my-custom-modal"
       >
         <Modal.Header closeButton>
-          <Modal.Title>Seguimiento desde Clipboard</Modal.Title>
+          <Modal.Title>Seguimiento desde Telefonos</Modal.Title>
         </Modal.Header>
         <Modal.Body 
           className="flex-grow-1 p-0 d-flex flex-column"
@@ -114,6 +115,7 @@ const FollowUps = ({
                 handleClose={handleClose} 
                 isFollowUpsActive={false}
                 onSuccessfulRegister={() => {}}
+                FollowClipboardActive={FollowClipboardActive} // Pasar la nueva propiedad
               />
             </Col>
           </Row>

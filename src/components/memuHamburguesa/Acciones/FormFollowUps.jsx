@@ -5,7 +5,7 @@ import { createFollows, fetchNotes } from "../../../services/gespawebServices";
 import { AppContext } from "../../../pages/Managment";
 import { getPhoneNumberFromContext } from "../../../utils/phoneUtils"; // Importa la función centralizada
 
-const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister }) => {
+const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, FollowClipboardActive = false }) => {
     const {
         isManagment,
         searchResults,
@@ -57,6 +57,15 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
             displayedPhone: phone.formatted
         }));
     }, [isManagment, selectedAnswer, isDataAllPhones, selectedPhoneForFollowUps, searchResults]);
+
+    useEffect(() => {
+        if (FollowClipboardActive) {
+            setFormData(prev => ({
+                ...prev,
+                datoContacto: null // Internamente se establece como nulo
+            }));
+        }
+    }, [FollowClipboardActive]);
 
     useEffect(() => {
         const loadReminders = async () => {
@@ -261,7 +270,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 ...formData,
                 idEjecutivo, // Aseguramos que idEjecutivo esté incluido
                 fecha: `${formData.fecha}T${normalizedTime}`, // Usa el tiempo normalizado
-                datoContacto: formData.datoContacto?.trim() || null,
+                datoContacto: FollowClipboardActive ? null : formData.datoContacto?.trim() || null, // Enviar como nulo si FollowClipboardActive está activo
                 numeroTelefonico: formData.numeroTelefonico.toString().replace(/\D/g, ''),
                 segundo: normalizedTime // Asegura que 'segundo' también esté normalizado
             };
@@ -481,21 +490,23 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                     />
                 </Form.Group>
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Comentarios</Form.Label>
-                    <Form.Control
-                        as="textarea"
-                        name="datoContacto"
-                        value={formData.datoContacto || ""} // Asigna un valor predeterminado
-                        onChange={handleChange}
-                        style={{ height: "170px", resize: "none" }}
-                        placeholder="Detalles adicionales del contacto..."
-                        maxLength={280}
-                    />
-                    <div className="text-end text-muted small mt-1">
-                        {(formData.datoContacto || "").length}/280 caracteres {/* Asigna un valor predeterminado */}
-                    </div>
-                </Form.Group>
+                {!FollowClipboardActive && ( // Ocultar el campo de comentarios si FollowClipboardActive está activo
+                    <Form.Group className="mb-3">
+                        <Form.Label>Comentarios</Form.Label>
+                        <Form.Control
+                            as="textarea"
+                            name="datoContacto"
+                            value={formData.datoContacto || ""} // Asigna un valor predeterminado
+                            onChange={handleChange}
+                            style={{ height: "170px", resize: "none" }}
+                            placeholder="Detalles adicionales del contacto..."
+                            maxLength={280}
+                        />
+                        <div className="text-end text-muted small mt-1">
+                            {(formData.datoContacto || "").length}/280 caracteres {/* Asigna un valor predeterminado */}
+                        </div>
+                    </Form.Group>
+                )}
 
                 <div className="d-flex justify-content-end">
                     <Button
