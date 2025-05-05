@@ -624,7 +624,6 @@ export const getGestionTeData = async (idCartera, idCuenta) => {
 };
 
 // Endpoint Recordatorios
-
 export const fetchNotes = async (numEmpleado) => {
   try {
     const response = await servicio.get(`/ejecutivo/recordatorios/${numEmpleado}`);
@@ -643,7 +642,7 @@ export const fetchNotes = async (numEmpleado) => {
       return {
         id: item.idCuenta,
         title: item.Nombre,
-        content: `Saldo: ${item.Saldo}\nTeléfono: ${item.NúmeroTelefónico}\nSituación: ${item.Situacion}`,
+        content: `Saldo: $${item.Saldo}7 / \nTeléfono: ${item.NúmeroTelefónico} / \nSituación: ${item.Situacion}`,
         date: fechaLocal,  // -> "30/04/2025"
         time: horaLocal,    // -> "12:30"
         rawDate: fechaHora, // Conservamos el Date original para comparaciones
