@@ -525,7 +525,7 @@ function NotesWidget() {
                     >
                       <div className="d-flex justify-content-between align-items-center overflow-auto">
                         <span className="mb-2 mt-2 text-nowrap">
-                        {note.title || "Sin título"} / {note.time} / {formatAccountId(note.id, isHistoryNote)} / {formatPhoneNumber(note.content) || "Sin contenido"}
+                        {note.title || "Sin título"} / Hora:{note.time} / Cuenta:{formatAccountId(note.id, isHistoryNote)} / {formatPhoneNumber(note.content) || "Sin contenido"}
                       
                         </span>
                       </div>
