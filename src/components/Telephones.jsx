@@ -561,6 +561,7 @@ const Telephones = () => {
         show={showFollowUps}
         handleClose={() => setShowFollowUps(false)}
         isFollowUpActive={true}
+        FollowClipboardActive={true} // Activa el modo especial para Clipboard2Data
       />
     </>
   );
