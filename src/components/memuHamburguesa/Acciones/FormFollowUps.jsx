@@ -138,7 +138,9 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
 
     const normalizeTime = (timeStr) => {
         const parts = timeStr.split(':');
-        parts[0] = parts[0].padStart(2, '0');
+        parts[0] = parts[0].padStart(2, '0'); // Asegura que las horas tengan 2 dígitos
+        parts[1] = (parts[1] || '00').padStart(2, '0'); // Asegura que los minutos tengan 2 dígitos
+        parts[2] = (parts[2] || '00').padStart(2, '0'); // Asegura que los segundos tengan 2 dígitos
         return parts.join(':');
     };
 
@@ -147,7 +149,10 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
 
         if (!formData) return;
 
-        if (name === "datoContacto") {
+        if (name === "segundo") {
+            const normalizedTime = normalizeTime(value); // Normaliza el tiempo ingresado
+            setFormData(prev => ({ ...prev, [name]: normalizedTime }));
+        } else if (name === "datoContacto") {
             if (value.length > 280) {
                 toast.error("Máximo 280 caracteres permitidos");
                 return;
@@ -175,6 +180,14 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
 
         setLoading(true);
         try {
+            // Validación para minutos con 2 dígitos
+            const minute = (formData.segundo || "00:00:00").split(':')[1];
+            if (!/^\d{2}$/.test(minute) || parseInt(minute) < 0 || parseInt(minute) > 59) {
+                toast.error("El campo de minutos (MM) debe tener exactamente 2 dígitos válidos (01-59).");
+                setLoading(false);
+                return;
+            }
+
             if (!idEjecutivo) {
                 console.error("Error: idEjecutivo no está definido. No se puede enviar el seguimiento.");
                 toast.error("Error: No se puede enviar el seguimiento porque el idEjecutivo no está definido.");
@@ -243,13 +256,14 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                 }
             }
 
-            const normalizedTime = normalizeTime(formData.segundo);
+            const normalizedTime = normalizeTime(formData.segundo || "00:00:00"); // Normaliza el formato de 'segundo'
             const dataToSend = {
                 ...formData,
                 idEjecutivo, // Aseguramos que idEjecutivo esté incluido
-                fecha: `${formData.fecha}T${normalizedTime}`,
+                fecha: `${formData.fecha}T${normalizedTime}`, // Usa el tiempo normalizado
                 datoContacto: formData.datoContacto?.trim() || null,
-                numeroTelefonico: formData.numeroTelefonico.toString().replace(/\D/g, '')
+                numeroTelefonico: formData.numeroTelefonico.toString().replace(/\D/g, ''),
+                segundo: normalizedTime // Asegura que 'segundo' también esté normalizado
             };
 
             console.log("DEBUG: Intentando enviar seguimiento con datos:", dataToSend);
@@ -413,6 +427,9 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister })
                                         value={(formData.segundo || "00:00:00").split(':')[1]} // Asigna un valor predeterminado
                                         onChange={(e) => {
                                             const minute = e.target.value.replace(/\D/g, '').slice(0, 2);
+                                            if (minute.length < 2) {
+                                                toast.error("El campo de minutos (MM) debe tener exactamente 2 dígitos.");
+                                            }
                                             const [hour, , second] = (formData.segundo || "00:00:00").split(':'); // Asigna un valor predeterminado
                                             setFormData({
                                                 ...formData,

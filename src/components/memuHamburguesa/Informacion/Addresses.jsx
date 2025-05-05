@@ -316,16 +316,16 @@ const Addresses = ({ show, handleClose }) => {
   };
 
   const handleUpdateAddressInformation = (selectedDomicilio) => {
-    console.log("Domicilio seleccionado:", selectedDomicilio);
-    if (selectedDomicilio.información === "Sin verificar") {
-      setIsEstadoVisible(true);
+    const idInfo = selectedDomicilio?.idInformacion;
+
+    if (idInfo === 1901) {
+      // Sin verificar
+      setIsEstadoVisible(true); // Muestra el dropdown y el botón "Identificar"
       setSelectedDomicilio(selectedDomicilio);
-      console.log("Formulario visible");
     } else {
-      setIsEstadoVisible(false);
-      setSelectedDomicilio(null);
-      console.log("Formulario oculto");
-      toast.info("El domicilio seleccionado ya ha sido verificado.");
+      // Otros valores
+      setIsEstadoVisible(false); // Oculta el botón "Identificar"
+      setSelectedDomicilio(selectedDomicilio);
     }
   };
 
@@ -360,14 +360,13 @@ const Addresses = ({ show, handleClose }) => {
   };
 
   const handleNewButtonClick = () => {
-    if (isFormDisabled) {
-      // Si hay un registro seleccionado, limpia los campos y habilita el formulario
-      clearFormFields();
-      setIsDomicilioTableVisible(false); // Oculta la tabla de domicilios
-      toast.info("Formulario listo para un nuevo registro.");
-    } else {
-      toast.error("El formulario ya está listo para un nuevo registro.");
-    }
+    clearFormFields();
+    setFormData((prev) => ({
+      ...prev,
+      idInformacion: 1901, // Nuevo registro comienza como "Sin Verificar"
+    }));
+    setIsEstadoVisible(true); // Muestra el botón "Identificar" para nuevos registros
+    toast.info("Formulario listo para un nuevo registro.");
   };
 
   const clearFormFields = () => {
@@ -705,52 +704,55 @@ const Addresses = ({ show, handleClose }) => {
               </Row>
               <Row className="mt-4 w-100">
                 <Col className="d-flex justify-content-start">
-                  <Button
-                    variant="success"
-                    onClick={async () => {
-                      if (!idInformacion) {
-                        toast.error("Por favor, seleccione un valor para idInformacion.");
-                        return;
-                      }
+                  {isEstadoVisible && (
+                    <Button
+                      variant="success"
+                      onClick={async () => {
+                        if (!idInformacion || idInformacion === "1901") {
+                          toast.error("Por favor, seleccione un valor válido para idInformacion.");
+                          return;
+                        }
 
-                      const payload = {
-                        idCartera: 1,
-                        idCuenta: idCuenta,
-                        idDomicilio: selectedDomicilio?.idDomicilio || 0,
-                        idInformacion: parseInt(idInformacion, 10),
-                      };
+                        const payload = {
+                          idCartera: 1,
+                          idCuenta: idCuenta,
+                          idDomicilio: selectedDomicilio?.idDomicilio || 0,
+                          idInformacion: parseInt(idInformacion, 10),
+                        };
 
-                      try {
-                        setIsLoading(true);
-                        const response = await servicio.post(
-                          "/search-customer/update-address-information",
-                          payload
-                        );
-                        toast.success("Información identificada exitosamente.");
-                        console.log("Respuesta del servidor:", response.data);
-                      } catch (error) {
-                        console.error("Error al identificar la información:", error);
-                        toast.error("No se pudo identificar la información.");
-                      } finally {
-                        setIsLoading(false);
-                      }
-                    }}
-                  >
-                    Identificar
-                  </Button>
+                        try {
+                          setIsLoading(true);
+                          const response = await servicio.post(
+                            "/search-customer/update-address-information",
+                            payload
+                          );
+                          toast.success("Información identificada exitosamente.");
+                          console.log("Respuesta del servidor:", response.data);
+                          setIsEstadoVisible(false); // Oculta el botón después de identificar
+                        } catch (error) {
+                          console.error("Error al identificar la información:", error);
+                          toast.error("No se pudo identificar la información.");
+                        } finally {
+                          setIsLoading(false);
+                        }
+                      }}
+                    >
+                      Identificar
+                    </Button>
+                  )}
                 </Col>
                 <Col className="d-flex justify-content-center">
                   <Form.Group controlId="idInformacion">
                     <Form.Select
                       value={idInformacion}
                       onChange={(e) => setIdInformacion(e.target.value)}
+                      disabled={!isEstadoVisible} // Deshabilitar si no está en modo "Sin Verificar"
                     >
-                      <option value="0">Inexistente</option>
-                      <option value="1">Errónea</option>
-                      <option value="2">Incompleta</option>
-                      <option value="3">No corresponde</option>
-                      <option value="4">Correcta</option>
-                      {/* Agregar más opciones según sea necesario */}
+                      <option value="1902">Incompleta</option>
+                      <option value="1903">No corresponde</option>
+                      <option value="1904">Errónea</option>
+                      <option value="1905">Inexistente</option>
+                      <option value="1906">Correcta</option>
                     </Form.Select>
                   </Form.Group>
                 </Col>
