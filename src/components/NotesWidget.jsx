@@ -135,7 +135,7 @@ function NotesWidget() {
             currentDate.getHours() === followUpDateTime.getHours() &&
             currentDate.getMinutes() === followUpDateTime.getMinutes()
           ) {
-            alert(`¡Es hora de seguimiento para la nota: ${note.title}!`);
+            toast.warning(`¡Es hora de seguimiento para la nota: ${note.title}!`);
           }
         }
       });
@@ -390,15 +390,6 @@ function NotesWidget() {
           <BellFill className=" me-1" />
           Mis Recordatorios
         </h5>
-        {/* 
-        <button
-          className="btn btn-sm btn-light"
-          onClick={handleAddNote}
-          aria-label="Añadir nota"
-        >
-          <PlusIcon />
-        </button>
-        */}
       </div>
       <div className="card-body">
         {isEditing ? (
@@ -504,20 +495,12 @@ function NotesWidget() {
                         className={`list-group-item list-group-item-action ${
                           shouldAnimate ? "blinking-border" : ""
                         }`}
-                        style={{ marginBottom: "2rem" }}
+                      
                       >
-                        <div className="d-flex justify-content-between align-items-center">
-                          <h6 className="mb-1">{note.title || "Sin título"}</h6>
+                       <div className="d-flex justify-content-between align-items-center overflow-auto">
+                          <span className="mb-2 mt-2 text-nowrap">Hora: {note.time }, Cuenta: {note.id}, {note.content|| "Sin contenido"}, Fecha: {note.date}, {note.title || "Sin título"}</span>
                         </div>
-                        <p className="mb-1">
-                          <span style={{ whiteSpace: "none" }}>
-                            {note.content|| "Sin contenido"}
-                          </span>
-                          <span> {note.date} </span>
-                          <span>{note.time }</span>
-                        </p>
-
-                        <div className="d-flex justify-content-between align-items-center mt-2">
+                        <div className="d-flex justify-content-between align-items-center mt-1">
                           {shouldAnimate && note.date && (
                             <span className="shake-animation">
                               SEGUIMIENTO PENDIENTE
