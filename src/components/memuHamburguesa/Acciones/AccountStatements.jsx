@@ -18,15 +18,14 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   });
   const [selectedEmail, setSelectedEmail] = useState("");
   const [selectedOption, setSelectedOption] = useState(false);
-  const [selectedOptionEnvio, setSelectedOptionEnvio] = useState(false); // Estado independiente para "Envio"
-  const [isFormValid, setIsFormValid] = useState(false); // Estado para controlar la validez del formulario
-  const [validEmails, setValidEmails] = useState([]); // Estado para almacenar los correos válidos
+  const [selectedOptionEnvio, setSelectedOptionEnvio] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [validEmails, setValidEmails] = useState([]);
   const responseData =
     location.state || JSON.parse(localStorage.getItem("responseData"));
 
   const { searchResults } = useContext(AppContext);
 
-  // Validar si el formulario está completo
   useEffect(() => {
     const isValid =
       selectedDateRange.startDate && 
@@ -35,7 +34,6 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
     setIsFormValid(isValid);
   }, [selectedDateRange, selectedEmail, selectedOptionEnvio]);
 
-  // Obtener datos de estado de cuenta
   const handleAccountStatement = async () => {
     if (!searchResults || searchResults.length === 0) {
       toast.error("Primero debes buscar una Cuenta");
@@ -65,26 +63,9 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
     }
   }, [show, searchResults]);
 
-  // Manejo de cambios en fecha y correo
   const handleDateChange = (e) => {
     const { name, value } = e.target;
-    
-    setSelectedDateRange((prev) => {
-      const newRange = { ...prev, [name]: value };
-      
-      // Validación adicional
-      if (name === "startDate" && newRange.endDate && value > newRange.endDate) {
-        toast.warning("La fecha inicial no puede ser posterior a la final");
-        return { ...newRange, endDate: value };
-      }
-      
-      if (name === "endDate" && newRange.startDate && value < newRange.startDate) {
-        toast.warning("La fecha final no puede ser anterior a la inicial");
-        return { ...newRange, startDate: value };
-      }
-      
-      return newRange;
-    });
+    setSelectedDateRange(prev => ({ ...prev, [name]: value }));
   };
 
   const handleEmailChange = (e) => {
@@ -92,13 +73,12 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   };
 
   const handleOptionChange = (e) => {
-    console.log("Switch cambiado a:", e.target.checked);
     setSelectedOption(e.target.checked);
   };
 
   const handleEnvioSwitchChange = async (e) => {
     const isChecked = e.target.checked;
-    setSelectedOptionEnvio(isChecked); // Actualiza el estado del switch
+    setSelectedOptionEnvio(isChecked);
 
     if (isChecked) {
       if (!searchResults || searchResults.length === 0) {
@@ -114,7 +94,6 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
         const extractedEmails = emails.map((emailObj) => emailObj.CorreoElectrónico);
         setValidEmails(extractedEmails || []);
         
-        // Selecciona el primer correo por defecto si hay opciones
         if (extractedEmails.length > 0) {
           setSelectedEmail(extractedEmails[0]);
         }
@@ -124,11 +103,29 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
       }
     }
   };
-;
 
-  // Envío de datos al endpoint
+  const validateDates = () => {
+    const { startDate, endDate } = selectedDateRange;
+    
+    if (startDate && endDate && startDate > endDate) {
+      toast.warning("La fecha inicial no puede ser posterior a la final");
+      return false;
+    }
+    
+    if (startDate && endDate && endDate < startDate) {
+      toast.warning("La fecha final no puede ser anterior a la inicial");
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateDates()) {
+      return;
+    }
 
     if (!isFormValid) {
       toast.error("Por favor, complete todos los campos requeridos.");
@@ -140,7 +137,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
       idCartera: 1,
       idCuenta: searchResults?.[0]?.idCuenta.trim() || "string",
       idEjecutivo: idEjecutivo,
-      fechaInicial: selectedDateRange.startDate, // Ya no necesitas convertirlo
+      fechaInicial: selectedDateRange.startDate,
       fechaFinal: selectedDateRange.endDate,
       consulta: selectedOption,
       correoElectrónico: selectedEmail
@@ -150,13 +147,11 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
       const response = await fetchSaveAccount(requestData);
       toast.success("Solicitud enviada correctamente.");
 
-      // Limpia el formulario
       setSelectedDateRange({ startDate: "", endDate: "" });
       setSelectedEmail("");
       setSelectedOption(false);
       setSelectedOptionEnvio(false);
 
-      // Recarga la tabla
       await handleAccountStatement();
     } catch (error) {
       console.error("Error al enviar la solicitud:", error);
@@ -170,48 +165,18 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
         <Modal.Title>Estado de Cuenta</Modal.Title>
       </Modal.Header>
 
-      <Modal.Body
-        style={{
-          maxHeight: "70vh",
-          overflowY: "auto",
-          position: "relative",
-        }}
-      >
+      <Modal.Body style={{ maxHeight: "70vh", overflowY: "auto", position: "relative" }}>
         <div className="d-block d-lg-flex w-100">
           <div>
-            <div
-              className="flex-grow-1 scroll-container"
-              style={{
-                overflow: "auto ",
-                maxWidth: "800px",
-                marginBottom: "auto",
-                maxHeight: "70vh",
-              }}
-            >
+            <div className="flex-grow-1 scroll-container" style={{ overflow: "auto", maxWidth: "800px", marginBottom: "auto", maxHeight: "70vh" }}>
               {loading ? (
                 <div className="vw-100 vh-100 d-flex justify-content-center align-items-center">
-                  <span>
-                    <Spinner animation="border" />
-                  </span>
+                  <span><Spinner animation="border" /></span>
                 </div>
-              ) : accountData.length > 0 ? ( // Verifica si hay datos en la tabla
+              ) : accountData.length > 0 ? (
                 <div>
-                  <Table
-                    striped
-                    bordered
-                    hover
-                    variant="dark"
-                    className="custom-table-account"
-                    style={{ tableLayout: "auto", whiteSpace: "nowrap" }} // Ajusta el ancho al contenido y evita el salto de línea
-                  >
-                    <thead
-                      style={{
-                        position: "sticky",
-                        top: 0,
-                        backgroundColor: "#343a40",
-                        zIndex: 1,
-                      }}
-                    >
+                  <Table striped bordered hover variant="dark" className="custom-table-account" style={{ tableLayout: "auto", whiteSpace: "nowrap" }}>
+                    <thead style={{ position: "sticky", top: 0, backgroundColor: "#343a40", zIndex: 1 }}>
                       <tr>
                         <th>Fecha</th>
                         <th>Hora</th>
@@ -225,27 +190,14 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                     <tbody>
                       {accountData.map((item, index) => (
                         <tr key={index}>
+                          <td style={{ textAlign: "left" }}>{item.Fecha_Insert?.split("T")[0] || "--"}</td>
+                          <td style={{ textAlign: "left" }}>{item.Segundo_Insert}</td>
+                          <td style={{ textAlign: "left" }}>{item.NombreEjecutivo}</td>
+                          <td style={{ textAlign: "left" }}>{item.FechaInicial?.split("T")[0] || "--"}</td>
+                          <td style={{ textAlign: "left" }}>{item.FechaFinal?.split("T")[0] || "--"}</td>
+                          <td style={{ textAlign: "left" }}>{item._Consulta}</td>
                           <td style={{ textAlign: "left" }}>
-                            {item.Fecha_Insert?.split("T")[0] || "--"}
-                          </td>
-                          <td style={{ textAlign: "left" }}>
-                            {item.Segundo_Insert}
-                          </td>
-                          <td style={{ textAlign: "left" }}>
-                            {item.NombreEjecutivo}
-                          </td>
-                          <td style={{ textAlign: "left" }}>
-                            {item.FechaInicial?.split("T")[0] || "--"}
-                          </td>
-                          <td style={{ textAlign: "left" }}>
-                            {item.FechaFinal?.split("T")[0] || "--"}
-                          </td>
-                          <td style={{ textAlign: "left" }}>
-                            {item._Consulta}
-                          </td>
-                          <td style={{ textAlign: "left" }}>
-                            {item["Correo Electrónico"] &&
-                            typeof item["Correo Electrónico"] === "string"
+                            {item["Correo Electrónico"] && typeof item["Correo Electrónico"] === "string"
                               ? item["Correo Electrónico"]
                               : "--"}
                           </td>
@@ -255,22 +207,17 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                   </Table>
                 </div>
               ) : (
-                <p className="text-center mt-3">No hay datos disponibles</p> // Muestra el mensaje si no hay datos
+                <p className="text-center mt-3">No hay datos disponibles</p>
               )}
             </div>
           </div>
-          {accountData.length > 0 && ( // Solo muestra el formulario si hay datos en la tabla
+          {accountData.length > 0 && (
             <Col className="w-100">
-              <Card
-                className="ml-3"
-                style={{ width: "100%", marginBottom: "0px" }}
-              >
+              <Card className="ml-3" style={{ width: "100%", marginBottom: "0px" }}>
                 <Card.Body style={{ padding: "5px", width: "100%" }}>
-                  <Card.Title style={{ paddingTop: "0px" }}>
-                    Solicitar
-                  </Card.Title>
+                  <Card.Title style={{ paddingTop: "0px" }}>Solicitar</Card.Title>
                   <Form>
-                  <Form.Group className="mb-3">
+                    <Form.Group className="mb-3">
                       <Form.Label>Desde</Form.Label>
                       <Form.Control
                         type="date"
@@ -278,7 +225,6 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                         value={selectedDateRange.startDate}
                         onChange={handleDateChange}
                         required
-                        max={selectedDateRange.endDate}
                       />
                     </Form.Group>
                     <Form.Group className="mb-3">
@@ -289,28 +235,25 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                         value={selectedDateRange.endDate}
                         onChange={handleDateChange}
                         required
-                        min={selectedDateRange.startDate}
                       />
                     </Form.Group>
 
                     <div className="d-flex gap-2 mb-3 justify-content-between">
                       <Form.Switch
-                        key={selectedOption} // Key único para el switch "Consulta"
                         label="Consulta"
                         name="option"
-                        checked={selectedOption} // Estado independiente para "Consulta"
+                        checked={selectedOption}
                         onChange={handleOptionChange}
                       />
                       <Form.Switch
-                        key={"envioSwitch"} // Key único para el switch "Envio"
                         label="Envio"
                         name="envio"
-                        checked={selectedOptionEnvio} // Estado independiente para "Envio"
-                        onChange={handleEnvioSwitchChange} // Llama a la función al cambiar el estado del switch
+                        checked={selectedOptionEnvio}
+                        onChange={handleEnvioSwitchChange}
                       />
                     </div>
 
-                    {selectedOptionEnvio && ( // Muestra la lista de correos solo si el switch "Envio" está activado
+                    {selectedOptionEnvio && (
                       <Form.Group className="mb-3">
                         <Form.Label>Correo</Form.Label>
                         <Form.Select
@@ -333,7 +276,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                       type="button"
                       className="w-100"
                       onClick={handleSubmit}
-                      disabled={!isFormValid} // Deshabilitar el botón si el formulario no es válido
+                      disabled={!isFormValid}
                     >
                       Solicitar
                     </Button>
