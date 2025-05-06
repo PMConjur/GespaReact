@@ -274,13 +274,6 @@ const Validators = ({ show, handleClose, handleValidate, modalCase = "" }) => {
         </Modal.Body>
         <Modal.Footer className="p-3 bg-dark text-light">
           <div>
-            <Button
-              variant="danger"
-              onClick={handleCloseModal}
-              disabled={loading}
-            >
-              Cancelar
-            </Button>
             <Button variant="success" onClick={handleSubmit} disabled={loading}>
               {loading ? "Validando..." : "Validar"}
             </Button>
