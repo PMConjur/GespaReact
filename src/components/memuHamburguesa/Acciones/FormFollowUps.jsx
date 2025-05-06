@@ -80,7 +80,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                 const reminders = notes
                     .filter(note => note.recordatorio)
                     .map(note => {
-                        const fechaPago = note.FechaPago.endsWith('Z')
+                        const fechaPago = note.FechaPago?.endsWith('Z')
                             ? note.FechaPago
                             : `${note.FechaPago}Z`;
                         return {
@@ -122,19 +122,20 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
     const hasReminderConflict = (date, time) => {
         try {
             const newRecordDateTime = new Date(`${date}T${time}`);
-            newRecordDateTime.setSeconds(0, 0);
+            newRecordDateTime.setSeconds(0, 0); // Normaliza segundos y milisegundos
 
             for (const reminder of existingReminders) {
-                const reminderDateTime = reminder.date
-                    ? new Date(reminder.date)
-                    : new Date(`${date}T${reminder.segundo}`);
-                reminderDateTime.setSeconds(0, 0);
+                const reminderDateTime = reminder.rawDate
+                    ? new Date(reminder.rawDate) // Usa la fecha cruda si está disponible
+                    : new Date(`${reminder.date}T${reminder.time || "00:00:00"}`);
+                reminderDateTime.setSeconds(0, 0); // Normaliza segundos y milisegundos
 
                 const diff = Math.abs(newRecordDateTime - reminderDateTime);
-                if (diff < 5 * 60 * 1000) {
+                if (diff < 5 * 60 * 1000) { // Menos de 5 minutos de diferencia
                     return {
                         conflict: true,
-                        existingTime: reminderDateTime.toTimeString().split(" ")[0]
+                        existingDate: reminder.date,
+                        existingTime: reminder.time
                     };
                 }
             }
@@ -210,6 +211,13 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                 return;
             }
 
+            // Validación para motivo válido
+            if (!formData.idMotivoS || formData.idMotivoS === "" || formData.idMotivoS === "0") {
+                toast.error("Debe seleccionar un motivo válido antes de enviar el formulario.");
+                setLoading(false);
+                return;
+            }
+
             const todayStr = new Date().toISOString().split('T')[0];
             if (formData.fecha < todayStr) {
                 toast.error("No puedes seleccionar una fecha anterior al día actual");
@@ -245,24 +253,25 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                 }
             }
 
-            const { conflict, existingTime } = hasReminderConflict(formData.fecha, formData.segundo);
+            const { conflict, existingDate, existingTime } = hasReminderConflict(formData.fecha, formData.segundo);
             if (conflict) {
-                toast.error(`Conflicto con seguimiento existente a las ${existingTime}. Debe haber al menos 5 minutos de diferencia.`);
+                toast.error(`Conflicto detectado: ya existe un seguimiento registrado el ${existingDate} a las ${existingTime}.`);
                 setLoading(false);
                 return;
             }
 
-            if (!formData.recordatorio) {
-                const newDateTime = `${formData.fecha}T${formData.segundo}`;
-                const existingNonReminder = existingReminders.find(reminder => {
-                    return reminder.date && reminder.recordatorio === false &&
-                        reminder.date.substring(0, 16) === newDateTime.substring(0, 16);
-                });
-                if (existingNonReminder) {
-                    toast.error("Ya existe un seguimiento sin recordatorio para la misma fecha y hora");
-                    setLoading(false);
-                    return;
-                }
+            // Validación adicional: verificar conflictos globales por idEjecutivo
+            const globalConflict = existingReminders.some(reminder => {
+                const reminderDateTime = new Date(reminder.date || `${formData.fecha}T${reminder.segundo}`);
+                const newRecordDateTime = new Date(`${formData.fecha}T${formData.segundo}`);
+                const diff = Math.abs(newRecordDateTime - reminderDateTime);
+                return diff < 5 * 60 * 1000; // Menos de 5 minutos de diferencia
+            });
+
+            if (globalConflict) {
+                toast.error("Conflicto global detectado: ya existe un recordatorio registrado en el mismo horario.");
+                setLoading(false);
+                return;
             }
 
             const normalizedTime = normalizeTime(formData.segundo || "00:00:00"); // Normaliza el formato de 'segundo'
@@ -385,6 +394,30 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                     </Col>
                 </Row>
 
+                    <Row className="mb-3">
+                        <Col md={12}>
+                            <Form.Group>
+                                <Form.Label>Motivo *</Form.Label>
+                                <Form.Control
+                                    as="select"
+                                    name="idMotivoS"
+                                    value={formData.idMotivoS}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="">Seleccione un motivo</option>
+                                    <option value="4401">Se corta llamada</option>
+                                    <option value="4402">Seguimiento llamada</option>
+                                    <option value="4403">Solicitud titular</option>
+                                    <option value="4404">Se realizará PEX</option>
+                                    <option value="4405">No puede atender</option>
+                                    <option value="4406">Reportará pago</option>
+                                    <option value="4407">Cierre de gestión</option>
+                                </Form.Control>
+                            </Form.Group>
+                        </Col>
+                    </Row>
+
                 <Row className="mb-3">
                     <Col md={4}>
                         <Form.Group>
@@ -489,24 +522,6 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                         onChange={handleChange}
                     />
                 </Form.Group>
-
-                {!FollowClipboardActive && ( // Ocultar el campo de comentarios si FollowClipboardActive está activo
-                    <Form.Group className="mb-3">
-                        <Form.Label>Comentarios</Form.Label>
-                        <Form.Control
-                            as="textarea"
-                            name="datoContacto"
-                            value={formData.datoContacto || ""} // Asigna un valor predeterminado
-                            onChange={handleChange}
-                            style={{ height: "170px", resize: "none" }}
-                            placeholder="Detalles adicionales del contacto..."
-                            maxLength={280}
-                        />
-                        <div className="text-end text-muted small mt-1">
-                            {(formData.datoContacto || "").length}/280 caracteres {/* Asigna un valor predeterminado */}
-                        </div>
-                    </Form.Group>
-                )}
 
                 <div className="d-flex justify-content-end">
                     <Button
