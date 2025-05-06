@@ -21,6 +21,11 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
         idEjecutivo // Obtener idEjecutivo del contexto
     } = useContext(AppContext);
 
+    const getCurrentTime = () => {
+        const now = new Date();
+        return now.toTimeString().split(' ')[0]; // Formato HH:mm:ss
+    };
+
     useEffect(() => {
         console.log("DEBUG: idEjecutivo obtenido desde el contexto:", idEjecutivo);
         if (!idEjecutivo) {
@@ -53,6 +58,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
             idAcercamiento: "1601", // Restaurar idAcercamiento
             idMotivoS: "0", // Restaurar idMotivoS
             fecha: new Date().toISOString().split('T')[0], // Fecha al día actual
+            segundo: getCurrentTime(), // Hora actual
             numeroTelefonico: phone.raw,
             displayedPhone: phone.formatted
         }));
@@ -147,6 +153,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
     };
 
     const normalizeTime = (timeStr) => {
+        if (!timeStr) timeStr = getCurrentTime(); // Usa la hora actual como predeterminado
         const parts = timeStr.split(':');
         parts[0] = parts[0].padStart(2, '0'); // Asegura que las horas tengan 2 dígitos
         parts[1] = (parts[1] || '00').padStart(2, '0'); // Asegura que los minutos tengan 2 dígitos
@@ -190,8 +197,10 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
 
         setLoading(true);
         try {
+            const segundo = formData.segundo || getCurrentTime(); // Usa la hora actual como predeterminado
+
             // Validación para minutos con 2 dígitos
-            const minute = (formData.segundo || "00:00:00").split(':')[1];
+            const minute = segundo.split(':')[1];
             if (!/^\d{2}$/.test(minute) || parseInt(minute) < 0 || parseInt(minute) > 59) {
                 toast.error("El campo de minutos (MM) debe tener exactamente 2 dígitos válidos (01-59).");
                 setLoading(false);
@@ -226,7 +235,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
             }
 
             if (formData.fecha === todayStr) {
-                const scheduledTimeNormalized = normalizeTime(formData.segundo);
+                const scheduledTimeNormalized = normalizeTime(segundo);
                 const scheduledDate = new Date(`${formData.fecha}T${scheduledTimeNormalized}`);
                 const nowPlusOne = new Date(Date.now() + 60000);
                 if (scheduledDate < nowPlusOne) {
@@ -237,7 +246,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
             }
 
             if (formData.recordatorio === true) {
-                const [hours, minutes] = formData.segundo.split(':').map(Number);
+                const [hours, minutes] = segundo.split(':').map(Number);
                 const period = hours >= 12 ? "PM" : "AM";
 
                 if (period === "AM" && (hours < 7 || hours > 11)) {
@@ -247,41 +256,27 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                 }
 
                 if (period === "PM" && (hours < 12 || hours > 22)) {
-                    toast.error("Horario PM inválido. Debe ser entre 12:00 PM y 9:59 PM");
+                    toast.error("Horario PM inválido. Debe ser entre 12:00 PM y 22:00 PM");
                     setLoading(false);
                     return;
                 }
             }
 
-            const { conflict, existingDate, existingTime } = hasReminderConflict(formData.fecha, formData.segundo);
+            const { conflict, existingDate, existingTime } = hasReminderConflict(formData.fecha, segundo);
             if (conflict) {
                 toast.error(`Conflicto detectado: ya existe un seguimiento registrado el ${existingDate} a las ${existingTime}.`);
                 setLoading(false);
                 return;
             }
 
-            // Validación adicional: verificar conflictos globales por idEjecutivo
-            const globalConflict = existingReminders.some(reminder => {
-                const reminderDateTime = new Date(reminder.date || `${formData.fecha}T${reminder.segundo}`);
-                const newRecordDateTime = new Date(`${formData.fecha}T${formData.segundo}`);
-                const diff = Math.abs(newRecordDateTime - reminderDateTime);
-                return diff < 5 * 60 * 1000; // Menos de 5 minutos de diferencia
-            });
-
-            if (globalConflict) {
-                toast.error("Conflicto global detectado: ya existe un recordatorio registrado en el mismo horario.");
-                setLoading(false);
-                return;
-            }
-
-            const normalizedTime = normalizeTime(formData.segundo || "00:00:00"); // Normaliza el formato de 'segundo'
+            const normalizedTime = normalizeTime(segundo);
             const dataToSend = {
                 ...formData,
-                idEjecutivo, // Aseguramos que idEjecutivo esté incluido
-                fecha: `${formData.fecha}T${normalizedTime}`, // Usa el tiempo normalizado
-                datoContacto: FollowClipboardActive ? null : formData.datoContacto?.trim() || null, // Enviar como nulo si FollowClipboardActive está activo
+                idEjecutivo,
+                fecha: `${formData.fecha}T${normalizedTime}`,
+                datoContacto: FollowClipboardActive ? null : formData.datoContacto?.trim() || null,
                 numeroTelefonico: formData.numeroTelefonico.toString().replace(/\D/g, ''),
-                segundo: normalizedTime // Asegura que 'segundo' también esté normalizado
+                segundo: normalizedTime
             };
 
             console.log("DEBUG: Intentando enviar seguimiento con datos:", dataToSend);
@@ -323,7 +318,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                 idAcercamiento: "1601",
                 idMotivoS: "0",
                 fecha: new Date().toISOString().split('T')[0],
-                segundo: "07:00:00",
+                segundo: getCurrentTime(), // Restablece a la hora actual
                 recordatorio: false,
                 datoContacto: "",
                 numeroTelefonico: "",
