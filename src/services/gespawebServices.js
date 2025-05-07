@@ -323,6 +323,31 @@ export const fetchNewTel = async (newPhoneData) => {
   }
 };
 
+
+// endpoint de agregar nuevo telefono
+export const identifyInformation = async (newInformation) => {
+  try {
+    const response = await servicio.put(
+      `/search-customer/update-address-information`,
+      newInformation
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Estado: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Validación recibida:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en new Information:", error);
+    throw error;
+  }
+};
+
+
 export const getFollowUpsData = async (idCartera, idCuenta) => {
   try {
     if (!idCartera || !idCuenta) {

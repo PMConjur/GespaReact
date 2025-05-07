@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useRef } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   Modal,
   Button,
@@ -15,7 +15,6 @@ import { formatearFecha } from "../../ValoresCatalogos.js";
 
 const Addresses = ({ show, handleClose }) => {
   const { searchResults } = useContext(AppContext); // Obtén el contexto
-  const toastShownRef = useRef(false); // Ref para controlar si el toast ya fue mostrado
   const [formData, setFormData] = useState({
     calle: "",
     numExt: "",
@@ -24,6 +23,7 @@ const Addresses = ({ show, handleClose }) => {
     municipio: "",
     estado: "",
     origen: "Gestión",
+    fecha: "",
   });
   const [selectedGestion, setSelectedGestion] = useState(null);
   const [tableData, setTableData] = useState([]);
@@ -57,12 +57,11 @@ const Addresses = ({ show, handleClose }) => {
   const fetchAddressData = async () => {
     if (!idCuenta) {
       const errorText = "ID de cuenta no válido. Por favor, verifique.";
-      if (!toastShownRef.current) {
+      if (errorMessage !== errorText) {
         toast.dismiss();
         toast.error(errorText);
-        toastShownRef.current = true; // Marca el toast como mostrado
+        setErrorMessage(errorText);
       }
-      setIsFormDisabled(true); // Bloquea el formulario
       return;
     }
 
@@ -73,11 +72,9 @@ const Addresses = ({ show, handleClose }) => {
         setFormData(response.data);
         setIsNew(false);
         setRecordCount(1);
-        setIsFormDisabled(false); // Desbloquea el formulario si se encuentra idCuenta
       } else {
         setIsNew(true);
         setRecordCount(0);
-        setIsFormDisabled(true); // Bloquea el formulario si no hay datos
       }
     } catch (error) {
       console.error("Error fetching address data:", error);
@@ -92,10 +89,10 @@ const Addresses = ({ show, handleClose }) => {
         message = `Error: Ocurrió un problema al realizar la solicitud. Detalles: ${error.message}`;
       }
 
-      if (!toastShownRef.current) {
+      if (errorMessage !== message) {
         toast.dismiss();
         toast.error(message);
-        toastShownRef.current = true; // Marca el toast como mostrado
+        setErrorMessage(message);
       }
     } finally {
       setIsLoading(false);
@@ -159,11 +156,11 @@ const Addresses = ({ show, handleClose }) => {
   const fetchTableDomData = async () => {
     if (!idCuenta) {
       const errorText = "ID de cuenta no válido. Por favor, verifique.";
-      if (!toastShownRef.current) {
+      if (errorMessage !== errorText) {
         console.log("Mostrando toast con mensaje:", errorText);
         toast.dismiss(); // Cierra cualquier toast abierto
         toast.error(errorText);
-        toastShownRef.current = true; // Marca el toast como mostrado
+        setErrorMessage(errorText);
       } else {
         console.log("Mensaje duplicado, no se muestra toast:", errorText);
       }
@@ -216,11 +213,11 @@ const Addresses = ({ show, handleClose }) => {
   const fetchTableDomicilioData = async () => {
     if (!idCuenta) {
       const errorText = "ID de cuenta no válido. Por favor, verifique.";
-      if (!toastShownRef.current) {
+      if (errorMessage !== errorText) {
         console.log("Mostrando toast con mensaje:", errorText);
         toast.dismiss(); // Cierra cualquier toast abierto
         toast.error(errorText);
-        toastShownRef.current = true; // Marca el toast como mostrado
+        setErrorMessage(errorText);
       } else {
         console.log("Mensaje duplicado, no se muestra toast:", errorText);
       }
@@ -252,6 +249,7 @@ const Addresses = ({ show, handleClose }) => {
         orígen: item.orígen || "",
         información: item.información || "",
         idDomicilio: item.idDomicilio || "",
+        fecha: item.fecha || "",
       }));
 
       setTableDomicilioData(sanitizedData);
@@ -300,6 +298,7 @@ const Addresses = ({ show, handleClose }) => {
       ...prev,
       codigoPostal: selectedCodigoPostal,
     }));
+    toast.info(`Código Postal seleccionado: ${selectedCodigoPostal}`);
 
     // Llama al endpoint para actualizar la tabla "Postal"
     try {
@@ -309,7 +308,7 @@ const Addresses = ({ show, handleClose }) => {
       );
       setPostalTableData(response.data.codigosPostales || []); // Actualiza los datos de la tabla "Postal"
       setIsPostalTableVisible(true); // Muestra la tabla postal
-      toast.success("Datos de la tabla Postal actualizados. Codigo Postal Seleccionado: " + selectedCodigoPostal);
+      toast.success("Datos de la tabla Postal actualizados.");
     } catch (error) {
       console.error("Error al actualizar la tabla Postal:", error);
       toast.error("No se pudo actualizar la tabla Postal.");
@@ -319,16 +318,16 @@ const Addresses = ({ show, handleClose }) => {
   };
 
   const handleUpdateAddressInformation = (selectedDomicilio) => {
-    const idInfo = selectedDomicilio?.idInformacion;
-
-    if (idInfo === 1901) {
-      // Sin verificar
-      setIsEstadoVisible(true); // Muestra el dropdown y el botón "Identificar"
+    console.log("Domicilio seleccionado:", selectedDomicilio);
+    if (selectedDomicilio.información === "Sin verificar") {
+      setIsEstadoVisible(true);
       setSelectedDomicilio(selectedDomicilio);
+      console.log("Formulario visible");
     } else {
-      // Otros valores
-      setIsEstadoVisible(false); // Oculta el botón "Identificar"
-      setSelectedDomicilio(selectedDomicilio);
+      setIsEstadoVisible(false);
+      setSelectedDomicilio(null);
+      console.log("Formulario oculto");
+      toast.info("El domicilio seleccionado ya ha sido verificado.");
     }
   };
 
@@ -363,13 +362,14 @@ const Addresses = ({ show, handleClose }) => {
   };
 
   const handleNewButtonClick = () => {
-    clearFormFields();
-    setFormData((prev) => ({
-      ...prev,
-      idInformacion: 1901, // Nuevo registro comienza como "Sin Verificar"
-    }));
-    setIsEstadoVisible(true); // Muestra el botón "Identificar" para nuevos registros
-    toast.info("Formulario listo para un nuevo registro.");
+    if (isFormDisabled) {
+      // Si hay un registro seleccionado, limpia los campos y habilita el formulario
+      clearFormFields();
+      setIsDomicilioTableVisible(false); // Oculta la tabla de domicilios
+      toast.info("Formulario listo para un nuevo registro.");
+    } else {
+      toast.error("El formulario ya está listo para un nuevo registro.");
+    }
   };
 
   const clearFormFields = () => {
@@ -407,6 +407,7 @@ const Addresses = ({ show, handleClose }) => {
       formData.colonia === item.coloniaLocalidad &&
       formData.municipio === item.delegaciónMunicipio &&
       formData.estado === item.estado &&
+      formData.fecha === item.fecha &&
       clase === item.clase
     ) {
       // Si el mismo row está seleccionado, limpia el formulario y habilítalo
@@ -423,9 +424,22 @@ const Addresses = ({ show, handleClose }) => {
         municipio: item.delegaciónMunicipio || "",
         estado: item.estado || "",
         origen: item.orígen || "Gestión",
+        fecha: item.fecha || "", // Actualizar el campo Fecha
       });
       setClase(item.clase || ""); // Actualiza el campo "Clase" en el formulario
       setIsFormDisabled(true); // Deshabilita el formulario
+      toast.info("Datos cargados desde la tabla Domicilios.");
+
+      // Verificar si el idInformacion es "Sin verificar (1901)"
+      if (item.información === "Sin verificar") {
+        setIdInformacion(""); // Limpia el dropdown
+        setIsEstadoVisible(true); // Muestra el dropdown
+        toast.info("Seleccione una información para identificar.");
+      } else {
+        setIdInformacion(item.información); // Muestra el valor actual en el nuevo campo
+        setIsEstadoVisible(false); // Oculta el dropdown para evitar cambios
+        toast.info(`Información actual: ${item.información}`);
+      }
     }
   };
 
@@ -448,14 +462,13 @@ const Addresses = ({ show, handleClose }) => {
           <Row>
             {/* Tablas a la izquierda */}
             <Col md={8}>
-              {isDomicilioTableVisible && (
+              {isDomicilioTableVisible && ( // Renderiza la tabla de domicilios solo si está visible
                 <div
                   className="scroll-container"
                   style={{
                     width: "100%",
                     maxHeight: "250px",
                     overflowY: "auto",
-                    overflowX: "scroll", // scroll horizontal siempre visible
                     display: "flex",
                     backgroundColor: "#343a40",
                     color: "#ffffff",
@@ -463,94 +476,13 @@ const Addresses = ({ show, handleClose }) => {
                     scrollbarWidth: "thin",
                   }}
                 >
-                  {isLoading ? (
-                    <div style={{ textAlign: "center", color: "#ffffff" }}>Cargando...</div>
-                  ) : (
-                    <Table
-                      striped
-                      bordered
-                      hover
-                      responsive
-                      variant="dark"
-                      style={{ fontSize: "13px", width: "100%" }}
-                    >
-                      <thead
-                        style={{
-                          position: "sticky",
-                          top: -1,
-                          zIndex: 1,
-                          backgroundColor: "#343a40",
-                        }}
-                      >
-                        <tr>
-                          <th>Calle</th>
-                          <th>N.Exterior</th>
-                          <th>N.Interior</th>
-                          <th>C.Postal</th>
-                          <th>Colonia/Localidad</th>
-                          <th>Delegación/Municipio</th>
-                          <th>Estado</th>
-                          <th>Clase</th>
-                          <th>Orígen</th>
-                          <th>Información</th>
-                          <th>idDomicilio</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {tableDomicilioData?.map((item, index) => (
-                          <tr
-                            key={index}
-                            onClick={() => {
-                              handleDomicilioSelection(item.códigoPostal || "");
-                              handleUpdateAddressInformation(item);
-                              handleDomicilioRowClick(item);
-                            }}
-                            style={{ cursor: "pointer" }}
-                          >
-                            <td>{renderCell(item.calle)}</td>
-                            <td>{renderCell(item.númeroExterior)}</td>
-                            <td>{renderCell(item.númeroInterior)}</td>
-                            <td>{renderCell(item.códigoPostal)}</td>
-                            <td>{renderCell(item.coloniaLocalidad)}</td>
-                            <td>{renderCell(item.delegaciónMunicipio)}</td>
-                            <td>{renderCell(item.estado)}</td>
-                            <td>{renderCell(item.clase)}</td>
-                            <td>{renderCell(item.orígen)}</td>
-                            <td>{renderCell(item.información)}</td>
-                            <td>{renderCell(item.idDomicilio)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
-                  )}
-                </div>
-              )}
-
-              <h4>Postal</h4>
-              <div
-                className="scroll-container"
-                style={{
-                  width: "100%",
-                  maxHeight: "250px",
-                  overflowY: "auto",
-                  overflowX: "scroll", // scroll horizontal siempre visible
-                  display: "flex",
-                  backgroundColor: "#343a40",
-                  color: "#ffffff",
-                  scrollbarColor: "#6c757d #343a40",
-                  scrollbarWidth: "thin",
-                }}
-              >
-                {isLoading ? (
-                  <div style={{ textAlign: "center", color: "#ffffff" }}>Cargando...</div>
-                ) : (
                   <Table
                     striped
                     bordered
                     hover
                     responsive
                     variant="dark"
-                    style={{ fontSize: "13px", width: "100%" }}
+                    style={{ fontSize: "13px" }}
                   >
                     <thead
                       style={{
@@ -560,41 +492,113 @@ const Addresses = ({ show, handleClose }) => {
                         backgroundColor: "#343a40",
                       }}
                     >
-                      <tr>
-                        <th>Código Postal</th>
-                        <th>Colonia</th>
-                        <th>Municipio</th>
+                      <tr style={{ height: "55px" }}>
+                        <th>Calle</th>
+                        <th>N.Exterior</th>
+                        <th>N.Interior</th>
+                        <th>C.Postal</th>
+                        <th>Colonia/Localidad</th>
+                        <th>Delegación/Municipio</th>
                         <th>Estado</th>
-                        <th>Zona</th>
-                        <th>Asentamiento</th>
-                        <th>Periferia</th>
-                        <th>Estancia</th>
-                        <th>Sucursal</th>
-                        <th>Zona de Riesgo</th>
+                        <th>Clase</th>
+                        <th>Orígen</th>
+                        <th>Información</th>
+                        <th>idDomicilio</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {postalTableData?.map((item, index) => (
+                      {tableDomicilioData?.map((item, index) => (
                         <tr
                           key={index}
-                          onClick={() => handlePostalRowClick(item)}
-                          style={{ cursor: "pointer" }}
+                          onClick={() => {
+                            handleDomicilioSelection(item.códigoPostal || "");
+                            handleUpdateAddressInformation(item);
+                            handleDomicilioRowClick(item); // Llama a la función para cargar los datos en el formulario
+                          }}
+                          style={{ cursor: "pointer" }} // Agregado para igualar el estilo de la tabla Postal
                         >
+                          <td>{renderCell(item.calle)}</td>
+                          <td>{renderCell(item.númeroExterior)}</td>
+                          <td>{renderCell(item.númeroInterior)}</td>
                           <td>{renderCell(item.códigoPostal)}</td>
-                          <td>{renderCell(item.colonia)}</td>
-                          <td>{renderCell(item.municipio)}</td>
+                          <td>{renderCell(item.coloniaLocalidad)}</td>
+                          <td>{renderCell(item.delegaciónMunicipio)}</td>
                           <td>{renderCell(item.estado)}</td>
-                          <td>{renderCell(item.zona)}</td>
-                          <td>{renderCell(item.asentamiento)}</td>
-                          <td>{renderCell(item.periferia)}</td>
-                          <td>{renderCell(item.estancia)}</td>
-                          <td>{renderCell(item.sucursal)}</td>
-                          <td>{renderCell(item.zonaRiesgo ? "Sí" : "No")}</td>
+                          <td>{renderCell(item.clase)}</td>
+                          <td>{renderCell(item.orígen)}</td>
+                          <td>{renderCell(item.información)}</td>
+                          <td>{renderCell(item.idDomicilio)}</td>
                         </tr>
                       ))}
                     </tbody>
                   </Table>
-                )}
+                </div>
+              )}
+
+              <h4>Postal</h4>
+              <div
+                className="scroll-container"
+                style={{
+                  width: "100%",
+                  maxHeight: "350px",
+                  overflowY: "auto",
+                  display: "flex",
+                  backgroundColor: "#343a40",
+                  color: "#ffffff",
+                  scrollbarColor: "#6c757d #343a40",
+                  scrollbarWidth: "thin",
+                }}
+              >
+                <Table
+                  striped
+                  bordered
+                  hover
+                  responsive
+                  variant="dark"
+                  style={{ fontSize: "13px" }}
+                >
+                  <thead
+                    style={{
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 1,
+                      backgroundColor: "#343a40",
+                    }}
+                  >
+                    <tr style={{ height: "55px" }}>
+                      <th>Código Postal</th>
+                      <th>Colonia</th>
+                      <th>Municipio</th>
+                      <th>Estado</th>
+                      <th>Zona</th>
+                      <th>Asentamiento</th>
+                      <th>Periferia</th>
+                      <th>Estancia</th>
+                      <th>Sucursal</th>
+                      <th>Zona de Riesgo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {postalTableData?.map((item, index) => (
+                      <tr
+                        key={index}
+                        onClick={() => handlePostalRowClick(item)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <td>{renderCell(item.códigoPostal)}</td>
+                        <td>{renderCell(item.colonia)}</td>
+                        <td>{renderCell(item.municipio)}</td>
+                        <td>{renderCell(item.estado)}</td>
+                        <td>{renderCell(item.zona)}</td>
+                        <td>{renderCell(item.asentamiento)}</td>
+                        <td>{renderCell(item.periferia)}</td>
+                        <td>{renderCell(item.estancia)}</td>
+                        <td>{renderCell(item.sucursal)}</td>
+                        <td>{renderCell(item.zonaRiesgo ? "Sí" : "No")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
               </div>
             </Col>
             {/* Tablas a la izquierda */}
@@ -722,10 +726,10 @@ const Addresses = ({ show, handleClose }) => {
                 </Col>
                 <Col>
                   <Form.Group>
-                    <Form.Label>Fecha Insert</Form.Label>
+                    <Form.Label>Fecha</Form.Label>
                     <Form.Control
                       type="text"
-                      value={selectedDomicilio?.Fecha_Insert || ""}
+                      value={formData?.Fecha || ""}
                       disabled
                     />
                   </Form.Group>
@@ -738,7 +742,7 @@ const Addresses = ({ show, handleClose }) => {
                       onChange={(e) => setClase(e.target.value)}
                       disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
                     >
-                      <opcion value="">Seleccione una clase</opcion>
+                      <option value="">Selecciona una Clase</option>
                       <option value="1505">Hogar</option>
                       <option value="1509">Tercero</option>
                       <option value="1508">Familiar</option>
@@ -746,61 +750,93 @@ const Addresses = ({ show, handleClose }) => {
                       <option value="1506">Oficina</option>
                       <option value="1519">Baja</option>
                     </Form.Select>
-                  </Form.Group>          
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row className="mb-3 w-100">
+                <Col>
+                  <Form.Group>
+                    <Form.Label>Información Actual</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={
+                        idInformacion === "1904"
+                          ? "Errónea"
+                          : idInformacion === "1902"
+                          ? "Incompleta"
+                          : idInformacion === "1903"
+                          ? "No corresponde"
+                          : idInformacion === "1905"
+                          ? "Inexistente"
+                          : idInformacion === "1906"
+                          ? "Correcta"
+                          : idInformacion || "Sin información" // Mantén la lógica actual si no coincide con las nuevas condiciones
+                      }
+                      disabled
+                      placeholder="Sin información"
+                    />
+                  </Form.Group>
                 </Col>
               </Row>
               <Row className="mt-4 w-100">
                 <Col className="d-flex justify-content-start">
-                  {isEstadoVisible && (
-                    <Button
-                      variant="success"
-                      onClick={async () => {
-                        if (!idInformacion || idInformacion === "1901") {
-                          toast.error("Por favor, seleccione un valor válido para idInformacion.");
-                          return;
-                        }
+                  <Button
+                    variant="success"
+                    onClick={async () => {
+                      if (!idInformacion) {
+                        toast.error("Por favor, seleccione un valor para idInformacion.");
+                        return;
+                      }
 
-                        const payload = {
-                          idCartera: 1,
-                          idCuenta: idCuenta,
-                          idDomicilio: selectedDomicilio?.idDomicilio || 0,
-                          idInformacion: parseInt(idInformacion, 10),
-                        };
+                      const payload = {
+                        idCartera: 1,
+                        idCuenta: idCuenta,
+                        idDomicilio: selectedDomicilio?.idDomicilio || 0,
+                        idInformacion: parseInt(idInformacion, 10),
+                        fecha:selectedDomicilio?.Fecha || "",
+                      };
 
-                        try {
-                          setIsLoading(true);
-                          const response = await servicio.post(
-                            "/search-customer/update-address-information",
-                            payload
-                          );
-                          toast.success("Información identificada exitosamente.");
-                          console.log("Respuesta del servidor:", response.data);
-                          setIsEstadoVisible(false); // Oculta el botón después de identificar
-                        } catch (error) {
-                          console.error("Error al identificar la información:", error);
-                          toast.error("No se pudo identificar la información.");
-                        } finally {
-                          setIsLoading(false);
-                        }
-                      }}
-                    >
-                      Identificar
-                    </Button>
-                  )}
+                      try {
+                        setIsLoading(true);
+                        const response = await servicio.post(
+                          "/search-customer/update-address-information",
+                          payload
+                        );
+                        toast.success("Información identificada exitosamente.");
+                        console.log("Respuesta del servidor:", response.data);
+
+                        // Deshabilitar el botón y el dropdown después de la identificación correcta
+                        setIsEstadoVisible(false);
+                        setIdInformacion(""); // Limpia el valor seleccionado
+
+                        // Actualizar la tabla de domicilios
+                        await fetchTableDomicilioData();
+                      } catch (error) {
+                        console.error("Error al identificar la información:", error);
+                        toast.error("No se pudo identificar la información.");
+                      } finally {
+                        setIsLoading(false);
+                      }
+                    }}
+                    disabled={!isEstadoVisible} // Deshabilitar si el dropdown no está visible
+                  >
+                    Identificar
+                  </Button>
                 </Col>
                 <Col className="d-flex justify-content-center">
                   <Form.Group controlId="idInformacion">
                     <Form.Select
                       value={idInformacion}
                       onChange={(e) => setIdInformacion(e.target.value)}
-                      disabled={!isEstadoVisible} // Deshabilitar si no está en modo "Sin Verificar"
+                      disabled={!isEstadoVisible} // Deshabilitar si el dropdown no está visible
                     >
-                      <opcion value="">Seleccione un estado</opcion>
+                      <option value="">Seleccione una Información</option>
+                      <option value="1904">Errónea</option>
                       <option value="1902">Incompleta</option>
                       <option value="1903">No corresponde</option>
-                      <option value="1904">Errónea</option>
                       <option value="1905">Inexistente</option>
                       <option value="1906">Correcta</option>
+                      {/* Agregar más opciones según sea necesario */}
                     </Form.Select>
                   </Form.Group>
                 </Col>
@@ -815,7 +851,7 @@ const Addresses = ({ show, handleClose }) => {
                         !formData.codigoPostal ||
                         !formData.colonia ||
                         !formData.municipio ||
-                        !formData.estado
+                        !formData.estado 
                       ) {
                         toast.error("Por favor, complete todos los campos obligatorios.");
                         return;
@@ -850,6 +886,7 @@ const Addresses = ({ show, handleClose }) => {
                         municipio: formData.municipio || "string",
                         estado: formData.estado || "string",
                         idClase: idClaseInt,
+                        fecha: formData.fecha || "string",
                       };
 
                       console.log("Payload enviado:", payload);
@@ -919,7 +956,6 @@ const Addresses = ({ show, handleClose }) => {
               width: "100%",
               maxHeight: "200px",
               overflowY: "auto",
-              overflowX: "scroll", // scroll horizontal siempre visible
               display: "flex",
               backgroundColor: "#343a40",
               color: "#ffffff",
@@ -927,90 +963,86 @@ const Addresses = ({ show, handleClose }) => {
               scrollbarWidth: "thin",
             }}
           >
-            {isLoading ? (
-              <div style={{ textAlign: "center", color: "#ffffff" }}>Cargando...</div>
-            ) : (
-              <Table
-                striped
-                bordered
-                hover
-                responsive
-                variant="dark"
-                style={{ fontSize: "13px", width: "100%" }}
+            <Table
+              striped
+              bordered
+              hover
+              responsive
+              variant="dark"
+              style={{ fontSize: "13px" }}
+            >
+              <thead
+                style={{
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 1,
+                  backgroundColor: "#343a40",
+                }}
               >
-                <thead
-                  style={{
-                    position: "sticky",
-                    top: -1,
-                    zIndex: 1,
-                    backgroundColor: "#343a40",
-                  }}
-                >
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Hora</th>
-                    <th>Contacto</th>
-                    <th>Situación</th>
-                    <th>Causa No Pago</th>
-                    <th>Nombre</th>
-                    <th>Parentesco</th>
-                    <th>Sucursal</th>
-                    <th>Color Fachada</th>
-                    <th>Color Puerta</th>
-                    <th>Color Herrería</th>
-                    <th>Pisos</th>
-                    <th>Vivienda</th>
-                    <th>Habitación</th>
-                    <th>Económico</th>
-                    <th>NombrePropietario</th>
-                    <th>AutoMapeo</th>
-                    <th>AutoMarca</th>
-                    <th>AutoAño</th>
-                    <th>CalleHorizontalNorte</th>
-                    <th>CalleHorizontalSur</th>
-                    <th>CalleVerticalOeste</th>
-                    <th>CalleVerticalEste</th>
-                    <th>Visitador</th>
-                    <th>Capturista</th>
-                    <th>FechaPagoNegociación</th>
-                    <th>MontoNegociación</th>
+                <tr style={{ height: "55px" }}>
+                  <th>Fecha</th>
+                  <th>Hora</th>
+                  <th>Contacto</th>
+                  <th>Situación</th>
+                  <th>Causa No Pago</th>
+                  <th>Nombre</th>
+                  <th>Parentesco</th>
+                  <th>Sucursal</th>
+                  <th>Color Fachada</th>
+                  <th>Color Puerta</th>
+                  <th>Color Herrería</th>
+                  <th>Pisos</th>
+                  <th>Vivienda</th>
+                  <th>Habitación</th>
+                  <th>Económico</th>
+                  <th>NombrePropietario</th>
+                  <th>AutoMapeo</th>
+                  <th>AutoMarca</th>
+                  <th>AutoAño</th>
+                  <th>CalleHorizontalNorte</th>
+                  <th>CalleHorizontalSur</th>
+                  <th>CalleVerticalOeste</th>
+                  <th>CalleVerticalEste</th>
+                  <th>Visitador</th>
+                  <th>Capturista</th>
+                  <th>FechaPagoNegociación</th>
+                  <th>MontoNegociación</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tableDomData.map((item, index) => (
+                  <tr key={index} onClick={() => handleRowClick(item)}>
+                    <td>{renderCell(formatearFecha(item.Fecha))}</td>
+                    <td>{renderCell(item.Hora)}</td>
+                    <td>{renderCell(item.idContacto)}</td>
+                    <td>{renderCell(item.idSituación)}</td>
+                    <td>{renderCell(item.idCausaNoPago)}</td>
+                    <td>{renderCell(item.NombreContacto)}</td>
+                    <td>{renderCell(item.idParentesco)}</td>
+                    <td>{renderCell(item.idSucursal)}</td>
+                    <td>{renderCell(item.ColorFachada)}</td>
+                    <td>{renderCell(item.ColorPuerta)}</td>
+                    <td>{renderCell(item.ColorHerrería)}</td>
+                    <td>{renderCell(item.Pisos)}</td>
+                    <td>{renderCell(item.idVivienda)}</td>
+                    <td>{renderCell(item.idHabitación)}</td>
+                    <td>{renderCell(item.idEconómico)}</td>
+                    <td>{renderCell(item.NombrePropietario)}</td>
+                    <td>{renderCell(item.AutoMapeo)}</td>
+                    <td>{renderCell(item.AutoMarca)}</td>
+                    <td>{renderCell(item.AutoAño)}</td>
+                    <td>{renderCell(item.CalleHorizontalNorte)}</td>
+                    <td>{renderCell(item.CalleHorizontalSur)}</td>
+                    <td>{renderCell(item.CalleVerticalOeste)}</td>
+                    <td>{renderCell(item.CalleVerticalEste)}</td>
+                    <td>{renderCell(item.Visitador)}</td>
+                    <td>{renderCell(item.Capturista)}</td>
+                    <td>{renderCell(item.FechaPagoNegociación)}</td>
+                    <td>{renderCell(item.MontoNegociación)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {tableDomData.map((item, index) => (
-                    <tr key={index} onClick={() => handleRowClick(item)} style={{ cursor: "pointer" }}>
-                      <td>{renderCell(formatearFecha(item.Fecha))}</td>
-                      <td>{renderCell(item.Hora)}</td>
-                      <td>{renderCell(item.idContacto)}</td>
-                      <td>{renderCell(item.idSituación)}</td>
-                      <td>{renderCell(item.idCausaNoPago)}</td>
-                      <td>{renderCell(item.NombreContacto)}</td>
-                      <td>{renderCell(item.idParentesco)}</td>
-                      <td>{renderCell(item.idSucursal)}</td>
-                      <td>{renderCell(item.ColorFachada)}</td>
-                      <td>{renderCell(item.ColorPuerta)}</td>
-                      <td>{renderCell(item.ColorHerrería)}</td>
-                      <td>{renderCell(item.Pisos)}</td>
-                      <td>{renderCell(item.idVivienda)}</td>
-                      <td>{renderCell(item.idHabitación)}</td>
-                      <td>{renderCell(item.idEconómico)}</td>
-                      <td>{renderCell(item.NombrePropietario)}</td>
-                      <td>{renderCell(item.AutoMapeo)}</td>
-                      <td>{renderCell(item.AutoMarca)}</td>
-                      <td>{renderCell(item.AutoAño)}</td>
-                      <td>{renderCell(item.CalleHorizontalNorte)}</td>
-                      <td>{renderCell(item.CalleHorizontalSur)}</td>
-                      <td>{renderCell(item.CalleVerticalOeste)}</td>
-                      <td>{renderCell(item.CalleVerticalEste)}</td>
-                      <td>{renderCell(item.Visitador)}</td>
-                      <td>{renderCell(item.Capturista)}</td>
-                      <td>{renderCell(item.FechaPagoNegociación)}</td>
-                      <td>{renderCell(item.MontoNegociación)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            )}
+                ))}
+              </tbody>
+            </Table>
           </div>
           <Row>
             <div>
