@@ -21,6 +21,11 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
         idEjecutivo // Obtener idEjecutivo del contexto
     } = useContext(AppContext);
 
+    const getCurrentTime = () => {
+        const now = new Date();
+        return now.toTimeString().split(' ')[0]; // Formato HH:mm:ss
+    };
+
     useEffect(() => {
         console.log("DEBUG: idEjecutivo obtenido desde el contexto:", idEjecutivo);
         if (!idEjecutivo) {
@@ -53,6 +58,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
             idAcercamiento: "1601", // Restaurar idAcercamiento
             idMotivoS: "0", // Restaurar idMotivoS
             fecha: new Date().toISOString().split('T')[0], // Fecha al día actual
+            segundo: getCurrentTime(), // Hora actual
             numeroTelefonico: phone.raw,
             displayedPhone: phone.formatted
         }));
@@ -80,7 +86,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                 const reminders = notes
                     .filter(note => note.recordatorio)
                     .map(note => {
-                        const fechaPago = note.FechaPago.endsWith('Z')
+                        const fechaPago = note.FechaPago?.endsWith('Z')
                             ? note.FechaPago
                             : `${note.FechaPago}Z`;
                         return {
@@ -122,19 +128,20 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
     const hasReminderConflict = (date, time) => {
         try {
             const newRecordDateTime = new Date(`${date}T${time}`);
-            newRecordDateTime.setSeconds(0, 0);
+            newRecordDateTime.setSeconds(0, 0); // Normaliza segundos y milisegundos
 
             for (const reminder of existingReminders) {
-                const reminderDateTime = reminder.date
-                    ? new Date(reminder.date)
-                    : new Date(`${date}T${reminder.segundo}`);
-                reminderDateTime.setSeconds(0, 0);
+                const reminderDateTime = reminder.rawDate
+                    ? new Date(reminder.rawDate) // Usa la fecha cruda si está disponible
+                    : new Date(`${reminder.date}T${reminder.time || "00:00:00"}`);
+                reminderDateTime.setSeconds(0, 0); // Normaliza segundos y milisegundos
 
                 const diff = Math.abs(newRecordDateTime - reminderDateTime);
-                if (diff < 5 * 60 * 1000) {
+                if (diff < 5 * 60 * 1000) { // Menos de 5 minutos de diferencia
                     return {
                         conflict: true,
-                        existingTime: reminderDateTime.toTimeString().split(" ")[0]
+                        existingDate: reminder.date,
+                        existingTime: reminder.time
                     };
                 }
             }
@@ -146,6 +153,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
     };
 
     const normalizeTime = (timeStr) => {
+        if (!timeStr) timeStr = getCurrentTime(); // Usa la hora actual como predeterminado
         const parts = timeStr.split(':');
         parts[0] = parts[0].padStart(2, '0'); // Asegura que las horas tengan 2 dígitos
         parts[1] = (parts[1] || '00').padStart(2, '0'); // Asegura que los minutos tengan 2 dígitos
@@ -189,8 +197,10 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
 
         setLoading(true);
         try {
+            const segundo = formData.segundo || getCurrentTime(); // Usa la hora actual como predeterminado
+
             // Validación para minutos con 2 dígitos
-            const minute = (formData.segundo || "00:00:00").split(':')[1];
+            const minute = segundo.split(':')[1];
             if (!/^\d{2}$/.test(minute) || parseInt(minute) < 0 || parseInt(minute) > 59) {
                 toast.error("El campo de minutos (MM) debe tener exactamente 2 dígitos válidos (01-59).");
                 setLoading(false);
@@ -210,6 +220,13 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                 return;
             }
 
+            // Validación para motivo válido
+            if (!formData.idMotivoS || formData.idMotivoS === "" || formData.idMotivoS === "0") {
+                toast.error("Debe seleccionar un motivo válido antes de enviar el formulario.");
+                setLoading(false);
+                return;
+            }
+
             const todayStr = new Date().toISOString().split('T')[0];
             if (formData.fecha < todayStr) {
                 toast.error("No puedes seleccionar una fecha anterior al día actual");
@@ -218,7 +235,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
             }
 
             if (formData.fecha === todayStr) {
-                const scheduledTimeNormalized = normalizeTime(formData.segundo);
+                const scheduledTimeNormalized = normalizeTime(segundo);
                 const scheduledDate = new Date(`${formData.fecha}T${scheduledTimeNormalized}`);
                 const nowPlusOne = new Date(Date.now() + 60000);
                 if (scheduledDate < nowPlusOne) {
@@ -229,7 +246,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
             }
 
             if (formData.recordatorio === true) {
-                const [hours, minutes] = formData.segundo.split(':').map(Number);
+                const [hours, minutes] = segundo.split(':').map(Number);
                 const period = hours >= 12 ? "PM" : "AM";
 
                 if (period === "AM" && (hours < 7 || hours > 11)) {
@@ -239,40 +256,27 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                 }
 
                 if (period === "PM" && (hours < 12 || hours > 22)) {
-                    toast.error("Horario PM inválido. Debe ser entre 12:00 PM y 9:59 PM");
+                    toast.error("Horario PM inválido. Debe ser entre 12:00 PM y 22:00 PM");
                     setLoading(false);
                     return;
                 }
             }
 
-            const { conflict, existingTime } = hasReminderConflict(formData.fecha, formData.segundo);
+            const { conflict, existingDate, existingTime } = hasReminderConflict(formData.fecha, segundo);
             if (conflict) {
-                toast.error(`Conflicto con seguimiento existente a las ${existingTime}. Debe haber al menos 5 minutos de diferencia.`);
+                toast.error(`Conflicto detectado: ya existe un seguimiento registrado el ${existingDate} a las ${existingTime}.`);
                 setLoading(false);
                 return;
             }
 
-            if (!formData.recordatorio) {
-                const newDateTime = `${formData.fecha}T${formData.segundo}`;
-                const existingNonReminder = existingReminders.find(reminder => {
-                    return reminder.date && reminder.recordatorio === false &&
-                        reminder.date.substring(0, 16) === newDateTime.substring(0, 16);
-                });
-                if (existingNonReminder) {
-                    toast.error("Ya existe un seguimiento sin recordatorio para la misma fecha y hora");
-                    setLoading(false);
-                    return;
-                }
-            }
-
-            const normalizedTime = normalizeTime(formData.segundo || "00:00:00"); // Normaliza el formato de 'segundo'
+            const normalizedTime = normalizeTime(segundo);
             const dataToSend = {
                 ...formData,
-                idEjecutivo, // Aseguramos que idEjecutivo esté incluido
-                fecha: `${formData.fecha}T${normalizedTime}`, // Usa el tiempo normalizado
-                datoContacto: FollowClipboardActive ? null : formData.datoContacto?.trim() || null, // Enviar como nulo si FollowClipboardActive está activo
+                idEjecutivo,
+                fecha: `${formData.fecha}T${normalizedTime}`,
+                datoContacto: FollowClipboardActive ? null : formData.datoContacto?.trim() || null,
                 numeroTelefonico: formData.numeroTelefonico.toString().replace(/\D/g, ''),
-                segundo: normalizedTime // Asegura que 'segundo' también esté normalizado
+                segundo: normalizedTime
             };
 
             console.log("DEBUG: Intentando enviar seguimiento con datos:", dataToSend);
@@ -314,7 +318,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                 idAcercamiento: "1601",
                 idMotivoS: "0",
                 fecha: new Date().toISOString().split('T')[0],
-                segundo: "07:00:00",
+                segundo: getCurrentTime(), // Restablece a la hora actual
                 recordatorio: false,
                 datoContacto: "",
                 numeroTelefonico: "",
@@ -384,6 +388,30 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                         </Form.Group>
                     </Col>
                 </Row>
+
+                    <Row className="mb-3">
+                        <Col md={12}>
+                            <Form.Group>
+                                <Form.Label>Motivo *</Form.Label>
+                                <Form.Control
+                                    as="select"
+                                    name="idMotivoS"
+                                    value={formData.idMotivoS}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="">Seleccione un motivo</option>
+                                    <option value="4401">Se corta llamada</option>
+                                    <option value="4402">Seguimiento llamada</option>
+                                    <option value="4403">Solicitud titular</option>
+                                    <option value="4404">Se realizará PEX</option>
+                                    <option value="4405">No puede atender</option>
+                                    <option value="4406">Reportará pago</option>
+                                    <option value="4407">Cierre de gestión</option>
+                                </Form.Control>
+                            </Form.Group>
+                        </Col>
+                    </Row>
 
                 <Row className="mb-3">
                     <Col md={4}>
@@ -489,24 +517,6 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                         onChange={handleChange}
                     />
                 </Form.Group>
-
-                {!FollowClipboardActive && ( // Ocultar el campo de comentarios si FollowClipboardActive está activo
-                    <Form.Group className="mb-3">
-                        <Form.Label>Comentarios</Form.Label>
-                        <Form.Control
-                            as="textarea"
-                            name="datoContacto"
-                            value={formData.datoContacto || ""} // Asigna un valor predeterminado
-                            onChange={handleChange}
-                            style={{ height: "170px", resize: "none" }}
-                            placeholder="Detalles adicionales del contacto..."
-                            maxLength={280}
-                        />
-                        <div className="text-end text-muted small mt-1">
-                            {(formData.datoContacto || "").length}/280 caracteres {/* Asigna un valor predeterminado */}
-                        </div>
-                    </Form.Group>
-                )}
 
                 <div className="d-flex justify-content-end">
                     <Button
