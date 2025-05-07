@@ -200,11 +200,11 @@ function NotesWidget() {
   };
 
   // Notas ordenadas memoizadas
-
   const sortedNotes = useMemo(
     () => sortNotesByDateTime(filteredNotes),
     [filteredNotes]
   );
+
   // Función para extraer número de teléfono
   const extractFullPhoneNumber = (content) => {
     if (!content) return null;
