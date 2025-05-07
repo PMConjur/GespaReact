@@ -21,11 +21,6 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
         idEjecutivo // Obtener idEjecutivo del contexto
     } = useContext(AppContext);
 
-    const getCurrentTime = () => {
-        const now = new Date();
-        return now.toTimeString().split(' ')[0]; // Formato HH:mm:ss
-    };
-
     useEffect(() => {
         console.log("DEBUG: idEjecutivo obtenido desde el contexto:", idEjecutivo);
         if (!idEjecutivo) {
@@ -58,7 +53,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
             idAcercamiento: "1601", // Restaurar idAcercamiento
             idMotivoS: "0", // Restaurar idMotivoS
             fecha: new Date().toISOString().split('T')[0], // Fecha al día actual
-            segundo: getCurrentTime(), // Hora actual
+            segundo: "", // Elimina la hora actual
             numeroTelefonico: phone.raw,
             displayedPhone: phone.formatted
         }));
@@ -137,7 +132,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                 reminderDateTime.setSeconds(0, 0); // Normaliza segundos y milisegundos
 
                 const diff = Math.abs(newRecordDateTime - reminderDateTime);
-                if (diff < 5 * 60 * 1000) { // Menos de 5 minutos de diferencia
+                if (diff === 0 || diff < 5 * 60 * 1000) { // Conflicto exacto o dentro de 5 minutos
                     return {
                         conflict: true,
                         existingDate: reminder.date,
@@ -153,7 +148,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
     };
 
     const normalizeTime = (timeStr) => {
-        if (!timeStr) timeStr = getCurrentTime(); // Usa la hora actual como predeterminado
+        if (!timeStr) timeStr = ""; // Usa una cadena vacía como predeterminado
         const parts = timeStr.split(':');
         parts[0] = parts[0].padStart(2, '0'); // Asegura que las horas tengan 2 dígitos
         parts[1] = (parts[1] || '00').padStart(2, '0'); // Asegura que los minutos tengan 2 dígitos
@@ -197,7 +192,14 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
 
         setLoading(true);
         try {
-            const segundo = formData.segundo || getCurrentTime(); // Usa la hora actual como predeterminado
+            const segundo = formData.segundo; // Usa el valor proporcionado en lugar de la hora actual
+
+            // Validación para hora no seleccionada
+            if (!segundo || segundo.startsWith(":")) {
+                toast.error("Debe seleccionar una hora válida antes de enviar el formulario.");
+                setLoading(false);
+                return;
+            }
 
             // Validación para minutos con 2 dígitos
             const minute = segundo.split(':')[1];
@@ -318,7 +320,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                 idAcercamiento: "1601",
                 idMotivoS: "0",
                 fecha: new Date().toISOString().split('T')[0],
-                segundo: getCurrentTime(), // Restablece a la hora actual
+                segundo: "", // Restablece a una cadena vacía
                 recordatorio: false,
                 datoContacto: "",
                 numeroTelefonico: "",
@@ -445,6 +447,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                                         }}
                                         aria-label="Seleccionar hora"
                                     >
+                                        <option value="">Seleccione alguno</option>
                                         {parseInt((formData.segundo || "00:00:00").split(':')[0]) >= 12
                                             ? [...Array(11).keys()].map((h) => (
                                                 <option key={h} value={h + 12}>
@@ -490,11 +493,15 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                                             const period = e.target.value;
                                             let [hour, minute, second] = (formData.segundo || "00:00:00").split(':'); // Asigna un valor predeterminado
                                             hour = parseInt(hour);
-                                            if (period === "PM" && hour < 12) hour += 12;
-                                            if (period === "AM" && hour >= 12) hour -= 12;
+                                            if (period === "PM" && hour < 12) {
+                                                hour += 12; // Convierte a formato PM
+                                            }
+                                            if (period === "AM" && hour >= 12) {
+                                                hour -= 12; // Convierte a formato AM
+                                            }
                                             setFormData({
                                                 ...formData,
-                                                segundo: `${hour.toString().padStart(2, '0')}:${minute}:${second}`,
+                                                segundo: `${hour.toString().padStart(2, '0')}:${minute}:${second}`, // Actualiza la hora con formato correcto
                                             });
                                         }}
                                         aria-label="Seleccionar AM/PM"

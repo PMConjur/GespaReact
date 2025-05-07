@@ -282,6 +282,17 @@ const Addresses = ({ show, handleClose }) => {
     }
   };
 
+  const fetchFechaInsert = async (idDomicilio) => {
+    try {
+      const response = await servicio.get(`/domicilios/fecha-insert/${idDomicilio}`);
+      return response.data.Fecha_Insert || ""; // Devuelve la Fecha_Insert o una cadena vacía
+    } catch (error) {
+      console.error("Error al obtener la Fecha_Insert:", error);
+      toast.error("No se pudo obtener la Fecha_Insert.");
+      return "";
+    }
+  };
+
   const renderCell = (value) => {
     if (value === null || value === undefined || typeof value === "object") {
       return ""; // Valor predeterminado
@@ -398,7 +409,7 @@ const Addresses = ({ show, handleClose }) => {
     toast.info("Datos cargados desde la tabla postal.");
   };
 
-  const handleDomicilioRowClick = (item) => {
+  const handleDomicilioRowClick = async (item) => {
     if (
       formData.calle === item.calle &&
       formData.numExt === item.númeroExterior &&
@@ -407,13 +418,17 @@ const Addresses = ({ show, handleClose }) => {
       formData.colonia === item.coloniaLocalidad &&
       formData.municipio === item.delegaciónMunicipio &&
       formData.estado === item.estado &&
-      formData.fecha === item.fecha &&
+      formData.fecha === item.fecha && // Comparar también la fecha
       clase === item.clase
     ) {
       // Si el mismo row está seleccionado, limpia el formulario y habilítalo
       clearFormFields();
+      setIdInformacion(""); // Limpia el campo de "Información Actual"
       toast.info("Formulario limpiado y habilitado.");
     } else {
+      // Obtener la Fecha_Insert desde la base de datos
+      const fechaInsert = await fetchFechaInsert(item.idDomicilio);
+
       // Si es un row diferente, carga los datos en el formulario
       setFormData({
         calle: item.calle || "",
@@ -424,7 +439,7 @@ const Addresses = ({ show, handleClose }) => {
         municipio: item.delegaciónMunicipio || "",
         estado: item.estado || "",
         origen: item.orígen || "Gestión",
-        fecha: item.fecha || "", // Actualizar el campo Fecha
+        fecha: fechaInsert, // Actualizar el campo Fecha con la Fecha_Insert
       });
       setClase(item.clase || ""); // Actualiza el campo "Clase" en el formulario
       setIsFormDisabled(true); // Deshabilita el formulario
