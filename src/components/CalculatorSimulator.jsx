@@ -39,7 +39,8 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
     montoNegociado: 0,
     descuento: 0,
     calculos: [],
-    tasaMensual: 0 // Agregar tasa mensual al estado
+    tasaMensual: 0, // Agregar tasa mensual al estado
+    maxDescuento: 0, 
   });
   const [formValues, setFormValues] = useState({
     montoNegociado: "",
@@ -256,7 +257,9 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         montoNegociado: response.montoNegociado,
         descuento: response.descuento,
         calculos: response.calculos,
-        tasaMensual: response.tasaMensual // Agregar la tasa mensual al estado
+        tasaMensual: response.tasaMensual,
+        montoDescuento: response.montoDescuento, // Agregar montoDescuento al estado
+        maxDescuento: response.maxDescuento // Agregar maxDescuento al estado
       });
 
       setShowDetails(true); // Muestra el contenido del Row
@@ -409,7 +412,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         montoRequerido: summaryData.montoRequerido || 0,
         saldo: summaryData.saldo || 0,
         descuento: summaryData.descuento || 0,
-        maxDescuento: summaryData.maxDescuento || 0, // Asegúrate de que este campo exista en tu estado
+        maxDescuento: calculosData.maxDescuento || 0,
         idHerramienta: selectedHerramienta,
         idCuenta: idCuenta,
         idCartera: 1, // Asumiendo que siempre es 1 según tu código
@@ -1561,8 +1564,8 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 </span>
                                 <h5 style={{ color: "#6dd6ff" }}>
                                   $
-                                  {summaryData.MontoDescuento
-                                    ? summaryData.MontoDescuento
+                                  {summaryData.montoDescuento
+                                    ? summaryData.montoDescuento
                                     : 0}
                                 </h5>
                               </Col>
