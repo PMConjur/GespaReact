@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import servicio from "../../../services/axiosServices";
 import { AppContext } from "../../../pages/Managment"; // Asegúrate de que la ruta sea correcta
 import { formatearFecha } from "../../ValoresCatalogos.js";
+import MergeTable from "./MergeTable"; // Importar el componente MergeTable
 
 const Addresses = ({ show, handleClose }) => {
   const { searchResults } = useContext(AppContext); // Obtén el contexto
@@ -24,6 +25,7 @@ const Addresses = ({ show, handleClose }) => {
     estado: "",
     origen: "Gestión",
     fecha: "",
+    codigoPostal: "",
   });
   const [selectedGestion, setSelectedGestion] = useState(null);
   const [tableData, setTableData] = useState([]);
@@ -51,6 +53,7 @@ const Addresses = ({ show, handleClose }) => {
       fetchAddressData();
       fetchTableDomData();
       fetchTableDomicilioData();
+      compareAndReplacePostalCodes(); // Llama a la función aquí
     }
   }, [show]);
 
@@ -75,24 +78,29 @@ const Addresses = ({ show, handleClose }) => {
       } else {
         setIsNew(true);
         setRecordCount(0);
+        toast.info("No se encontró información de la dirección.");
       }
     } catch (error) {
       console.error("Error fetching address data:", error);
-      let message = "No se pudo cargar la dirección.";
-      if (error.response) {
-        const status = error.response.status;
-        message =
-          status === 404
-            ? ""
-            : `Error ${status}: ${error.response.data.message}`;
-      } else {
-        message = `Error: Ocurrió un problema al realizar la solicitud. Detalles: ${error.message}`;
-      }
 
-      if (errorMessage !== message) {
-        toast.dismiss();
-        toast.error(message);
-        setErrorMessage(message);
+      if (error.response?.status === 404) {
+        toast.info("No se encontró información de la dirección para el ID de cuenta proporcionado.");
+        setIsNew(true);
+        setRecordCount(0);
+      } else {
+        let message = "No se pudo cargar la dirección.";
+        if (error.response) {
+          const status = error.response.status;
+          message = `Error ${status}: ${error.response.data.message || "Ocurrió un error inesperado."}`;
+        } else {
+          message = `Error: Ocurrió un problema al realizar la solicitud. Detalles: ${error.message}`;
+        }
+
+        if (errorMessage !== message) {
+          toast.dismiss();
+          toast.error(message);
+          setErrorMessage(message);
+        }
       }
     } finally {
       setIsLoading(false);
@@ -126,6 +134,93 @@ const Addresses = ({ show, handleClose }) => {
       toast.error(message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Función para cargar códigos postales por texto
+  const loadPostalCodesByText = async (codigoPostal) => {
+    try {
+      const response = await servicio.get(`/search-customer/search-postal-code?codigoPostal=${codigoPostal}`);
+      if (response.data.codigosPostales?.length === 0) {
+        toast.error("Sin colonias para este Código Postal.");
+        return;
+      }
+      setPostalTableData(response.data.codigosPostales);
+      toast.success("Códigos postales cargados correctamente.");
+    } catch (error) {
+      if (error.response?.status === 404) {
+        console.warn(`Código postal no encontrado: ${codigoPostal}. Detalles: ${error.response.data?.mensaje || "Sin detalles"}`);
+        toast.info("No se encontró información relacionada a ese código postal.");
+      } else {
+        console.error("Error al cargar códigos postales:", error);
+        toast.error("Falló al obtener los Códigos Postales.");
+      }
+    }
+  };
+
+  // Función para cargar códigos postales por ID
+  const loadPostalCodesById = async (idCodigoPostal) => {
+    try {
+      const response = await servicio.get(`/search-customer/search-postal-code?codigoPostal=${idCodigoPostal}`);
+      if (response.data.codigosPostales?.length === 0) {
+        toast.error("No se encontraron datos para el Código Postal.");
+        return;
+      }
+
+      const postalInfo = response.data.codigosPostales[0];
+      setFormData((prev) => ({
+        ...prev,
+        codigoPostal: postalInfo.códigoPostal || "",
+        colonia: postalInfo.colonia || "",
+        municipio: postalInfo.municipio || "",
+        estado: postalInfo.estado || "",
+        zona: postalInfo.zona || "",
+        asentamiento: postalInfo.asentamiento || "",
+        periferia: postalInfo.periferia || "",
+        estancia: postalInfo.estancia || "",
+        sucursal: postalInfo.sucursal || "",
+        zonaRiesgo: postalInfo.zonaRiesgo ? "Sí" : "No",
+      }));
+      toast.success("Datos del Código Postal cargados correctamente.");
+    } catch (error) {
+      if (error.response?.status === 404) {
+        console.warn(`Código postal no encontrado: ${idCodigoPostal}. Detalles: ${error.response.data?.mensaje || "Sin detalles"}`);
+        toast.info("No se encontró información relacionada a ese código postal.");
+      } else {
+        console.error("Error al cargar datos del Código Postal:", error);
+        toast.error("Falló al obtener los datos del Código Postal.");
+      }
+    }
+  };
+
+  // Manejar cambios en el campo de código postal
+  const handlePostalCodeChange = (e) => {
+    const inputValue = e.target.value;
+    if (/^\d{0,5}$/.test(inputValue)) {
+      setFormData({ ...formData, codigoPostal: inputValue });
+      if (inputValue.length === 5) {
+        loadPostalCodesByText(inputValue);
+      }
+    }
+  };
+
+  // Función para identificar domicilio
+  const identifyAddress = async (idDomicilio, idCodigoPostal, idInformacion, idClase) => {
+    const payload = {
+      idDomicilio,
+      idCodigoPostal,
+      idInformacion,
+      idClase,
+    };
+
+    try {
+      const response = await servicio.post("/search-customer/identify-address", payload);
+      toast.success("Domicilio identificado correctamente.");
+      console.log("Respuesta del servidor:", response.data);
+      await fetchTableDomicilioData(); // Actualiza la tabla de domicilios
+    } catch (error) {
+      console.error("Error al identificar domicilio:", error);
+      toast.error("No se pudo identificar el domicilio.");
     }
   };
 
@@ -169,9 +264,16 @@ const Addresses = ({ show, handleClose }) => {
 
     setIsLoading(true);
     try {
+      console.log("Iniciando solicitud a /ejecutivo/Domicilios/1/${idCuenta}");
       const response = await servicio.get(
         `/ejecutivo/Domicilios/1/${idCuenta}`
       );
+      
+      
+      if (response.headers) {
+        console.log("Cabeceras de la respuesta:", response.headers);
+      }
+
       const sanitizedData = (response.data || []).map((item) => ({
         ...item,
         Fecha: item.Fecha || "",
@@ -180,9 +282,25 @@ const Addresses = ({ show, handleClose }) => {
         idSituación: item.idSituación || "",
         // Agrega más campos según sea necesario
       }));
+
+      console.log("Datos sanitizados:", sanitizedData);
       setTableDomData(sanitizedData);
+
     } catch (error) {
       console.error("Error fetching table dom data:", error);
+      
+      // Depuración detallada del error
+      if (error.response) {
+        console.error("Error en la respuesta:", {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers
+        });
+      } else if (error.request) {
+        console.error("Error en la solicitud:", error.request);
+      } else {
+        console.error("Error en la configuración:", error.message);
+      }
 
       let message = "No se pudo cargar la tabla de direcciones.";
       if (error.response) {
@@ -206,6 +324,7 @@ const Addresses = ({ show, handleClose }) => {
         console.log("Mensaje duplicado, no se muestra toast:", message);
       }
     } finally {
+      console.log("Finalizando carga de datos de domicilios");
       setIsLoading(false);
     }
   };
@@ -227,32 +346,70 @@ const Addresses = ({ show, handleClose }) => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("authToken"); // Obtén el token del almacenamiento local
-      const response = await servicio.get(
-        `/search-customer/domicilios-visitas?idCartera=1&idCuenta=${idCuenta}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Agrega el token aquí
-          },
-        }
-      );
+      const url = `/search-customer/domicilios-visitas?idCartera=1&idCuenta=${idCuenta}`;
+      console.log("URL de la solicitud:", url);
+
+      const response = await servicio.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Agrega el token aquí
+        },
+      });
+
+      console.log("Datos recibidos del endpoint domi visi:", response.data);
 
       // Normaliza los datos
       const sanitizedData = (response.data.domicilios || []).map((item) => ({
-        calle: item.calle || "",
-        númeroExterior: item.númeroExterior || "",
-        númeroInterior: item.númeroInterior || "",
-        códigoPostal: item.códigoPostal || "",
-        coloniaLocalidad: item.coloniaLocalidad || "",
-        delegaciónMunicipio: item.delegaciónMunicipio || "",
-        estado: item.estado || "",
-        clase: item.clase || "",
-        orígen: item.orígen || "",
-        información: item.información || "",
-        idDomicilio: item.idDomicilio || "",
-        fecha: item.fecha || "",
+        ...item,
+        idCódigoPostal: item.idCódigoPostal || null, // Asegúrate de incluir este campo
       }));
 
-      setTableDomicilioData(sanitizedData);
+      // Filtrar códigos postales válidos
+      const uniquePostalIds = [...new Set(sanitizedData.map((item) => item.idCódigoPostal))].filter(
+        (idCódigoPostal) => idCódigoPostal
+      );
+
+      const postalDataPromises = uniquePostalIds.map((idCódigoPostal) =>
+        servicio
+          .get(`/search-customer/search-postal-code?codigoPostal=${idCódigoPostal}`)
+          .catch((error) => {
+            if (error.response?.status === 404) {
+              console.warn(
+                `Código postal no encontrado: ${idCódigoPostal}. Detalles: ${
+                  error.response.data?.mensaje || "Sin detalles"
+                }`
+              );
+              return null; // Retorna null si el código postal no existe
+            }
+            throw error; // Lanza otros errores
+          })
+      );
+
+      const postalResponses = await Promise.allSettled(postalDataPromises);
+      const postalDataMap = postalResponses.reduce((acc, result, index) => {
+        if (result.status === "fulfilled" && result.value?.data) {
+          const postalInfo = result.value.data.codigosPostales?.[0];
+          if (postalInfo) {
+            acc[uniquePostalIds[index]] = postalInfo;
+          }
+        }
+        return acc;
+      }, {});
+
+      // Reemplazar los valores en sanitizedData con los datos del segundo endpoint
+      const enrichedData = sanitizedData.map((item) => {
+        const postalInfo = postalDataMap[item.idCódigoPostal];
+        if (postalInfo) {
+          return {
+            ...item,
+            códigoPostal: postalInfo.códigoPostal || item.códigoPostal, // Actualiza el código postal
+            delegaciónMunicipio: postalInfo.municipio || item.delegaciónMunicipio, // Actualiza el municipio
+            estado: postalInfo.estado || item.estado, // Actualiza el estado
+          };
+        }
+        return item;
+      });
+
+      setTableDomicilioData(enrichedData); // Actualiza la tabla con los nuevos valores
     } catch (error) {
       console.error("Error fetching domicilio data:", error);
 
@@ -282,6 +439,62 @@ const Addresses = ({ show, handleClose }) => {
     }
   };
 
+  const compareAndReplacePostalCodes = async () => {
+    if (!idCuenta) {
+      console.error("ID de cuenta no válido. No se puede realizar la comparación.");
+      return;
+    }
+  
+    try {
+      const domiciliosResponse = await servicio.get(
+        `/search-customer/domicilios-visitas?idCartera=1&idCuenta=${idCuenta}`
+      );
+      const domiciliosData = domiciliosResponse.data.domicilios || [];
+  
+      const uniquePostalIds = [...new Set(domiciliosData.map((item) => item.idCódigoPostal))]
+        .filter((id) => id);
+  
+      const postalDataPromises = uniquePostalIds.map((idCódigoPostal) =>
+        servicio.get(`/search-customer/search-postal-code?codigoPostal=${idCódigoPostal}`)
+          .catch((error) => {
+            if (error.response?.status === 404) {
+              console.warn(`Código postal no encontrado: ${idCódigoPostal}. Detalles: ${error.response.data?.mensaje || "Sin detalles"}`);
+              return null; // Retorna null si el código postal no existe
+            }
+            throw error; // Lanza otros errores
+          })
+      );
+  
+      const postalResponses = await Promise.allSettled(postalDataPromises);
+  
+      const postalDataMap = postalResponses.reduce((acc, result, index) => {
+        if (result.status === "fulfilled" && result.value?.data) {
+          const postalInfo = result.value.data.codigosPostales?.[0];
+          if (postalInfo) {
+            acc[uniquePostalIds[index]] = postalInfo;
+          }
+        }
+        return acc;
+      }, {});
+  
+      const updatedDomiciliosData = domiciliosData.map((item) => {
+        const postalInfo = postalDataMap[item.idCódigoPostal];
+        if (postalInfo) {
+          console.log("Código Postal encontrado:", postalInfo.códigoPostal);
+          return {
+            ...item,
+            códigoPostal: postalInfo.códigoPostal, // Actualiza el valor del código postal
+          };
+        }
+        return item;
+      });
+  
+      setTableDomicilioData(updatedDomiciliosData); // Actualiza la tabla con los nuevos valores
+    } catch (error) {
+      console.error("Error al comparar y reemplazar códigos postales:", error);
+    }
+  };
+
   const fetchFechaInsert = async (idDomicilio) => {
     try {
       const response = await servicio.get(`/domicilios/fecha-insert/${idDomicilio}`);
@@ -305,13 +518,6 @@ const Addresses = ({ show, handleClose }) => {
   };
 
   const handleDomicilioSelection = async (selectedCodigoPostal) => {
-    setFormData((prev) => ({
-      ...prev,
-      codigoPostal: selectedCodigoPostal,
-    }));
-    toast.info(`Código Postal seleccionado: ${selectedCodigoPostal}`);
-
-    // Llama al endpoint para actualizar la tabla "Postal"
     try {
       setIsLoading(true);
       const response = await servicio.get(
@@ -322,7 +528,7 @@ const Addresses = ({ show, handleClose }) => {
       toast.success("Datos de la tabla Postal actualizados.");
     } catch (error) {
       console.error("Error al actualizar la tabla Postal:", error);
-      toast.error("No se pudo actualizar la tabla Postal.");
+      // No mostrar toast de error aquí
     } finally {
       setIsLoading(false);
     }
@@ -400,61 +606,118 @@ const Addresses = ({ show, handleClose }) => {
   };
 
   const handlePostalRowClick = (item) => {
+    console.log("Fila seleccionada en tabla postal:", item); // Log para depuración
+
     setFormData((prev) => ({
       ...prev,
       colonia: item.colonia || "",
       municipio: item.municipio || "",
       estado: item.estado || "",
+      // No modificar el código postal aquí
     }));
     toast.info("Datos cargados desde la tabla postal.");
   };
 
   const handleDomicilioRowClick = async (item) => {
-    if (
-      formData.calle === item.calle &&
-      formData.numExt === item.númeroExterior &&
-      formData.numInt === item.númeroInterior &&
-      formData.codigoPostal === item.códigoPostal &&
-      formData.colonia === item.coloniaLocalidad &&
-      formData.municipio === item.delegaciónMunicipio &&
-      formData.estado === item.estado &&
-      formData.fecha === item.fecha && // Comparar también la fecha
-      clase === item.clase
-    ) {
-      // Si el mismo row está seleccionado, limpia el formulario y habilítalo
+    console.log("Fila seleccionada:", item);
+
+    if (selectedDomicilio?.idDomicilio === item.idDomicilio) {
+      // Si el mismo row está seleccionado, limpia el formulario y deselecciona
       clearFormFields();
       setIdInformacion(""); // Limpia el campo de "Información Actual"
-      toast.info("Formulario limpiado y habilitado.");
+      setIsEstadoVisible(false); // Deshabilita el dropdown y el botón
+      setSelectedDomicilio(null); // Limpia el domicilio seleccionado
+      toast.info("Formulario limpiado y elementos deshabilitados.");
     } else {
       // Obtener la Fecha_Insert desde la base de datos
       const fechaInsert = await fetchFechaInsert(item.idDomicilio);
 
       // Si es un row diferente, carga los datos en el formulario
-      setFormData({
+      setFormData((prev) => ({
+        ...prev,
         calle: item.calle || "",
         numExt: item.númeroExterior || "",
         numInt: item.númeroInterior || "",
-        codigoPostal: item.códigoPostal || "",
+        códigoPostal: item.códigoPostal, // Mantener el código postal actual
         colonia: item.coloniaLocalidad || "",
         municipio: item.delegaciónMunicipio || "",
         estado: item.estado || "",
         origen: item.orígen || "Gestión",
         fecha: fechaInsert, // Actualizar el campo Fecha con la Fecha_Insert
-      });
+      }));
       setClase(item.clase || ""); // Actualiza el campo "Clase" en el formulario
       setIsFormDisabled(true); // Deshabilita el formulario
+      setSelectedDomicilio(item); // Guarda el domicilio seleccionado
       toast.info("Datos cargados desde la tabla Domicilios.");
 
-      // Verificar si el idInformacion es "Sin verificar (1901)"
+      // Cargar datos adicionales del Código Postal
+      if (item.idCódigoPostal) {
+        await loadPostalCodesById(item.idCódigoPostal);
+      }
+
+      // Verificar si el idInformacion es "Sin verificar"
       if (item.información === "Sin verificar") {
         setIdInformacion(""); // Limpia el dropdown
-        setIsEstadoVisible(true); // Muestra el dropdown
+        setIsEstadoVisible(true); // Muestra el dropdown y habilita el botón
         toast.info("Seleccione una información para identificar.");
       } else {
         setIdInformacion(item.información); // Muestra el valor actual en el nuevo campo
-        setIsEstadoVisible(false); // Oculta el dropdown para evitar cambios
+        setIsEstadoVisible(false); // Oculta el dropdown y deshabilita el botón
         toast.info(`Información actual: ${item.información}`);
       }
+    }
+  };
+
+  const handleSaveNewAddress = async () => {
+    // Validar que todos los campos requeridos estén llenos
+    if (
+      !formData.calle ||
+      !formData.numExt ||
+      !formData.codigoPostal ||
+      !formData.colonia ||
+      !formData.municipio ||
+      !formData.estado
+    ) {
+      toast.error("Por favor, complete todos los campos obligatorios.");
+      return;
+    }
+
+    // Normalizar los datos antes de enviarlos
+    const payload = {
+      idCartera: 1,
+      idCuenta: idCuenta,
+      idEjecutivo: parseInt(idEjecutivo, 10) || 0,
+      idProducto: 1,
+      calle: formData.calle,
+      numeroExterior: formData.numExt,
+      numeroInterior: formData.numInt || "0", // Valor predeterminado
+      codigoPostal: formData.codigoPostal,
+      colonia: formData.colonia,
+      municipio: formData.municipio,
+      estado: formData.estado,
+      idClase: parseInt(clase, 10) || 0,
+    };
+
+    console.log("Payload enviado:", payload);
+
+    try {
+      setIsLoading(true);
+      const response = await servicio.put("/search-customer/save-new-address", payload);
+      toast.success("Dirección guardada exitosamente.");
+      console.log("Respuesta del servidor:", response.data);
+
+      // Actualizar la tabla de domicilios después de guardar
+      await fetchTableDomicilioData();
+
+      // Limpiar la tabla postal
+      setPostalTableData([]);
+      setIsPostalTableVisible(false); // Ocultar la tabla postal
+    } catch (error) {
+      console.error("Error al guardar la dirección:", error);
+      toast.error("No se pudo guardar la dirección.");
+    } finally {
+      setIsLoading(false);
+      clearFormFields();
     }
   };
 
@@ -474,6 +737,13 @@ const Addresses = ({ show, handleClose }) => {
       </Modal.Header>
       <Modal.Body>
         <Container fluid>
+          {/* Mostrar MergeTable */}
+          <Row>
+            <Col>
+              <MergeTable />
+            </Col>
+          </Row>
+          {/* Fin de MergeTable */}
           <Row>
             {/* Tablas a la izquierda */}
             <Col md={8}>
@@ -512,6 +782,7 @@ const Addresses = ({ show, handleClose }) => {
                         <th>N.Exterior</th>
                         <th>N.Interior</th>
                         <th>C.Postal</th>
+                        <th>idCódigo Postal</th>
                         <th>Colonia/Localidad</th>
                         <th>Delegación/Municipio</th>
                         <th>Estado</th>
@@ -536,6 +807,7 @@ const Addresses = ({ show, handleClose }) => {
                           <td>{renderCell(item.númeroExterior)}</td>
                           <td>{renderCell(item.númeroInterior)}</td>
                           <td>{renderCell(item.códigoPostal)}</td>
+                          <td>{renderCell(item.idCódigoPostal)}</td>
                           <td>{renderCell(item.coloniaLocalidad)}</td>
                           <td>{renderCell(item.delegaciónMunicipio)}</td>
                           <td>{renderCell(item.estado)}</td>
@@ -627,17 +899,9 @@ const Addresses = ({ show, handleClose }) => {
                     <Form.Control
                       type="text"
                       value={formData.codigoPostal || ""}
-                      onChange={(e) => {
-                        const inputValue = e.target.value;
-                        setFormData({
-                          ...formData,
-                          codigoPostal: inputValue,
-                        });
-                        handleDomicilioSelection(inputValue);
-                      }}
-                      placeholder={
-                        formData.codigoPostal || "Código postal"
-                      }
+                      maxLength={5} // Limitar a 5 caracteres
+                      onChange={handlePostalCodeChange}
+                      placeholder="Ingrese Código Postal"
                       disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
                     />
                   </Form.Group>
@@ -646,10 +910,11 @@ const Addresses = ({ show, handleClose }) => {
                   <Form.Group>
                     <Form.Label>Nú. Exterior</Form.Label>
                     <Form.Control
+                    maxLength={8} 
                       type="text"
                       value={formData.numExt}
                       onChange={(e) =>
-                        setFormData({ ...formData, numExt: e.target.value })
+                        setFormData({ ...formData, numExt: e.target.value }) // Permitir espacios
                       }
                       disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
                     />
@@ -659,10 +924,12 @@ const Addresses = ({ show, handleClose }) => {
                   <Form.Group>
                     <Form.Label>Nú. Interior</Form.Label>
                     <Form.Control
+                    maxLength={8}
                       type="text"
+                      as="input"
                       value={formData.numInt}
                       onChange={(e) =>
-                        setFormData({ ...formData, numInt: e.target.value })
+                        setFormData({ ...formData, numInt: e.target.value }) // Permitir espacios
                       }
                       disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
                     />
@@ -675,9 +942,10 @@ const Addresses = ({ show, handleClose }) => {
                     <Form.Label>Calle</Form.Label>
                     <Form.Control
                       type="text"
+                      as="input"
                       value={formData.calle}
                       onChange={(e) =>
-                        setFormData({ ...formData, calle: e.target.value })
+                        setFormData({ ...formData, calle: e.target.value }) // Permitir espacios
                       }
                       disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
                     />
@@ -693,7 +961,7 @@ const Addresses = ({ show, handleClose }) => {
                       type="text"
                       value={formData.colonia}
                       onChange={(e) =>
-                        setFormData({ ...formData, colonia: e.target.value })
+                        setFormData({ ...formData, colonia: e.target.value }) // Permitir espacios
                       }
                       disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
                     />
@@ -704,9 +972,12 @@ const Addresses = ({ show, handleClose }) => {
                     <Form.Control
                       type="text"
                       value={formData.estado}
-                      onChange={(e) =>
-                        setFormData({ ...formData, estado: e.target.value })
-                      }
+                      onChange={(e) => {
+                        const inputValue = e.target.value;
+                        if (/^[a-zA-Z\s]*$/.test(inputValue)) { // Permitir solo letras y espacios
+                          setFormData({ ...formData, estado: inputValue });
+                        }
+                      }}
                       disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
                     />
                   </Form.Group>
@@ -721,7 +992,7 @@ const Addresses = ({ show, handleClose }) => {
                       type="text"
                       value={formData.municipio}
                       onChange={(e) =>
-                        setFormData({ ...formData, municipio: e.target.value })
+                        setFormData({ ...formData, municipio: e.target.value }) // Permitir espacios
                       }
                       disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
                     />
@@ -797,43 +1068,8 @@ const Addresses = ({ show, handleClose }) => {
                 <Col className="d-flex justify-content-start">
                   <Button
                     variant="success"
-                    onClick={async () => {
-                      if (!idInformacion) {
-                        toast.error("Por favor, seleccione un valor para idInformacion.");
-                        return;
-                      }
-
-                      const payload = {
-                        idCartera: 1,
-                        idCuenta: idCuenta,
-                        idDomicilio: selectedDomicilio?.idDomicilio || 0,
-                        idInformacion: parseInt(idInformacion, 10),
-                        fecha:selectedDomicilio?.Fecha || "",
-                      };
-
-                      try {
-                        setIsLoading(true);
-                        const response = await servicio.post(
-                          "/search-customer/update-address-information",
-                          payload
-                        );
-                        toast.success("Información identificada exitosamente.");
-                        console.log("Respuesta del servidor:", response.data);
-
-                        // Deshabilitar el botón y el dropdown después de la identificación correcta
-                        setIsEstadoVisible(false);
-                        setIdInformacion(""); // Limpia el valor seleccionado
-
-                        // Actualizar la tabla de domicilios
-                        await fetchTableDomicilioData();
-                      } catch (error) {
-                        console.error("Error al identificar la información:", error);
-                        toast.error("No se pudo identificar la información.");
-                      } finally {
-                        setIsLoading(false);
-                      }
-                    }}
-                    disabled={!isEstadoVisible} // Deshabilitar si el dropdown no está visible
+                    onClick={() => identifyAddress(selectedDomicilio?.idDomicilio, formData.codigoPostal, idInformacion, clase)}
+                    disabled={!selectedDomicilio || !idInformacion || !clase}
                   >
                     Identificar
                   </Button>
@@ -858,100 +1094,7 @@ const Addresses = ({ show, handleClose }) => {
                 <Col className="d-flex justify-content-end">
                   <Button
                     variant="primary"
-                    onClick={async () => {
-                      // Validar que todos los campos requeridos estén llenos
-                      if (
-                        !formData.calle ||
-                        !formData.numExt ||
-                        !formData.codigoPostal ||
-                        !formData.colonia ||
-                        !formData.municipio ||
-                        !formData.estado 
-                      ) {
-                        toast.error("Por favor, complete todos los campos obligatorios.");
-                        return;
-                      }
-
-                      // Si el campo Nu. Interior está vacío, asignar "0"
-                      const numInt = formData.numInt || "0";
-
-                      const idCuentaStr = String(idCuenta) || "string"; // Convierte a cadena
-                      const idClaseInt = parseInt(clase, 10) || 0;
-
-                      if (!idCuentaStr || idCuentaStr === "string") {
-                        toast.error("El ID de cuenta no es válido.");
-                        return;
-                      }
-
-                      if (idClaseInt === 0) {
-                        toast.error("La clase no es válida.");
-                        return;
-                      }
-
-                      const payload = {
-                        idCartera: 1,
-                        idCuenta: idCuenta,
-                        idEjecutivo: parseInt(idEjecutivo, 10) || 0,
-                        idProducto: 1,
-                        calle: formData.calle || "string",
-                        numeroExterior: formData.numExt || "string",
-                        numeroInterior: numInt,
-                        codigoPostal: formData.codigoPostal || "string",
-                        colonia: formData.colonia || "string",
-                        municipio: formData.municipio || "string",
-                        estado: formData.estado || "string",
-                        idClase: idClaseInt,
-                        fecha: formData.fecha || "string",
-                      };
-
-                      console.log("Payload enviado:", payload);
-
-                      try {
-                        setIsLoading(true);
-                        const response = await servicio.put(
-                          "/search-customer/save-new-address",
-                          payload
-                        );
-                        toast.success("Dirección guardada exitosamente.");
-                        console.log("Respuesta del servidor:", response.data);
-
-                        // Actualizar la tabla de domicilios después de guardar
-                        await fetchTableDomicilioData();
-                      } catch (error) {
-                        if (error.response) {
-                          console.error(
-                            "Error del servidor:",
-                            error.response.data
-                          );
-                          const validationErrors = error.response.data.errors;
-                          if (validationErrors) {
-                            Object.keys(validationErrors).forEach((field) => {
-                              toast.error(
-                                `${field}: ${validationErrors[field].join(
-                                  ", "
-                                )}`
-                              );
-                            });
-                          } else {
-                            toast.error(
-                              `Error: ${
-                                error.response.data.title ||
-                                "Solicitud inválida"
-                              }`
-                            );
-                          }
-                        } else {
-                          console.error(
-                            "Error al guardar la dirección:",
-                            error
-                          );
-                          toast.error("No se pudo guardar la dirección.");
-                        }
-                      } finally {
-                        setIsLoading(false);
-                        clearFormFields();
-                      }
-                    }}
+                    onClick={handleSaveNewAddress}
                     disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
                   >
                     Nuevo

@@ -1,0 +1,187 @@
+import { useState, useEffect, useContext } from "react"; // Agregar useContext
+import { Table, Container } from "react-bootstrap";
+import { toast } from "sonner";
+import servicio from "../../../services/axiosServices";
+import { AppContext } from "../../../pages/Managment"; // Importar el contexto
+
+const MergeTable = () => {
+    const { searchResults } = useContext(AppContext); // Obtener el contexto
+    const [postalData, setPostalData] = useState([]);
+    const [domicilioData, setDomicilioData] = useState([]);
+    const [domicilioDataWithPostal, setDomicilioDataWithPostal] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Variables necesarias
+    const codigoPostal = "52400"; // Código postal fijo para el ejemplo
+    const idCuenta = searchResults.length > 0 ? searchResults[0].idCuenta : null; // Obtener idCuenta del contexto
+
+    useEffect(() => {
+        if (idCuenta) { // Verificar que idCuenta no sea null
+            fetchPostalData();
+            fetchDomicilioData();
+        }
+    }, [idCuenta]);
+
+    useEffect(() => {
+        if (postalData.length > 0 && domicilioData.length > 0) {
+            compararCodigosPostales();
+        }
+    }, [postalData, domicilioData]);
+
+    const fetchPostalData = async () => {
+        try {
+            setIsLoading(true);
+            const response = await servicio.get(`/search-customer/search-postal-code?codigoPostal=${codigoPostal}`);
+            setPostalData(response.data.codigosPostales || []);
+        } catch (error) {
+            console.error("Error al obtener datos de códigos postales:", error);
+            toast.error("No se pudieron cargar los datos de códigos postales.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const fetchDomicilioData = async () => {
+        try {
+            setIsLoading(true);
+            const response = await servicio.get(`/search-customer/domicilios-visitas?idCartera=1&idCuenta=${idCuenta}`);
+            setDomicilioData(response.data.domicilios || []);
+        } catch (error) {
+            console.error("Error al obtener datos de domicilios:", error);
+            toast.error("No se pudieron cargar los datos de domicilios.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const compararCodigosPostales = () => {
+        const updatedDomicilios = domicilioData.map((domicilio) => {
+            const match = postalData.find(
+                (postal) => postal.idCódigoPostal === domicilio.idCódigoPostal
+            );
+
+            return {
+                ...domicilio,
+                códigoPostal: match ? match.códigoPostal : "N/A", // Actualizar con el código postal correcto
+                municipio: match ? match.municipio : "N/A", // Actualizar con el municipio correcto
+                estado: match ? match.estado : "N/A", // Actualizar con el estado correcto
+            };
+        });
+
+        setDomicilioDataWithPostal(updatedDomicilios);
+    };
+
+    return (
+        <Container>
+            <h3>Tabla de Códigos Postales</h3>
+            <Table striped bordered hover responsive>
+                <thead>
+                    <tr>
+                        <th>ID Código Postal</th>
+                        <th>Código Postal</th>
+                        <th>Colonia</th>
+                        <th>Municipio</th>
+                        <th>Estado</th>
+                        <th>Zona</th>
+                        <th>Asentamiento</th>
+                        <th>Periferia</th>
+                        <th>Estancia</th>
+                        <th>Sucursal</th>
+                        <th>Zona de Riesgo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {postalData.map((item, index) => (
+                        <tr key={index}>
+                            <td>{item.idCódigoPostal}</td>
+                            <td>{item.códigoPostal}</td>
+                            <td>{item.colonia}</td>
+                            <td>{item.municipio}</td>
+                            <td>{item.estado}</td>
+                            <td>{item.zona}</td>
+                            <td>{item.asentamiento}</td>
+                            <td>{item.periferia}</td>
+                            <td>{item.estancia}</td>
+                            <td>{item.sucursal}</td>
+                            <td>{item.zonaRiesgo ? "Sí" : "No"}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </Table>
+
+            <h3>Tabla de Domicilios</h3>
+            <Table striped bordered hover responsive>
+                <thead>
+                    <tr>
+                        <th>ID Domicilio</th>
+                        <th>Calle</th>
+                        <th>Número Exterior</th>
+                        <th>Número Interior</th>
+                        <th>ID Código Postal</th>
+                        <th>Colonia/Localidad</th>
+                        <th>Delegación/Municipio</th>
+                        <th>Estado</th>
+                        <th>Clase</th>
+                        <th>Origen</th>
+                        <th>Información</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {domicilioData.map((item, index) => (
+                        <tr key={index}>
+                            <td>{item.idDomicilio}</td>
+                            <td>{item.calle}</td>
+                            <td>{item.númeroExterior}</td>
+                            <td>{item.númeroInterior || "N/A"}</td>
+                            <td>{item.idCódigoPostal}</td>
+                            <td>{item.coloniaLocalidad}</td>
+                            <td>{item.delegaciónMunicipio || "N/A"}</td>
+                            <td>{item.estado}</td>
+                            <td>{item.clase}</td>
+                            <td>{item.orígen}</td>
+                            <td>{item.información}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </Table>
+
+            <h3>Tabla de Domicilios con Datos Correctos</h3>
+            <Table striped bordered hover responsive>
+                <thead>
+                    <tr>
+                        <th>ID Domicilio</th>
+                        <th>Calle</th>
+                        <th>Número Exterior</th>
+                        <th>Número Interior</th>
+                        <th>Código Postal</th>
+                        <th>Municipio</th>
+                        <th>Estado</th>
+                        <th>Colonia/Localidad</th>
+                        <th>Clase</th>
+                        <th>Origen</th>
+                        <th>Información</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {domicilioDataWithPostal.map((item, index) => (
+                        <tr key={index}>
+                            <td>{item.idDomicilio}</td>
+                            <td>{item.calle}</td>
+                            <td>{item.númeroExterior}</td>
+                            <td>{item.númeroInterior || "N/A"}</td>
+                            <td>{item.códigoPostal}</td>
+                            <td>{item.municipio}</td>
+                            <td>{item.estado}</td>
+                            <td>{item.coloniaLocalidad}</td>
+                            <td>{item.clase}</td>
+                            <td>{item.orígen}</td>
+                            <td>{item.información}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </Table>
+        </Container>
+    );
+};
+
+export default MergeTable;
