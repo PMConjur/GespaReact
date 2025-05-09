@@ -549,34 +549,41 @@ const Addresses = ({ show, handleClose }) => {
   };
 
   const handleSubmitAddressInformation = async () => {
-    if (!selectedDomicilio || !estado) {
-      toast.error("Por favor, seleccione un domicilio y un estado válido.");
-      return;
+    if (!selectedDomicilio || !idInformacion) {
+        toast.error("Por favor, seleccione un domicilio y un tipo de información válido.");
+        return;
     }
 
     const payload = {
-      idCartera: 1,
-      idCuenta: idCuenta,
-      idDomicilio: selectedDomicilio.idDomicilio,
-      idInformacion: parseInt(estado, 10),
+        idCartera: 1,
+        idCuenta: idCuenta,
+        idDomicilio: selectedDomicilio.idDomicilio,
+        idInformacion: parseInt(idInformacion, 10), // Convertir a número
     };
 
     try {
-      setIsLoading(true);
-      const response = await servicio.post(
-        "/search-customer/update-address-information",
-        payload
-      );
-      toast.success("Información del domicilio actualizada exitosamente.");
-      console.log("Respuesta del servidor:", response.data);
-      setIsEstadoVisible(false); // Oculta el formulario después de actualizar
+        setIsLoading(true);
+        const response = await servicio.post(
+            "/search-customer/update-address-information",
+            payload
+        );
+        toast.success("Información del domicilio actualizada exitosamente.");
+        console.log("Respuesta del servidor:", response.data);
+
+        // Actualizar la tabla de domicilios después de la actualización
+        await fetchTableDomicilioData();
+
+        // Limpiar el formulario y deshabilitar el dropdown
+        setIdInformacion("");
+        setIsEstadoVisible(false);
+        setSelectedDomicilio(null);
     } catch (error) {
-      console.error("Error al actualizar la información del domicilio:", error);
-      toast.error("No se pudo actualizar la información del domicilio.");
+        console.error("Error al actualizar la información del domicilio:", error);
+        toast.error("No se pudo actualizar la información del domicilio.");
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  };
+};
 
   const handleNewButtonClick = () => {
     if (isFormDisabled) {
@@ -721,6 +728,51 @@ const Addresses = ({ show, handleClose }) => {
     }
   };
 
+  // Función para manejar la selección de un row en MergeTable
+  const handleRowSelectFromMergeTable = (selectedData) => {
+    if (
+      formData.calle === selectedData.calle &&
+      formData.numExt === selectedData.numExt &&
+      formData.numInt === selectedData.numInt &&
+      formData.codigoPostal === selectedData.codigoPostal &&
+      formData.colonia === selectedData.colonia &&
+      formData.municipio === selectedData.municipio &&
+      formData.estado === selectedData.estado
+    ) {
+      // Si se selecciona el mismo row, limpiar el formulario
+      clearFormFields();
+      setIdInformacion(""); // Limpia el campo de "Información Actual"
+      setIsEstadoVisible(false); // Deshabilita el dropdown
+      setIsFormDisabled(false); // Habilita el formulario
+      setSelectedDomicilio(null); // Limpia el domicilio seleccionado
+      toast.info("Formulario limpiado.");
+    } else {
+      // Si es un row diferente, actualizar el formulario
+      setFormData((prev) => ({
+        ...prev,
+        calle: selectedData.calle,
+        numExt: selectedData.numExt,
+        numInt: selectedData.numInt,
+        codigoPostal: selectedData.codigoPostal,
+        colonia: selectedData.colonia,
+        municipio: selectedData.municipio,
+        estado: selectedData.estado,
+        origen: selectedData.origen,
+      }));
+      setClase(selectedData.idClase); // Actualizar idClase
+      setIdInformacion(selectedData.idInformacion); // Actualizar idInformacion
+      setIsEstadoVisible(selectedData.isEstadoVisible); // Mostrar u ocultar el dropdown
+      setIsFormDisabled(true); // Desactivar el formulario
+      setSelectedDomicilio(selectedData); // Guardar el domicilio seleccionado
+
+      // Activar el botón y el select si la información es "Sin verificar"
+      if (selectedData.idInformacion === "") {
+        setIsEstadoVisible(true); // Habilitar el dropdown
+        toast.info("Seleccione una información para identificar.");
+      }
+    }
+  };
+
   return (
     <Modal
       show={show}
@@ -740,7 +792,7 @@ const Addresses = ({ show, handleClose }) => {
           {/* Mostrar MergeTable */}
           <Row>
             <Col>
-              <MergeTable />
+              <MergeTable onRowSelect={handleRowSelectFromMergeTable} />
             </Col>
           </Row>
           {/* Fin de MergeTable */}
@@ -1068,8 +1120,8 @@ const Addresses = ({ show, handleClose }) => {
                 <Col className="d-flex justify-content-start">
                   <Button
                     variant="success"
-                    onClick={() => identifyAddress(selectedDomicilio?.idDomicilio, formData.codigoPostal, idInformacion, clase)}
-                    disabled={!selectedDomicilio || !idInformacion || !clase}
+                    onClick={handleSubmitAddressInformation} // Llamar a la función para actualizar
+                    disabled={!selectedDomicilio || !idInformacion} // Activar si hay datos válidos
                   >
                     Identificar
                   </Button>

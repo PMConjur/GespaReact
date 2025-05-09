@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import servicio from "../../../services/axiosServices";
 import { AppContext } from "../../../pages/Managment"; // Importar el contexto
 
-const MergeTable = () => {
+const MergeTable = ({ onRowSelect }) => {
     const { searchResults } = useContext(AppContext); // Obtener el contexto
     const [postalData, setPostalData] = useState([]);
     const [domicilioData, setDomicilioData] = useState([]);
@@ -71,115 +71,182 @@ const MergeTable = () => {
         setDomicilioDataWithPostal(updatedDomicilios);
     };
 
+    // Función para manejar la selección de un row
+    const handleRowClick = (item) => {
+        console.log("Fila seleccionada en Tabla de Domicilios con Datos Correctos:", item);
+
+        // Verificar si el domicilio está "Sin verificar"
+        const isSinVerificar = item.información === "Sin verificar";
+
+        // Preparar los datos para actualizar el formulario
+        const selectedData = {
+            calle: item.calle || "",
+            numExt: item.númeroExterior || "",
+            numInt: item.númeroInterior || "",
+            codigoPostal: item.códigoPostal || "",
+            colonia: item.coloniaLocalidad || "",
+            municipio: item.municipio || "",
+            estado: item.estado || "",
+            origen: item.orígen || "Gestión",
+            idClase: item.clase || "",
+            idInformacion: isSinVerificar ? "" : item.información,
+            isEstadoVisible: isSinVerificar, // Mostrar dropdown si está "Sin verificar"
+        };
+
+        // Llamar a la función pasada como prop para actualizar el formulario
+        onRowSelect(selectedData);
+
+        // Mostrar un mensaje informativo
+        if (isSinVerificar) {
+            toast.info("Seleccione una información para identificar.");
+        } else {
+            toast.info(`Información actual: ${item.información}`);
+        }
+    };
+
     return (
         <Container>
-            <h3>Tabla de Códigos Postales</h3>
-            <Table striped bordered hover responsive>
-                <thead>
-                    <tr>
-                        <th>ID Código Postal</th>
-                        <th>Código Postal</th>
-                        <th>Colonia</th>
-                        <th>Municipio</th>
-                        <th>Estado</th>
-                        <th>Zona</th>
-                        <th>Asentamiento</th>
-                        <th>Periferia</th>
-                        <th>Estancia</th>
-                        <th>Sucursal</th>
-                        <th>Zona de Riesgo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {postalData.map((item, index) => (
-                        <tr key={index}>
-                            <td>{item.idCódigoPostal}</td>
-                            <td>{item.códigoPostal}</td>
-                            <td>{item.colonia}</td>
-                            <td>{item.municipio}</td>
-                            <td>{item.estado}</td>
-                            <td>{item.zona}</td>
-                            <td>{item.asentamiento}</td>
-                            <td>{item.periferia}</td>
-                            <td>{item.estancia}</td>
-                            <td>{item.sucursal}</td>
-                            <td>{item.zonaRiesgo ? "Sí" : "No"}</td>
+            {true && ( // Ocultar tabla de códigos postales
+                <Table striped bordered hover responsive>
+                    <thead>
+                        <tr>
+                            <th>ID Código Postal</th>
+                            <th>Código Postal</th>
+                            <th>Colonia</th>
+                            <th>Municipio</th>
+                            <th>Estado</th>
+                            <th>Zona</th>
+                            <th>Asentamiento</th>
+                            <th>Periferia</th>
+                            <th>Estancia</th>
+                            <th>Sucursal</th>
+                            <th>Zona de Riesgo</th>
                         </tr>
-                    ))}
-                </tbody>
-            </Table>
+                    </thead>
+                    <tbody>
+                        {postalData.map((item, index) => (
+                            <tr key={index}>
+                                <td>{item.idCódigoPostal}</td>
+                                <td>{item.códigoPostal}</td>
+                                <td>{item.colonia}</td>
+                                <td>{item.municipio}</td>
+                                <td>{item.estado}</td>
+                                <td>{item.zona}</td>
+                                <td>{item.asentamiento}</td>
+                                <td>{item.periferia}</td>
+                                <td>{item.estancia}</td>
+                                <td>{item.sucursal}</td>
+                                <td>{item.zonaRiesgo ? "Sí" : "No"}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            )}
 
-            <h3>Tabla de Domicilios</h3>
-            <Table striped bordered hover responsive>
-                <thead>
-                    <tr>
-                        <th>ID Domicilio</th>
-                        <th>Calle</th>
-                        <th>Número Exterior</th>
-                        <th>Número Interior</th>
-                        <th>ID Código Postal</th>
-                        <th>Colonia/Localidad</th>
-                        <th>Delegación/Municipio</th>
-                        <th>Estado</th>
-                        <th>Clase</th>
-                        <th>Origen</th>
-                        <th>Información</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {domicilioData.map((item, index) => (
-                        <tr key={index}>
-                            <td>{item.idDomicilio}</td>
-                            <td>{item.calle}</td>
-                            <td>{item.númeroExterior}</td>
-                            <td>{item.númeroInterior || "N/A"}</td>
-                            <td>{item.idCódigoPostal}</td>
-                            <td>{item.coloniaLocalidad}</td>
-                            <td>{item.delegaciónMunicipio || "N/A"}</td>
-                            <td>{item.estado}</td>
-                            <td>{item.clase}</td>
-                            <td>{item.orígen}</td>
-                            <td>{item.información}</td>
+            {false && ( // Ocultar tabla de domicilios
+                <Table striped bordered hover responsive>
+                    <thead>
+                        <tr>
+                            <th>ID Domicilio</th>
+                            <th>Calle</th>
+                            <th>Número Exterior</th>
+                            <th>Número Interior</th>
+                            <th>ID Código Postal</th>
+                            <th>Colonia/Localidad</th>
+                            <th>Delegación/Municipio</th>
+                            <th>Estado</th>
+                            <th>Clase</th>
+                            <th>Origen</th>
+                            <th>Información</th>
                         </tr>
-                    ))}
-                </tbody>
-            </Table>
+                    </thead>
+                    <tbody>
+                        {domicilioData.map((item, index) => (
+                            <tr key={index}>
+                                <td>{item.idDomicilio}</td>
+                                <td>{item.calle}</td>
+                                <td>{item.númeroExterior}</td>
+                                <td>{item.númeroInterior || "N/A"}</td>
+                                <td>{item.idCódigoPostal}</td>
+                                <td>{item.coloniaLocalidad}</td>
+                                <td>{item.delegaciónMunicipio || "N/A"}</td>
+                                <td>{item.estado}</td>
+                                <td>{item.clase}</td>
+                                <td>{item.orígen}</td>
+                                <td>{item.información}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            )}
 
             <h3>Tabla de Domicilios con Datos Correctos</h3>
-            <Table striped bordered hover responsive>
-                <thead>
-                    <tr>
-                        <th>ID Domicilio</th>
-                        <th>Calle</th>
-                        <th>Número Exterior</th>
-                        <th>Número Interior</th>
-                        <th>Código Postal</th>
-                        <th>Municipio</th>
-                        <th>Estado</th>
-                        <th>Colonia/Localidad</th>
-                        <th>Clase</th>
-                        <th>Origen</th>
-                        <th>Información</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {domicilioDataWithPostal.map((item, index) => (
-                        <tr key={index}>
-                            <td>{item.idDomicilio}</td>
-                            <td>{item.calle}</td>
-                            <td>{item.númeroExterior}</td>
-                            <td>{item.númeroInterior || "N/A"}</td>
-                            <td>{item.códigoPostal}</td>
-                            <td>{item.municipio}</td>
-                            <td>{item.estado}</td>
-                            <td>{item.coloniaLocalidad}</td>
-                            <td>{item.clase}</td>
-                            <td>{item.orígen}</td>
-                            <td>{item.información}</td>
+            <div
+                className="scroll-container"
+                style={{
+                    width: "100%",
+                    maxHeight: "250px",
+                    overflowY: "auto",
+                    display: "flex",
+                    backgroundColor: "#343a40",
+                    color: "#ffffff",
+                    scrollbarColor: "#6c757d #343a40",
+                    scrollbarWidth: "thin",
+                }}
+            >
+                <Table
+                    striped
+                    bordered
+                    hover
+                    responsive
+                    variant="dark"
+                    style={{ fontSize: "13px" }}
+                >
+                    <thead
+                        style={{
+                            position: "sticky",
+                            top: -1,
+                            zIndex: 1,
+                            backgroundColor: "#343a40",
+                        }}
+                    >
+                        <tr style={{ height: "55px" }}>
+                            <th>Calle</th>
+                            <th>N.Exterior</th>
+                            <th>N.Interior</th>
+                            <th>C.Postal</th>
+                            <th>Colonia</th>
+                            <th>Municipio</th>
+                            <th>Estado</th>
+                            <th>Clase</th>
+                            <th>Orígen</th>
+                            <th>Información</th>
+                            <th>idDomicilio</th>
                         </tr>
-                    ))}
-                </tbody>
-            </Table>
+                    </thead>
+                    <tbody>
+                        {domicilioDataWithPostal.map((item, index) => (
+                            <tr
+                                key={index}
+                                onClick={() => handleRowClick(item)}
+                                style={{ cursor: "pointer" }}
+                            >
+                                <td>{item.calle}</td>
+                                <td>{item.númeroExterior}</td>
+                                <td>{item.númeroInterior || "N/A"}</td>
+                                <td>{item.códigoPostal}</td>
+                                <td>{item.coloniaLocalidad}</td>
+                                <td>{item.municipio}</td>
+                                <td>{item.estado}</td>
+                                <td>{item.clase}</td>
+                                <td>{item.orígen}</td>
+                                <td>{item.información}</td>
+                                <td>{item.idDomicilio}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            </div>
         </Container>
     );
 };
