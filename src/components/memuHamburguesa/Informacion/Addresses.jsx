@@ -43,6 +43,8 @@ const Addresses = ({ show, handleClose }) => {
   const [isFormDisabled, setIsFormDisabled] = useState(false); // Nuevo estado para controlar la habilitación del formulario
   const [isDomicilioTableVisible, setIsDomicilioTableVisible] = useState(true); // Nuevo estado para controlar la visibilidad de la tabla de domicilios
   const [idInformacion, setIdInformacion] = useState(""); // Nuevo estado para el dropdown
+  const [isIdentifyButtonDisabled, setIsIdentifyButtonDisabled] = useState(true); // Nuevo estado para controlar el botón "Identificar"
+  const [existingAddresses, setExistingAddresses] = useState([]); // Nuevo estado para almacenar direcciones existentes
   // Obtener el idCuenta del primer resultado de searchResults
   const idCuenta = searchResults.length > 0 ? searchResults[0].idCuenta : null;
   const responseData = JSON.parse(localStorage.getItem("responseData"));
@@ -410,6 +412,7 @@ const Addresses = ({ show, handleClose }) => {
       });
 
       setTableDomicilioData(enrichedData); // Actualiza la tabla con los nuevos valores
+      setExistingAddresses(enrichedData); // Actualiza las direcciones existentes
     } catch (error) {
       console.error("Error fetching domicilio data:", error);
 
@@ -579,7 +582,13 @@ const Addresses = ({ show, handleClose }) => {
         setSelectedDomicilio(null);
     } catch (error) {
         console.error("Error al actualizar la información del domicilio:", error);
-        toast.error("No se pudo actualizar la información del domicilio.");
+
+        // Manejar el error 400 específicamente
+        if (error.response?.status === 400 && error.response.data?.message) {
+            toast.error(error.response.data.message);
+        } else {
+            toast.error("No se pudo actualizar la información del domicilio.");
+        }
     } finally {
         setIsLoading(false);
     }
@@ -689,6 +698,19 @@ const Addresses = ({ show, handleClose }) => {
       return;
     }
 
+    // Validar si la dirección ya existe en los datos locales
+    const isDuplicate = existingAddresses.some(
+      (address) =>
+        address.calle === formData.calle &&
+        address.númeroExterior === formData.numExt 
+        //address.códigoPostal === formData.codigoPostal
+    );
+
+    if (isDuplicate) {
+      toast.error("La dirección ya existe. No se puede duplicar.");
+      return;
+    }
+
     // Normalizar los datos antes de enviarlos
     const payload = {
       idCartera: 1,
@@ -721,7 +743,13 @@ const Addresses = ({ show, handleClose }) => {
       setIsPostalTableVisible(false); // Ocultar la tabla postal
     } catch (error) {
       console.error("Error al guardar la dirección:", error);
-      toast.error("No se pudo guardar la dirección.");
+
+      // Manejar errores específicos
+      if (error.response?.status === 503 && error.response?.data?.errors?.includes("Violation of UNIQUE KEY")) {
+        toast.error("La dirección ya existe en la base de datos. No se puede duplicar.");
+      } else {
+        toast.error("No se pudo guardar la dirección. Intente nuevamente.");
+      }
     } finally {
       setIsLoading(false);
       clearFormFields();
@@ -792,7 +820,10 @@ const Addresses = ({ show, handleClose }) => {
           {/* Mostrar MergeTable */}
           <Row>
             <Col>
-              <MergeTable onRowSelect={handleRowSelectFromMergeTable} />
+              <MergeTable
+                onRowSelect={handleRowSelectFromMergeTable}
+                setIsIdentifyButtonDisabled={setIsIdentifyButtonDisabled}
+              />
             </Col>
           </Row>
           {/* Fin de MergeTable */}
@@ -1121,7 +1152,7 @@ const Addresses = ({ show, handleClose }) => {
                   <Button
                     variant="success"
                     onClick={handleSubmitAddressInformation} // Llamar a la función para actualizar
-                    disabled={!selectedDomicilio || !idInformacion} // Activar si hay datos válidos
+                    disabled={isIdentifyButtonDisabled} // Deshabilitar si el botón está desactivado
                   >
                     Identificar
                   </Button>

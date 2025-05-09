@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import servicio from "../../../services/axiosServices";
 import { AppContext } from "../../../pages/Managment"; // Importar el contexto
 
-const MergeTable = ({ onRowSelect }) => {
+const MergeTable = ({ onRowSelect, setIsIdentifyButtonDisabled }) => {
     const { searchResults } = useContext(AppContext); // Obtener el contexto
     const [postalData, setPostalData] = useState([]);
     const [domicilioData, setDomicilioData] = useState([]);
@@ -12,7 +12,7 @@ const MergeTable = ({ onRowSelect }) => {
     const [isLoading, setIsLoading] = useState(false);
 
     // Variables necesarias
-    const codigoPostal = "52400"; // Código postal fijo para el ejemplo
+    const codigoPostal = "52435"; // Código postal fijo para el ejemplo
     const idCuenta = searchResults.length > 0 ? searchResults[0].idCuenta : null; // Obtener idCuenta del contexto
 
     useEffect(() => {
@@ -62,9 +62,9 @@ const MergeTable = ({ onRowSelect }) => {
 
             return {
                 ...domicilio,
-                códigoPostal: match ? match.códigoPostal : "N/A", // Actualizar con el código postal correcto
-                municipio: match ? match.municipio : "N/A", // Actualizar con el municipio correcto
-                estado: match ? match.estado : "N/A", // Actualizar con el estado correcto
+                códigoPostal: match ? match.códigoPostal : "--", // Actualizar con el código postal correcto
+                municipio: match ? match.municipio : "--", // Actualizar con el municipio correcto
+                estado: match ? match.estado : "--", // Actualizar con el estado correcto
             };
         });
 
@@ -72,11 +72,30 @@ const MergeTable = ({ onRowSelect }) => {
     };
 
     // Función para manejar la selección de un row
-    const handleRowClick = (item) => {
+    const handleRowClick = async (item) => {
         console.log("Fila seleccionada en Tabla de Domicilios con Datos Correctos:", item);
+
+        // Verificar si el domicilio está asignado a la cuenta
+        if (!item.idCuenta || item.idCuenta !== idCuenta) {
+            toast.error("El domicilio no está asignado a la cuenta.");
+            return;
+        }
+
+        // Obtener la Fecha_Insert desde la base de datos
+        let fechaInsert = "";
+        try {
+            const response = await servicio.get(`/domicilios/fecha-insert/${item.idDomicilio}`);
+            fechaInsert = response.data.Fecha_Insert || "";
+        } catch (error) {
+            console.error("Error al obtener la Fecha_Insert:", error);
+            toast.error("No se pudo obtener la Fecha_Insert.");
+        }
 
         // Verificar si el domicilio está "Sin verificar"
         const isSinVerificar = item.información === "Sin verificar";
+
+        // Actualizar el estado del botón "Identificar"
+        setIsIdentifyButtonDisabled(!isSinVerificar);
 
         // Preparar los datos para actualizar el formulario
         const selectedData = {
@@ -91,6 +110,8 @@ const MergeTable = ({ onRowSelect }) => {
             idClase: item.clase || "",
             idInformacion: isSinVerificar ? "" : item.información,
             isEstadoVisible: isSinVerificar, // Mostrar dropdown si está "Sin verificar"
+            idDomicilio: item.idDomicilio, // Incluir idDomicilio
+            fecha: fechaInsert, // Incluir Fecha_Insert
         };
 
         // Llamar a la función pasada como prop para actualizar el formulario
