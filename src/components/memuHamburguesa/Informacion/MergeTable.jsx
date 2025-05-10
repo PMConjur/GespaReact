@@ -12,7 +12,7 @@ const MergeTable = ({ onRowSelect, setIsIdentifyButtonDisabled }) => {
     const [isLoading, setIsLoading] = useState(false);
 
     // Variables necesarias
-    const codigoPostal = "52435"; // Código postal fijo para el ejemplo
+    const codigoPostal = "52400"; // Código postal fijo para el ejemplo
     const idCuenta = searchResults.length > 0 ? searchResults[0].idCuenta : null; // Obtener idCuenta del contexto
 
     useEffect(() => {
@@ -65,7 +65,7 @@ const MergeTable = ({ onRowSelect, setIsIdentifyButtonDisabled }) => {
                 códigoPostal: match ? match.códigoPostal : "--", // Actualizar con el código postal correcto
                 municipio: match ? match.municipio : "--", // Actualizar con el municipio correcto
                 estado: match ? match.estado : "--", // Actualizar con el estado correcto
-            };
+           }
         });
 
         setDomicilioDataWithPostal(updatedDomicilios);
