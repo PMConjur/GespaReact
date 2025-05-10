@@ -3,14 +3,14 @@ import { Table } from "react-bootstrap";
 import { fetchPostalCodes } from "../../../services/gespawebServices"; // Importar el servicio
 
 const TablePostal = ({ idCodigoPostal }) => {
-  const [postalTableData, setPostalTableData] = useState([]);
+  const [postalData, setPostalData] = useState([]);
 
   useEffect(() => {
     const loadPostalCodes = async () => {
       if (idCodigoPostal) {
         try {
           const response = await fetchPostalCodes(idCodigoPostal);
-          setPostalTableData(response.codigosPostales || []);
+          setPostalData(response.codigosPostales || []);
         } catch (error) {
           console.error("Error al cargar códigos postales:", error);
         }
@@ -65,7 +65,7 @@ const TablePostal = ({ idCodigoPostal }) => {
           </tr>
         </thead>
         <tbody>
-          {postalTableData?.map((item, index) => (
+          {postalData?.map((item, index) => (
             <tr key={index}>
               <td>{item.idCódigoPostal || ""}</td>
               <td>{item.códigoPostal || ""}</td>

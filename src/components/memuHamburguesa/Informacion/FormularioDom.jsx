@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import PropTypes from "prop-types"; // Importar PropTypes
 import { Form, Row, Col, Button } from "react-bootstrap";
 
 const FormularioDom = ({
@@ -14,13 +15,45 @@ const FormularioDom = ({
     handleNextItem,
     currentIndex,
     totalItems,
-    fetchPostalCodesById, // Nueva función para obtener códigos postales
-    fetchDomiciliosVisitas, // Nueva función para obtener domicilios visitas
+    fetchPostalCodesById,
+    fetchDomiciliosVisitas,
+    postalData, // Nueva prop para datos de códigos postales
 }) => {
+    // Función para comparar y relacionar los datos de códigos postales con formData
+    const compararCodigosPostales = () => {
+        const match = postalData.find(
+            (postal) => postal.idCódigoPostal === formData.idCódigoPostal
+        );
+
+        if (match) {
+            console.log("Match encontrado:", match);
+            console.log("Valores sustituidos:", {
+                códigoPostal: match.códigoPostal,
+                municipio: match.municipio,
+                estado: match.estado,
+            });
+        } else {
+            console.log("No se encontró un match para idCódigoPostal:", formData.idCódigoPostal);
+        }
+
+        setFormData({
+            ...formData,
+            códigoPostal: match ? match.códigoPostal : "--",
+            municipio: match ? match.municipio : "--",
+            estado: match ? match.estado : "--",
+        });
+    };
+
+    useEffect(() => {
+        if (formData.idCódigoPostal) {
+            compararCodigosPostales();
+        }
+    }, [formData.idCódigoPostal, postalData]);
+
     const handlePostalCodeInput = (e) => {
         const inputValue = e.target.value;
         if (/^\d{0,5}$/.test(inputValue)) {
-            setFormData({ ...formData, codigoPostal: inputValue });
+            setFormData({ ...formData, idCódigoPostal: inputValue });
             if (inputValue.length === 5) {
                 loadPostalCodesByText(inputValue); // Realizar búsqueda en TablePostal
             }
@@ -74,17 +107,17 @@ const FormularioDom = ({
                         <Form.Label>idCódigoPostal</Form.Label>
                         <Form.Control
                             type="text"
-                            value={formData.idCodigoPostal || ""}
+                            value={formData.codigoPostal || ""}
                             disabled
                         />
                     </Form.Group>
                 </Col>
                 <Col>
                     <Form.Group>
-                        <Form.Label>C.Postal</Form.Label>
+                        <Form.Label>C.Postal </Form.Label>
                         <Form.Control
                             type="text"
-                            value={formData.codigoPostal || ""}
+                            value={formData.idCódigoPostal || ""}
                             maxLength={5}
                             onChange={handlePostalCodeInput}
                             placeholder="Ingrese Código Postal"
@@ -229,6 +262,31 @@ const FormularioDom = ({
             </Row>
         </Form>
     );
+};
+
+FormularioDom.propTypes = {
+    formData: PropTypes.object.isRequired,
+    setFormData: PropTypes.func.isRequired,
+    handlePostalCodeChange: PropTypes.func,
+    handleSaveNewAddress: PropTypes.func.isRequired,
+    isFormDisabled: PropTypes.bool.isRequired,
+    clase: PropTypes.string.isRequired,
+    setClase: PropTypes.func.isRequired,
+    loadPostalCodesByText: PropTypes.func.isRequired,
+    handlePreviousItem: PropTypes.func.isRequired,
+    handleNextItem: PropTypes.func.isRequired,
+    currentIndex: PropTypes.number.isRequired,
+    totalItems: PropTypes.number.isRequired,
+    fetchPostalCodesById: PropTypes.func.isRequired,
+    fetchDomiciliosVisitas: PropTypes.func.isRequired,
+    postalData: PropTypes.arrayOf(
+        PropTypes.shape({
+            idCódigoPostal: PropTypes.string.isRequired,
+            códigoPostal: PropTypes.string,
+            municipio: PropTypes.string,
+            estado: PropTypes.string,
+        })
+    ).isRequired,
 };
 
 export default FormularioDom;
