@@ -8,6 +8,8 @@ import Payments from "./Payments";
 import Aditionals from "./Aditionals"; // Importar el componente Aditionals
 import { InfoCircleFill } from "react-bootstrap-icons"; // Importar el ícono de Info de Bootstrap
 import Multideudores from "../Informacion/MultiDeptor"; // Importar el componente Multideudores
+import Address from "./Address"; // Importar el componente Address
+
 function DropdownInfo() {
   // Estados para controlar la visibilidad de los modales y la carga de datos
   const [showAddresses, setShowAddresses] = useState(false); // Estado para el modal de Addresses
@@ -26,7 +28,6 @@ function DropdownInfo() {
     setShowPayments(false);
   };
 
-
   //adicionales
   const [showAditionals, setShowAditionals] = useState(false); // Estado para el modal de Aditionals
 
@@ -34,14 +35,11 @@ function DropdownInfo() {
   const handleCloseAditionals = () => setShowAditionals(false);
   //adiconaslers
 
-
   const [aditionalsData, setAditionalsData] = useState([]); // Estado para almacenar los datos adicionales
   const [loadingAditionals, setLoadingAditionals] = useState(false); // Estado para indicar si se están cargando los datos adicionales
 
   // Consumir el contexto para obtener los resultados de búsqueda
   const { searchResults } = useContext(AppContext);
-
-
 
   // Función para manejar la apertura del modal de Addresses
   const handleShowAddresses = () => setShowAddresses(true);
@@ -55,6 +53,12 @@ function DropdownInfo() {
   // Función para manejar la apertura del modal de Aditionals
   const handleShowMail = () => setShowMail(true);
   const handleCloseMail = () => setShowMail(false);
+
+  const [showAddress, setShowAddress] = useState(false); // Estado para el modal de Address
+
+  const handleShowAddress = () => setShowAddress(true);
+  const handleCloseAddress = () => setShowAddress(false);
+
   return (
     <>
       {/* Dropdown para mostrar las opciones de información */}
@@ -102,6 +106,12 @@ function DropdownInfo() {
           >
             Pagos
           </Dropdown.Item>
+          <Dropdown.Item
+            onClick={handleShowAddress}
+            className="custom-dropdown-item"
+          >
+            Address
+          </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
 
@@ -135,6 +145,9 @@ function DropdownInfo() {
       />
       {/* Renderizar el modal de Mail */}
       <Mail show={showMail} handleClose={handleCloseMail} />
+
+      {/* Renderizar el modal de Address */}
+      <Address show={showAddress} handleClose={handleCloseAddress} />
     </>
   );
 }

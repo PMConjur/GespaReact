@@ -24,7 +24,7 @@ const MergeTable = ({ onRowSelect, setIsIdentifyButtonDisabled }) => {
 
     useEffect(() => {
         if (postalData.length > 0 && domicilioData.length > 0) {
-            compararCodigosPostales();
+            compararCodigosPostales(); // Llamar a la función cuando ambos datos estén disponibles
         }
     }, [postalData, domicilioData]);
 
@@ -54,6 +54,7 @@ const MergeTable = ({ onRowSelect, setIsIdentifyButtonDisabled }) => {
         }
     };
 
+    // Función para comparar y relacionar los datos de códigos postales con domicilios
     const compararCodigosPostales = () => {
         const updatedDomicilios = domicilioData.map((domicilio) => {
             const match = postalData.find(
@@ -65,37 +66,15 @@ const MergeTable = ({ onRowSelect, setIsIdentifyButtonDisabled }) => {
                 códigoPostal: match ? match.códigoPostal : "--", // Actualizar con el código postal correcto
                 municipio: match ? match.municipio : "--", // Actualizar con el municipio correcto
                 estado: match ? match.estado : "--", // Actualizar con el estado correcto
-           }
+            };
         });
 
         setDomicilioDataWithPostal(updatedDomicilios);
     };
 
     // Función para manejar la selección de un row
-    const handleRowClick = async (item) => {
+    const handleRowClick = (item) => {
         console.log("Fila seleccionada en Tabla de Domicilios con Datos Correctos:", item);
-
-        // Verificar si el domicilio está asignado a la cuenta
-        if (!item.idCuenta || item.idCuenta !== idCuenta) {
-            toast.error("El domicilio no está asignado a la cuenta.");
-            return;
-        }
-
-        // Obtener la Fecha_Insert desde la base de datos
-        let fechaInsert = "";
-        try {
-            const response = await servicio.get(`/domicilios/fecha-insert/${item.idDomicilio}`);
-            fechaInsert = response.data.Fecha_Insert || "";
-        } catch (error) {
-            console.error("Error al obtener la Fecha_Insert:", error);
-            toast.error("No se pudo obtener la Fecha_Insert.");
-        }
-
-        // Verificar si el domicilio está "Sin verificar"
-        const isSinVerificar = item.información === "Sin verificar";
-
-        // Actualizar el estado del botón "Identificar"
-        setIsIdentifyButtonDisabled(!isSinVerificar);
 
         // Preparar los datos para actualizar el formulario
         const selectedData = {
@@ -108,17 +87,17 @@ const MergeTable = ({ onRowSelect, setIsIdentifyButtonDisabled }) => {
             estado: item.estado || "",
             origen: item.orígen || "Gestión",
             idClase: item.clase || "",
-            idInformacion: isSinVerificar ? "" : item.información,
-            isEstadoVisible: isSinVerificar, // Mostrar dropdown si está "Sin verificar"
-            idDomicilio: item.idDomicilio, // Incluir idDomicilio
-            fecha: fechaInsert, // Incluir Fecha_Insert
+            idInformacion: item.información || "",
+            isEstadoVisible: item.información === "Sin verificar", // Mostrar dropdown si está "Sin verificar"
+            idDomicilio: item.idDomicilio || "",
+            fecha: "0", // Usar 0 como valor predeterminado para Fecha_Insert
         };
 
         // Llamar a la función pasada como prop para actualizar el formulario
         onRowSelect(selectedData);
 
         // Mostrar un mensaje informativo
-        if (isSinVerificar) {
+        if (item.información === "Sin verificar") {
             toast.info("Seleccione una información para identificar.");
         } else {
             toast.info(`Información actual: ${item.información}`);

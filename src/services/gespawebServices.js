@@ -1636,6 +1636,33 @@ export const fetchAddress = async (idCartera, idCuenta) => {
 };
 
 
+//endpoint domicilios
+export const fetchPostalCodes = async (idCodigoPostal) => {
+  try {
+    console.log("Llamando al endpoint codigos postales");
+    console.log("Parámetros enviados: idCodigoPostal:", idCodigoPostal);
+
+    const response = await servicio.get(`/search-customer/search-postal-code?codigoPostal=${idCodigoPostal}`, {
+      params: { idCodigoPostal} // Usa parámetros de consulta
+    });
+
+    console.log("Respuesta recibida de postal codes:", response);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Postales: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Validación recibida Postales:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en Postales:", error);
+    throw error;
+  }
+};
+
 
 export const getDeadlineData = async (idCartera, idCuenta) => {
   try {

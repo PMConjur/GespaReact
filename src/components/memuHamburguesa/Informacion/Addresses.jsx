@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import servicio from "../../../services/axiosServices";
 import { AppContext } from "../../../pages/Managment"; // Asegúrate de que la ruta sea correcta
 import { formatearFecha } from "../../ValoresCatalogos.js";
-//import MergeTable from "./MergeTable"; // Importar el componente MergeTable
+import MergeTable from "./MergeTable"; // Importar el componente MergeTable
 
 const Addresses = ({ show, handleClose }) => {
   const { searchResults } = useContext(AppContext); // Obtén el contexto
@@ -783,22 +783,22 @@ const Addresses = ({ show, handleClose }) => {
   };
 
   const handlePreviousItem = () => {
-    const totalItems = tableDomicilioData.length + 1; // Incluye el registro 0
+    const totalItems = tableDomicilioData.length + 1; // Incluye el formulario vacío (índice 0)
     const newIndex = (currentIndex - 1 + totalItems) % totalItems; // Navegación circular
     setCurrentIndex(newIndex);
-    loadItemToForm(newIndex === 0 ? null : tableDomicilioData[newIndex - 1]); // Registro 0 es vacío
+    loadItemToForm(newIndex === 0 ? null : tableDomicilioData[newIndex - 1]); // Índice 0 es el formulario vacío
   };
 
   const handleNextItem = () => {
-    const totalItems = tableDomicilioData.length + 1; // Incluye el registro 0
+    const totalItems = tableDomicilioData.length + 1; // Incluye el formulario vacío (índice 0)
     const newIndex = (currentIndex + 1) % totalItems; // Navegación circular
     setCurrentIndex(newIndex);
-    loadItemToForm(newIndex === 0 ? null : tableDomicilioData[newIndex - 1]); // Registro 0 es vacío
+    loadItemToForm(newIndex === 0 ? null : tableDomicilioData[newIndex - 1]); // Índice 0 es el formulario vacío
   };
 
   const loadItemToForm = async (item) => {
     if (!item) {
-      // Si es el registro en blanco (índice 0), limpiar el formulario
+      // Si es el formulario vacío (índice 0), limpiar el formulario
       clearFormFields();
       setIsFormDisabled(false); // Habilitar el formulario
       setSelectedDomicilio(null);
@@ -833,6 +833,12 @@ const Addresses = ({ show, handleClose }) => {
         setIsEstadoVisible(false);
       }
     }
+  };
+
+  const handleCloseModal = () => {
+    clearFormFields(); // Limpia los campos del formulario
+    setCurrentIndex(0); // Restablece el índice al formulario vacío (0)
+    handleClose(); // Cierra el modal
   };
 
   // Función para manejar la selección de un row en MergeTable
@@ -883,10 +889,7 @@ const Addresses = ({ show, handleClose }) => {
   return (
     <Modal
       show={show}
-      onHide={() => {
-        handleClose();
-        clearFormFields(); // Limpia los campos al cerrar el modal
-      }}
+      onHide={handleCloseModal} // Usa la nueva función para limpiar el estado
       size="xl"
       backdrop="static"
       keyboard={false}
@@ -970,13 +973,21 @@ const Addresses = ({ show, handleClose }) => {
               {/* Flechas de navegación */}
               <Row className="mb-3 w-100">
                 <Col className="d-flex justify-content-center align-items-center">
-                  <Button variant="secondary" onClick={handlePreviousItem}>
+                  <Button 
+                    variant="primary" 
+                    onClick={handlePreviousItem} 
+                    disabled={isLoading} // Deshabilitar mientras se cargan los registros
+                  >
                       Anterior
                   </Button>
                   <span className="mx-3">
                     {currentIndex} / {tableDomicilioData.length} {/* Mostrar desde 0 a n */}
                   </span>
-                  <Button variant="secondary" onClick={handleNextItem}>
+                  <Button 
+                    variant="primary" 
+                    onClick={handleNextItem} 
+                    disabled={isLoading} // Deshabilitar mientras se cargan los registros
+                  >
                     Siguiente 
                   </Button>
                 </Col>
@@ -1193,8 +1204,10 @@ const Addresses = ({ show, handleClose }) => {
               </Row>
             </Col>
           </Row>
-          {/* Tablepostal.jsx*/}
-
+          {/* Tabla MergeTable */}
+          <h4>Tablas Adicionales</h4>
+          <MergeTable onRowSelect={handleRowSelectFromMergeTable} />
+          {/* Fin de MergeTable */}
           {/*TableVisits.jsx*/}
           <h4>Visitas</h4>
           <div
