@@ -33,5 +33,7 @@ namespace NoriAPI.Models.Domicilios
         public DateTime? FechaPagoNegociacion { get; set; }
         public decimal? MontoNegociacion { get; set; }
         public string Comentario { get; set; }
+
+
     }
 }

@@ -8,7 +8,7 @@
         public string Calle { get; set; }
         public string NumeroExterior { get; set; }
         public string NumeroInterior { get; set; }
-        public int? IdCodigoPostal { get; set; }
+        public int? IdCódigoPostal { get; set; }
         public string? Colonia { get; set; }
         public int? IdClase { get; set; }
         public string? Municipio { get; set; }

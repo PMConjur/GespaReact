@@ -350,7 +350,7 @@ namespace NoriAPI.Repositories
         {
             using var connection = GetConnection("Piso2Amex");
 
-            string codigosPostalesQuery = "SELECT * FROM [dbAllocation].[dbo].[CódigosPostales] (NOLOCK) WHERE CódigoPostal = @CodigoPostal";
+            string codigosPostalesQuery = "SELECT * FROM [dbAllocation].[dbo].[CódigosPostales] (NOLOCK) WHERE idCódigoPostal = @CodigoPostal";
 
             var parameters = new { CodigoPostal = codigoPostal };
 
@@ -447,8 +447,9 @@ namespace NoriAPI.Repositories
                 newAddress.Calle,
                 NúmeroExterior = newAddress.NumeroExterior,
                 NúmeroInterior = (object?)newAddress.NumeroInterior ?? DBNull.Value,
-                IdCodigoPostal = newAddress.IdCodigoPostal == 0 ? (object)DBNull.Value : newAddress.IdCodigoPostal,
-                Colonia = newAddress.Colonia,
+                IdCódigoPostal = newAddress.IdCódigoPostal ?? (object)DBNull.Value,
+
+				colonia = newAddress.Colonia,
                 idClase = newAddress.IdClase,
                 Municipio = (object?)newAddress.Municipio ?? DBNull.Value,
                 Estado = (object?)newAddress.Estado ?? DBNull.Value

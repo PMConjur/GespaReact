@@ -366,7 +366,7 @@ namespace NoriAPI.Controllers
             if (InfoCalucladora2.mensaje == "")
                 return Ok(InfoCalucladora2);
             else
-                return Ok(InfoCalucladora2.mensaje);
+                return BadRequest(InfoCalucladora2.mensaje);
 
         }
 
@@ -678,7 +678,7 @@ namespace NoriAPI.Controllers
 
         #region MultiDeudores
         [HttpGet("multideudores/{idCartera}/{idCuenta}")]
-        public async Task<IActionResult> GetMultideudores(int idCartera, string idCuenta)
+        public async Task<IActionResult> GetMultideudores(int idCartera, string idCuenta, string rfc,int numcliente)
         {
             try
             {
@@ -693,7 +693,8 @@ namespace NoriAPI.Controllers
                 DataRow drDatos = MultideudoresTable.NewRow();
                 drDatos["idCartera"] = idCartera;
                 drDatos["idCuenta"] = idCuenta;
-                // Asegúrate de que drDatos["RFC"] y drDatos["NúmeroCliente"] tengan valores apropiados
+                drDatos["RFC"] = rfc;
+                drDatos["NúmeroCliente"] = numcliente;
                 // drDatos["RFC"] = "valorRFC"; // Reemplaza con el valor real
                 // drDatos["NúmeroCliente"] = "valorNúmeroCliente"; // Reemplaza con el valor real
                 // drDatos["idProducto"] = 35; // Reemplaza con el valor real

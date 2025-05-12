@@ -1047,8 +1047,8 @@ namespace NoriAPI.Services
                     int plazos = string.IsNullOrEmpty(row["Plazos"]?.ToString()) ? 0 : Convert.ToInt32(row["Plazos"]);
                     string ofrecio = row["Ofreció"].ToString();
                     string valido = row["Validó"].ToString();
-                    bool cartaconvenio = string.IsNullOrEmpty(row["_CartaConvenio"]?.ToString()) ? false : Convert.ToBoolean(row["_CartaConvenio"]);
-                    decimal interes = string.IsNullOrEmpty(row["SaldoInterés"]?.ToString()) ? 0 : Convert.ToDecimal(row["SaldoInterés"]);
+					bool cartaconvenio = row.IsNull("_CartaConvenio") ? false : (row["_CartaConvenio"].ToString().Equals("True", StringComparison.OrdinalIgnoreCase) || row["_CartaConvenio"].ToString() == "1");
+					decimal interes = string.IsNullOrEmpty(row["SaldoInterés"]?.ToString()) ? 0 : Convert.ToDecimal(row["SaldoInterés"]);
                     interes = Math.Round(interes, 2);
                     decimal remanente = string.IsNullOrEmpty(row["Remanente"]?.ToString()) ? 0 : Convert.ToDecimal(row["Remanente"]);
                     remanente = Math.Round(remanente, 2);
@@ -1363,7 +1363,7 @@ namespace NoriAPI.Services
             DataTable dtHerrFiltradas = new DataTable();
             DataTable tblPlazos = new DataTable();
             bool _bLendingPrimes;
-            int iAñadidos = 0, iPeriodos = InfoCalculadora.periodos;
+            int iAñadidos = 0, iPeriodos = InfoCalculadora.periodos, MaxDescuento = 0;
             string mensaje = "";
 
             //---------------------------------------Negociaciones--------------------------------//
@@ -1445,8 +1445,12 @@ namespace NoriAPI.Services
 
             DataRow drDescuentos = dtDescuentos.Rows.Find(InfoCalculadora.idHerramienta);//Aqui va nuevamente el idHerramienta para el descuento.
 
-            //----------------------------------------Producto Y ---------------------------------//
-            produc = await _ejecutivoRepository.ObtieneProducto(InfoCalculadora.noCuenta);
+			MaxDescuento = Convert.ToInt32(drDescuentos["MáxDescuento"].ToString());
+
+
+
+			//----------------------------------------Producto Y ---------------------------------//
+			produc = await _ejecutivoRepository.ObtieneProducto(InfoCalculadora.noCuenta);
 
 			string Producto = produc.Rows[0]["Product"].ToString();
 			if (Producto == "Placement" || Producto == "Product" || Producto == "Lending" || Producto == "MidPrimes")
@@ -1618,7 +1622,8 @@ namespace NoriAPI.Services
                 Descuento = InfoCalculadora.descuento,
                 Monto = Monto,
                 TasaMensual = tasamensual,
-                mensaje = mensaje
+				MaxDescuento = MaxDescuento,
+				mensaje = mensaje
             };
             return ResultadoCalculadora2;
         }
@@ -1730,7 +1735,8 @@ namespace NoriAPI.Services
 					dCentavos = Math.Round(((float)(dPago - Math.Truncate(dPago)) * (iMeses * iPeriodos)) * 100) / 100;
 					dPago = Math.Truncate(dPago);
 
-					//EstablecePagos(dMontoNegociado, dPago, dCentavos, iMeses, dtFechaCorte, dtFechaPago, dPago635); este metodo me falta
+
+					tblPlazos = EstablecePagos(dMontoNegociado, dPago, 0, iMeses, dtFechaCorte, dtFechaPago, dPago635, iPeriodos, idherramienta, dtpFecha);
 				}
 				else
 				{
@@ -4001,7 +4007,7 @@ namespace NoriAPI.Services
 			{
 				await connection.OpenAsync();
 
-				string query = "SELECT TOP 1 * FROM vw_CuentaActiva WHERE idCartera = @idCartera AND idCuenta = @idCuenta " +
+				string query = "SELECT * FROM vw_CuentaActiva WHERE idCartera = @idCartera AND idCuenta = @idCuenta " +
 							   "UNION \r\n" +
 							   "SELECT * FROM vw_CuentaActiva WHERE RFC = @RFC AND @RFC IS NOT NULL AND RTRIM(LTRIM(@RFC)) <> '' \r\n" +
 							   "UNION \r\n" +

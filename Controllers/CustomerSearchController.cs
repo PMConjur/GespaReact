@@ -188,7 +188,9 @@ namespace NoriAPI.Controllers
             return Ok(new { message = result.Item1, success = result.Item2 });
         }
 
-        [HttpPut("save-new-address")]
+        [HttpPost("save-new-address")]
+        [AllowAnonymous]
+
         public async Task<ActionResult> SaveNewAddress([FromBody] NewAddressRequest newAddressData)
         {
             var newAddress = await _searchService.SaveNewAddress(newAddressData);
@@ -199,6 +201,8 @@ namespace NoriAPI.Controllers
 
             return Ok(new { NewAddressInfo = newAddress.Item1, Message = newAddress.Item2, Success = newAddress.Item3 });
         }
+
+
 
 
 
