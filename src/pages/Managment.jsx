@@ -49,6 +49,7 @@ const Managment = () => {
   const [isDataAllPhones, setIsDataAllPhones] = useState([]); // Estado para manejar los teléfonos
   const [selectedPhoneFilter, setSelectedPhoneFilter] = useState(null); // Nueva variable para el filtro de teléfonos
   const [selectedPhoneForFollowUps, setSelectedPhoneForFollowUps] = useState(null); // Nueva variable para el número seleccionado
+  const [refreshManagments, setRefreshManagments] = useState(false); // Estado para controlar la actualización de Managments
   const token = responseData?.ejecutivo?.token;
   const nombreEjecutivo =
     responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
@@ -213,6 +214,8 @@ const handleAutomaticSearch = async () => {
     setSelectedPhoneForFollowUps, // Agregar setter al contexto
     selectedDate, // Enviar fecha seleccionada al contexto
     setSelectedDate, // Enviar función para actualizar la fecha seleccionada al contexto
+    refreshManagments, // Enviar estado refreshManagments al contexto
+    setRefreshManagments, // Enviar función para actualizar refreshManagments al contexto
     reminders: [], // Puedes inicializarlo como un array vacío o con los datos que necesites
   };
 

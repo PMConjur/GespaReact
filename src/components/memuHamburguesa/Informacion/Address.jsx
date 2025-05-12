@@ -21,7 +21,8 @@ const Address = ({ show, handleClose }) => {
     estado: "",
     origen: "Gestión",
     fecha: "",
-    codigoPostal: "",
+    idCódigoPostal: "", // Cambiamos codigoPostal a idCódigoPostal en el estado
+    códigoPostal: "",     // Nuevo estado para el código postal visible
   });
   const [domicilioData, setDomicilioData] = useState([]);
   const [postalTableData, setPostalTableData] = useState([]);
@@ -36,13 +37,16 @@ const Address = ({ show, handleClose }) => {
   }, [show]);
 
   const fetchDomicilios = async () => {
+    console.log("Iniciando fetchDomicilios...");
     try {
       const response = await fetchAddress(idCartera, idCuenta);
+      console.log("Respuesta de fetchAddress:", response);
       const domicilios = response.domicilios || [];
       setDomicilioData(domicilios);
 
       if (domicilios.length > 0) {
         const firstDomicilio = domicilios[0];
+        console.log("Primer domicilio encontrado:", firstDomicilio);
         setFormData(mapDomicilioToForm(firstDomicilio));
         fetchAndUpdatePostalData(firstDomicilio.idCódigoPostal);
       } else {
@@ -55,6 +59,10 @@ const Address = ({ show, handleClose }) => {
   };
 
   const mapDomicilioToForm = (domicilio) => ({
+    idCartera: 1,
+    idCuenta: idCuenta,
+    idEjecutivo: parseInt(idEjecutivo, 10) || 0,
+    idProducto: 1,
     calle: domicilio.calle || "",
     numExt: domicilio.númeroExterior || "",
     numInt: domicilio.númeroInterior || "",
@@ -63,12 +71,15 @@ const Address = ({ show, handleClose }) => {
     estado: domicilio.estado || "",
     origen: domicilio.orígen || "Gestión",
     fecha: domicilio.fecha || "",
-    codigoPostal: domicilio.códigoPostal || "",
+    idCódigoPostal: domicilio.idCódigoPostal || "", // Mapeamos el idCódigoPostal
+    códigoPostal: domicilio.códigoPostal || "",     // Mapeamos el códigoPostal (podría ser el mismo que id al inicio)
   });
 
   const fetchAndUpdatePostalData = async (idCodigoPostal) => {
+    console.log("Buscando datos para idCodigoPostal:", idCodigoPostal);
     try {
       const response = await fetch(`/search-customer/search-postal-code?codigoPostal=${idCodigoPostal}`);
+      console.log("Respuesta del endpoint de Código Postal:", response);
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         throw new Error(`Respuesta no válida del servidor. Content-Type: ${contentType}`);
@@ -83,7 +94,7 @@ const Address = ({ show, handleClose }) => {
       if (match) {
         setFormData((prev) => ({
           ...prev,
-          codigoPostal: match.códigoPostal || prev.codigoPostal,
+          códigoPostal: match.códigoPostal || prev.codigoPostal, // Usamos el códigoPostal real del catálogo
           municipio: match.municipio || prev.municipio,
           estado: match.estado || prev.estado,
         }));
@@ -120,6 +131,49 @@ const Address = ({ show, handleClose }) => {
     console.log("Datos del domicilio seleccionado (Siguiente):", selectedDomicilio);
   };
 
+  const handleSearchPostalCode = async (codigoPostalIngresado) => {
+    console.log("Buscando código postal ingresado:", codigoPostalIngresado);
+    try {
+      const response = await fetch(`/search-customer/search-postal-code?codigoPostal=${codigoPostalIngresado}`);
+      console.log("Resultados de la búsqueda por código postal:", response);
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error(`Respuesta no válida del servidor. Content-Type: ${contentType}`);
+      }
+      const postalData = await response.json();
+      console.log("Resultados de la búsqueda por código postal:", postalData);
+      setPostalTableData(postalData.codigosPostales || []);
+
+      // Si hay un único resultado, podrías actualizar el formulario automáticamente
+      if (postalData.codigosPostales?.length === 1) {
+        const postal = postalData.codigosPostales[0];
+        setFormData((prev) => ({
+          ...prev,
+          códigoPostal: postal.códigoPostal || "",
+          municipio: postal.municipio || "",
+          estado: postal.estado || "",
+          // Aquí NO actualizamos idCódigoPostal automáticamente,
+          // ya que este se debe obtener al seleccionar de la tabla (si es necesario guardar uno nuevo).
+        }));
+      }
+    } catch (error) {
+      console.error("Error al buscar códigos postales:", error);
+      toast.error("No se pudieron buscar los códigos postales.");
+    }
+  };
+
+  const handleSelectPostalCode = (postalInfo) => {
+    console.log("Código Postal seleccionado:", postalInfo);
+    setFormData((prev) => ({
+      ...prev,
+      códigoPostal: postalInfo.códigoPostal || "",
+      municipio: postalInfo.municipio || "",
+      estado: postalInfo.estado || "",
+      idCódigoPostal: postalInfo.idCódigoPostal || "", // Guardamos el ID interno al seleccionar
+    }));
+    toast.success(`Código Postal seleccionado: ${postalInfo.códigoPostal}`);
+  };
+
   return (
     <Modal show={show} onHide={handleClose} size="xl" backdrop="static" keyboard={false}>
       <Modal.Header closeButton>
@@ -130,7 +184,10 @@ const Address = ({ show, handleClose }) => {
           <Row>
             <Col md={8}>
               <h4>Tabla de Códigos Postales</h4>
-              <TablePostal idCodigoPostal={formData.codigoPostal} />
+              <TablePostal
+                postalData={postalTableData}
+                onSelectPostalCode={handleSelectPostalCode}
+              />
             </Col>
             <Col md={4}>
               <h4>Formulario</h4>
@@ -141,6 +198,7 @@ const Address = ({ show, handleClose }) => {
                 handleNextItem={handleNextItem}
                 currentIndex={currentIndex}
                 totalItems={domicilioData.length}
+                onSearchPostalCode={handleSearchPostalCode} // Pasamos la función de búsqueda
               />
             </Col>
           </Row>

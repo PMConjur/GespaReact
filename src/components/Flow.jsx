@@ -34,7 +34,8 @@ const Flow = () => {
     setUserActiveFlow, // Agregar función del contexto para actualizar userActiveFlow
     setManagment, // Agregar función del contexto para actualizar la gestión
     setSelectedPhoneForFollowUps, // Agregar función del contexto para actualizar el número telefónico
-    isDataAllPhones // Agregar estado del contexto para verificar si hay datos de todos los teléfonos
+    isDataAllPhones, // Agregar estado del contexto para verificar si hay datos de todos los teléfonos
+    setRefreshManagments // Agregar función del contexto para actualizar Managments
   } = useContext(AppContext); // Agrega funciones del contexto para manejar estados
 
   const [userFlowData, setUserFlowData] = useState([]);
@@ -304,6 +305,7 @@ const Flow = () => {
           toast.success("Gestión guardada correctamente.");
           const responseData = response.data; // Extrae la información de la respuesta
           setManagment(responseData); // Actualiza el contexto con los datos de la gestión
+          setRefreshManagments(true); // Notifica a Managments.jsx que debe actualizarse
           console.log(
             "Datos de la gestión guardados en el contexto:",
             responseData

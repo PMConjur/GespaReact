@@ -186,6 +186,10 @@ const TableFollowUps = ({ customColumnNames = {}, refreshTrigger }) => {
                                         value = formatTimeWithAMPM(value);
                                     }
 
+                                    if (header === "_Realizado") {
+                                        value = value === 1 ? '✓' : value === 0 ? '✗' : value;
+                                    }
+
                                     if (value === null || value === undefined || (typeof value === "object" && Object.keys(value).length === 0)) {
                                         value = '--';
                                     }

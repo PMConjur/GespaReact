@@ -1,81 +1,28 @@
-import React, { useEffect } from "react";
+import React from "react";
 import PropTypes from "prop-types"; // Importar PropTypes
 import { Form, Row, Col, Button } from "react-bootstrap";
 
 const FormularioDom = ({
     formData,
     setFormData,
-    handlePostalCodeChange,
     handleSaveNewAddress,
     isFormDisabled,
     clase,
     setClase,
-    loadPostalCodesByText,
     handlePreviousItem,
     handleNextItem,
     currentIndex,
     totalItems,
-    fetchPostalCodesById,
-    fetchDomiciliosVisitas,
-    postalData, // Nueva prop para datos de códigos postales
+    onSearchPostalCode, // Nueva prop para la función de búsqueda
 }) => {
-    // Función para comparar y relacionar los datos de códigos postales con formData
-    const compararCodigosPostales = () => {
-        const match = postalData.find(
-            (postal) => postal.idCódigoPostal === formData.idCódigoPostal
-        );
-
-        if (match) {
-            console.log("Match encontrado:", match);
-            console.log("Valores sustituidos:", {
-                códigoPostal: match.códigoPostal,
-                municipio: match.municipio,
-                estado: match.estado,
-            });
-        } else {
-            console.log("No se encontró un match para idCódigoPostal:", formData.idCódigoPostal);
-        }
-
-        setFormData({
-            ...formData,
-            códigoPostal: match ? match.códigoPostal : "--",
-            municipio: match ? match.municipio : "--",
-            estado: match ? match.estado : "--",
-        });
-    };
-
-    useEffect(() => {
-        if (formData.idCódigoPostal) {
-            compararCodigosPostales();
-        }
-    }, [formData.idCódigoPostal, postalData]);
-
-    const handlePostalCodeInput = (e) => {
+    const handlePostalCodeInputChange = (e) => {
         const inputValue = e.target.value;
-        if (/^\d{0,5}$/.test(inputValue)) {
-            setFormData({ ...formData, idCódigoPostal: inputValue });
-            if (inputValue.length === 5) {
-                loadPostalCodesByText(inputValue); // Realizar búsqueda en TablePostal
-            }
+        console.log("Código Postal ingresado:", inputValue);
+        setFormData({ ...formData, codigoPostal: inputValue }); // Actualizamos el códigoPostal visible
+        if (/^\d{5}$/.test(inputValue)) {
+            console.log("Código Postal válido, iniciando búsqueda...");
+            onSearchPostalCode(inputValue); // Llamamos a la búsqueda cuando se ingresan 5 dígitos
         }
-    };
-
-    const handlePrevious = async () => {
-        await handlePreviousItem();
-        const postalResponse = await fetchPostalCodesById(formData.idCodigoPostal);
-        console.log("Respuesta del endpoint de Código Postal (Anterior):", postalResponse);
-
-        const domiciliosResponse = await fetchDomiciliosVisitas();
-        console.log("Respuesta del endpoint de Domicilios Visitas (Anterior):", domiciliosResponse);
-    };
-
-    const handleNext = async () => {
-        await handleNextItem();
-        const postalResponse = await fetchPostalCodesById(formData.idCodigoPostal);
-        console.log("Respuesta del endpoint de Código Postal (Siguiente):", postalResponse);
-
-        const domiciliosResponse = await fetchDomiciliosVisitas();
-        console.log("Respuesta del endpoint de Domicilios Visitas (Siguiente):", domiciliosResponse);
     };
 
     return (
@@ -84,7 +31,7 @@ const FormularioDom = ({
                 <Col className="d-flex justify-content-between align-items-center">
                     <Button
                         variant="primary"
-                        onClick={handlePrevious}
+                        onClick={handlePreviousItem}
                         disabled={currentIndex === 0 || isFormDisabled}
                     >
                         Anterior
@@ -94,7 +41,7 @@ const FormularioDom = ({
                     </span>
                     <Button
                         variant="primary"
-                        onClick={handleNext}
+                        onClick={handleNextItem}
                         disabled={currentIndex === totalItems - 1 || isFormDisabled}
                     >
                         Siguiente
@@ -107,8 +54,8 @@ const FormularioDom = ({
                         <Form.Label>idCódigoPostal</Form.Label>
                         <Form.Control
                             type="text"
-                            value={formData.codigoPostal || ""}
-                            disabled
+                            value={formData.idCódigoPostal || ""}
+                            disabled // Este valor ahora se llena al seleccionar de la tabla
                         />
                     </Form.Group>
                 </Col>
@@ -117,9 +64,9 @@ const FormularioDom = ({
                         <Form.Label>C.Postal </Form.Label>
                         <Form.Control
                             type="text"
-                            value={formData.idCódigoPostal || ""}
+                            value={formData.códigoPostal || ""} // Usamos el estado codigoPostal para el input
                             maxLength={5}
-                            onChange={handlePostalCodeInput}
+                            onChange={handlePostalCodeInputChange} // Usamos el nuevo handler
                             placeholder="Ingrese Código Postal"
                             disabled={isFormDisabled}
                         />
@@ -193,6 +140,7 @@ const FormularioDom = ({
                             value={formData.estado}
                             onChange={(e) => {
                                 const inputValue = e.target.value;
+                                console.log("Estado ingresado:", inputValue);
                                 if (/^[a-zA-Z\s]*$/.test(inputValue)) {
                                     setFormData({ ...formData, estado: inputValue });
                                 }
@@ -267,26 +215,15 @@ const FormularioDom = ({
 FormularioDom.propTypes = {
     formData: PropTypes.object.isRequired,
     setFormData: PropTypes.func.isRequired,
-    handlePostalCodeChange: PropTypes.func,
     handleSaveNewAddress: PropTypes.func.isRequired,
     isFormDisabled: PropTypes.bool.isRequired,
     clase: PropTypes.string.isRequired,
     setClase: PropTypes.func.isRequired,
-    loadPostalCodesByText: PropTypes.func.isRequired,
     handlePreviousItem: PropTypes.func.isRequired,
     handleNextItem: PropTypes.func.isRequired,
     currentIndex: PropTypes.number.isRequired,
     totalItems: PropTypes.number.isRequired,
-    fetchPostalCodesById: PropTypes.func.isRequired,
-    fetchDomiciliosVisitas: PropTypes.func.isRequired,
-    postalData: PropTypes.arrayOf(
-        PropTypes.shape({
-            idCódigoPostal: PropTypes.string.isRequired,
-            códigoPostal: PropTypes.string,
-            municipio: PropTypes.string,
-            estado: PropTypes.string,
-        })
-    ).isRequired,
+    onSearchPostalCode: PropTypes.func.isRequired,
 };
 
 export default FormularioDom;

@@ -12,7 +12,7 @@ const MergeTable = ({ onRowSelect, setIsIdentifyButtonDisabled }) => {
     const [isLoading, setIsLoading] = useState(false);
 
     // Variables necesarias
-    const codigoPostal = "52400"; // Código postal fijo para el ejemplo
+    const codigoPostal = ""; // Código postal fijo para el ejemplo
     const idCuenta = searchResults.length > 0 ? searchResults[0].idCuenta : null; // Obtener idCuenta del contexto
 
     useEffect(() => {

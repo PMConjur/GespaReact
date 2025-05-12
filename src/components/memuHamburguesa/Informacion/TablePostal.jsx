@@ -8,8 +8,10 @@ const TablePostal = ({ idCodigoPostal }) => {
   useEffect(() => {
     const loadPostalCodes = async () => {
       if (idCodigoPostal) {
+        console.log("Cargando códigos postales para idCodigoPostal:", idCodigoPostal);
         try {
           const response = await fetchPostalCodes(idCodigoPostal);
+          console.log("Respuesta de fetchPostalCodes:", response);
           setPostalData(response.codigosPostales || []);
         } catch (error) {
           console.error("Error al cargar códigos postales:", error);
@@ -66,7 +68,7 @@ const TablePostal = ({ idCodigoPostal }) => {
         </thead>
         <tbody>
           {postalData?.map((item, index) => (
-            <tr key={index}>
+            <tr key={index} onClick={() => console.log("Fila seleccionada:", item)}>
               <td>{item.idCódigoPostal || ""}</td>
               <td>{item.códigoPostal || ""}</td>
               <td>{item.colonia || ""}</td>

@@ -28,6 +28,23 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
         }
     }, [idEjecutivo]);
 
+    useEffect(() => {
+        if (!isFollowUpsActive) {
+            setFormData({
+                idCartera: "",
+                idCuenta: "",
+                idAcercamiento: "1601",
+                idMotivoS: "0",
+                fecha: new Date().toISOString().split('T')[0],
+                segundo: "",
+                recordatorio: false,
+                datoContacto: "",
+                numeroTelefonico: "",
+                displayedPhone: ""
+            });
+        }
+    }, [isFollowUpsActive]);
+
     if (!searchResults || searchResults.length === 0) {
         toast.error("No se encontraron resultados de búsqueda. No se puede usar este formulario.");
         return null;
@@ -48,10 +65,13 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
 
         setFormData(prev => ({
             ...prev,
-            idCartera: searchResults[0]?.idCartera || 1, // Restaurar idCartera
+            idCartera: 1, // Restaurar idCartera
             idCuenta: searchResults[0]?.idCuenta?.trim() || "", // Restaurar idCuenta
+            idEjecutivo: idEjecutivo, // Restaurar idEjecutivo
             idAcercamiento: "1601", // Restaurar idAcercamiento
+            recordatorio: false, // Restaurar recordatorio
             idMotivoS: "0", // Restaurar idMotivoS
+            datoContacto: "", // Restaurar datoContacto
             fecha: new Date().toISOString().split('T')[0], // Fecha al día actual
             segundo: "", // Elimina la hora actual
             numeroTelefonico: phone.raw,
@@ -264,11 +284,13 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                 }
             }
 
-            const { conflict, existingDate, existingTime } = hasReminderConflict(formData.fecha, segundo);
-            if (conflict) {
-                toast.error(`Conflicto detectado: ya existe un seguimiento registrado el ${existingDate} a las ${existingTime}.`);
-                setLoading(false);
-                return;
+            if (formData.recordatorio === true || formData.recordatorio === false) {
+                const { conflict, existingDate, existingTime } = hasReminderConflict(formData.fecha, segundo);
+                if (conflict) {
+                    toast.error(`Conflicto detectado: ya existe un seguimiento registrado el ${existingDate} a las ${existingTime}.`);
+                    setLoading(false);
+                    return;
+                }
             }
 
             const normalizedTime = normalizeTime(segundo);
@@ -284,6 +306,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
             console.log("DEBUG: Intentando enviar seguimiento con datos:", dataToSend);
 
             const response = await createFollows(dataToSend);
+            console.log("Código de respuesta del endpoint:", response.status);
             console.log("Registro de seguimiento exitoso enviado:", dataToSend);
 
             setExistingReminders(prev => [
@@ -315,8 +338,9 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
 
             setFormData(prev => ({
                 ...prev,
-                idCartera: searchResults[0]?.idCartera || 1,
+                idCartera:  1,
                 idCuenta: searchResults[0]?.idCuenta?.trim() || "",
+                idEjecutivo: idEjecutivo,
                 idAcercamiento: "1601",
                 idMotivoS: "0",
                 fecha: new Date().toISOString().split('T')[0],
@@ -467,9 +491,6 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                                         value={(formData.segundo || "00:00:00").split(':')[1]} // Asigna un valor predeterminado
                                         onChange={(e) => {
                                             const minute = e.target.value.replace(/\D/g, '').slice(0, 2);
-                                            if (minute.length < 2) {
-                                                toast.error("El campo de minutos (MM) debe tener exactamente 2 dígitos.");
-                                            }
                                             const [hour, , second] = (formData.segundo || "00:00:00").split(':'); // Asigna un valor predeterminado
                                             setFormData({
                                                 ...formData,
@@ -499,9 +520,10 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                                             if (period === "AM" && hour >= 12) {
                                                 hour -= 12; // Convierte a formato AM
                                             }
+                                            const updatedHour = hour.toString().padStart(2, '0');
                                             setFormData({
                                                 ...formData,
-                                                segundo: `${hour.toString().padStart(2, '0')}:${minute}:${second}`, // Actualiza la hora con formato correcto
+                                                segundo: updatedHour === "00" ? "" : `${updatedHour}:${minute}:${second}`, // Si la hora es inválida, establece vacío
                                             });
                                         }}
                                         aria-label="Seleccionar AM/PM"
@@ -529,7 +551,12 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
                     <Button
                         variant="primary"
                         onClick={handleSave}
-                        disabled={loading}
+                        disabled={
+                            loading ||
+                            formData.segundo === "" ||
+                            formData.segundo === "Seleccione alguno" ||
+                            formData.segundo.split(':')[0] === "" // Verifica si la hora es inválida
+                        } // Deshabilita si no se selecciona una hora válida
                         className="px-4"
                     >
                         {loading ? (

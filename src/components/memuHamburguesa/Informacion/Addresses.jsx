@@ -933,6 +933,7 @@ const Addresses = ({ show, handleClose }) => {
                     }}
                   >
                     <tr style={{ height: "55px" }}>
+                      <th>Id código Postal</th>
                       <th>Código Postal</th>
                       <th>Colonia</th>
                       <th>Municipio</th>
@@ -952,6 +953,7 @@ const Addresses = ({ show, handleClose }) => {
                         onClick={() => handlePostalRowClick(item)}
                         style={{ cursor: "pointer" }}
                       >
+                        <td>{renderCell(item.idCódigoPostal)}</td>
                         <td>{renderCell(item.códigoPostal)}</td>
                         <td>{renderCell(item.colonia)}</td>
                         <td>{renderCell(item.municipio)}</td>
