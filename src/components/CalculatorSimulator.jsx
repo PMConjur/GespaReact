@@ -9,7 +9,7 @@ import {
   fetchSaveNegotiationDeadlines,
   fetchIncreasesNegotiation,
   fetchSaveOffering,
-  fetchValidateNegotiationOffer
+  fetchValidateNegotiationOffer 
 } from "../services/gespawebServices";
 import { AppContext } from "../pages/Managment";
 import { toast } from "sonner";
@@ -161,16 +161,23 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
   const handleHerramientaChange = async (e) => {
     const selectedValue = e.target.value;
     const herramientaSeleccionada = herramientas.find(
-      h => h.idHerramienta === Number(selectedValue)
+      (h) => h.idHerramienta === Number(selectedValue)
     );
-  
+
+    setModifyForm({
+      modificar: false,
+      montoMod: "",
+      fechaPagoMod: "",
+      agregarPagos: false, // Reinicia el checkbox
+      filaMod: null,
+    });
     // Resetear estados primero
     setMontoPago("");
     setMontoNegociado("");
     setFormInputs({
       meses: "",
       fechaPago: "",
-      periodos: 1
+      periodos: 1,
     });
     setShowDetails(false);
     setCalculosData({
@@ -180,25 +187,33 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       montoNegociado: 0,
       descuento: 0,
       calculos: [],
-      tasaMensual: 0
+      tasaMensual: 0,
     });
-  
+
     // Actualizar la herramienta seleccionada
     setSelectedHerramienta(Number(selectedValue));
-  
+
     // Esperar un ciclo de renderizado
-    await new Promise(resolve => setTimeout(resolve, 0));
-  
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
     // Actualizar formValues basado en summaryData actualizado
     setFormValues({
       montoRequerido: summaryData.montoRequerido?.toFixed(2) || "0",
-      descuento: summaryData.descuento?.toFixed(2) || "0"
+      descuento: summaryData.descuento?.toFixed(2) || "0",
     });
-  
+
     // Determinar qué secciones mostrar
-    const isHerramientaCalculo = ["Convenio", "PIF", "PPA", "APR", "PPA+AC"].includes(herramientaSeleccionada?.nombre);
-    const isHerramientaAcuerdo = ["Parcial", "Ajuste"].includes(herramientaSeleccionada?.nombre);
-  
+    const isHerramientaCalculo = [
+      "Convenio",
+      "PIF",
+      "PPA",
+      "APR",
+      "PPA+AC",
+    ].includes(herramientaSeleccionada?.nombre);
+    const isHerramientaAcuerdo = ["Parcial", "Ajuste"].includes(
+      herramientaSeleccionada?.nombre
+    );
+
     setIsCalculateButtonEnabled(isHerramientaCalculo);
     setIsAddButtonEnabled(isHerramientaAcuerdo);
     setAreFieldsEnabled(isHerramientaAcuerdo);
@@ -212,6 +227,15 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
   };
 
   const handleCalculateSecondPart = async () => {
+    // Reinicia los valores de modifyForm al calcular
+    setModifyForm({
+      modificar: false,
+      montoMod: "",
+      fechaPagoMod: "",
+      agregarPagos: false,
+      filaMod: null,
+    });
+
     const idCuenta = searchResults?.[0]?.idCuenta?.trim();
     try {
       // Validar los datos antes de enviarlos
@@ -238,7 +262,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         iMeses: parseInt(formInputs.meses, 10) || 0,
         fechaPago: formInputs.fechaPago || "",
         periodos: parseInt(formInputs.periodos, 10) || 1,
-        plazos: []
+        plazos: [],
       };
 
       console.log(
@@ -259,7 +283,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         calculos: response.calculos,
         tasaMensual: response.tasaMensual,
         montoDescuento: response.montoDescuento, // Agregar montoDescuento al estado
-        maxDescuento: response.maxDescuento // Agregar maxDescuento al estado
+        maxDescuento: response.maxDescuento, // Agregar maxDescuento al estado
       });
 
       setShowDetails(true); // Muestra el contenido del Row
@@ -330,7 +354,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         toast.error("Por favor, completa todos los campos requeridos.");
         return;
       }
-  
+
       // Mapear los datos de la tabla al formato requerido por el endpoint
       const plazos = calculosData.calculos.map((calculo) => ({
         no: calculo.no,
@@ -339,7 +363,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         pago: calculo.pago || 0,
         saldoFinal: calculo.saldoFinal || 0,
       }));
-  
+
       const requestData = {
         idHerramienta: selectedHerramienta,
         noCuenta: idCuenta,
@@ -356,16 +380,21 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         filaModificar: modifyForm.filaMod,
         plazos: plazos, // Agregar los plazos mapeados
       };
-  
+
       console.log(
         "Datos enviados al endpoint fetchCalSecondPartModify:",
         requestData
       );
-  
+
       const response = await fetchCalSecondPartModify(requestData);
-  
-      toast.success("Respuesta del endpoint al modificar", response);
-  
+
+      // Imprime la respuesta completa en consola
+      console.log(
+        "Respuesta completa del endpoint fetchCalSecondPartModify:",
+        response
+      );
+      toast.success("Respuesta del endpoint al modificar", response.message);
+
       // Actualizar los datos en la tabla y el formulario
       setCalculosData({
         plazos: response.plazos,
@@ -376,20 +405,27 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         calculos: response.calculos,
         tasaMensual: response.tasaMensual, // Agregar la tasa mensual al estado
       });
-  
+
       toast.success("Datos enviados correctamente.");
     } catch (error) {
       console.error(
         "Error al enviar los datos al endpoint fetchCalSecondPartModify:",
         error
       );
-    
-      // Verifica si el error tiene una respuesta del servidor
-      const errorMessage =
-        error.response?.data || "Error desconocido al enviar los datos.";
-    
-      // Muestra el mensaje de error en el toast
-      toast.warning(errorMessage);
+
+      // Intenta obtener el mensaje de error del backend
+      let errorMessage = "Error al enviar los datos.";
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.errors) {
+        errorMessage = error.response.data.errors;
+      } else if (typeof error.response?.data === "string") {
+        errorMessage = error.response.data;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      toast.error(`${errorMessage}. Solo se permite modificar los primeros dos plazos`);
     }
   };
 
