@@ -774,7 +774,7 @@ export const fetchDdComplaints = async () => {
     }
 
     const result = response.data;
-    console.log("Validación recibida:", result);
+    console.log("Validación recibida Validators:", result);
     return result;
   } catch (error) {
     console.error("Error en fetchOriginComplaints:", error);
@@ -1086,9 +1086,7 @@ export const fetchGestionesDelDia = async (idEjecutivo, setErrorMessage) => {
 };
 //EndPoint - ActivitiesDay
 
-//EndPoint - Domicilios
 
-//EndPoint - Domicilios
 
 //EndPoint -Nergocicaciones del mes
 export const fetchNegotiationsData = async (idEjecutivo) => {
@@ -1116,30 +1114,40 @@ export const fetchNegotiationsData = async (idEjecutivo) => {
   }
 };
 
-//EndPoint -Nergocicaciones del mes\
+
 //EndPoint MultiDeptor
-export const fetchMultideudores = async (idCuenta) => {
+export const fetchMultideudores = async (idCuenta, rfc) => {
   try {
+    const idCartera = 1; // Siempre será 1
+    console.log("Parámetros enviados:", { idCartera, idCuenta, rfc });
+
     const response = await servicio.get(
-      `/ejecutivo/multideudores/1/${idCuenta}`
+      `/ejecutivo/multideudores/${idCartera}/${idCuenta}`, // Solo idCartera e idCuenta en la ruta
+      {
+        params: { rfc }, // rfc y numcliente como parámetros de consulta
+      }
     );
-    return response.data;
-  } catch (error) {
-    let message = "Error desconocido.";
-    if (error.response) {
-      const status = error.response.status;
-      message =
-        status === 404
-          ? "Error 404: No se encontró la cuenta especificada. Por favor, verifique el ID de cuenta e intente nuevamente."
-          : `Error ${status}: ${
-              error.response.data.message || "Ocurrió un error en el servidor."
-            }`;
-    } else if (error.request) {
-      message = "Error: No se recibió respuesta del servidor.";
-    } else {
-      message = `Error: Ocurrió un problema al realizar la solicitud. Detalles: ${error.message}`;
+
+    if (response.status !== 200) {
+      throw new Error(`Error en la respuesta de la API. Estado: ${response.status}`);
     }
-    throw new Error(message);
+
+    const data = response.data.filter(item => item.RFC === rfc);
+    console.log("Datos filtrados por RFC:", data);
+
+    return data;
+  } catch (error) {
+    if (error.response?.status === 404) {
+      console.error(
+        "Error 404: No se encontraron multideudores para los parámetros proporcionados.",
+        { idCuenta, rfc}
+      );
+      throw new Error("No se encontraron multideudores para los parámetros proporcionados.");
+    }
+    console.error("Error en fetchMultideudores:", error);
+    throw new Error(
+      error.response?.data?.message || "Error al obtener los datos de multideudores."
+    );
   }
 };
 

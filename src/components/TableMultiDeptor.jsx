@@ -6,14 +6,7 @@ import {
   reemplazarValoresCartera,
 } from "./ValoresCatalogos.js"; // Importa el método
 
-const TableMultiDeptor = ({ tableData }) => {
-  const renderCell = (value) => {
-    if (typeof value === "object" && value !== null) {
-      return JSON.stringify(value);
-    }
-    return value ?? "";
-  };
-
+const TableMultiDeptor = ({ tableData, onRowClick }) => { // Agregamos onRowClick como prop
   return (
     <div
       style={{
@@ -31,31 +24,45 @@ const TableMultiDeptor = ({ tableData }) => {
             <th>Situacion</th>
             <th>Nombre</th>
             <th>RFC</th>
-            <th>NumeroCliente</th>
+            <th>Nú. Cliente</th>
             <th>Saldo</th>
             <th>Activacion</th>
             <th>Bloqueo</th>
           </tr>
         </thead>
         <tbody>
-          {tableData.map((item, index) => (
-            <tr key={index}>
-              <td>{item.idCuenta ?? ""}</td>
-              <td>{reemplazarValoresProducto(item.idCartera) ?? ""}</td>
-              <td>{reemplazarValoresCartera(item.idProducto) ?? ""}</td>
-              <td>{reemplazarValores(item["idSituación"])}</td>
-              <td>{item.NombreDeudor ?? ""}</td>
-              <td>{item.RFC ?? ""}</td>
-              <td>{item.NumeroCliente ?? ""}</td>
-              <td>{item.Saldo ?? ""}</td>
-              <td>
-                {item["Activación"]
-                  ? new Date(item["Activación"]).toLocaleDateString()
-                  : ""}
-              </td>
-              <td>{item.Bloqueo ? "Sí" : "No"}</td>
+          {Array.isArray(tableData) && tableData.length > 0 ? (
+            tableData.map((item, index) => (
+              <tr
+                key={index}
+                onClick={() => onRowClick(item.idCuenta)} // Pasamos idCuenta al hacer clic
+                style={{ cursor: "pointer" }}
+              >
+                <td>{item.idCuenta ? item.idCuenta.slice(-5) : "--"}</td>
+                <td>{reemplazarValoresCartera(item.idCartera) ?? "--"}</td>
+                <td>{reemplazarValoresProducto(item.idProducto) ?? "--"}</td>
+                <td>{reemplazarValores(item.idSituación) ?? "--"}</td>
+                <td>{item.NombreDeudor ?? "--"}</td>
+                <td>{item.RFC ?? "--"}</td>
+                <td>
+                  {Object.keys(item.NúmeroCliente || {}).length === 0
+                    ? "--"
+                    : JSON.stringify(item.NúmeroCliente)}
+                </td>
+                <td>{item.Saldo ? `$${item.Saldo.toFixed(2)}` : "--"}</td>
+                <td>
+                  {item.Activación
+                    ? new Date(item.Activación).toLocaleDateString()
+                    : "--"}
+                </td>
+                <td>{item.Bloqueo ? "Sí" : "No"}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="10">No se encontraron datos.</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </Table>
     </div>

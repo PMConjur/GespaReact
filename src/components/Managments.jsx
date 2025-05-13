@@ -92,7 +92,7 @@ const Managments = () => {
   }, [selectedPhoneFilter, searchResults]); // Usar selectedPhoneFilter como dependencia
 
   useEffect(() => {
-    if (refreshManagments) {
+    if (refreshManagments && searchResults.length > 0) {
       const fetchData = async () => {
         try {
           const idCartera = searchResults[0]?.idCartera;
@@ -108,6 +108,8 @@ const Managments = () => {
 
           setSortedData(gestionData);
           setTotalResults(gestionData.length);
+          setCurrentTablePage(1); // Reiniciar a la página 1
+          setPaginationGroup(0); // Reiniciar el grupo de paginación
           setRefreshManagments(false); // Restablece el estado
         } catch (error) {
           console.error("Error al actualizar los datos de gestión:", error);
