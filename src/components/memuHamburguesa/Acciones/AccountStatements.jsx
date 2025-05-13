@@ -175,10 +175,10 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
   return (
     <Modal show={show} onHide={handleClose} backdrop="static" size="xl">
       <Modal.Header closeButton>
-        <Modal.Title>Estado de Cuenta</Modal.Title>
+        <Modal.Title className="ms-4">Estado de Cuenta</Modal.Title>
       </Modal.Header>
 
-      <Modal.Body style={{ maxHeight: "70vh", overflowY: "auto", position: "relative", padding: "3rem"}}>
+      <Modal.Body style={{ maxHeight: "70vh", overflowY: "auto", position: "relative", padding: "2rem"}}>
         <div className="d-block d-lg-flex w-100">
           <div>
             <div className="flex-grow-1 scroll-container" style={{ overflow: "auto", maxWidth: "800px", marginBottom: "auto", maxHeight: "70vh" }}>
