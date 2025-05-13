@@ -4,7 +4,7 @@ import { AppContext } from "../../../pages/Managment"; // Importar el contexto d
 import "../../../scss/styles.scss";
 import Addresses from "./Addresses"; // Importar el componente Addresses
 import Mail from "./Mail"; // Importar el componente Mail
-import Payments from "./Payments"; 
+import Payments from "./Payments";
 import Aditionals from "./Aditionals"; // Importar el componente Aditionals
 import { InfoCircleFill } from "react-bootstrap-icons"; // Importar el ícono de Info de Bootstrap
 import Multideudores from "../Informacion/MultiDeptor"; // Importar el componente Multideudores
@@ -73,7 +73,7 @@ function DropdownInfo() {
         </Dropdown.Toggle>
         <Dropdown.Menu
           placement="end"
-          style={{ backgroundColor: "#1d1f20"}}
+          style={{ backgroundColor: "#1d1f20" }}
           className="custom-dropdown-menu"
         >
           <Dropdown.Item
@@ -83,7 +83,7 @@ function DropdownInfo() {
             Multideudores
           </Dropdown.Item>
           <Dropdown.Item
-            onClick={handleShowAddresses}
+            //onClick={handleShowAddresses}
             className="custom-dropdown-item"
           >
             Domicilios
@@ -107,7 +107,7 @@ function DropdownInfo() {
             Pagos
           </Dropdown.Item>
           <Dropdown.Item
-            onClick={handleShowAddress}
+            //onClick={handleShowAddress}
             className="custom-dropdown-item"
           >
             Address
@@ -121,7 +121,6 @@ function DropdownInfo() {
         allowClose={true}
         onFormSuccess={() => console.log("Formulario Pagos completado")}
       />
-      
 
       {/* Renderizar el modal de Addresses */}
       <Addresses
