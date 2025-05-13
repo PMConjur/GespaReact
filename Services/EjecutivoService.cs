@@ -1555,10 +1555,12 @@ namespace NoriAPI.Services
 						if (dtFechaPagoAnt != dtFechaPago_)//&& dgvPlazos.CurrentCell.RowIndex == 0 Aqui solo cambia la fecha de los pagos
 						{
 							DateTime nuevaFecha = Convert.ToDateTime(InfoCalculadora.fechaPagoModificar);
-							foreach (DataRow fila in tblPlazos.Rows)
-							{
-								fila["Fecha"] = nuevaFecha; // Actualizar la columna 'Fecha' con la nueva fecha
-							}
+							//foreach (DataRow fila in tblPlazos.Rows)
+							//{
+							//	fila["Fecha"] = nuevaFecha; // Actualizar la columna 'Fecha' con la nueva fecha
+							//}
+							int FilaModificar = InfoCalculadora.filaModificar;
+							tblPlazos.Rows[FilaModificar]["Fecha"] = nuevaFecha;
 
 						}
 						if (InfoCalculadora.montoModificar != dPagoAnt)
