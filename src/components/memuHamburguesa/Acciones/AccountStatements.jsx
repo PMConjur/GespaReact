@@ -147,10 +147,11 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
       consulta: selectedOption,
       correoElectrónico: selectedEmail
     };
-
+    console.log("Datos enviados al servidor:", requestData);
     try {
-      const response = await fetchSaveAccount(requestData);
-      toast.success("Solicitud enviada correctamente.");
+    const response = await fetchSaveAccount(requestData);
+    console.log("Respuesta del servidor:", response);
+    toast.success("Solicitud enviada correctamente.")
 
       setSelectedDateRange({ startDate: "", endDate: "" });
       setSelectedEmail("");
@@ -177,7 +178,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
         <Modal.Title>Estado de Cuenta</Modal.Title>
       </Modal.Header>
 
-      <Modal.Body style={{ maxHeight: "70vh", overflowY: "auto", position: "relative" }}>
+      <Modal.Body style={{ maxHeight: "70vh", overflowY: "auto", position: "relative", padding: "3rem"}}>
         <div className="d-block d-lg-flex w-100">
           <div>
             <div className="flex-grow-1 scroll-container" style={{ overflow: "auto", maxWidth: "800px", marginBottom: "auto", maxHeight: "70vh" }}>
@@ -232,13 +233,15 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                     <Form.Group className="mb-3">
                       <Form.Label>Desde</Form.Label>
                       <div
+                        required
                         className="date-input-wrapper"
                         style={{
+                          color: 'black',
                           position: 'relative',
                           display: 'flex',
                           alignItems: 'center',
                           border: '1px solid rgb(50, 50, 51)', // Bootstrap default border
-                          borderRadius: '.25rem', // Bootstrap default border-radius
+                          borderRadius: '.375rem', // Bootstrap default border-radius
                           padding: '.375rem .75rem', // Bootstrap default padding for form-control
                           backgroundColor: '#fff',
                           cursor: 'pointer' // Indicar que es clicable
@@ -275,12 +278,14 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
                       <Form.Label>Hasta</Form.Label>
                       <div
                         className="date-input-wrapper"
+                        required
                         style={{
+                          color: 'black',
                           position: 'relative',
                           display: 'flex',
                           alignItems: 'center',
                           border: '1px solid rgb(58, 59, 59)',
-                          borderRadius: '.25rem',
+                          borderRadius: '.375rem',
                           padding: '.375rem .75rem',
                           backgroundColor: '#fff',
                           cursor: 'pointer'
