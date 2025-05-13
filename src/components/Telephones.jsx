@@ -8,7 +8,7 @@ import {
   Placeholder,
   DropdownButton,
   Dropdown,
-  Row,56
+  Row,
   Col
 } from "react-bootstrap";
 import {
