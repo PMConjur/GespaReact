@@ -162,7 +162,7 @@ const TableFollowUps = ({ customColumnNames = {}, refreshTrigger }) => {
                 }}
             >
                 <Table striped bordered hover responsive variant="dark" style={{ fontSize: "13px", width: "100%" }}>
-                    <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#343a40" }}>
+                    <thead style={{ position: "sticky", top: -1, zIndex: 1, backgroundColor: "#343a40" }}>
                         <tr style={{ height: "55px" }}>
                             {headers.map((header) => (
                                 <th key={header} style={{ padding: "4px", minHeight: "20px", textAlign: "center" }}>
@@ -184,6 +184,10 @@ const TableFollowUps = ({ customColumnNames = {}, refreshTrigger }) => {
                                                         // Formatear hora con AM/PM
                                     if (header === "SegundoSeguimiento") {
                                         value = formatTimeWithAMPM(value);
+                                    }
+
+                                    if (header === "_Realizado") {
+                                        value = value === 1 ? '✓' : value === 0 ? '✗' : value;
                                     }
 
                                     if (value === null || value === undefined || (typeof value === "object" && Object.keys(value).length === 0)) {

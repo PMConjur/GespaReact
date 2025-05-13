@@ -49,6 +49,7 @@ const Managment = () => {
   const [isDataAllPhones, setIsDataAllPhones] = useState([]); // Estado para manejar los teléfonos
   const [selectedPhoneFilter, setSelectedPhoneFilter] = useState(null); // Nueva variable para el filtro de teléfonos
   const [selectedPhoneForFollowUps, setSelectedPhoneForFollowUps] = useState(null); // Nueva variable para el número seleccionado
+  const [refreshManagments, setRefreshManagments] = useState(false); // Estado para refrescar Managments
   const token = responseData?.ejecutivo?.token;
   const nombreEjecutivo =
     responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
@@ -61,6 +62,9 @@ const Managment = () => {
     try {
       const response = await searchCustomer(filter, searchTerm);
       setSearchResults(response.listaResultados || []);
+      if (response.listaResultados?.length > 0) {
+        setRefreshManagments(true); // Notificar cambios
+      }
     } catch (error) {
       console.error("Error fetching search results:", error);
     }
@@ -126,6 +130,7 @@ const handleAutomaticSearch = async () => {
 
     if (Array.isArray(listaResultados) && listaResultados.length > 0) {
       setSearchResults(listaResultados);
+      setRefreshManagments(true); // Notificar cambios
     } else {
       toast.warning("No se encontraron resultados en la búsqueda de cuenta");
       setSearchResults([]);
@@ -135,6 +140,21 @@ const handleAutomaticSearch = async () => {
     toast.error(`Error: ${error.message}`);
   }
 };
+
+  const handleSearchByCuenta = async (idCuenta) => {
+    try {
+      console.log("Buscando información para la cuenta:", idCuenta);
+      const results = await searchByAccount(idCuenta); // Llamada al endpoint
+      setSearchResults(results); // Actualizamos los resultados de búsqueda
+      if (results.length > 0) {
+        setRefreshManagments(true); // Notificar cambios
+      }
+      console.log("Resultados de búsqueda:", results);
+    } catch (error) {
+      console.error("Error al buscar por cuenta:", error);
+      toast.error("Error al buscar la cuenta. Verifica los datos.");
+    }
+  };
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(numeroTelefonico);
@@ -214,6 +234,9 @@ const handleAutomaticSearch = async () => {
     selectedDate, // Enviar fecha seleccionada al contexto
     setSelectedDate, // Enviar función para actualizar la fecha seleccionada al contexto
     reminders: [], // Puedes inicializarlo como un array vacío o con los datos que necesites
+    handleSearchByCuenta, // Agregamos la función al contexto
+    refreshManagments, // Agregar al contexto
+    setRefreshManagments, // Agregar setter al contexto
   };
 
   return (

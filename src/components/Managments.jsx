@@ -6,14 +6,14 @@ import { ClockHistory } from "react-bootstrap-icons";
 import { toast } from "sonner"; // Importar la librería sonner
 
 const Managments = () => {
-  const { searchResults, selectedPhoneFilter } = useContext(AppContext); // Usar selectedPhoneFilter del contexto
+  const { searchResults, selectedPhoneFilter, refreshManagments, setRefreshManagments } = useContext(AppContext); // Agregar refreshManagments del contexto
   const [sortedData, setSortedData] = useState([]); // Estado para los datos ordenados
   const [selectedGestion, setSelectedGestion] = useState(null); // Estado para el registro seleccionado
   const [showToast, setShowToast] = useState(false); // Estado para mostrar el toast
   const [toastMessage, setToastMessage] = useState(""); // Mensaje dinámico para el toast
   const [currentPage, setCurrentPage] = useState(1); // Página actual para la carga perezosa
   const [isLoading, setIsLoading] = useState(false); // Estado para indicar si se está cargando más data
-  const [itemsPerPage] = useState(200); // Número de registros por página
+  const [itemsPerPage] = useState(100); // Número de registros por página
   const [currentTablePage, setCurrentTablePage] = useState(1); // Página actual de la tabla
   const [paginationGroup, setPaginationGroup] = useState(0); // Grupo actual de 10 páginas
   const [totalResults, setTotalResults] = useState(10000); // Total de resultados requeridos (puede ser dinámico)
@@ -90,6 +90,35 @@ const Managments = () => {
 
     fetchFilteredData();
   }, [selectedPhoneFilter, searchResults]); // Usar selectedPhoneFilter como dependencia
+
+  useEffect(() => {
+    if (refreshManagments && searchResults.length > 0) {
+      const fetchData = async () => {
+        try {
+          const idCartera = searchResults[0]?.idCartera;
+          const idCuenta = searchResults[0]?.idCuenta;
+
+          if (!idCartera || !idCuenta) {
+            console.error("Error: idCartera o idCuenta no son válidos.");
+            return;
+          }
+
+          const gestionData = await getGestionTeData(idCartera, idCuenta);
+          console.log("Datos obtenidos de getGestionTeData:", gestionData);
+
+          setSortedData(gestionData);
+          setTotalResults(gestionData.length);
+          setCurrentTablePage(1); // Reiniciar a la página 1
+          setPaginationGroup(0); // Reiniciar el grupo de paginación
+          setRefreshManagments(false); // Restablece el estado
+        } catch (error) {
+          console.error("Error al actualizar los datos de gestión:", error);
+        }
+      };
+
+      fetchData();
+    }
+  }, [refreshManagments, searchResults, setRefreshManagments]); // Escucha cambios en refreshManagments
 
   // Validar campos para evitar errores al renderizar
   const validateField = (field) => {
