@@ -339,6 +339,13 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
   };
 
   const handleModifyPayment = async () => {
+    setModifyForm({
+      montoMod: "",
+      fechaPagoMod: "",
+      agregarPagos: false,
+      filaMod: null,
+    });
+
     const idCuenta = searchResults?.[0]?.idCuenta?.trim();
     try {
       // Validar los datos antes de enviarlos
@@ -425,7 +432,9 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         errorMessage = error.message;
       }
 
-      toast.error(`${errorMessage}. Solo se permite modificar los primeros dos plazos`);
+      toast.error(
+        `${errorMessage}. Solo se permite modificar los primeros dos plazos`
+      );
     }
   };
 
@@ -477,13 +486,23 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
     }
   };
 
-  const handleRowClick = (index) => {
-    setSelectedRow(index); // Actualiza el índice de la fila seleccionada
-    setModifyForm((prev) => ({
-      ...prev,
-      filaMod: index // Actualiza filaMod con el índice seleccionado
-    }));
-  };
+const handleRowClick = (index) => {
+  setSelectedRow(index); // Actualiza el índice de la fila seleccionada
+
+  // Obtén el cálculo seleccionado
+  const calculoSeleccionado = calculosData.calculos[index];
+
+  setModifyForm((prev) => ({
+    ...prev,
+    filaMod: index, // Actualiza filaMod con el índice seleccionado
+    montoMod: calculoSeleccionado.pago
+      ? calculoSeleccionado.pago.toString()
+      : "",
+    fechaPagoMod: calculoSeleccionado.fecha
+      ? new Date(calculoSeleccionado.fecha).toISOString().split("T")[0]
+      : "",
+  }));
+};
 
   const handleOpenValidators = () => {
     setShowValidators(true); // Abre el modal
@@ -946,6 +965,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       resetStates(); // Reinicia los estados cuando el modal se cierra
     }
   }, [show]);
+
 
   return (
     <>
@@ -1675,13 +1695,10 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 name="fechaPagoMod"
                                 value={modifyForm.fechaPagoMod}
                                 onChange={handleModifyFormChange}
-                                max={
-                                  formInputs.fechaPago ||
-                                  new Date().toISOString().split("T")[0]
-                                } // Fecha máxima: la seleccionada en "fechaPago" o la fecha actual
+                                min={new Date().toISOString().split("T")[0]} // Permite solo la fecha actual o futuras
+                                // Elimina el atributo max para permitir cualquier fecha futura
                               />
                             </Form.Group>
-
                             <div>
                               <Button
                                 variant="primary"

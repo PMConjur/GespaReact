@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react"; // Asegúrate de importar useRef
 import { Modal, Table, Button, Card, Form, Col, Spinner} from "react-bootstrap";
 import {
   fetchAccoutStatements,
@@ -26,10 +26,15 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
 
   const { searchResults } = useContext(AppContext);
 
+  // Referencias para los inputs de fecha
+  const startDateInputRef = useRef(null);
+  const endDateInputRef = useRef(null);
+
+
   useEffect(() => {
     const isValid =
-      selectedDateRange.startDate && 
-      selectedDateRange.endDate && 
+      selectedDateRange.startDate &&
+      selectedDateRange.endDate &&
       (selectedOptionEnvio ? selectedEmail : true);
     setIsFormValid(isValid);
   }, [selectedDateRange, selectedEmail, selectedOptionEnvio]);
@@ -93,7 +98,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
 
         const extractedEmails = emails.map((emailObj) => emailObj.CorreoElectrónico);
         setValidEmails(extractedEmails || []);
-        
+
         if (extractedEmails.length > 0) {
           setSelectedEmail(extractedEmails[0]);
         }
@@ -106,17 +111,17 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
 
   const validateDates = () => {
     const { startDate, endDate } = selectedDateRange;
-    
+
     if (startDate && endDate && startDate > endDate) {
       toast.warning("La fecha inicial no puede ser posterior a la final");
       return false;
     }
-    
+
     if (startDate && endDate && endDate < startDate) {
       toast.warning("La fecha final no puede ser anterior a la inicial");
       return false;
     }
-    
+
     return true;
   };
 
@@ -156,6 +161,13 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
     } catch (error) {
       console.error("Error al enviar la solicitud:", error);
       toast.error("Hubo un error al enviar la solicitud.");
+    }
+  };
+
+  // Función para abrir el calendario nativo al hacer clic en el icono
+  const handleCalendarIconClick = (inputRef) => {
+    if (inputRef.current) {
+      inputRef.current.showPicker(); // Este método es la clave
     }
   };
 
@@ -213,29 +225,93 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
           </div>
           {accountData.length > 0 && (
             <Col className="w-100">
-              <Card className="ml-3" style={{ width: "100%", marginBottom: "0px" }}>
-                <Card.Body style={{ padding: "5px", width: "100%" }}>
+              <Card className="ml-3" style={{ width: "100%", marginBottom: "0px"}}>
+                <Card.Body style={{ padding: "5px", width: "100%"}}>
                   <Card.Title style={{ paddingTop: "0px" }}>Solicitar</Card.Title>
                   <Form>
                     <Form.Group className="mb-3">
                       <Form.Label>Desde</Form.Label>
-                      <Form.Control
-                        type="date"
-                        name="startDate"
-                        value={selectedDateRange.startDate}
-                        onChange={handleDateChange}
-                        required
-                      />
+                      <div
+                        className="date-input-wrapper"
+                        style={{
+                          position: 'relative',
+                          display: 'flex',
+                          alignItems: 'center',
+                          border: '1px solid rgb(50, 50, 51)', // Bootstrap default border
+                          borderRadius: '.25rem', // Bootstrap default border-radius
+                          padding: '.375rem .75rem', // Bootstrap default padding for form-control
+                          backgroundColor: '#fff',
+                          cursor: 'pointer' // Indicar que es clicable
+                        }}
+                        onClick={() => handleCalendarIconClick(startDateInputRef)} // Abre el calendario al hacer clic en el div
+                      >
+                        <Form.Control
+                          type="date"
+                          name="startDate"
+                          value={selectedDateRange.startDate}
+                          onChange={handleDateChange}
+                          required
+                          ref={startDateInputRef} // Asocia la referencia
+                          style={{
+                            position: 'absolute',
+                            width: '100%',
+                            height: '100%',
+                            top: 0,
+                            left: 0,
+                            opacity: 0, // Ahora sí podemos usar opacity: 0 de forma segura
+                            padding: 0, // Quita padding extra del input
+                            border: 'none', // Quita el borde del input
+                            backgroundColor: 'transparent', // Quita el fondo del input
+                            cursor: 'pointer'
+                          }}
+                        />
+                        {/* Tu icono personalizado */}
+                        <i className="bi bi-calendar-event" style={{ marginRight: '0.5rem' }}></i>
+                        {/* El texto de la fecha seleccionada */}
+                        <span>{selectedDateRange.startDate || 'Seleccionar fecha'}</span>
+                      </div>
                     </Form.Group>
                     <Form.Group className="mb-3">
                       <Form.Label>Hasta</Form.Label>
-                      <Form.Control
-                        type="date"
-                        name="endDate"
-                        value={selectedDateRange.endDate}
-                        onChange={handleDateChange}
-                        required
-                      />
+                      <div
+                        className="date-input-wrapper"
+                        style={{
+                          position: 'relative',
+                          display: 'flex',
+                          alignItems: 'center',
+                          border: '1px solid rgb(58, 59, 59)',
+                          borderRadius: '.25rem',
+                          padding: '.375rem .75rem',
+                          backgroundColor: '#fff',
+                          cursor: 'pointer'
+                        }}
+                        onClick={() => handleCalendarIconClick(endDateInputRef)}
+                      >
+                        <Form.Control
+                          type="date"
+                          name="endDate"
+                          value={selectedDateRange.endDate}
+                          onChange={handleDateChange}
+                          required
+                          ref={endDateInputRef} // Asocia la referencia
+                          style={{
+                            position: 'absolute',
+                            width: '100%',
+                            height: '100%',
+                            top: 0,
+                            left: 0,
+                            opacity: 0,
+                            padding: 0,
+                            border: 'none',
+                            backgroundColor: 'transparent',
+                            cursor: 'pointer'
+                          }}
+                        />
+                        {/* Tu icono personalizado */}
+                        <i className="bi bi-calendar-event" style={{ marginRight: '0.5rem' }}></i>
+                        {/* El texto de la fecha seleccionada */}
+                        <span>{selectedDateRange.endDate || 'Seleccionar fecha'}</span>
+                      </div>
                     </Form.Group>
 
                     <div className="d-flex gap-2 mb-3 justify-content-between">
