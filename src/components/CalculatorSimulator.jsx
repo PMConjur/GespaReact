@@ -227,6 +227,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
   };
 
   const handleCalculateSecondPart = async () => {
+      setSelectedRow(null); // Reinicia el índice de la fila seleccionada
     // Reinicia los valores de modifyForm al calcular
     setModifyForm({
       modificar: false,
@@ -339,11 +340,12 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
   };
 
   const handleModifyPayment = async () => {
+    setSelectedRow(null); // Reinicia el índice de la fila seleccionada
     setModifyForm({
       montoMod: "",
       fechaPagoMod: "",
       agregarPagos: false,
-      filaMod: null,
+      filaMod: null,  
     });
 
     const idCuenta = searchResults?.[0]?.idCuenta?.trim();
@@ -1695,8 +1697,26 @@ const handleRowClick = (index) => {
                                 name="fechaPagoMod"
                                 value={modifyForm.fechaPagoMod}
                                 onChange={handleModifyFormChange}
-                                min={new Date().toISOString().split("T")[0]} // Permite solo la fecha actual o futuras
-                                // Elimina el atributo max para permitir cualquier fecha futura
+                                min={
+                                  modifyForm.fechaPagoMod
+                                    ? modifyForm.fechaPagoMod.slice(0, 7) +
+                                      "-01"
+                                    : ""
+                                }
+                                max={
+                                  modifyForm.fechaPagoMod
+                                    ? (() => {
+                                        const [year, month] =
+                                          modifyForm.fechaPagoMod.split("-");
+                                        const lastDay = new Date(
+                                          year,
+                                          month,
+                                          0
+                                        ).getDate();
+                                        return `${year}-${month}-${lastDay}`;
+                                      })()
+                                    : ""
+                                }
                               />
                             </Form.Group>
                             <div>
