@@ -413,6 +413,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         descuento: response.descuento,
         calculos: response.calculos,
         tasaMensual: response.tasaMensual, // Agregar la tasa mensual al estado
+        maxDescuento: response.maxDescuento, // Agregar maxDescuento al estado
       });
 
       toast.success("Datos enviados correctamente.");
