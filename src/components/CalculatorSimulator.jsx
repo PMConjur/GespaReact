@@ -227,6 +227,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
   };
 
   const handleCalculateSecondPart = async () => {
+      setSelectedRow(null); // Reinicia el índice de la fila seleccionada
     // Reinicia los valores de modifyForm al calcular
     setModifyForm({
       modificar: false,
@@ -339,6 +340,14 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
   };
 
   const handleModifyPayment = async () => {
+    setSelectedRow(null); // Reinicia el índice de la fila seleccionada
+    setModifyForm({
+      montoMod: "",
+      fechaPagoMod: "",
+      agregarPagos: false,
+      filaMod: null,  
+    });
+
     const idCuenta = searchResults?.[0]?.idCuenta?.trim();
     try {
       // Validar los datos antes de enviarlos
@@ -404,6 +413,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         descuento: response.descuento,
         calculos: response.calculos,
         tasaMensual: response.tasaMensual, // Agregar la tasa mensual al estado
+        maxDescuento: response.maxDescuento, // Agregar maxDescuento al estado
       });
 
       toast.success("Datos enviados correctamente.");
@@ -425,7 +435,9 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         errorMessage = error.message;
       }
 
-      toast.error(`${errorMessage}. Solo se permite modificar los primeros dos plazos`);
+      toast.error(
+        `${errorMessage}. Solo se permite modificar los primeros dos plazos`
+      );
     }
   };
 
@@ -477,13 +489,23 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
     }
   };
 
-  const handleRowClick = (index) => {
-    setSelectedRow(index); // Actualiza el índice de la fila seleccionada
-    setModifyForm((prev) => ({
-      ...prev,
-      filaMod: index // Actualiza filaMod con el índice seleccionado
-    }));
-  };
+const handleRowClick = (index) => {
+  setSelectedRow(index); // Actualiza el índice de la fila seleccionada
+
+  // Obtén el cálculo seleccionado
+  const calculoSeleccionado = calculosData.calculos[index];
+
+  setModifyForm((prev) => ({
+    ...prev,
+    filaMod: index, // Actualiza filaMod con el índice seleccionado
+    montoMod: calculoSeleccionado.pago
+      ? calculoSeleccionado.pago.toString()
+      : "",
+    fechaPagoMod: calculoSeleccionado.fecha
+      ? new Date(calculoSeleccionado.fecha).toISOString().split("T")[0]
+      : "",
+  }));
+};
 
   const handleOpenValidators = () => {
     setShowValidators(true); // Abre el modal
@@ -946,6 +968,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
       resetStates(); // Reinicia los estados cuando el modal se cierra
     }
   }, [show]);
+
 
   return (
     <>
@@ -1675,13 +1698,28 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
                                 name="fechaPagoMod"
                                 value={modifyForm.fechaPagoMod}
                                 onChange={handleModifyFormChange}
+                                min={
+                                  modifyForm.fechaPagoMod
+                                    ? modifyForm.fechaPagoMod.slice(0, 7) +
+                                      "-01"
+                                    : ""
+                                }
                                 max={
-                                  formInputs.fechaPago ||
-                                  new Date().toISOString().split("T")[0]
-                                } // Fecha máxima: la seleccionada en "fechaPago" o la fecha actual
+                                  modifyForm.fechaPagoMod
+                                    ? (() => {
+                                        const [year, month] =
+                                          modifyForm.fechaPagoMod.split("-");
+                                        const lastDay = new Date(
+                                          year,
+                                          month,
+                                          0
+                                        ).getDate();
+                                        return `${year}-${month}-${lastDay}`;
+                                      })()
+                                    : ""
+                                }
                               />
                             </Form.Group>
-
                             <div>
                               <Button
                                 variant="primary"
