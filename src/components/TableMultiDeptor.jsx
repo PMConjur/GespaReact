@@ -1,12 +1,24 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Table } from "react-bootstrap";
+import { AppContext } from "../pages/Managment"; // Importa el contexto
+import { toast } from "sonner"; // Importa toast
 import {
   reemplazarValores,
   reemplazarValoresProducto,
   reemplazarValoresCartera,
 } from "./ValoresCatalogos.js"; // Importa el método
 
-const TableMultiDeptor = ({ tableData, onRowClick }) => { // Agregamos onRowClick como prop
+const TableMultiDeptor = ({ tableData, onRowClick }) => {
+  const { selectedAnswer } = useContext(AppContext); // Obtiene el estado del flujo activo
+
+  const handleRowClick = (idCuenta) => {
+    if (selectedAnswer?.value && selectedAnswer.value !== null) {
+      toast.error("No puedes cambiar de cuenta mientras hay un flujo activo.");
+      return;
+    }
+    onRowClick(idCuenta); // Llama a la función original si no hay flujo activo
+  };
+
   return (
     <div
       style={{
@@ -35,7 +47,7 @@ const TableMultiDeptor = ({ tableData, onRowClick }) => { // Agregamos onRowClic
             tableData.map((item, index) => (
               <tr
                 key={index}
-                onClick={() => onRowClick(item.idCuenta)} // Pasamos idCuenta al hacer clic
+                onClick={() => handleRowClick(item.idCuenta)} // Usa la nueva función handleRowClick
                 style={{ cursor: "pointer" }}
               >
                 <td>{item.idCuenta ? item.idCuenta.slice(-5) : "--"}</td>
