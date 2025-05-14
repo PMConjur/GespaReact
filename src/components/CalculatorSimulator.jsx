@@ -1670,18 +1670,20 @@ const handleRowClick = (index) => {
                                 type="text"
                                 name="montoMod"
                                 value={
-                                  modifyForm.montoMod
-                                    ? `$${modifyForm.montoMod}`
+                                  modifyForm.montoMod !== ""
+                                    ? `$${Number(modifyForm.montoMod).toFixed(
+                                        2
+                                      )}`
                                     : ""
                                 }
                                 onChange={(e) => {
                                   const value = e.target.value.replace(
                                     /^\$/,
                                     ""
-                                  ); // Elimina el '$' si ya existe
+                                  );
                                   setModifyForm((prev) => ({
                                     ...prev,
-                                    montoMod: value, // Actualiza el estado sin el '$'
+                                    montoMod: value,
                                   }));
                                 }}
                                 onKeyPress={(e) => {
