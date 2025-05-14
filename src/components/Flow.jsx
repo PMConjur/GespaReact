@@ -694,6 +694,7 @@ const Flow = () => {
         );
       }
     };
+
     //Renderiza el contenido para flujo sin componentes de comentario y llamadas para manual
 
     return (
@@ -737,7 +738,10 @@ const Flow = () => {
                   ) {
                     return (
                       <>
-                        <h5>Presiona guardar para finalizar el flujo manual</h5>
+                        <h6>
+                          Presiona guardar para finalizar el flujo para llamada
+                          manual
+                        </h6>
                       </>
                     );
                   } else {
