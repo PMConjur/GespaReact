@@ -23,13 +23,45 @@ const Managments = () => {
     return Math.ceil(dataLength / itemsPerPage);
   };
 
-  // Hook para obtener los datos
+  // Función para procesar y normalizar los datos
+  const processAndNormalizeData = (data) => {
+    return data.map((item) => {
+      let fechaInsert;
+
+      if (typeof item.Fecha_Insert === "string") {
+        const dateStr = item.Fecha_Insert.replace("12:00:00 a. m.", "").trim();
+        const [day, month, year] = dateStr.split("/");
+
+        // Convertir a formato MM/DD/AAAA para ordenamiento
+        fechaInsert = new Date(`${month}/${day}/${year}`);
+        if (isNaN(fechaInsert.getTime())) {
+          fechaInsert = new Date(0); // Fecha mínima si no es válida
+        }
+      } else if (item.Fecha_Insert instanceof Date) {
+        fechaInsert = item.Fecha_Insert;
+      } else {
+        fechaInsert = new Date(0);
+      }
+
+      // Usar directamente Segundo_Insert como Hora_Insert
+      const horaInsert = item.Segundo_Insert || "--";
+
+      return {
+        ...item,
+        Fecha_Insert: fechaInsert,
+        Hora_Insert: horaInsert, // Asignar directamente el valor de Segundo_Insert
+        fullTimestamp: `${fechaInsert.getTime()}_${horaInsert}`, // Combinar fecha y hora para ordenamiento
+      };
+    });
+  };
+
+  // Hook para obtener y procesar datos
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAndProcessData = async () => {
       if (!searchResults || searchResults.length === 0) {
-        setSortedData([]); // Limpiar datos si no hay resultados
-        setTotalResults(0); // Ajustar totalResults a 0 si no hay datos
-        setSelectedGestion(null); // Limpiar selección previa
+        setSortedData([]);
+        setTotalResults(0);
+        setSelectedGestion(null);
         return;
       }
 
@@ -43,57 +75,30 @@ const Managments = () => {
         }
 
         const gestionData = await getGestionTeData(idCartera, idCuenta);
-        console.log("Datos obtenidos de getGestionTeData:", gestionData);
+        const processedData = processAndNormalizeData(gestionData);
 
-        setSortedData(gestionData);
-        setTotalResults(gestionData.length);
+        // Ordenar por fecha y hora (fullTimestamp)
+        processedData.sort((a, b) => {
+          const [timeA, hourA] = a.fullTimestamp.split("_");
+          const [timeB, hourB] = b.fullTimestamp.split("_");
+          return timeB - timeA || hourB.localeCompare(hourA);
+        });
+
+        setSortedData(processedData);
+        setTotalResults(processedData.length);
       } catch (error) {
         console.error("Error al obtener los datos de gestión:", error);
+        toast.error("Error al cargar los datos de gestión.");
       }
     };
 
-    fetchData();
+    fetchAndProcessData();
   }, [searchResults]);
 
+  // Hook para manejar actualizaciones automáticas al detectar cambios en refreshManagments
   useEffect(() => {
-    const fetchFilteredData = async () => {
-      if (selectedPhoneFilter) {
-        const selectedPhone = selectedPhoneFilter;
-        try {
-          setIsLoading(true);
-          const idCuenta = searchResults[0]?.idCuenta;
-          const gestionData = await getGestionTeData(1, idCuenta); // Cargar datos originales
-          const filteredData = gestionData.filter(
-            (gestion) => gestion.NúmeroTelefónico === selectedPhone
-          );
-          setSortedData(filteredData); // Aplicar el filtro
-          setIsLoading(false);
-        } catch (error) {
-          console.error("Error al filtrar los datos:", error);
-          toast.error("Error al filtrar los datos. Intente nuevamente.");
-          setIsLoading(false);
-        }
-      } else {
-        // Restablecer los datos iniciales si no hay filtro
-        try {
-          setIsLoading(true);
-          const idCuenta = searchResults[0]?.idCuenta;
-          const gestionData = await getGestionTeData(1, idCuenta); // Cargar datos originales
-          setSortedData(gestionData); // Restablecer los datos iniciales
-          setIsLoading(false);
-        } catch (error) {
-          console.error("Error al restablecer los datos:", error);
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchFilteredData();
-  }, [selectedPhoneFilter, searchResults]); // Usar selectedPhoneFilter como dependencia
-
-  useEffect(() => {
-    if (refreshManagments && searchResults.length > 0) {
-      const fetchData = async () => {
+    if (refreshManagments) {
+      const fetchAndUpdateData = async () => {
         try {
           const idCartera = searchResults[0]?.idCartera;
           const idCuenta = searchResults[0]?.idCuenta;
@@ -104,21 +109,85 @@ const Managments = () => {
           }
 
           const gestionData = await getGestionTeData(idCartera, idCuenta);
-          console.log("Datos obtenidos de getGestionTeData:", gestionData);
+          const processedData = processAndNormalizeData(gestionData);
 
-          setSortedData(gestionData);
-          setTotalResults(gestionData.length);
-          setCurrentTablePage(1); // Reiniciar a la página 1
-          setPaginationGroup(0); // Reiniciar el grupo de paginación
-          setRefreshManagments(false); // Restablece el estado
+          // Ordenar por fecha y hora (fullTimestamp)
+          processedData.sort((a, b) => {
+            const [timeA, hourA] = a.fullTimestamp.split("_");
+            const [timeB, hourB] = b.fullTimestamp.split("_");
+            return timeB - timeA || hourB.localeCompare(hourA);
+          });
+
+          setSortedData(processedData);
+          setTotalResults(processedData.length);
+          setRefreshManagments(false); // Reiniciar el estado después de actualizar
         } catch (error) {
           console.error("Error al actualizar los datos de gestión:", error);
+          toast.error("Error al actualizar los datos de gestión.");
         }
       };
 
-      fetchData();
+      fetchAndUpdateData();
     }
-  }, [refreshManagments, searchResults, setRefreshManagments]); // Escucha cambios en refreshManagments
+  }, [refreshManagments, searchResults]); // Escuchar cambios en refreshManagments y searchResults
+
+  // Hook para manejar filtrado por ícono Eye
+  useEffect(() => {
+    const fetchFilteredData = async () => {
+      if (selectedPhoneFilter) {
+        try {
+          setIsLoading(true);
+          const filteredData = sortedData.filter(
+            (gestion) => gestion.NúmeroTelefónico === selectedPhoneFilter
+          );
+
+          // Ordenar los datos filtrados por fullTimestamp
+          filteredData.sort((a, b) => {
+            const [timeA, hourA] = a.fullTimestamp.split("_");
+            const [timeB, hourB] = b.fullTimestamp.split("_");
+            return timeB - timeA || hourB.localeCompare(hourA);
+          });
+
+          setSortedData(filteredData); // Actualizar los datos filtrados
+          setIsLoading(false);
+        } catch (error) {
+          console.error("Error al filtrar los datos:", error);
+          toast.error("Error al filtrar los datos.");
+          setIsLoading(false);
+        }
+      } else {
+        // Si no hay filtro, restaurar los datos originales
+        try {
+          setIsLoading(true);
+          const idCartera = searchResults[0]?.idCartera;
+          const idCuenta = searchResults[0]?.idCuenta;
+
+          if (!idCartera || !idCuenta) {
+            console.error("Error: idCartera o idCuenta no son válidos.");
+            return;
+          }
+
+          const gestionData = await getGestionTeData(idCartera, idCuenta);
+          const processedData = processAndNormalizeData(gestionData);
+
+          // Ordenar por fecha y hora (fullTimestamp)
+          processedData.sort((a, b) => {
+            const [timeA, hourA] = a.fullTimestamp.split("_");
+            const [timeB, hourB] = b.fullTimestamp.split("_");
+            return timeB - timeA || hourB.localeCompare(hourA);
+          });
+
+          setSortedData(processedData);
+          setIsLoading(false);
+        } catch (error) {
+          console.error("Error al restaurar los datos:", error);
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchFilteredData();
+  }, [selectedPhoneFilter, searchResults]); // Dependencias para ejecutar el filtro
 
   // Validar campos para evitar errores al renderizar
   const validateField = (field) => {
@@ -129,6 +198,17 @@ const Managments = () => {
       return Object.keys(field).length === 0 ? "--" : JSON.stringify(field); // Reemplazar {} por --
     }
     return field;
+  };
+
+  // Función para formatear la fecha a DD/MM/AAAA
+  const formatDateToDDMMYYYY = (date) => {
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+      return "--";
+    }
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   // Manejar la selección de un registro
@@ -180,7 +260,7 @@ const Managments = () => {
   };
 
   // Manejar el cambio de página
-  const handlePageChange = async (pageNumber) => {
+  const handlePageChange = (pageNumber) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
       setCurrentTablePage(pageNumber);
 
@@ -191,18 +271,16 @@ const Managments = () => {
       }
 
       // Cargar los datos de la página seleccionada
-      try {
-        setIsLoading(true);
-        const idCuenta = searchResults[0]?.idCuenta;
-        const pageData = await getGestionTeData(pageNumber, idCuenta);
-        setSortedData(pageData); // Reemplazar los datos en lugar de concatenarlos
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error al cargar los datos de la página:", error);
-        setToastMessage("❌ Error al cargar los datos de la página. Intente nuevamente.");
-        setShowToast(true);
-        setIsLoading(false);
-      }
+      // try {
+      //   setIsLoading(true);
+      //   const idCuenta = searchResults[0]?.idCuenta;
+      //   const pageData = await getGestionTeData(pageNumber, idCuenta);
+      //   setSortedData(pageData); // Reemplazar los datos en lugar de concatenarlos
+      //   setIsLoading(false);
+      // } catch (error) {
+      //   console.error("Error al cargar los datos de la página:", error);
+      //   setIsLoading(false);
+      // }
     }
   };
 
@@ -271,7 +349,7 @@ const Managments = () => {
                     >
                       Hora
                     </th>
-                    <th
+                    <th 
                       scope="col"
                       style={{
                         position: "sticky",
@@ -467,11 +545,11 @@ const Managments = () => {
                       >
                         <td>
                           {validateField(
-                            gestion.Fecha_Insert.replace("12:00:00 a. m.", " ")
+                            formatDateToDDMMYYYY(gestion.Fecha_Insert) // Formatear a DD/MM/AAAA
                           )}
                         </td>
-                        <td>{validateField(gestion.Segundo_Insert)}</td>
-                          <td>
+                        <td>{validateField(gestion.Hora_Insert)}</td> {/* Mostrar hora en formato HH:MM:SS */}
+                        <td>
                           {(() => {
                             const validated = validateField(gestion.NúmeroTelefónico);
                             return validated === "--" 

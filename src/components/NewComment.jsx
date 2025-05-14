@@ -1,25 +1,34 @@
-import { useState, useContext } from "react";
-import { FloatingLabel, Form, Button } from "react-bootstrap";
+import { useState, useContext, useMemo } from "react";
+import { FloatingLabel, Form, Button, Row, Col } from "react-bootstrap"; // Importa Row y Col para el diseño
 import { toast } from "sonner"; // Importa toast para mostrar mensajes
 import Validators from "./fragments/Validators"; // Importa el componente Validators
 import { AppContext } from "../pages/Managment"; // Importa el contexto para actualizar la situación
+import { commentsActions } from "../services/gespawebServices"; // Corrige la ruta de importación
 
-const CommentN = ({ comentario, isValid, onSave, handleCloseModal }) => {
+const NewComment = ({ comentario, isValid, onSave, handleCloseModal }) => {
   const [comment, setComment] = useState(comentario || ""); // Estado para el comentario
   const [valid, setValid] = useState(isValid); // Estado para la validez del comentario
   const [selectedOption, setSelectedOption] = useState(""); // Estado para el radio seleccionado
   const [showValidators, setShowValidators] = useState(false); // Estado para mostrar Validators
-  const { setSearchResults } = useContext(AppContext); // Contexto para actualizar la situación
+  const { setSearchResults, searchResults } = useContext(AppContext); // Contexto para actualizar y leer la situación
+
+  const idCuenta = useMemo(() => searchResults?.map((result) => result.idCuenta) || [], [searchResults]);
+  const responseData = useMemo(() => JSON.parse(localStorage.getItem("responseData")), []);
+  const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo.idEjecutivo;
+
+  const modificaSituacion = useMemo(() => {
+    return searchResults?.[0]?.situacion === "Rebotado"; // Verifica si la situación actual es "Rebotado"
+  }, [searchResults]);
 
   const handleChange = (e) => {
     const value = e.target.value;
-    const regex = /^[a-zA-Z\s]*$/; // Solo permite letras y espacios
+    const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/; // Permite letras, espacios y caracteres acentuados
 
     if (regex.test(value)) {
       setComment(value); // Actualiza el comentario si es válido
       setValid(true); // Marca como válido
     } else {
-      toast.warning("Los números no son válidos en el comentario."); // Muestra un mensaje de error
+      toast.warning("El comentario contiene caracteres no permitidos."); // Muestra un mensaje de error
       setValid(false); // Marca como no válido
     }
   };
@@ -44,7 +53,7 @@ const CommentN = ({ comentario, isValid, onSave, handleCloseModal }) => {
     }
   };
 
-  const handleValidate = () => {
+  const handleValidate = async () => {
     let prefixedComment = comment;
 
     switch (selectedOption) {
@@ -56,7 +65,6 @@ const CommentN = ({ comentario, isValid, onSave, handleCloseModal }) => {
         break;
       case "rebotado":
         prefixedComment = `Situación: Reporte de Pago ->Rebotado - ${comment}`;
-        // Actualiza la situación en el contexto
         setSearchResults((prevResults) => {
           const updatedResults = [...prevResults];
           if (updatedResults[0]) {
@@ -69,12 +77,31 @@ const CommentN = ({ comentario, isValid, onSave, handleCloseModal }) => {
         break;
     }
 
-    onSave(prefixedComment); // Envía el comentario con prefijo al componente padre
-    toast.success("Comentario guardado correctamente.");
-    setComment(""); // Limpia el campo de comentario
-    setSelectedOption(""); // Limpia la selección del radio
-    setShowValidators(false); // Oculta el componente Validators
-    handleCloseModal(); // Cierra el modal de comentarios justo después de enviar la data
+    const payload = {
+      idCartera: 1,
+      idCuenta: idCuenta[0]?.trim(),
+      idEjecutivo: idEjecutivo, 
+      comentario: prefixedComment,
+      modificaSituacion: selectedOption === "rebotado",
+    };
+
+    console.log("Payload para API:", payload);
+
+    try {
+      const response = await commentsActions(payload); // Llama al endpoint con el payload
+      console.log("Respuesta del endpoint:", response); // Muestra la respuesta en consola
+      toast.success(response.mensaje || "Comentario guardado correctamente."); // Muestra el mensaje del endpoint
+
+      // Actualizar el estado global para reflejar el nuevo registro
+      setSearchResults((prevResults) => [...prevResults]);
+
+      setComment("");
+      setSelectedOption("");
+      setShowValidators(false);
+      handleCloseModal();
+    } catch (error) {
+      toast.error(error.message || "Error al guardar el comentario.");
+    }
   };
 
   return (
@@ -92,46 +119,53 @@ const CommentN = ({ comentario, isValid, onSave, handleCloseModal }) => {
         </FloatingLabel>
       </Form.Group>
 
-      <Form.Group className="mt-3">
-        <Form.Check
-          type="radio"
-          label="Revisión"
-          value="revision"
-          name="commentType"
-          onChange={handleRadioChange}
-          checked={selectedOption === "revision"}
-        />
-        <Form.Check
-          type="radio"
-          label="2da voz"
-          value="segundaVoz"
-          name="commentType"
-          onChange={handleRadioChange}
-          checked={selectedOption === "segundaVoz"}
-        />
-        <Form.Check
-          type="radio"
-          label="Rebotado"
-          value="rebotado"
-          name="commentType"
-          onChange={handleRadioChange}
-          checked={selectedOption === "rebotado"}
-        />
-      </Form.Group>
-
-      <Button
-        variant="primary"
-        className="mt-3"
-        disabled={!valid}
-        onClick={handleSave}
-      >
-        Guardar Comentario
-      </Button>
+      <Row className="mt-3 justify-content-center align-items-center">
+        <Col xs="auto">
+          <Form.Check
+            type="radio"
+            label="Revisión"
+            value="revision"
+            name="commentType"
+            onChange={handleRadioChange}
+            checked={selectedOption === "revision"}
+          />
+        </Col>
+        <Col xs="auto">
+          <Form.Check
+            type="radio"
+            label="2da voz"
+            value="segundaVoz"
+            name="commentType"
+            onChange={handleRadioChange}
+            checked={selectedOption === "segundaVoz"}
+          />
+        </Col>
+        <Col xs="auto">
+          <Form.Check
+            type="radio"
+            label="Rebotado"
+            value="rebotado"
+            name="commentType"
+            onChange={handleRadioChange}
+            checked={selectedOption === "rebotado"}
+            disabled={modificaSituacion} // Deshabilita si modificaSituacion es true
+          />
+        </Col>
+        <Col xs="auto">
+          <Button
+            variant="primary"
+            disabled={!valid}
+            onClick={handleSave}
+          >
+            Guardar Comentario
+          </Button>
+        </Col>
+      </Row>
 
       {showValidators && (
         <Validators
           show={showValidators}
-          handleClose={() => setShowValidators(false)}
+          handleClose={handleCloseModal} // Asegúrate de pasar handleCloseModal correctamente
           handleValidate={handleValidate}
         />
       )}
@@ -139,4 +173,4 @@ const CommentN = ({ comentario, isValid, onSave, handleCloseModal }) => {
   );
 };
 
-export default CommentN;
+export default NewComment;
