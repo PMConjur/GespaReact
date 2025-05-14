@@ -32,40 +32,71 @@ const SearchTable = () => {
 
     loadTableData();
   }, [searchResults]);
-
   const mapResponseToTableData = (response) => {
     return response.map((item) => ({
-      Fecha: JSON.stringify(item.Fecha_Insert || "--"),
-      Hora: JSON.stringify(item.Segundo_Insert || "--"),
-      Ejecutivo: JSON.stringify(item.Ejecutivo || "--"),
-      Dato: JSON.stringify(item.Dato || "--"),
-      DatoBuscado: JSON.stringify(item.DatoBuscado || "--"),
-      Fuente: JSON.stringify(item.Fuente || "--"),
-      Encontrado: JSON.stringify(item._Encontrado === "✓" ? "Sí" : "No"),
-      Telefonos: JSON.stringify(item.Teléfonos || "--"),
+      Fecha: JSON.stringify(item.Fecha_Insert || "--")
+        .replace(/(^"|"$|{|})/g, "")
+        .trim(),
+      Hora: JSON.stringify(item.Segundo_Insert || "--")
+        .replace(/(^"|"$|{|})/g, "")
+        .trim(),
+      Ejecutivo: JSON.stringify(item.Ejecutivo || "--")
+        .replace(/(^"|"$|{|})/g, "")
+        .trim(),
+      Dato: JSON.stringify(item.Dato || "--")
+        .replace(/(^"|"$|{|})/g, "")
+        .trim(),
+      DatoBuscado: JSON.stringify(item.DatoBuscado || "--")
+        .replace(/(^"|"$|{|})/g, "")
+        .trim(),
+      Fuente: JSON.stringify(item.Fuente || "--")
+        .replace(/(^"|"$|{|})/g, "")
+        .trim(),
+      Encontrado: JSON.stringify(item._Encontrado === "✓" ? "Sí" : "No")
+        .replace(/(^"|"$|{|})/g, "")
+        .trim(),
+      Telefonos: JSON.stringify(item.Teléfonos || "--")
+        .replace(/(^"|"$|{|})/g, "")
+        .trim(),
       Persona:
         typeof item.Persona === "string" && item.Persona.trim() !== ""
           ? JSON.stringify(item.Persona)
-          : JSON.stringify("--"),
+              .replace(/(^"|"$|{|})/g, "")
+              .trim()
+          : "--",
       Puesto:
         typeof item.Puesto === "string" && item.Puesto.trim() !== ""
           ? JSON.stringify(item.Puesto)
-          : JSON.stringify("--"),
+              .replace(/(^"|"$|{|})/g, "")
+              .trim()
+          : "--",
       Lugar:
         typeof item.Lugar === "string" && item.Lugar.trim() !== ""
           ? JSON.stringify(item.Lugar)
-          : JSON.stringify("--"),
-      idEjecutivo: JSON.stringify(item.idEjecutivo || "--"),
+              .replace(/(^"|"$|{|})/g, "")
+              .trim()
+          : "--",
+      idEjecutivo: JSON.stringify(item.idEjecutivo || "--")
+        .replace(/(^"|"$|{|})/g, "")
+        .trim(),
       InfoEncontrada:
         item.InfoEncontrada && Object.keys(item.InfoEncontrada).length > 0
           ? JSON.stringify(item.InfoEncontrada)
-          :"--",
-      Confirmado: JSON.stringify(item._Confirmado === "✓" ? "Sí" : "No"),
+              .replace(/(^"|"$|{|})/g, "")
+              .trim()
+          : "--",
+      Confirmado: JSON.stringify(item._Confirmado === "✓" ? "Sí" : "No")
+        .replace(/(^"|"$|{|})/g, "")
+        .trim(),
       Link:
         typeof item.Link === "string" && item.Link.trim() !== ""
           ? JSON.stringify(item.Link.replace("string", " "))
-          : JSON.stringify("--"),
+              .replace(/(^"|"$|{|})/g, "")
+              .trim()
+          : "--",
       idDato: JSON.stringify(item.idDato || "--")
+        .replace(/(^"|"$|{|})/g, "")
+        .trim()
     }));
   };
 

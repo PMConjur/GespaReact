@@ -83,7 +83,7 @@ function DropdownInfo() {
             Multideudores
           </Dropdown.Item>
           <Dropdown.Item
-            //onClick={handleShowAddresses}
+            onClick={handleShowAddresses}
             className="custom-dropdown-item"
           >
             Domicilios
@@ -107,7 +107,7 @@ function DropdownInfo() {
             Pagos
           </Dropdown.Item>
           <Dropdown.Item
-            //onClick={handleShowAddress}
+            onClick={handleShowAddress}
             className="custom-dropdown-item"
           >
             Address
