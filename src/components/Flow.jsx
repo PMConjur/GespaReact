@@ -85,7 +85,7 @@ const Flow = () => {
   const handleOpenOnlineCharge = () => setShowOnlineCharge(true); // Abre el modal OnlineCharge
   const handleCloseOnlineCharge = () => {
     console.log("Cerrando OnlineCharge...");
-    setShowOnlineCharge(false); // Cierra el modal OnlineCharge  
+    setShowOnlineCharge(false); // Cierra el modal OnlineCharge
   };
 
   const handleStopTimer = () => {
@@ -284,7 +284,9 @@ const Flow = () => {
       idSituacion: idSituacion ? idSituacion : null,
       idSucursal: 0,
       extension: 0,
-      idModo: isFromTableAditionals ? 2206 : parseInt(selectedAnswer.dataPhone.idModo, 10), // Asegura que sea int y usa 2206 si es de TableAditionals
+      idModo: isFromTableAditionals
+        ? 2206
+        : parseInt(selectedAnswer.dataPhone.idModo, 10), // Asegura que sea int y usa 2206 si es de TableAditionals
       idAcercamiento: idAcercamiento ? idAcercamiento : null,
       duracion, // Usa el tiempo del cronómetro interno
       tiempoEnCuenta, // Usa el tiempo capturado por TimmerAccount
@@ -295,7 +297,10 @@ const Flow = () => {
     };
 
     console.log("Datos de gestión a guardar:", dataManagment);
-    if (dataManagment.numeroTelefonico === "0" && dataManagment.idModo === 2201) {
+    if (
+      dataManagment.numeroTelefonico === "0" &&
+      dataManagment.idModo === 2201
+    ) {
       toast.error("El número telefónico no puede quedar vacío.");
       return;
     } else {
@@ -690,7 +695,7 @@ const Flow = () => {
       }
     };
     //Renderiza el contenido para flujo sin componentes de comentario y llamadas para manual
-   
+
     return (
       <Card className="flow-size" border="primary">
         <Card.Header className="text-white">
@@ -732,7 +737,7 @@ const Flow = () => {
                   ) {
                     return (
                       <>
-                        <h5>Presiona guardar para finalizar el flujo</h5>
+                        <h5>Presiona guardar para finalizar el flujo manual</h5>
                       </>
                     );
                   } else {
@@ -813,7 +818,11 @@ const Flow = () => {
       setIsCommentValid(true); // Marca el comentario como válido
     }
   }, [isFlowFinished, selectedAnswer, idContacto, valueContestaron]);
+  // console.log("isFlowFinished:", isFlowFinished);
+  // console.log("valueContestaron:", valueContestaron);
+  // console.log("idContacto:", idContacto);
 
+  // console.log("isCommentValid:", isCommentValid);
   return renderMainContent();
 };
 
