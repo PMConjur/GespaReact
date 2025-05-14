@@ -10,12 +10,15 @@ const NewComment = ({ comentario, isValid, onSave, handleCloseModal }) => {
   const [valid, setValid] = useState(isValid); // Estado para la validez del comentario
   const [selectedOption, setSelectedOption] = useState(""); // Estado para el radio seleccionado
   const [showValidators, setShowValidators] = useState(false); // Estado para mostrar Validators
-  const { setSearchResults } = useContext(AppContext); // Contexto para actualizar la situación
-  const { searchResults } = useContext(AppContext);
+  const { setSearchResults, searchResults } = useContext(AppContext); // Contexto para actualizar y leer la situación
 
   const idCuenta = useMemo(() => searchResults?.map((result) => result.idCuenta) || [], [searchResults]);
   const responseData = useMemo(() => JSON.parse(localStorage.getItem("responseData")), []);
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo.idEjecutivo;
+
+  const modificaSituacion = useMemo(() => {
+    return searchResults?.[0]?.situacion === "Rebotado"; // Verifica si la situación actual es "Rebotado"
+  }, [searchResults]);
 
   const handleChange = (e) => {
     const value = e.target.value;
@@ -145,6 +148,7 @@ const NewComment = ({ comentario, isValid, onSave, handleCloseModal }) => {
             name="commentType"
             onChange={handleRadioChange}
             checked={selectedOption === "rebotado"}
+            disabled={modificaSituacion} // Deshabilita si modificaSituacion es true
           />
         </Col>
         <Col xs="auto">
