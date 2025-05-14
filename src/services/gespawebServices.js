@@ -1725,3 +1725,22 @@ export const saveNotesToAPI = async (notes) => {
 };
 
 
+export const commentsActions = async (data) => {
+  try {
+    const response = await servicio.post(`/ejecutivo/accionesComentarios`, data);
+
+    if (response.status !== 200) {
+      throw new Error(`Error en la respuesta. Estado: ${response.status}`);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error en commentsActions:", error);
+    if (error.response) {
+      const errorMessage =
+        error.response.data?.mensaje || "Error al crear Comentarios";
+      throw new Error(errorMessage);
+    }
+    throw error;
+  }
+};

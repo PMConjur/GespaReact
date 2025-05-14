@@ -63,7 +63,7 @@ const Managment = () => {
       const response = await searchCustomer(filter, searchTerm);
       setSearchResults(response.listaResultados || []);
       if (response.listaResultados?.length > 0) {
-        setRefreshManagments(true); // Notificar cambios
+        setRefreshManagments(true); // Notificar cambios a Managments.jsx
       }
     } catch (error) {
       console.error("Error fetching search results:", error);
@@ -147,7 +147,7 @@ const handleAutomaticSearch = async () => {
       const results = await searchByAccount(idCuenta); // Llamada al endpoint
       setSearchResults(results); // Actualizamos los resultados de búsqueda
       if (results.length > 0) {
-        setRefreshManagments(true); // Notificar cambios
+        setRefreshManagments(true); // Notificar cambios a Managments.jsx
       }
       console.log("Resultados de búsqueda:", results);
     } catch (error) {
