@@ -30,6 +30,7 @@ using NoriAPI.Models.Ofrecimiento;
 using Microsoft.IdentityModel.Tokens;
 using System.Text.RegularExpressions;
 using System.Text;
+using NoriAPI.Models.Domicilios;
 
 
 
@@ -100,6 +101,7 @@ namespace NoriAPI.Services
 
 		Task<DataTable> ObtieneGestionTeAsync(int idCartera, string idCuenta, int Top);
 		Task ObtenerDomicilios(DataRow drDatos, DataSet dsTablas);
+		Task<IEnumerable<dynamic>> IdCodigosPostales(int idCodigoPostal);
 		DataTable ObtieneGestionesDelDia(int idEjecutivo);
 
 		#region Scripts
@@ -4332,6 +4334,22 @@ namespace NoriAPI.Services
 			domiciliosGet.TableName = "Domicilios";
 			dsTablas.Tables.Add(domiciliosGet);
 		}
+
+		public async Task<IEnumerable<dynamic>> IdCodigosPostales(int idCodigoPostal)
+		{
+			using var connection = new SqlConnection(_connectionString);
+
+			string query = @"
+			SELECT * 
+			FROM dbAllocation..CódigosPostales WITH (NOLOCK)
+			WHERE idCódigoPostal = @IdCodigoPostal";
+
+			var result = await connection.QueryAsync(query, new { IdCodigoPostal = idCodigoPostal });
+
+			return result;
+		}
+
+
 		public DataTable ObtieneGestionesDelDia(int idEjecutivo) // Cambiado a DataTable y eliminado async
 		{
 			DataTable tblDelDía = new DataTable();

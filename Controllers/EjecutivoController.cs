@@ -839,6 +839,21 @@ namespace NoriAPI.Controllers
 			}
 		}
 
+		[HttpGet("busca-codigos-postales/{idCodigoPostal}")]
+		[AllowAnonymous]
+		public async Task<IActionResult> BuscaCodigosPostales(int idCodigoPostal)
+		{
+			var codigosPostales = await _ejecutivoService.IdCodigosPostales(idCodigoPostal);
+
+			if (codigosPostales == null || !codigosPostales.Any())
+			{
+				return BadRequest(new { Mensaje = "No se encontraron códigos postales." });
+			}
+
+			return Ok(codigosPostales);
+		}
+
+
 		[HttpGet("gestionesDelDia/{idEjecutivo}")]
 		public IActionResult ObtieneGestionesDelDia(int idEjecutivo)
 		{
