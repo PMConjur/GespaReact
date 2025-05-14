@@ -317,7 +317,7 @@ const handleAutomaticSearch = async () => {
                 </Row>
                 <Row>
                   <Col xs={12}>
-                    <Managments />
+                    {/* <Managments /> */}
                   </Col>
                 </Row>
               </Container>
