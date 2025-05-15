@@ -16,7 +16,6 @@ import Managments from "../components/Managments";
 import NotesWidget from "../components/NotesWidget";
 import { searchCustomer, searchCustomers, automaticSearchEjecutivo, searchByAccount } from "../services/gespawebServices";
 import StickyTimmer from "../components/StickyTimmer";
-import { se } from "date-fns/locale";
 
 export const AppContext = createContext();
 
@@ -294,7 +293,7 @@ const handleAutomaticSearch = async () => {
                 </Row>
                 <Row>
                   <Col xs={12}>
-                    <Managments />
+                     <Managments />
                   </Col>
                 </Row>
               </Container>
