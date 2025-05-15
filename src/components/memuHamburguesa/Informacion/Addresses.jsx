@@ -772,12 +772,17 @@ const Addresses = ({ show, handleClose }) => {
       return;
     }
 
+    // Validar que el código postal sea válido (5 dígitos)
+    if (!/^\d{5}$/.test(formData.codigoPostal)) {
+      toast.error("Ingrese un código postal válido (5 dígitos).");
+      return;
+    }
+
     // Validar si la dirección ya existe en los datos locales
     const isDuplicate = existingAddresses.some(
       (address) =>
         address.calle === formData.calle &&
-        address.númeroExterior === formData.numExt 
-        //address.códigoPostal === formData.codigoPostal
+        address.númeroExterior === formData.numExt
     );
 
     if (isDuplicate) {
@@ -794,7 +799,7 @@ const Addresses = ({ show, handleClose }) => {
       calle: formData.calle,
       numeroExterior: formData.numExt,
       numeroInterior: formData.numInt || "0", // Valor predeterminado
-      codigoPostal: formData.codigoPostal,
+      idCodigoPostal: formData.codigoPostal, // Cambiado de codigoPostal a idCodigoPostal
       colonia: formData.colonia,
       municipio: formData.municipio,
       estado: formData.estado,
@@ -805,7 +810,10 @@ const Addresses = ({ show, handleClose }) => {
 
     try {
       setIsLoading(true);
-      const response = await servicio.put("/search-customer/save-new-address", payload);
+      const response = await servicio.post(
+        "/search-customer/save-new-address",
+        payload
+      );
       toast.success("Dirección guardada exitosamente.");
       console.log("Respuesta del servidor:", response.data);
 
@@ -819,8 +827,8 @@ const Addresses = ({ show, handleClose }) => {
       console.error("Error al guardar la dirección:", error);
 
       // Manejar errores específicos
-      if (error.response?.status === 503 && error.response?.data?.errors?.includes("Violation of UNIQUE KEY")) {
-        toast.error("La dirección ya existe en la base de datos. No se puede duplicar.");
+      if (error.response?.status === 400 && error.response?.data?.message) {
+        toast.error(error.response.data.message);
       } else {
         toast.error("No se pudo guardar la dirección. Intente nuevamente.");
       }
@@ -965,7 +973,7 @@ const Addresses = ({ show, handleClose }) => {
                 <Form.Label>Ingrese ID Código Postal</Form.Label>
                 <Form.Control
                   type="text"
-                  value={formData.idCódigoPostal}
+                  value={formData.códigoPostal}
                   onChange={handleIdCodigoPostalChange}
                   placeholder="Ingrese el ID Código Postal"
                 />
