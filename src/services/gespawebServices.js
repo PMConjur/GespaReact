@@ -1645,13 +1645,13 @@ export const fetchAddress = async (idCartera, idCuenta) => {
 
 
 //endpoint domicilios
-export const fetchPostalCodes = async (idCodigoPostal) => {
+export const fetchPostalCodes = async (codigoPostal) => {
   try {
     console.log("Llamando al endpoint codigos postales");
-    console.log("Parámetros enviados: idCodigoPostal:", idCodigoPostal);
+    console.log("Parámetros enviados: CodigoPostal:", codigoPostal);
 
-    const response = await servicio.get(`/search-customer/search-postal-code?codigoPostal=${idCodigoPostal}`, {
-      params: { idCodigoPostal} // Usa parámetros de consulta
+    const response = await servicio.get(`/search-customer/search-postal-code?codigoPostal=${codigoPostal}`, {
+      params: { codigoPostal} // Usa parámetros de consulta
     });
 
     console.log("Respuesta recibida de postal codes:", response);
@@ -1667,6 +1667,64 @@ export const fetchPostalCodes = async (idCodigoPostal) => {
     return result;
   } catch (error) {
     console.error("Error en Postales:", error);
+    throw error;
+  }
+};
+
+
+//endpoint domicilios
+export const fetchPostalCodesId = async (idCodigoPostal) => {
+  try {
+    console.log("Llamando al endpoint id códigos postales");
+    console.log("Parámetros enviados: idCódigoPostal:", idCodigoPostal);
+
+    // Codificar correctamente el parámetro
+    const response = await servicio.get(`/ejecutivo/busca-codigos-postales`, {
+      params: { idCodigoPostal: encodeURIComponent(idCodigoPostal) } // Codificar el valor
+    });
+
+    console.log("Respuesta recibida de postal codes:", response);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Id Postales: ${response.status}`
+      );
+    }
+
+    const result = response.data;
+    console.log("Validación recibida id Postales:", result);
+    return result;
+  } catch (error) {
+    console.error("Error en id Postales:", error);
+    throw error;
+  }
+};
+
+//endpoint domicilios
+export const fetchPostalCodesById = async (idCodigoPostal) => {
+  try {
+    console.log("Llamando al endpoint id códigos postales");
+    console.log("Parámetros enviados: idCódigoPostal:", idCodigoPostal);
+
+    const response = await servicio.get(`/ejecutivo/busca-codigos-postales`, {
+      params: { idCodigoPostal } // Usar parámetros correctamente
+    });
+
+    console.log("Respuesta recibida de postal codes:", response);
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Error en la respuesta de la API. Id Postales: ${response.status}`
+      );
+    }
+
+    return response.data;
+  } catch (error) {
+    if (error.response?.status === 404) {
+      console.warn(`No se encontraron datos para el idCódigoPostal: ${idCodigoPostal}.`);
+      return []; // Retornar un array vacío si no se encuentran datos
+    }
+    console.error("Error en id Postales:", error);
     throw error;
   }
 };

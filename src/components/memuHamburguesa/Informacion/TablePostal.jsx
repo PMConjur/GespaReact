@@ -1,27 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Table } from "react-bootstrap";
-import { fetchPostalCodes } from "../../../services/gespawebServices"; // Importar el servicio
 
-const TablePostal = ({ idCodigoPostal }) => {
-  const [postalData, setPostalData] = useState([]);
-
-  useEffect(() => {
-    const loadPostalCodes = async () => {
-      if (idCodigoPostal) {
-        console.log("Cargando códigos postales para idCodigoPostal:", idCodigoPostal);
-        try {
-          const response = await fetchPostalCodes(idCodigoPostal);
-          console.log("Respuesta de fetchPostalCodes:", response);
-          setPostalData(response.codigosPostales || []);
-        } catch (error) {
-          console.error("Error al cargar códigos postales:", error);
-        }
-      }
-    };
-
-    loadPostalCodes();
-  }, [idCodigoPostal]);
-
+const TablePostal = ({ postalTableData, handlePostalRowClick, renderCell }) => {
   return (
     <div
       className="scroll-container"
@@ -53,7 +33,7 @@ const TablePostal = ({ idCodigoPostal }) => {
           }}
         >
           <tr style={{ height: "55px" }}>
-            <th>idCódigoPostal</th>
+            <th>Id código Postal</th>
             <th>Código Postal</th>
             <th>Colonia</th>
             <th>Municipio</th>
@@ -67,19 +47,23 @@ const TablePostal = ({ idCodigoPostal }) => {
           </tr>
         </thead>
         <tbody>
-          {postalData?.map((item, index) => (
-            <tr key={index} onClick={() => console.log("Fila seleccionada:", item)}>
-              <td>{item.idCódigoPostal || ""}</td>
-              <td>{item.códigoPostal || ""}</td>
-              <td>{item.colonia || ""}</td>
-              <td>{item.municipio || ""}</td>
-              <td>{item.estado || ""}</td>
-              <td>{item.zona || ""}</td>
-              <td>{item.asentamiento || ""}</td>
-              <td>{item.periferia || ""}</td>
-              <td>{item.estancia || ""}</td>
-              <td>{item.sucursal || ""}</td>
-              <td>{item.zonaRiesgo ? "Sí" : "No"}</td>
+          {postalTableData?.map((item, index) => (
+            <tr
+              key={index}
+              onClick={() => handlePostalRowClick(item)}
+              style={{ cursor: "pointer" }}
+            >
+              <td>{renderCell(item.idCódigoPostal)}</td>
+              <td>{renderCell(item.códigoPostal)}</td>
+              <td>{renderCell(item.colonia)}</td>
+              <td>{renderCell(item.municipio)}</td>
+              <td>{renderCell(item.estado)}</td>
+              <td>{renderCell(item.zona)}</td>
+              <td>{renderCell(item.asentamiento)}</td>
+              <td>{renderCell(item.periferia)}</td>
+              <td>{renderCell(item.estancia)}</td>
+              <td>{renderCell(item.sucursal)}</td>
+              <td>{renderCell(item.zonaRiesgo ? "Sí" : "No")}</td>
             </tr>
           ))}
         </tbody>

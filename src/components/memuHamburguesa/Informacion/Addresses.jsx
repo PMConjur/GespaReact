@@ -12,7 +12,9 @@ import { toast } from "sonner";
 import servicio from "../../../services/axiosServices";
 import { AppContext } from "../../../pages/Managment"; // Asegúrate de que la ruta sea correcta
 import { formatearFecha } from "../../ValoresCatalogos.js";
-import MergeTable from "./MergeTable"; // Importar el componente MergeTable
+import TablePostal from "./TablePostal"; // Importar el nuevo componente
+import FormularioDom from "./FormularioDom"; // Importar el nuevo componente
+import { fetchPostalCodesById } from "../../../services/gespawebServices";
 
 const Addresses = ({ show, handleClose }) => {
   const { searchResults } = useContext(AppContext); // Obtén el contexto
@@ -26,6 +28,7 @@ const Addresses = ({ show, handleClose }) => {
     origen: "Gestión",
     fecha: "",
     codigoPostal: "",
+    idCódigoPostal: "",
   });
   const [selectedGestion, setSelectedGestion] = useState(null);
   const [tableData, setTableData] = useState([]);
@@ -47,7 +50,7 @@ const Addresses = ({ show, handleClose }) => {
     },
   ]); // Registro en blanco como índice 0
   const [isPostalTableVisible, setIsPostalTableVisible] = useState(false);
-  const [postalTableData, setPostalTableData] = useState([]);
+  const [postalTableData, setPostalTableData] = useState([]); // Tabla de postales basada en código postal
   const [selectedDomicilio, setSelectedDomicilio] = useState(null);
   const [clase, setClase] = useState(""); // Agregar esta línea
   const [isEstadoVisible, setIsEstadoVisible] = useState(false); // Agregar esta línea
@@ -58,6 +61,7 @@ const Addresses = ({ show, handleClose }) => {
   const [isIdentifyButtonDisabled, setIsIdentifyButtonDisabled] = useState(true); // Nuevo estado para controlar el botón "Identificar"
   const [existingAddresses, setExistingAddresses] = useState([]); // Nuevo estado para almacenar direcciones existentes
   const [currentIndex, setCurrentIndex] = useState(0); // Índice actual del elemento seleccionado
+  const [postalCodesByIdData, setPostalCodesByIdData] = useState([]); // Tabla basada en idCódigoPostal
   // Obtener el idCuenta del primer resultado de searchResults
   const idCuenta = searchResults.length > 0 ? searchResults[0].idCuenta : null;
   const responseData = JSON.parse(localStorage.getItem("responseData"));
@@ -71,6 +75,31 @@ const Addresses = ({ show, handleClose }) => {
       compareAndReplacePostalCodes(); // Llama a la función aquí
     }
   }, [show]);
+
+  useEffect(() => {
+    if (formData.idCódigoPostal) {
+      loadPostalCodesById(formData.idCódigoPostal);
+    }
+  }, [formData.idCódigoPostal]);
+
+  useEffect(() => {
+    if (postalCodesByIdData.length > 0) {
+      const firstItem = postalCodesByIdData[0]; // Tomar el primer elemento de la tabla Postal por ID
+      setFormData((prev) => ({
+        ...prev,
+        codigoPostal: firstItem.CódigoPostal || "", // Actualizar C.Postal
+        municipio: firstItem.Municipio || "", // Actualizar Delegación / Municipio
+        estado: firstItem.Estado || "", // Actualizar Estado
+      }));
+
+      // Actualizar la tabla Postal con el nuevo Código Postal
+      if (firstItem.CódigoPostal) {
+        loadPostalCodesByText(firstItem.CódigoPostal);
+      }
+
+      toast.info("Datos cargados automáticamente desde la tabla Postal por ID.");
+    }
+  }, [postalCodesByIdData]); // Ejecutar cuando postalCodesByIdData cambie
 
   const fetchAddressData = async () => {
     if (!idCuenta) {
@@ -158,14 +187,16 @@ const Addresses = ({ show, handleClose }) => {
       const response = await servicio.get(`/search-customer/search-postal-code?codigoPostal=${codigoPostal}`);
       if (response.data.codigosPostales?.length === 0) {
         toast.error("Sin colonias para este Código Postal.");
+        setPostalTableData([]); // Limpiar la tabla si no hay datos
         return;
       }
-      setPostalTableData(response.data.codigosPostales);
+      setPostalTableData(response.data.codigosPostales); // Actualizar los datos en TablePostal
       toast.success("Códigos postales cargados correctamente.");
     } catch (error) {
       if (error.response?.status === 404) {
-        console.warn(`Código postal no encontrado: ${codigoPostal}. Detalles: ${error.response.data?.mensaje || "Sin detalles"}`);
-        // toast.info("No se encontró información relacionada a ese código postal.");
+        console.warn(`Código postal no encontrado: ${codigoPostal}.`);
+        toast.info("No se encontró información relacionada a ese código postal.");
+        setPostalTableData([]); // Limpiar la tabla si no hay datos
       } else {
         console.error("Error al cargar códigos postales:", error);
         toast.error("Falló al obtener los Códigos Postales.");
@@ -176,35 +207,22 @@ const Addresses = ({ show, handleClose }) => {
   // Función para cargar códigos postales por ID
   const loadPostalCodesById = async (idCodigoPostal) => {
     try {
-      const response = await servicio.get(`/search-customer/search-postal-code?codigoPostal=${idCodigoPostal}`);
-      if (response.data.codigosPostales?.length === 0) {
-        toast.error("No se encontraron datos para el Código Postal.");
+      // Construir la URL correctamente con el idCódigoPostal como parte de la ruta
+      const response = await servicio.get(`/ejecutivo/busca-codigos-postales/${idCodigoPostal}`);
+      
+      // Verificar si la respuesta contiene datos
+      if (!response.data || response.data.length === 0) {
+        toast.info(`No se encontraron datos para el idCódigoPostal: ${idCodigoPostal}.`);
+        setPostalCodesByIdData([]); // Limpiar la tabla si no hay datos
         return;
       }
 
-      const postalInfo = response.data.codigosPostales[0];
-      setFormData((prev) => ({
-        ...prev,
-        codigoPostal: postalInfo.códigoPostal || "",
-        colonia: postalInfo.colonia || "",
-        municipio: postalInfo.municipio || "",
-        estado: postalInfo.estado || "",
-        zona: postalInfo.zona || "",
-        asentamiento: postalInfo.asentamiento || "",
-        periferia: postalInfo.periferia || "",
-        estancia: postalInfo.estancia || "",
-        sucursal: postalInfo.sucursal || "",
-        zonaRiesgo: postalInfo.zonaRiesgo ? "Sí" : "No",
-      }));
-      toast.success("Datos del Código Postal cargados correctamente.");
+      // Actualizar el estado con los datos recibidos
+      setPostalCodesByIdData(response.data);
+      toast.success("Datos cargados correctamente para el idCódigoPostal.");
     } catch (error) {
-      if (error.response?.status === 404) {
-        console.warn(`Código postal no encontrado: ${idCodigoPostal}. Detalles: ${error.response.data?.mensaje || "Sin detalles"}`);
-        toast.info("No se encontró información relacionada a ese código postal.");
-      } else {
-        console.error("Error al cargar datos del Código Postal:", error);
-        toast.error("Falló al obtener los datos del Código Postal.");
-      }
+      console.error("Error al cargar datos para idCódigoPostal:", error);
+      toast.error("No se pudo cargar la información del idCódigoPostal.");
     }
   };
 
@@ -217,6 +235,35 @@ const Addresses = ({ show, handleClose }) => {
         loadPostalCodesByText(inputValue);
       }
     }
+  };
+
+  const handleIdCodigoPostalChange = (e) => {
+    const inputValue = e.target.value;
+    if (/^\d*$/.test(inputValue)) { // Permitir solo números
+      setFormData({ ...formData, idCódigoPostal: inputValue });
+      if (inputValue) {
+        loadPostalCodesById(inputValue); // Llamar al endpoint cuando se ingrese un valor
+      }
+    }
+  };
+
+  const handlePostalIdRowClick = (item) => {
+    console.log("Fila seleccionada en tabla Postal por ID:", item); // Log para depuración
+  
+    // Actualizar los valores en el formulario
+    setFormData((prev) => ({
+      ...prev,
+      codigoPostal: item.CódigoPostal || "", // Actualizar C.Postal
+      municipio: item.Municipio || "", // Actualizar Delegación / Municipio
+      estado: item.Estado || "", // Actualizar Estado
+    }));
+  
+    // Actualizar la tabla Postal con el nuevo Código Postal
+    if (item.CódigoPostal) {
+      loadPostalCodesByText(item.CódigoPostal);
+    }
+  
+    toast.info("Datos cargados desde la tabla Postal por ID.");
   };
 
   // Función para identificar domicilio
@@ -681,6 +728,7 @@ const Addresses = ({ show, handleClose }) => {
         numExt: item.númeroExterior || "",
         numInt: item.númeroInterior || "",
         códigoPostal: item.códigoPostal, // Mantener el código postal actual
+        idCódigoPostal: item.idCódigoPostal || "", // Asegurar que se pinte el valor en el formulario
         colonia: item.coloniaLocalidad || "",
         municipio: item.delegaciónMunicipio || "",
         estado: item.estado || "",
@@ -809,7 +857,8 @@ const Addresses = ({ show, handleClose }) => {
         calle: item.calle || "",
         numExt: item.númeroExterior || "",
         numInt: item.númeroInterior || "",
-        códigoPostal: item.códigoPostal,
+        codigoPostal: item.códigoPostal,
+        idCódigoPostal: item.idCódigoPostal || "", // Asegurar que se pinte el valor en el formulario
         colonia: item.coloniaLocalidad || "",
         municipio: item.delegaciónMunicipio || "",
         estado: item.estado || "",
@@ -900,317 +949,89 @@ const Addresses = ({ show, handleClose }) => {
       <Modal.Body>
         <Container fluid>
           <Row>
-            {/* Tabla de postales a la izquierda */}
-            <Col md={8}>
+            {/* Tabla de postales basada en código postal */}
+            <Col md={6}>
               <h4>Postal</h4>
-              <div
-                className="scroll-container"
-                style={{
-                  width: "100%",
-                  maxHeight: "350px",
-                  overflowY: "auto",
-                  display: "flex",
-                  backgroundColor: "#343a40",
-                  color: "#ffffff",
-                  scrollbarColor: "#6c757d #343a40",
-                  scrollbarWidth: "thin",
-                }}
-              >
-                <Table
-                  striped
-                  bordered
-                  hover
-                  responsive
-                  variant="dark"
-                  style={{ fontSize: "13px" }}
-                >
-                  <thead
-                    style={{
-                      position: "sticky",
-                      top: 0,
-                      zIndex: 1,
-                      backgroundColor: "#343a40",
-                    }}
-                  >
-                    <tr style={{ height: "55px" }}>
-                      <th>Id código Postal</th>
-                      <th>Código Postal</th>
-                      <th>Colonia</th>
-                      <th>Municipio</th>
-                      <th>Estado</th>
-                      <th>Zona</th>
-                      <th>Asentamiento</th>
-                      <th>Periferia</th>
-                      <th>Estancia</th>
-                      <th>Sucursal</th>
-                      <th>Zona de Riesgo</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {postalTableData?.map((item, index) => (
-                      <tr
-                        key={index}
-                        onClick={() => handlePostalRowClick(item)}
-                        style={{ cursor: "pointer" }}
-                      >
-                        <td>{renderCell(item.idCódigoPostal)}</td>
-                        <td>{renderCell(item.códigoPostal)}</td>
-                        <td>{renderCell(item.colonia)}</td>
-                        <td>{renderCell(item.municipio)}</td>
-                        <td>{renderCell(item.estado)}</td>
-                        <td>{renderCell(item.zona)}</td>
-                        <td>{renderCell(item.asentamiento)}</td>
-                        <td>{renderCell(item.periferia)}</td>
-                        <td>{renderCell(item.estancia)}</td>
-                        <td>{renderCell(item.sucursal)}</td>
-                        <td>{renderCell(item.zonaRiesgo ? "Sí" : "No")}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
+              <TablePostal
+                postalTableData={postalTableData}
+                handlePostalRowClick={handlePostalRowClick}
+                renderCell={renderCell}
+              />
             </Col>
-            {/* Formulario y flechas de navegación a la derecha */}
-            <Col md={4} className="d-flex flex-column justify-content-start align-items-end">
-              {/* Flechas de navegación */}
-              <Row className="mb-3 w-100">
-                <Col className="d-flex justify-content-center align-items-center">
-                  <Button 
-                    variant="primary" 
-                    onClick={handlePreviousItem} 
-                    disabled={isLoading} // Deshabilitar mientras se cargan los registros
-                  >
-                      Anterior
-                  </Button>
-                  <span className="mx-3">
-                    {currentIndex} / {tableDomicilioData.length} {/* Mostrar desde 0 a n */}
-                  </span>
-                  <Button 
-                    variant="primary" 
-                    onClick={handleNextItem} 
-                    disabled={isLoading} // Deshabilitar mientras se cargan los registros
-                  >
-                    Siguiente 
-                  </Button>
-                </Col>
-              </Row>
-              {/* Formulario */}
-              <Row className="mb-3 w-100">
-                <Col>
-                  <Form.Group>
-                    <Form.Label>C.Postal</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.codigoPostal || ""}
-                      maxLength={5} // Limitar a 5 caracteres
-                      onChange={handlePostalCodeChange}
-                      placeholder="Ingrese Código Postal"
-                      disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group>
-                    <Form.Label>Nú. Exterior</Form.Label>
-                    <Form.Control
-                      maxLength={8}
-                      type="text"
-                      value={formData.numExt}
-                      onChange={(e) =>
-                        setFormData({ ...formData, numExt: e.target.value }) // Permitir espacios
-                      }
-                      disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group>
-                    <Form.Label>Nú. Interior</Form.Label>
-                    <Form.Control
-                      maxLength={8}
-                      type="text"
-                      as="input"
-                      value={formData.numInt}
-                      onChange={(e) =>
-                        setFormData({ ...formData, numInt: e.target.value }) // Permitir espacios
-                      }
-                      disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row className="mb-3 w-100">
-                <Col>
-                  <Form.Group>
-                    <Form.Label>Calle</Form.Label>
-                    <Form.Control
-                      type="text"
-                      as="input"
-                      value={formData.calle}
-                      onChange={(e) =>
-                        setFormData({ ...formData, calle: e.target.value }) // Permitir espacios
-                      }
-                      disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-
-              <Row className="mb-3 w-100">
-                <Col>
-                  <Form.Group>
-                    <Form.Label>Colonia / Localidad</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.colonia}
-                      onChange={(e) =>
-                        setFormData({ ...formData, colonia: e.target.value }) // Permitir espacios
-                      }
-                      disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
-                    />
-                  </Form.Group>
-                  
-                  <Form.Group>
-                    <Form.Label>Estado</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.estado}
-                      onChange={(e) => {
-                        const inputValue = e.target.value;
-                        if (/^[a-zA-Z\s]*$/.test(inputValue)) { // Permitir solo letras y espacios
-                          setFormData({ ...formData, estado: inputValue });
-                        }
-                      }}
-                      disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
-                    />
-                  </Form.Group>
-                </Col>
-            
-              </Row>
-              <Row className="mb-3 w-100">
-                <Col>
-                  <Form.Group>
-                    <Form.Label>Delegación / Municipio</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.municipio}
-                      onChange={(e) =>
-                        setFormData({ ...formData, municipio: e.target.value }) // Permitir espacios
-                      }
-                      disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row className="mb-3 w-100">
-                <Col>
-                  <Form.Group>
-                    <Form.Label>Origen</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData.origen}
-                      disabled
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group>
-                    <Form.Label>Fecha</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={formData?.Fecha || ""}
-                      disabled
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group controlId="clase">
-                    <Form.Label>Clase</Form.Label>
-                    <Form.Select
-                      value={clase}
-                      onChange={(e) => setClase(e.target.value)}
-                      disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
-                    >
-                      <option value="">Selecciona una Clase</option>
-                      <option value="1505">Hogar</option>
-                      <option value="1509">Tercero</option>
-                      <option value="1508">Familiar</option>
-                      <option value="1501">Empresa</option>
-                      <option value="1506">Oficina</option>
-                      <option value="1519">Baja</option>
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row className="mb-3 w-100">
-                <Col>
-                  <Form.Group>
-                    <Form.Label>Información Actual</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={
-                        idInformacion === "1904"
-                          ? "Errónea"
-                          : idInformacion === "1902"
-                          ? "Incompleta"
-                          : idInformacion === "1903"
-                          ? "No corresponde"
-                          : idInformacion === "1905"
-                          ? "Inexistente"
-                          : idInformacion === "1906"
-                          ? "Correcta"
-                          : idInformacion || "Sin información" // Mantén la lógica actual si no coincide con las nuevas condiciones
-                      }
-                      disabled
-                      placeholder="Sin información"
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row className="mt-4 w-100">
-                <Col className="d-flex justify-content-start">
-                  <Button
-                    variant="success"
-                    onClick={handleSubmitAddressInformation} // Llamar a la función para actualizar
-                    disabled={isIdentifyButtonDisabled} // Deshabilitar si el botón está desactivado
-                  >
-                    Identificar
-                  </Button>
-                </Col>
-                <Col className="d-flex justify-content-center">
-                  <Form.Group controlId="idInformacion">
-                    <Form.Select
-                      value={idInformacion}
-                      onChange={(e) => setIdInformacion(e.target.value)}
-                      disabled={!isEstadoVisible} // Deshabilitar si el dropdown no está visible
-                    >
-                      <option value="">Seleccione una Información</option>
-                      <option value="1904">Errónea</option>
-                      <option value="1902">Incompleta</option>
-                      <option value="1903">No corresponde</option>
-                      <option value="1905">Inexistente</option>
-                      <option value="1906">Correcta</option>
-                      {/* Agregar más opciones según sea necesario */}
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-                <Col className="d-flex justify-content-end">
-                  <Button
-                    variant="primary"
-                    onClick={handleSaveNewAddress}
-                    disabled={isFormDisabled} // Deshabilitar si isFormDisabled es true
-                  >
-                    Nuevo
-                  </Button>
-                </Col>
-              </Row>
+            {/* Tabla de postales basada en idCódigoPostal */}
+            <Col md={6}>
+              <h4>Postal por ID</h4>
+              <Form.Group controlId="idCodigoPostalInput">
+                <Form.Label>Ingrese ID Código Postal</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData.idCódigoPostal}
+                  onChange={handleIdCodigoPostalChange}
+                  placeholder="Ingrese el ID Código Postal"
+                />
+              </Form.Group>
+              <Table striped bordered hover responsive variant="dark">
+                <thead>
+                  <tr>
+                    <th>ID Código Postal</th>
+                    <th>Código Postal</th>
+                    <th>Colonia</th>
+                    <th>Municipio</th>
+                    <th>Estado</th>
+                    <th>Zona</th>
+                    <th>Asentamiento</th>
+                    <th>Periferia</th>
+                    <th>Estancia</th>
+                    <th>Sucursal</th>
+                    <th>Zona de Riesgo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {postalCodesByIdData.map((item, index) => (
+                    <tr key={index} onClick={() => handlePostalIdRowClick(item)}>
+                      <td>{item.idCódigoPostal}</td>
+                      <td>{item.CódigoPostal}</td>
+                      <td>{item.Colonia}</td>
+                      <td>{item.Municipio}</td>
+                      <td>{item.Estado}</td>
+                      <td>{item.Zona}</td>
+                      <td>{item.Asentamiento}</td>
+                      <td>{item.Periferia}</td>
+                      <td>{item.Estancia}</td>
+                      <td>{item.Sucursal}</td>
+                      <td>{item.ZonaRiesgo ? "Sí" : "No"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
             </Col>
           </Row>
-          {/* Tabla MergeTable */}
-          <h4>Tablas Adicionales</h4>
-          <MergeTable onRowSelect={handleRowSelectFromMergeTable} />
-          {/* Fin de MergeTable */}
-          {/*TableVisits.jsx*/}
+          <Row>
+            {/* Formulario */}
+            <Col md={12} className="d-flex flex-column justify-content-start align-items-end">
+              <FormularioDom
+                formData={formData}
+                setFormData={setFormData}
+                handleSaveNewAddress={handleSaveNewAddress}
+                isFormDisabled={isFormDisabled}
+                clase={clase}
+                setClase={setClase}
+                handlePreviousItem={handlePreviousItem}
+                handleNextItem={handleNextItem}
+                currentIndex={currentIndex}
+                totalItems={tableDomicilioData.length}
+                onSearchPostalCode={loadPostalCodesByText}
+                handlePostalCodeChange={handlePostalCodeChange}
+                handleIdCodigoPostalChange={handleIdCodigoPostalChange} // Nuevo handler
+                idInformacion={idInformacion}
+                setIdInformacion={setIdInformacion}
+                isEstadoVisible={isEstadoVisible}
+                isIdentifyButtonDisabled={isIdentifyButtonDisabled}
+                handleSubmitAddressInformation={handleSubmitAddressInformation}
+              />
+            </Col>
+          </Row>
+
           <h4>Visitas</h4>
           <div
             className="scroll-container"
