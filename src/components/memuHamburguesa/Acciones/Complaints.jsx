@@ -23,7 +23,10 @@ import { toast } from "sonner";
 import "../../../scss/styles.scss";
 
 const Complaints = ({ show, handleClose }) => {
-  const { searchResults, idEjecutivo } = useContext(AppContext);
+   const responseData =
+    location.state || JSON.parse(localStorage.getItem("responseData"));
+  const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+  const { searchResults } = useContext(AppContext);
 
   const [formData, setFormData] = useState({
     idQueja: "",

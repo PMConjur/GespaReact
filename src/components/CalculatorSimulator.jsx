@@ -16,7 +16,10 @@ import { toast } from "sonner";
 import Validators from "./fragments/Validators"; 
 
 const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
-  const { searchResults, idEjecutivo, isManagment, setNegotiationActive } =
+   const responseData =
+    location.state || JSON.parse(localStorage.getItem("responseData"));
+  const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+  const { searchResults, isManagment, setNegotiationActive } =
     useContext(AppContext);
   useEffect(() => {
     console.log("Contenido de isManagment:", isManagment);
