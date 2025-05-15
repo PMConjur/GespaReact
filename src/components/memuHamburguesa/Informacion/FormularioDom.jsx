@@ -1,6 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
-import { Form, Row, Col, Button } from "react-bootstrap";
+import { Form, Row, Col, Button} from "react-bootstrap";
+
+const INFORMACION_MAP = {
+  "1904": "Errónea",
+  "1902": "Incompleta",
+  "1903": "No corresponde",
+  "1905": "Inexistente",
+  "1906": "Correcta",
+  "": "Sin información",
+  null: "Sin información",
+  undefined: "Sin información",
+  "Sin verificar": "Sin verificar",
+  "Sin información": "Sin información"
+};
 
 const FormularioDom = ({
   formData,
@@ -14,112 +27,210 @@ const FormularioDom = ({
   currentIndex,
   totalItems,
   onSearchPostalCode,
-  handlePostalCodeChange,
   idInformacion,
   setIdInformacion,
   isEstadoVisible,
-  isIdentifyButtonDisabled,
   handleSubmitAddressInformation,
+  onlyPagination = false,
+  setCurrentIndex
 }) => {
-  const handlePostalCodeInputChange = (e) => {
-    const inputValue = e.target.value;
-    setFormData({ ...formData, codigoPostal: inputValue });
-    if (/^\d{5}$/.test(inputValue)) {
-      onSearchPostalCode(inputValue);
+  const isNuevoRegistro = currentIndex === 0;
+
+  const infoItem = formData?.informacion || "";
+  const isSinInformacion =
+    infoItem === "" || infoItem === "Sin información" || infoItem === "Sin verificar";
+
+  const [localIdentifyDisabled, setLocalIdentifyDisabled] = React.useState(true);
+  const [localSelectDisabled, setLocalSelectDisabled] = React.useState(false);
+
+  useEffect(() => {
+    if (isNuevoRegistro) {
+      setLocalIdentifyDisabled(true);
+      setLocalSelectDisabled(true);
+    } else {
+      if (isSinInformacion) {
+        setLocalIdentifyDisabled(false);
+        setLocalSelectDisabled(false);
+      } else {
+        setLocalIdentifyDisabled(true);
+        setLocalSelectDisabled(true);
+      }
     }
+  }, [isNuevoRegistro, isSinInformacion]);
+
+
+  const handleIdentifyClick = async () => {
+    await handleSubmitAddressInformation();
+    setLocalIdentifyDisabled(true);
+    setLocalSelectDisabled(true);
   };
+
+  // Determina el string a mostrar en el campo Información Actual
+  const getInformacionString = () => {
+    const infoValue = formData?.informacion;
+    if (typeof infoValue === "string" && INFORMACION_MAP[infoValue]) {
+      return INFORMACION_MAP[infoValue];
+    }
+    if (typeof infoValue === "number" && INFORMACION_MAP[String(infoValue)]) {
+      return INFORMACION_MAP[String(infoValue)];
+    }
+    // Si es un string que ya es descriptivo
+    if (
+      [
+        "Errónea",
+        "Incompleta",
+        "No corresponde",
+        "Inexistente",
+        "Correcta",
+        "Sin verificar",
+        "Sin información"
+      ].includes(infoValue)
+    ) {
+      return infoValue;
+    }
+    return infoValue || "Sin información";
+  };
+
+  if (onlyPagination) {
+    return (
+      <Row className="mb-3 w-100">
+        <Col>
+          <div className="d-flex flex-column align-items-center justify-content-center" style={{ width: "100%" }}>
+            <div className="d-flex justify-content-center align-items-center mb-2" style={{ width: "100%" }}>
+              <Button
+                variant="dark"
+                size="sm"
+                className="me-3"
+                style={{
+                  minWidth: 110,
+                  fontWeight: "bold",
+                  borderRadius: "8px",
+                  letterSpacing: "1px",
+                }}
+                onClick={() => {
+                  if (typeof setCurrentIndex === "function") {
+                    setCurrentIndex(currentIndex === 0 ? totalItems - 1 : currentIndex - 1);
+                  } else {
+                    if (currentIndex === 0) {
+                      handlePreviousItem(-(totalItems - 1));
+                    } else {
+                      handlePreviousItem();
+                    }
+                  }
+                }}
+                disabled={totalItems === 0}
+              >
+                ⟵ Anterior
+              </Button>
+              <Button
+                variant="dark"
+                size="sm"
+                style={{
+                  minWidth: 110,
+                  fontWeight: "bold",
+                  borderRadius: "8px",
+                  letterSpacing: "1px",
+                }}
+                onClick={() => {
+                  if (typeof setCurrentIndex === "function") {
+                    setCurrentIndex(currentIndex === totalItems - 1 ? 0 : currentIndex + 1);
+                  } else {
+                    if (currentIndex === totalItems - 1) {
+                      handleNextItem(-(totalItems - 1));
+                    } else {
+                      handleNextItem();
+                    }
+                  }
+                }}
+                disabled={totalItems === 0}
+              >
+                Siguiente ⟶
+              </Button>
+            </div>
+            <div style={{ fontSize: "0.95rem", color: "#888", textAlign: "center" }}>
+              {totalItems === 0
+                ? "Sin registros"
+                : `Registro ${totalItems === 0 ? 0 : currentIndex + 1} de ${totalItems}`}
+            </div>
+          </div>
+        </Col>
+      </Row>
+    );
+  }
 
   return (
     <>
-      <Row className="mb-3 w-100">
-        <Col className="d-flex justify-content-center align-items-center">
-          <Button
-            variant="primary"
-            onClick={handlePreviousItem}
-            disabled={currentIndex === 0 || isFormDisabled}
-          >
-            Anterior
-          </Button>
-          <span className="mx-3">
-            {currentIndex + 1} / {totalItems}
-          </span>
-          <Button
-            variant="primary"
-            onClick={handleNextItem}
-            disabled={currentIndex === totalItems - 1 || isFormDisabled}
-          >
-            Siguiente
-          </Button>
+      <Row>
+        {/* Campo oculto idCódigoPostal (no visible pero funcional) */}
+        <Col style={{ display: "none" }}>
+          <Form.Group>
+            <Form.Label>idCódigoPostal</Form.Label>
+            <Form.Control
+              type="text"
+              value={formData?.idCódigoPostal || ""}
+              disabled={true}
+              readOnly
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </Form.Group>
+        </Col>
+        {/* C.Postal, Nú. Exterior y Nú. Interior alineados en el mismo row */}
+        <Col>
+          <Form.Group>
+            <Form.Label>C.Postal</Form.Label>
+            <Form.Control
+              type="text"
+              value={formData?.codigoPostal || ""}
+              maxLength={5}
+              onChange={(e) => {
+                const inputValue = e.target.value;
+                setFormData({ ...formData, codigoPostal: inputValue });
+                if (/^\d{5}$/.test(inputValue)) {
+                  onSearchPostalCode(inputValue);
+                }
+              }}
+              onBlur={(e) => {
+                const inputValue = e.target.value;
+                if (/^\d{5}$/.test(inputValue)) {
+                  onSearchPostalCode(inputValue);
+                }
+              }}
+              placeholder="Ingrese Código Postal"
+              disabled={!isNuevoRegistro}
+            />
+          </Form.Group>
+        </Col>
+        <Col>
+          <Form.Group>
+            <Form.Label>Nú. Exterior</Form.Label>
+            <Form.Control
+              maxLength={8}
+              type="text"
+              value={formData?.numExt}
+              onChange={(e) =>
+                setFormData({ ...formData, numExt: e.target.value })
+              }
+              disabled={!isNuevoRegistro}
+            />
+          </Form.Group>
+        </Col>
+        <Col>
+          <Form.Group>
+            <Form.Label>Nú. Interior</Form.Label>
+            <Form.Control
+              maxLength={8}
+              type="text"
+              value={formData?.numInt}
+              onChange={(e) =>
+                setFormData({ ...formData, numInt: e.target.value })
+              }
+              disabled={!isNuevoRegistro}
+            />
+          </Form.Group>
         </Col>
       </Row>
       <Form>
-        <Row className="mb-3">
-          <Col>
-            <Form.Group>
-              <Form.Label>idCódigoPostal</Form.Label>
-              <Form.Control
-                type="text"
-                value={formData?.idCódigoPostal || ""} // Validación para evitar errores
-                 // Este campo es solo de lectura
-              />
-            </Form.Group>
-          </Col>
-          <Col>
-            <Form.Group>
-              <Form.Label>C.Postal</Form.Label>
-              <Form.Control
-                type="text"
-                value={formData?.codigoPostal || ""}
-                maxLength={5}
-                onChange={(e) => {
-                  const inputValue = e.target.value;
-                  setFormData({ ...formData, codigoPostal: inputValue });
-                  if (/^\d{5}$/.test(inputValue)) {
-                    onSearchPostalCode(inputValue); // Actualizar la tabla Postal con el nuevo valor
-                  }
-                }}
-                onBlur={(e) => {
-                  const inputValue = e.target.value;
-                  if (/^\d{5}$/.test(inputValue)) {
-                    onSearchPostalCode(inputValue); // Llamar al endpoint al perder el foco
-                  }
-                }}
-                placeholder="Ingrese Código Postal"
-                disabled={isFormDisabled}
-              />
-            </Form.Group>
-          </Col>
-          <Col>
-            <Form.Group>
-              <Form.Label>Nú. Exterior</Form.Label>
-              <Form.Control
-                maxLength={8}
-                type="text"
-                value={formData?.numExt}
-                onChange={(e) =>
-                  setFormData({ ...formData, numExt: e.target.value })
-                }
-                disabled={isFormDisabled}
-              />
-            </Form.Group>
-          </Col>
-        </Row>
-        <Row className="mb-3">
-          <Col>
-            <Form.Group>
-              <Form.Label>Nú. Interior</Form.Label>
-              <Form.Control
-                maxLength={8}
-                type="text"
-                value={formData?.numInt}
-                onChange={(e) =>
-                  setFormData({ ...formData, numInt: e.target.value })
-                }
-                disabled={isFormDisabled}
-              />
-            </Form.Group>
-          </Col>
-        </Row>
         <Row className="mb-3">
           <Col>
             <Form.Group>
@@ -130,7 +241,7 @@ const FormularioDom = ({
                 onChange={(e) =>
                   setFormData({ ...formData, calle: e.target.value })
                 }
-                disabled={isFormDisabled}
+                disabled={!isNuevoRegistro}
               />
             </Form.Group>
           </Col>
@@ -145,7 +256,7 @@ const FormularioDom = ({
                 onChange={(e) =>
                   setFormData({ ...formData, colonia: e.target.value })
                 }
-                disabled={isFormDisabled}
+                disabled={!isNuevoRegistro}
               />
             </Form.Group>
           </Col>
@@ -155,13 +266,10 @@ const FormularioDom = ({
               <Form.Control
                 type="text"
                 value={formData?.estado}
-                onChange={(e) => {
-                  const inputValue = e.target.value;
-                  if (/^[a-zA-Z\s]*$/.test(inputValue)) {
-                    setFormData({ ...formData, estado: inputValue });
-                  }
-                }}
-                disabled={isFormDisabled}
+                onChange={(e) =>
+                  setFormData({ ...formData, estado: e.target.value })
+                }
+                disabled={!isNuevoRegistro}
               />
             </Form.Group>
           </Col>
@@ -176,7 +284,7 @@ const FormularioDom = ({
                 onChange={(e) =>
                   setFormData({ ...formData, municipio: e.target.value })
                 }
-                disabled={isFormDisabled}
+                disabled={!isNuevoRegistro}
               />
             </Form.Group>
           </Col>
@@ -200,8 +308,11 @@ const FormularioDom = ({
               <Form.Select
                 value={clase}
                 onChange={(e) => setClase(e.target.value)}
-                disabled={isFormDisabled}
+                disabled={isFormDisabled || (clase && clase !== "" && clase !== "Sin verificar")}
               >
+                {clase && !["1505", "1509", "1508", "1501", "1506", "1519"].includes(clase) && (
+                  <option value={clase}>{clase}</option>
+                )}
                 <option value="">Selecciona una Clase</option>
                 <option value="1505">Hogar</option>
                 <option value="1509">Tercero</option>
@@ -219,19 +330,7 @@ const FormularioDom = ({
               <Form.Label>Información Actual</Form.Label>
               <Form.Control
                 type="text"
-                value={
-                  idInformacion === "1904"
-                    ? "Errónea"
-                    : idInformacion === "1902"
-                    ? "Incompleta"
-                    : idInformacion === "1903"
-                    ? "No corresponde"
-                    : idInformacion === "1905"
-                    ? "Inexistente"
-                    : idInformacion === "1906"
-                    ? "Correcta"
-                    : idInformacion || "Sin información"
-                }
+                value={getInformacionString()}
                 disabled
                 placeholder="Sin información"
               />
@@ -242,18 +341,18 @@ const FormularioDom = ({
           <Col className="d-flex justify-content-start">
             <Button
               variant="success"
-              onClick={handleSubmitAddressInformation}
-              disabled={isIdentifyButtonDisabled}
+              onClick={handleIdentifyClick}
+              disabled={localIdentifyDisabled}
             >
-              Identificar
+              Identificar Información
             </Button>
           </Col>
           <Col className="d-flex justify-content-center">
             <Form.Group controlId="idInformacion">
               <Form.Select
                 value={idInformacion}
-                onChange={(e) => setIdInformacion(e.target.value)}
-                disabled={!isEstadoVisible}
+                disabled={localSelectDisabled || !isEstadoVisible}
+                onChange={e => setIdInformacion(e.target.value)}
               >
                 <option value="">Seleccione una Información</option>
                 <option value="1904">Errónea</option>
@@ -268,9 +367,9 @@ const FormularioDom = ({
             <Button
               variant="primary"
               onClick={handleSaveNewAddress}
-              disabled={isFormDisabled}
+              disabled={isFormDisabled || !isNuevoRegistro}
             >
-              Nuevo
+              Registrar Domicilio
             </Button>
           </Col>
         </Row>
@@ -297,6 +396,12 @@ FormularioDom.propTypes = {
   isEstadoVisible: PropTypes.bool.isRequired,
   isIdentifyButtonDisabled: PropTypes.bool.isRequired,
   handleSubmitAddressInformation: PropTypes.func.isRequired,
+  onlyPagination: PropTypes.bool,
+  setCurrentIndex: PropTypes.func,
+  setSelectedDomicilio: PropTypes.func,
+  setIsFormDisabled: PropTypes.func,
+  setIsEstadoVisible: PropTypes.func,
+  clearFormFields: PropTypes.func,
 };
 
 export default FormularioDom;

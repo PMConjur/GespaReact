@@ -14,7 +14,7 @@ import { AppContext } from "../../../pages/Managment"; // Asegúrate de que la r
 import { formatearFecha } from "../../ValoresCatalogos.js";
 import TablePostal from "./TablePostal"; // Importar el nuevo componente
 import FormularioDom from "./FormularioDom"; // Importar el nuevo componente
-import { fetchPostalCodesById } from "../../../services/gespawebServices";
+
 
 const Addresses = ({ show, handleClose }) => {
   const { searchResults } = useContext(AppContext); // Obtén el contexto
@@ -29,6 +29,7 @@ const Addresses = ({ show, handleClose }) => {
     fecha: "",
     codigoPostal: "",
     idCódigoPostal: "",
+    informacion: "",
   });
   const [selectedGestion, setSelectedGestion] = useState(null);
   const [tableData, setTableData] = useState([]);
@@ -36,19 +37,7 @@ const Addresses = ({ show, handleClose }) => {
   const [isNew, setIsNew] = useState(false);
   const [recordCount, setRecordCount] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
-  const [tableDomicilioData, setTableDomicilioData] = useState([
-    {
-      calle: "",
-      numExt: "",
-      numInt: "",
-      codigoPostal: "",
-      colonia: "",
-      municipio: "",
-      estado: "",
-      origen: "Gestión",
-      fecha: "",
-    },
-  ]); // Registro en blanco como índice 0
+  const [tableDomicilioData, setTableDomicilioData] = useState([]);
   const [isPostalTableVisible, setIsPostalTableVisible] = useState(false);
   const [postalTableData, setPostalTableData] = useState([]); // Tabla de postales basada en código postal
   const [selectedDomicilio, setSelectedDomicilio] = useState(null);
@@ -62,6 +51,21 @@ const Addresses = ({ show, handleClose }) => {
   const [existingAddresses, setExistingAddresses] = useState([]); // Nuevo estado para almacenar direcciones existentes
   const [currentIndex, setCurrentIndex] = useState(0); // Índice actual del elemento seleccionado
   const [postalCodesByIdData, setPostalCodesByIdData] = useState([]); // Tabla basada en idCódigoPostal
+
+  // Mapeo de idInformacion a string
+  const INFORMACION_MAP = {
+    "1904": "Errónea",
+    "1902": "Incompleta",
+    "1903": "No corresponde",
+    "1905": "Inexistente",
+    "1906": "Correcta",
+    "": "Sin información",
+    null: "Sin información",
+    undefined: "Sin información",
+    "Sin verificar": "Sin verificar",
+    "Sin información": "Sin información",
+  };
+
   // Obtener el idCuenta del primer resultado de searchResults
   const idCuenta = searchResults.length > 0 ? searchResults[0].idCuenta : null;
   const responseData = JSON.parse(localStorage.getItem("responseData"));
@@ -97,7 +101,6 @@ const Addresses = ({ show, handleClose }) => {
         loadPostalCodesByText(firstItem.CódigoPostal);
       }
 
-      toast.info("Datos cargados automáticamente desde la tabla Postal por ID.");
     }
   }, [postalCodesByIdData]); // Ejecutar cuando postalCodesByIdData cambie
 
@@ -151,35 +154,6 @@ const Addresses = ({ show, handleClose }) => {
     }
   };
 
-  const fetchTableData = async () => {
-    setIsLoading(true);
-    try {
-      const response = await servicio.get(
-        `/search-customer/search-postal-code?codigoPostal=${codigoPostal}`
-      );
-      setTableData(response.data || []);
-    } catch (error) {
-      console.error("Error fetching table data:", error);
-
-      let message = "No se pudo cargar la tabla.";
-      if (error.response) {
-        const status = error.response.status;
-        message =
-          status === 404
-            ? "No se encontraron datos para la cuenta especificada."
-            : `Error ${status}: ${error.response.data.message}`;
-      } else if (error.request) {
-        message = "Error: No se recibió respuesta del servidor.";
-      } else {
-        message = `Error: Ocurrió un problema al realizar la solicitud. Detalles: ${error.message}`;
-      }
-
-      toast.dismiss(); // Cierra cualquier toast abierto
-      toast.error(message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Función para cargar códigos postales por texto
   const loadPostalCodesByText = async (codigoPostal) => {
@@ -191,6 +165,9 @@ const Addresses = ({ show, handleClose }) => {
         return;
       }
       setPostalTableData(response.data.codigosPostales); // Actualizar los datos en TablePostal
+
+      // Mostrar solo un toast de éxito, cerrando cualquier otro abierto antes
+      toast.dismiss();
       toast.success("Códigos postales cargados correctamente.");
     } catch (error) {
       if (error.response?.status === 404) {
@@ -219,7 +196,6 @@ const Addresses = ({ show, handleClose }) => {
 
       // Actualizar el estado con los datos recibidos
       setPostalCodesByIdData(response.data);
-      toast.success("Datos cargados correctamente para el idCódigoPostal.");
     } catch (error) {
       console.error("Error al cargar datos para idCódigoPostal:", error);
       toast.error("No se pudo cargar la información del idCódigoPostal.");
@@ -264,50 +240,6 @@ const Addresses = ({ show, handleClose }) => {
     }
   
     toast.info("Datos cargados desde la tabla Postal por ID.");
-  };
-
-  // Función para identificar domicilio
-  const identifyAddress = async (idDomicilio, idCodigoPostal, idInformacion, idClase) => {
-    const payload = {
-      idDomicilio,
-      idCodigoPostal,
-      idInformacion,
-      idClase,
-    };
-
-    try {
-      const response = await servicio.post("/search-customer/identify-address", payload);
-      toast.success("Domicilio identificado correctamente.");
-      console.log("Respuesta del servidor:", response.data);
-      await fetchTableDomicilioData(); // Actualiza la tabla de domicilios
-    } catch (error) {
-      console.error("Error al identificar domicilio:", error);
-      toast.error("No se pudo identificar el domicilio.");
-    }
-  };
-
-  // Manejar el botón de acción (Nuevo / Identificar)
-  const handleAction = async () => {
-    if (isNew) {
-      toast.info("Creando un nuevo registro...");
-      setFormData({
-        calle: "",
-        numExt: "",
-        numInt: "",
-        codigoPostal: "",
-        colonia: "",
-        municipio: "",
-        estado: "",
-        origen: "Gestión",
-      });
-    } else {
-      try {
-        await servicio.put("/direccion/actualizar", formData);
-        toast.success("Dirección actualizada.");
-      } catch (error) {
-        toast.error("No se pudo actualizar.");
-      }
-    }
   };
 
   const fetchTableDomData = async () => {
@@ -471,20 +403,7 @@ const Addresses = ({ show, handleClose }) => {
         return item;
       });
 
-      setTableDomicilioData([
-        {
-          calle: "",
-          numExt: "",
-          numInt: "",
-          codigoPostal: "",
-          colonia: "",
-          municipio: "",
-          estado: "",
-          origen: "Gestión",
-          fecha: "",
-        }, // Registro en blanco
-        ...enrichedData,
-      ]); // Agregar el registro en blanco al inicio
+      setTableDomicilioData(enrichedData); // solo los items reales
       setExistingAddresses(enrichedData); // Actualiza las direcciones existentes
     } catch (error) {
       console.error("Error fetching domicilio data:", error);
@@ -571,16 +490,6 @@ const Addresses = ({ show, handleClose }) => {
     }
   };
 
-  const fetchFechaInsert = async (idDomicilio) => {
-    try {
-      const response = await servicio.get(`/domicilios/fecha-insert/${idDomicilio}`);
-      return response.data.Fecha_Insert || ""; // Devuelve la Fecha_Insert o una cadena vacía
-    } catch (error) {
-      console.error("Error al obtener la Fecha_Insert:", error);
-      toast.error("No se pudo obtener la Fecha_Insert.");
-      return "";
-    }
-  };
 
   const renderCell = (value) => {
     if (value === null || value === undefined || typeof value === "object") {
@@ -593,36 +502,6 @@ const Addresses = ({ show, handleClose }) => {
     setSelectedGestion(item); // Asigna el item seleccionado a selectedGestion
   };
 
-  const handleDomicilioSelection = async (selectedCodigoPostal) => {
-    try {
-      setIsLoading(true);
-      const response = await servicio.get(
-        `/search-customer/search-postal-code?codigoPostal=${selectedCodigoPostal}`
-      );
-      setPostalTableData(response.data.codigosPostales || []); // Actualiza los datos de la tabla "Postal"
-      setIsPostalTableVisible(true); // Muestra la tabla postal
-      toast.success("Datos de la tabla Postal actualizados.");
-    } catch (error) {
-      console.error("Error al actualizar la tabla Postal:", error);
-      // No mostrar toast de error aquí
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleUpdateAddressInformation = (selectedDomicilio) => {
-    console.log("Domicilio seleccionado:", selectedDomicilio);
-    if (selectedDomicilio.información === "Sin verificar") {
-      setIsEstadoVisible(true);
-      setSelectedDomicilio(selectedDomicilio);
-      console.log("Formulario visible");
-    } else {
-      setIsEstadoVisible(false);
-      setSelectedDomicilio(null);
-      console.log("Formulario oculto");
-      toast.info("El domicilio seleccionado ya ha sido verificado.");
-    }
-  };
 
   const handleSubmitAddressInformation = async () => {
     if (!selectedDomicilio || !idInformacion) {
@@ -646,6 +525,12 @@ const Addresses = ({ show, handleClose }) => {
         toast.success("Información del domicilio actualizada exitosamente.");
         console.log("Respuesta del servidor:", response.data);
 
+        // Actualizar el campo 'informacion' en el formulario inmediatamente
+        setFormData((prev) => ({
+          ...prev,
+          informacion: INFORMACION_MAP[idInformacion] || idInformacion
+        }));
+
         // Actualizar la tabla de domicilios después de la actualización
         await fetchTableDomicilioData();
 
@@ -666,17 +551,6 @@ const Addresses = ({ show, handleClose }) => {
         setIsLoading(false);
     }
 };
-
-  const handleNewButtonClick = () => {
-    if (isFormDisabled) {
-      // Si hay un registro seleccionado, limpia los campos y habilita el formulario
-      clearFormFields();
-      setIsDomicilioTableVisible(false); // Oculta la tabla de domicilios
-      toast.info("Formulario listo para un nuevo registro.");
-    } else {
-      toast.error("El formulario ya está listo para un nuevo registro.");
-    }
-  };
 
   const clearFormFields = () => {
     setFormData({
@@ -707,56 +581,6 @@ const Addresses = ({ show, handleClose }) => {
     toast.info("Datos cargados desde la tabla postal.");
   };
 
-  const handleDomicilioRowClick = async (item) => {
-    console.log("Fila seleccionada:", item);
-
-    if (selectedDomicilio?.idDomicilio === item.idDomicilio) {
-      // Si el mismo row está seleccionado, limpia el formulario y deselecciona
-      clearFormFields();
-      setIdInformacion(""); // Limpia el campo de "Información Actual"
-      setIsEstadoVisible(false); // Deshabilita el dropdown y el botón
-      setSelectedDomicilio(null); // Limpia el domicilio seleccionado
-      toast.info("Formulario limpiado y elementos deshabilitados.");
-    } else {
-      // Obtener la Fecha_Insert desde la base de datos
-      const fechaInsert = await fetchFechaInsert(item.idDomicilio);
-
-      // Si es un row diferente, carga los datos en el formulario
-      setFormData((prev) => ({
-        ...prev,
-        calle: item.calle || "",
-        numExt: item.númeroExterior || "",
-        numInt: item.númeroInterior || "",
-        códigoPostal: item.códigoPostal, // Mantener el código postal actual
-        idCódigoPostal: item.idCódigoPostal || "", // Asegurar que se pinte el valor en el formulario
-        colonia: item.coloniaLocalidad || "",
-        municipio: item.delegaciónMunicipio || "",
-        estado: item.estado || "",
-        origen: item.orígen || "Gestión",
-        fecha: fechaInsert, // Actualizar el campo Fecha con la Fecha_Insert
-      }));
-      setClase(item.clase || ""); // Actualiza el campo "Clase" en el formulario
-      setIsFormDisabled(true); // Deshabilita el formulario
-      setSelectedDomicilio(item); // Guarda el domicilio seleccionado
-      toast.info("Datos cargados desde la tabla Domicilios.");
-
-      // Cargar datos adicionales del Código Postal
-      if (item.idCódigoPostal) {
-        await loadPostalCodesById(item.idCódigoPostal);
-      }
-
-      // Verificar si el idInformacion es "Sin verificar"
-      if (item.información === "Sin verificar") {
-        setIdInformacion(""); // Limpia el dropdown
-        setIsEstadoVisible(true); // Muestra el dropdown y habilita el botón
-        toast.info("Seleccione una información para identificar.");
-      } else {
-        setIdInformacion(item.información); // Muestra el valor actual en el nuevo campo
-        setIsEstadoVisible(false); // Oculta el dropdown y deshabilita el botón
-        // toast.info(`Información actual: ${item.información}`);
-      }
-    }
-  };
 
   const handleSaveNewAddress = async () => {
     // Validar que todos los campos requeridos estén llenos
@@ -769,12 +593,14 @@ const Addresses = ({ show, handleClose }) => {
       !formData.estado
     ) {
       toast.error("Por favor, complete todos los campos obligatorios.");
+      // No limpiar el formulario ni el código postal aquí
       return;
     }
 
     // Validar que el código postal sea válido (5 dígitos)
     if (!/^\d{5}$/.test(formData.codigoPostal)) {
       toast.error("Ingrese un código postal válido (5 dígitos).");
+      // No limpiar el formulario ni el código postal aquí
       return;
     }
 
@@ -800,6 +626,11 @@ const Addresses = ({ show, handleClose }) => {
       numeroExterior: formData.numExt,
       numeroInterior: formData.numInt || "0", // Valor predeterminado
       idCodigoPostal: formData.codigoPostal, // Cambiado de codigoPostal a idCodigoPostal
+
+
+      // codigoPostal: formData.idCodigoPostal,
+
+      
       colonia: formData.colonia,
       municipio: formData.municipio,
       estado: formData.estado,
@@ -834,7 +665,6 @@ const Addresses = ({ show, handleClose }) => {
       }
     } finally {
       setIsLoading(false);
-      clearFormFields();
     }
   };
 
@@ -871,6 +701,7 @@ const Addresses = ({ show, handleClose }) => {
         municipio: item.delegaciónMunicipio || "",
         estado: item.estado || "",
         origen: item.orígen || "Gestión",
+        informacion: INFORMACION_MAP[item.información] || item.información || "Sin información",
       }));
       setClase(item.clase || "");
       setSelectedDomicilio(item);
@@ -898,67 +729,70 @@ const Addresses = ({ show, handleClose }) => {
     handleClose(); // Cierra el modal
   };
 
-  // Función para manejar la selección de un row en MergeTable
-  const handleRowSelectFromMergeTable = (selectedData) => {
-    if (
-      formData.calle === selectedData.calle &&
-      formData.numExt === selectedData.numExt &&
-      formData.numInt === selectedData.numInt &&
-      formData.codigoPostal === selectedData.codigoPostal &&
-      formData.colonia === selectedData.colonia &&
-      formData.municipio === selectedData.municipio &&
-      formData.estado === selectedData.estado
-    ) {
-      // Si se selecciona el mismo row, limpiar el formulario
-      clearFormFields();
-      setIdInformacion(""); // Limpia el campo de "Información Actual"
-      setIsEstadoVisible(false); // Deshabilita el dropdown
-      setIsFormDisabled(false); // Habilita el formulario
-      setSelectedDomicilio(null); // Limpia el domicilio seleccionado
-      toast.info("Formulario limpiado.");
-    } else {
-      // Si es un row diferente, actualizar el formulario
-      setFormData((prev) => ({
-        ...prev,
-        calle: selectedData.calle,
-        numExt: selectedData.numExt,
-        numInt: selectedData.numInt,
-        codigoPostal: selectedData.codigoPostal,
-        colonia: selectedData.colonia,
-        municipio: selectedData.municipio,
-        estado: selectedData.estado,
-        origen: selectedData.origen,
-      }));
-      setClase(selectedData.idClase); // Actualizar idClase
-      setIdInformacion(selectedData.idInformacion); // Actualizar idInformacion
-      setIsEstadoVisible(selectedData.isEstadoVisible); // Mostrar u ocultar el dropdown
-      setIsFormDisabled(true); // Desactivar el formulario
-      setSelectedDomicilio(selectedData); // Guardar el domicilio seleccionado
-
-      // Activar el botón y el select si la información es "Sin verificar"
-      if (selectedData.idInformacion === "") {
-        setIsEstadoVisible(true); // Habilitar el dropdown
-        toast.info("Seleccione una información para identificar.");
-      }
-    }
-  };
 
   return (
     <Modal
       show={show}
-      onHide={handleCloseModal} // Usa la nueva función para limpiar el estado
+      onHide={handleCloseModal}
       size="xl"
       backdrop="static"
       keyboard={false}
+      dialogClassName="modal-scroll-inside"
     >
       <Modal.Header closeButton>
         <Modal.Title>Domicilios</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body
+        style={{
+          maxHeight: "80vh",
+          overflowY: "auto",
+          paddingRight: "16px"
+        }}
+      >
         <Container fluid>
+          {/* Paginado y botón Limpiar centrados en el modal */}
+          <Row className="align-items-center mb-2">
+            <Col className="d-flex flex-column align-items-center justify-content-center">
+              <FormularioDom
+                // Solo renderiza el paginado, no el formulario completo
+                formData={{}} // dummy
+                setFormData={() => {}}
+                handleSaveNewAddress={() => {}}
+                isFormDisabled={true}
+                clase=""
+                setClase={() => {}}
+                handlePreviousItem={handlePreviousItem}
+                handleNextItem={handleNextItem}
+                currentIndex={currentIndex}
+                totalItems={tableDomicilioData.length + 1} // +1 para el formulario nuevo
+                onSearchPostalCode={() => {}}
+                handlePostalCodeChange={() => {}}
+                idInformacion=""
+                setIdInformacion={() => {}}
+                isEstadoVisible={false}
+                isIdentifyButtonDisabled={true}
+                handleSubmitAddressInformation={() => {}}
+                onlyPagination={true}
+              />
+              <Button
+                variant="primary"
+                className="mt-3"
+                onClick={() => {
+                  setCurrentIndex(0);
+                  clearFormFields();
+                  setIsFormDisabled(false);
+                  setSelectedDomicilio(null);
+                  setIdInformacion("");
+                  setIsEstadoVisible(false);
+                }}
+              >
+                Limpiar Formulario
+              </Button>
+            </Col>
+          </Row>
           <Row>
-            {/* Tabla de postales basada en código postal */}
-            <Col md={6}>
+            {/* Postal Table a la izquierda (8/12 = 66.66%) */}
+            <Col md={8} style={{ minWidth: 0 }}>
               <h4>Postal</h4>
               <TablePostal
                 postalTableData={postalTableData}
@@ -966,57 +800,8 @@ const Addresses = ({ show, handleClose }) => {
                 renderCell={renderCell}
               />
             </Col>
-            {/* Tabla de postales basada en idCódigoPostal */}
-            <Col md={6}>
-              <h4>Postal por ID</h4>
-              <Form.Group controlId="idCodigoPostalInput">
-                <Form.Label>Ingrese ID Código Postal</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={formData.códigoPostal}
-                  onChange={handleIdCodigoPostalChange}
-                  placeholder="Ingrese el ID Código Postal"
-                />
-              </Form.Group>
-              <Table striped bordered hover responsive variant="dark">
-                <thead>
-                  <tr>
-                    <th>ID Código Postal</th>
-                    <th>Código Postal</th>
-                    <th>Colonia</th>
-                    <th>Municipio</th>
-                    <th>Estado</th>
-                    <th>Zona</th>
-                    <th>Asentamiento</th>
-                    <th>Periferia</th>
-                    <th>Estancia</th>
-                    <th>Sucursal</th>
-                    <th>Zona de Riesgo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {postalCodesByIdData.map((item, index) => (
-                    <tr key={index} onClick={() => handlePostalIdRowClick(item)}>
-                      <td>{item.idCódigoPostal}</td>
-                      <td>{item.CódigoPostal}</td>
-                      <td>{item.Colonia}</td>
-                      <td>{item.Municipio}</td>
-                      <td>{item.Estado}</td>
-                      <td>{item.Zona}</td>
-                      <td>{item.Asentamiento}</td>
-                      <td>{item.Periferia}</td>
-                      <td>{item.Estancia}</td>
-                      <td>{item.Sucursal}</td>
-                      <td>{item.ZonaRiesgo ? "Sí" : "No"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Col>
-          </Row>
-          <Row>
-            {/* Formulario */}
-            <Col md={12} className="d-flex flex-column justify-content-start align-items-end">
+            {/* FormularioDom a la derecha (4/12 = 33.33%) */}
+            <Col md={4} style={{ minWidth: 0 }}>
               <FormularioDom
                 formData={formData}
                 setFormData={setFormData}
@@ -1027,10 +812,10 @@ const Addresses = ({ show, handleClose }) => {
                 handlePreviousItem={handlePreviousItem}
                 handleNextItem={handleNextItem}
                 currentIndex={currentIndex}
-                totalItems={tableDomicilioData.length}
+                totalItems={tableDomicilioData.length + 1}
                 onSearchPostalCode={loadPostalCodesByText}
                 handlePostalCodeChange={handlePostalCodeChange}
-                handleIdCodigoPostalChange={handleIdCodigoPostalChange} // Nuevo handler
+                handleIdCodigoPostalChange={handleIdCodigoPostalChange}
                 idInformacion={idInformacion}
                 setIdInformacion={setIdInformacion}
                 isEstadoVisible={isEstadoVisible}
@@ -1039,7 +824,57 @@ const Addresses = ({ show, handleClose }) => {
               />
             </Col>
           </Row>
-
+          {/* Ocultar visualmente la tabla Postal por ID y el campo de entrada, pero mantenerlos en el DOM */}
+          <Row>
+            <Col md={12} style={{ minWidth: 0 }}>
+              <div style={{ display: "none" }}>
+                <h4>Postal por ID</h4>
+                <Form.Group controlId="idCodigoPostalInput">
+                  <Form.Label>Ingrese ID Código Postal</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={formData.códigoPostal}
+                    onChange={handleIdCodigoPostalChange}
+                    placeholder="Ingrese el ID Código Postal"
+                  />
+                </Form.Group>
+                <Table striped bordered hover responsive variant="dark">
+                  <thead>
+                    <tr>
+                      <th>ID Código Postal</th>
+                      <th>Código Postal</th>
+                      <th>Colonia</th>
+                      <th>Municipio</th>
+                      <th>Estado</th>
+                      <th>Zona</th>
+                      <th>Asentamiento</th>
+                      <th>Periferia</th>
+                      <th>Estancia</th>
+                      <th>Sucursal</th>
+                      <th>Zona de Riesgo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {postalCodesByIdData.map((item, index) => (
+                      <tr key={index} onClick={() => handlePostalIdRowClick(item)}>
+                        <td>{item.idCódigoPostal}</td>
+                        <td>{item.CódigoPostal}</td>
+                        <td>{item.Colonia}</td>
+                        <td>{item.Municipio}</td>
+                        <td>{item.Estado}</td>
+                        <td>{item.Zona}</td>
+                        <td>{item.Asentamiento}</td>
+                        <td>{item.Periferia}</td>
+                        <td>{item.Estancia}</td>
+                        <td>{item.Sucursal}</td>
+                        <td>{item.ZonaRiesgo ? "Sí" : "No"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
+            </Col>
+          </Row>
           <h4>Visitas</h4>
           <div
             className="scroll-container"

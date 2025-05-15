@@ -2,12 +2,44 @@ import React from "react";
 import { Table } from "react-bootstrap";
 
 const TablePostal = ({ postalTableData, handlePostalRowClick, renderCell }) => {
+  // Campos a ocultar
+  const hiddenFields = ["idCódigoPostal"];
+
+  // Definir los headers base (orden y nombres fijos, sin idCódigoPostal)
+  const baseHeaders = [
+    { key: "códigoPostal", label: "C. Postal" },
+    { key: "colonia", label: "Colonia" },
+    { key: "municipio", label: "Municipio" },
+    { key: "estado", label: "Estado" },
+    { key: "zona", label: "Zona" },
+    { key: "asentamiento", label: "Asentamiento" },
+    { key: "periferia", label: "Periferia" },
+    { key: "estancia", label: "Estancia" },
+    { key: "sucursal", label: "Sucursal" },
+    { key: "zonaRiesgo", label: "Zona Riesgo" }
+  ];
+
+  // Si hay datos, usar los headers dinámicos (pero nunca mostrar los ocultos)
+  // Si no hay datos, usar los baseHeaders para mostrar los encabezados
+  const headers =
+    Array.isArray(postalTableData) &&
+    postalTableData.length > 0 &&
+    postalTableData[0] &&
+    typeof postalTableData[0] === "object"
+      ? Object.keys(postalTableData[0])
+          .filter((header) => !hiddenFields.includes(header))
+          .map((key) => {
+            const found = baseHeaders.find((h) => h.key === key || h.key === key.toLowerCase());
+            return found || { key, label: key };
+          })
+      : baseHeaders;
+
   return (
     <div
       className="scroll-container"
       style={{
         width: "100%",
-        maxHeight: "350px",
+        maxHeight: "550px",
         overflowY: "auto",
         display: "flex",
         backgroundColor: "#343a40",
@@ -27,45 +59,41 @@ const TablePostal = ({ postalTableData, handlePostalRowClick, renderCell }) => {
         <thead
           style={{
             position: "sticky",
-            top: 0,
+            top: -1,
             zIndex: 1,
             backgroundColor: "#343a40",
           }}
         >
           <tr style={{ height: "55px" }}>
-            <th>Id código Postal</th>
-            <th>Código Postal</th>
-            <th>Colonia</th>
-            <th>Municipio</th>
-            <th>Estado</th>
-            <th>Zona</th>
-            <th>Asentamiento</th>
-            <th>Periferia</th>
-            <th>Estancia</th>
-            <th>Sucursal</th>
-            <th>Zona de Riesgo</th>
+            {headers.map((header, idx) => (
+              <th key={idx}>{header.label}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {postalTableData?.map((item, index) => (
-            <tr
-              key={index}
-              onClick={() => handlePostalRowClick(item)}
-              style={{ cursor: "pointer" }}
-            >
-              <td>{renderCell(item.idCódigoPostal)}</td>
-              <td>{renderCell(item.códigoPostal)}</td>
-              <td>{renderCell(item.colonia)}</td>
-              <td>{renderCell(item.municipio)}</td>
-              <td>{renderCell(item.estado)}</td>
-              <td>{renderCell(item.zona)}</td>
-              <td>{renderCell(item.asentamiento)}</td>
-              <td>{renderCell(item.periferia)}</td>
-              <td>{renderCell(item.estancia)}</td>
-              <td>{renderCell(item.sucursal)}</td>
-              <td>{renderCell(item.zonaRiesgo ? "Sí" : "No")}</td>
+          {postalTableData?.length > 0 ? (
+            postalTableData.map((item, index) => (
+              <tr
+                key={index}
+                onClick={() => handlePostalRowClick(item)}
+                style={{ cursor: "pointer" }}
+              >
+                {headers.map((header, idx) => (
+                  <td key={idx}>
+                    {header.key === "zonaRiesgo"
+                      ? renderCell(item[header.key] ? "Sí" : "No")
+                      : renderCell(item[header.key])}
+                  </td>
+                ))}
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={headers.length} style={{ textAlign: "center", color: "#bbb" }}>
+                Sin datos para mostrar
+              </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </Table>
     </div>

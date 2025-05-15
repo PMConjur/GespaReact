@@ -8,7 +8,7 @@ import Payments from "./Payments";
 import Aditionals from "./Aditionals"; // Importar el componente Aditionals
 import { InfoCircleFill } from "react-bootstrap-icons"; // Importar el ícono de Info de Bootstrap
 import Multideudores from "../Informacion/MultiDeptor"; // Importar el componente Multideudores
-import Address from "./Address"; // Importar el componente Address
+import Address from "./Addresses" // Importar el componente Address
 
 function DropdownInfo() {
   // Estados para controlar la visibilidad de los modales y la carga de datos
