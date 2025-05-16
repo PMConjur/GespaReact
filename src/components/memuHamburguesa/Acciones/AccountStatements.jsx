@@ -189,7 +189,7 @@ const EstadoCuentaModal = ({ show, handleClose }) => {
               ) : accountData.length > 0 ? (
                 <div>
                   <Table striped bordered hover variant="dark" className="custom-table-account" style={{ tableLayout: "auto", whiteSpace: "nowrap" }}>
-                    <thead style={{ position: "sticky", top: 0, backgroundColor: "#343a40", zIndex: 1 }}>
+                    <thead style={{ position: "sticky", top: -1, backgroundColor: "#343a40", zIndex: 1 }}>
                       <tr>
                         <th>Fecha</th>
                         <th>Hora</th>

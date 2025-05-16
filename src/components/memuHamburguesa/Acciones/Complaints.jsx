@@ -370,20 +370,42 @@ const Complaints = ({ show, handleClose }) => {
     }
   };
 
+  useEffect(() => {
+  if (!show) {
+    setFormData({
+      idQueja: "",
+      idInstitucion: "",
+      folio: "",
+      llamadaEntrada: false,
+      comentarios: "",
+      titular: false,
+      solicitante: "",
+      idDomicilio: 0,
+    });
+    setReportedEmail("");
+    setReportedPhone("");
+    setShowAddressTable(false);
+    setShowEmailTable(false);
+    setShowPhoneTable(false);
+    setSelectedAddressId(null);
+    // Limpia otros estados si es necesario
+  }
+}, [show]);
+
   return (
     <Modal show={show} onHide={handleClose} backdrop="static" size="xl">
       <Modal.Header closeButton>
         <Modal.Title>Quejas</Modal.Title>
         <div className="ms-auto me-3">
           {complaints.length > 0 &&
-            showScrollHint && ( // Verifica si hay datos y si debe mostrarse el párrafo
+            showScrollHint && ( 
               <p className="cursor typewriter-animation">Desliza hacia abajo</p>
             )}
         </div>
       </Modal.Header>
       <Modal.Body className="d-block gap-1"  style={{maxHeight: "80vh"}}>
         <Row className="d-block d-lg-flex">
-          {complaints.length > 0 ? ( // Verifica si hay datos en la tabla
+          {complaints.length > 0 ? ( 
             <Col Col xs={12} lg={6}>
               <Form className="p-2">
                 <div className="d-flex gap-2">
@@ -393,13 +415,11 @@ const Complaints = ({ show, handleClose }) => {
                         const selectedComplaint = ddComplaints.find(
                           (complaint) => complaint.id === parseInt(value)
                         );
-                        handleChange("idQueja", value); // Actualizar el idQueja
+                        handleChange("idQueja", value); 
                         handleChange(
                           "tipoQuejaDescripcion",
                           selectedComplaint?.descripcion || ""
-                        ); // Actualizar el texto seleccionado
-
-                        // Mostrar la tabla de domicilios si se selecciona "Domicilio no corresponde"
+                        ); 
                         if (
                           selectedComplaint?.descripcion ===
                           "Domicilio no corresponde"
@@ -408,8 +428,6 @@ const Complaints = ({ show, handleClose }) => {
                         } else {
                           setShowAddressTable(false);
                         }
-
-                        // Mostrar la tabla de correos si se selecciona "Email no corresponde"
                         if (
                           selectedComplaint?.descripcion ===
                           "Email no corresponde"
@@ -418,25 +436,24 @@ const Complaints = ({ show, handleClose }) => {
                         } else {
                           setShowEmailTable(false);
                         }
-
-                        // Mostrar la tabla de teléfonos si se selecciona "Teléfono no corresponde"
                         if (
                           selectedComplaint?.descripcion ===
                           "Teléfono no corresponde"
                         ) {
-                          setShowPhoneTable(true); // Mostrar la tabla de teléfonos
+                          setShowPhoneTable(true);
                         } else {
-                          setShowPhoneTable(false); // Ocultar la tabla de teléfonos
+                          setShowPhoneTable(false); 
                         }
                       }}
-                    >
+                    > 
+                  
                       <Dropdown.Toggle
-                        className="w-100"
+                        className="dropdown-queja w-100"
                         variant="primary"
-                        id="dropdown-queja"
-                      >
-                        {formData.tipoQuejaDescripcion || "Tipo de queja"}
-                      </Dropdown.Toggle>
+                        id="scroll-container"
+                                         >
+                                        <p id="dropdown-queja">{formData.tipoQuejaDescripcion || "Tipo de queja"}</p>    
+                      </Dropdown.Toggle>    
                       <Dropdown.Menu className="dropdown-menu">
                         {ddComplaints.length > 0 ? (
                           ddComplaints.map((complaint) => (
@@ -486,12 +503,12 @@ const Complaints = ({ show, handleClose }) => {
                     name="folio"
                     placeholder="Folio"
                     value={formData.folio}
-                    onChange={handleFolioChange} // Usa la función específica para manejar el cambio
+                    onChange={handleFolioChange} 
                   />
                 </Form.Group>
                 <Form.Group className="mb-4">
                   <Form.Check
-                    key={formData.llamadaEntrada} // Fuerza el re-renderizado cuando cambia el estado
+                    key={formData.llamadaEntrada} 
                     type="checkbox"
                     label="Llamada de entrada"
                     name="llamadaEntrada"
@@ -509,17 +526,17 @@ const Complaints = ({ show, handleClose }) => {
                     placeholder="Escribir comentario"
                     value={formData.comentarios}
                     onChange={(e) => {
-                      console.log("Valor del textarea:", e.target.value); // Verifica el valor en tiempo real
-                      handleChange(e.target.name, e.target.value); // Pasa el valor sin modificaciones
+                      console.log("Valor del textarea:", e.target.value); 
+                      handleChange(e.target.name, e.target.value); 
                     }}
                     onKeyDown={(e) => e.key === " " && e.stopPropagation()}
                   />
                 </Form.Group>
-                {showFinancieraSection && ( // Renderiza la sección solo si showFinancieraSection es true
+                {showFinancieraSection && ( 
                   <div className="">
                     <Form.Group className="mb-4 mt-2 half-width">
                       <Form.Check
-                        key={formData.titular} // Fuerza el re-renderizado cuando cambia el estado
+                        key={formData.titular} 
                         type="checkbox"
                         label="Titular"
                         name="titular"
@@ -543,8 +560,6 @@ const Complaints = ({ show, handleClose }) => {
                     </Form.Group>
                   </div>
                 )}
-
-                {/* Mostrar el campo de correo electrónico solo si "Email no corresponde" está seleccionado */}
                 {formData.tipoQuejaDescripcion === "Email no corresponde" && (
                   <Form.Group
                     className="mb-3"
@@ -554,29 +569,27 @@ const Complaints = ({ show, handleClose }) => {
                     <Form.Control
                       type="email"
                       placeholder="correo@ejemplo.com"
-                      value={reportedEmail} // Vincula el estado al campo de entrada
-                      onChange={(e) => setReportedEmail(e.target.value)} // Actualiza el estado al cambiar el valor
+                      value={reportedEmail} 
+                      onChange={(e) => setReportedEmail(e.target.value)} 
                     />
                   </Form.Group>
                 )}
-
-                {/* Mostrar el campo de teléfono solo si "Teléfono no corresponde" está seleccionado */}
                 {formData.tipoQuejaDescripcion ===
-                  "Teléfono no corresponde" && ( // Mostrar solo si "Teléfono no corresponde" está seleccionado
+                  "Teléfono no corresponde" && (
                   <Form.Group
                     className="mb-3"
                     controlId="exampleForm.ControlInput2"
                   >
                     <Form.Label>Teléfono Reportado</Form.Label>
                     <Form.Control
-                      type="text" // Cambia a "text" para permitir el formato con "XXXXXX"
+                      type="text"  
                       placeholder="Numero de telefono"
-                      value={reportedPhone} // Vincula el estado al campo de entrada
+                      value={reportedPhone}  
                       onChange={(e) => {
                         const value = e.target.value;
-                        const regex = /^[0-9]{0,13}$/; // Permite solo números hasta 13 dígitos
+                        const regex = /^[0-9]{0,13}$/;  
                         if (regex.test(value)) {
-                          setReportedPhone(value); // Actualiza el estado si cumple con la validación
+                          setReportedPhone(value); 
                         }
                       }}
                       onBlur={() => {
@@ -587,7 +600,7 @@ const Complaints = ({ show, handleClose }) => {
                           toast.error(
                             "El número de teléfono debe tener entre 10 y 13 dígitos."
                           );
-                          setReportedPhone(""); // Limpia el campo si no cumple con el rango
+                          setReportedPhone("");
                         }
                       }}
                     />
@@ -598,14 +611,13 @@ const Complaints = ({ show, handleClose }) => {
                     className="mt-3 full-width"
                     variant="danger"
                     onClick={handleReport}
-                    disabled={!isFormValid || isLoading} // Deshabilita el botón si el formulario no es válido o está cargando
+                    disabled={!isFormValid || isLoading} 
                   >
-                    {isLoading ? "Guardando..." : "Reportar"}{" "}
-                    {/* Cambia el texto durante la carga */}
+                    {isLoading ? "Guardando..." : "Reportar"}
                   </Button>
                 </div>
               </Form>
-              <style jsx>{`
+              <style >{`
                 .form-row {
                   display: flex;
                   justify-content: space-between;
@@ -629,9 +641,9 @@ const Complaints = ({ show, handleClose }) => {
           ) : (
             <p className="text-center">No hay datos disponibles</p>
           )}
-          {showAddressTable && ( // Mostrar la tabla de domicilios si showAddressTable es true
+          {showAddressTable && ( 
             <Col xs={12} lg={6}>
-              {addresses.domicilios?.length > 0 && ( // Verifica si hay domicilios
+              {addresses.domicilios?.length > 0 && ( 
                 <div className="addresses-section">
                   <p style={{color: " #f1a441", textAlign: "center"}}>Selecciona un domicilio</p>
                   <div
@@ -670,13 +682,13 @@ const Complaints = ({ show, handleClose }) => {
                         {addresses.domicilios.map((address, index) => (
                           <tr
                             key={index}
-                            onClick={() => handleRowClick(address.idDomicilio)} // Envía el idDomicilio al hacer clic
-                            style={{ cursor: "pointer" }} // Cambia el cursor para indicar que es clickeable
+                            onClick={() => handleRowClick(address.idDomicilio)} 
+                            style={{ cursor: "pointer" }}
                             className={
                               selectedAddressId === address.idDomicilio
                                 ? "selected-row"
                                 : ""
-                            } // Aplica la clase si está seleccionado
+                            }
                           >
                             <td style={{ textAlign: "left" }}>
                               {address.calle || "--"}
@@ -717,9 +729,9 @@ const Complaints = ({ show, handleClose }) => {
               )}
             </Col>
           )}
-          {showEmailTable && ( // Mostrar la tabla de correos si showEmailTable es true
+          {showEmailTable && ( 
             <Col xs={12} lg={6}>
-              {emails.length > 0 ? ( // Verifica si hay correos electrónicos
+              {emails.length > 0 ? ( 
                 <div className="emails-section">
                    <p style={{color: " #f1a441", textAlign: "center"}}>Selecciona un correo</p>
                   <div
@@ -753,8 +765,8 @@ const Complaints = ({ show, handleClose }) => {
                             key={index}
                             onClick={() =>
                               setReportedEmail(email.CorreoElectrónico || "")
-                            } // Actualiza el estado con el correo seleccionado
-                            style={{ cursor: "pointer" }} // Cambia el cursor para indicar que es clickeable
+                            } 
+                            style={{ cursor: "pointer" }} 
                           >
                             <td style={{ textAlign: "left" }}>
                               {email.CorreoElectrónico || "--"}
@@ -778,7 +790,7 @@ const Complaints = ({ show, handleClose }) => {
               )}
             </Col>
           )}
-          {showPhoneTable && ( // Mostrar la tabla de teléfonos si showPhoneTable es true
+          {showPhoneTable && ( 
             <Col xs={12} lg={6}>
               <div className="emails-telefonos">
               <p style={{color: " #f1a441", textAlign: "center"}}>Selecciona un telefono</p>
@@ -819,8 +831,8 @@ const Complaints = ({ show, handleClose }) => {
                             setReportedPhone(
                               "XXXXXX" + phone.númeroTelefónico.slice(6) || "--"
                             )
-                          } // Actualiza el estado con el teléfono formateado
-                          style={{ cursor: "pointer" }} // Cambia el cursor para indicar que es clickeable
+                          } 
+                          style={{ cursor: "pointer" }} 
                         >
                           <td>{phone.id || "0"}</td>
                           <td>
@@ -847,7 +859,7 @@ const Complaints = ({ show, handleClose }) => {
             maxHeight: "70vh",
             maxWidth: "1210px",
             minWidth: "250px",
-            overflow: "auto", // Habilitar scroll vertical
+            overflow: "auto", 
           }}
         >
           <Table
@@ -855,12 +867,12 @@ const Complaints = ({ show, handleClose }) => {
             bordered
             hover
             variant="dark"
-            style={{ tableLayout: "auto", whiteSpace: "nowrap" }} // Ajusta el ancho al contenido y evita el salto de línea
+            style={{ tableLayout: "auto", whiteSpace: "nowrap" }} 
           >
             <thead
               style={{
                 position: "sticky",
-                top: 0,
+                top: -1,
                 backgroundColor: "#343a40",
                 zIndex: 1,
               }}
@@ -893,7 +905,6 @@ const Complaints = ({ show, handleClose }) => {
                     <td style={{ textAlign: "left" }}>
                       {complaint.Fecha_Insert?.split("T")[0] || "--"}
                     </td>{" "}
-                    {/* Solo muestra la fecha antes de la 'T' */}
                     <td style={{ textAlign: "left" }}>
                       {complaint.Segundo_Insert || "--"}
                     </td>
@@ -906,11 +917,9 @@ const Complaints = ({ show, handleClose }) => {
                     <td style={{ textAlign: "left" }}>
                       {complaint.Queja || "--"}
                     </td>{" "}
-                    {/* Muestra el valor de Queja */}
                     <td style={{ textAlign: "left" }}>
                       {complaint.Institución || "--"}
                     </td>{" "}
-                    {/* Muestra el valor de Institución */}
                     <td style={{ textAlign: "left" }}>
                       {complaint.Solicitante || "--"}
                     </td>
@@ -954,7 +963,7 @@ const Complaints = ({ show, handleClose }) => {
           </Table>
         </Row>
       </Modal.Body>
-      <style jsx>{`
+      <style >{`
         /* Estilos para la tabla oscura con filas alternadas */
         .table-dark {
           --bs-table-striped-bg: #2c3034; /* Color de fondo de filas alternadas */

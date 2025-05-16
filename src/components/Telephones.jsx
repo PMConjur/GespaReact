@@ -483,7 +483,7 @@ const Telephones = () => {
                   style={{
                     position: "sticky",
                     top: "0",
-                    backgroundColor: "#343a40", // Color de fondo para que coincida con el tema oscuro
+                    backgroundColor: "#343a40", 
                     zIndex: "10"
                   }}
                 >
@@ -498,7 +498,7 @@ const Telephones = () => {
                   <th>Estado</th>
                   <th>Municipio</th>
                   <th>Uso Horario</th>
-                  <th>Extensión</th> {/* Nuevo campo */}
+                  <th>Extensión</th> 
                 </tr>
               </thead>
               <tbody>
@@ -514,7 +514,7 @@ const Telephones = () => {
                       ))}
                     </tr>
                   ))
-                ) : Array.isArray(isDataAllPhones) ? ( // Validar que sea un arreglo
+                ) : Array.isArray(isDataAllPhones) ? ( 
                   isDataAllPhones.map((row, index) => (
                     <tr key={index}>
                       <td>{row.titulares || "--"}</td>
@@ -553,12 +553,11 @@ const Telephones = () => {
                               openFollowUpsModal(row);
                               handleSendPhoneToFormFollowUps(
                                 row.númeroTelefónico
-                              ); // Usar la función actualizada
+                              ); 
                             }}
                           />
                         </div>
                       </td>
-
                       <td>{row.telefonia || "--"}</td>
                       <td>{row.origen || "--"}</td>
                       <td>{row.clase || "--"}</td>
@@ -584,7 +583,7 @@ const Telephones = () => {
         show={showFollowUps}
         handleClose={() => setShowFollowUps(false)}
         isFollowUpActive={true}
-        FollowClipboardActive={true} // Activa el modo especial para Clipboard2Data
+        FollowClipboardActive={true} 
       />
     </>
   );

@@ -12,11 +12,9 @@ import { toast, Toaster } from "sonner";
 import SearchForm from "../components/SearchForm";
 import SearchCustomer from "../components/SearchCustomer";
 import CustomToast from "../components/CustomToast";
-import Managments from "../components/Managments";
 import NotesWidget from "../components/NotesWidget";
 import { searchCustomer, searchCustomers, automaticSearchEjecutivo, searchByAccount } from "../services/gespawebServices";
 import StickyTimmer from "../components/StickyTimmer";
-import { se } from "date-fns/locale";
 
 export const AppContext = createContext();
 
@@ -50,7 +48,6 @@ const Managment = () => {
   const [selectedPhoneFilter, setSelectedPhoneFilter] = useState(null); // Nueva variable para el filtro de teléfonos
   const [selectedPhoneForFollowUps, setSelectedPhoneForFollowUps] = useState(null); // Nueva variable para el número seleccionado
   const [refreshManagments, setRefreshManagments] = useState(false); // Estado para refrescar Managments
-  const token = responseData?.ejecutivo?.token;
   const nombreEjecutivo =
     responseData?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
   const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
