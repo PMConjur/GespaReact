@@ -1,33 +1,45 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Table } from "react-bootstrap";
-import { fetchPostalCodes } from "../../../services/gespawebServices"; // Importar el servicio
 
-const TablePostal = ({ idCodigoPostal }) => {
-  const [postalData, setPostalData] = useState([]);
+const TablePostal = ({ postalTableData, handlePostalRowClick, renderCell }) => {
+  // Campos a ocultar
+  const hiddenFields = ["idCódigoPostal"];
 
-  useEffect(() => {
-    const loadPostalCodes = async () => {
-      if (idCodigoPostal) {
-        console.log("Cargando códigos postales para idCodigoPostal:", idCodigoPostal);
-        try {
-          const response = await fetchPostalCodes(idCodigoPostal);
-          console.log("Respuesta de fetchPostalCodes:", response);
-          setPostalData(response.codigosPostales || []);
-        } catch (error) {
-          console.error("Error al cargar códigos postales:", error);
-        }
-      }
-    };
+  // Definir los headers base (orden y nombres fijos, sin idCódigoPostal)
+  const baseHeaders = [
+    { key: "códigoPostal", label: "C. Postal" },
+    { key: "colonia", label: "Colonia" },
+    { key: "municipio", label: "Municipio" },
+    { key: "estado", label: "Estado" },
+    { key: "zona", label: "Zona" },
+    { key: "asentamiento", label: "Asentamiento" },
+    { key: "periferia", label: "Periferia" },
+    { key: "estancia", label: "Estancia" },
+    { key: "sucursal", label: "Sucursal" },
+    { key: "zonaRiesgo", label: "Zona Riesgo" }
+  ];
 
-    loadPostalCodes();
-  }, [idCodigoPostal]);
+  // Si hay datos, usar los headers dinámicos (pero nunca mostrar los ocultos)
+  // Si no hay datos, usar los baseHeaders para mostrar los encabezados
+  const headers =
+    Array.isArray(postalTableData) &&
+    postalTableData.length > 0 &&
+    postalTableData[0] &&
+    typeof postalTableData[0] === "object"
+      ? Object.keys(postalTableData[0])
+          .filter((header) => !hiddenFields.includes(header))
+          .map((key) => {
+            const found = baseHeaders.find((h) => h.key === key || h.key === key.toLowerCase());
+            return found || { key, label: key };
+          })
+      : baseHeaders;
 
   return (
     <div
       className="scroll-container"
       style={{
         width: "100%",
-        maxHeight: "350px",
+        maxHeight: "550px",
         overflowY: "auto",
         display: "flex",
         backgroundColor: "#343a40",
@@ -47,41 +59,41 @@ const TablePostal = ({ idCodigoPostal }) => {
         <thead
           style={{
             position: "sticky",
-            top: 0,
+            top: -1,
             zIndex: 1,
             backgroundColor: "#343a40",
           }}
         >
           <tr style={{ height: "55px" }}>
-            <th>idCódigoPostal</th>
-            <th>Código Postal</th>
-            <th>Colonia</th>
-            <th>Municipio</th>
-            <th>Estado</th>
-            <th>Zona</th>
-            <th>Asentamiento</th>
-            <th>Periferia</th>
-            <th>Estancia</th>
-            <th>Sucursal</th>
-            <th>Zona de Riesgo</th>
+            {headers.map((header, idx) => (
+              <th key={idx}>{header.label}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {postalData?.map((item, index) => (
-            <tr key={index} onClick={() => console.log("Fila seleccionada:", item)}>
-              <td>{item.idCódigoPostal || ""}</td>
-              <td>{item.códigoPostal || ""}</td>
-              <td>{item.colonia || ""}</td>
-              <td>{item.municipio || ""}</td>
-              <td>{item.estado || ""}</td>
-              <td>{item.zona || ""}</td>
-              <td>{item.asentamiento || ""}</td>
-              <td>{item.periferia || ""}</td>
-              <td>{item.estancia || ""}</td>
-              <td>{item.sucursal || ""}</td>
-              <td>{item.zonaRiesgo ? "Sí" : "No"}</td>
+          {postalTableData?.length > 0 ? (
+            postalTableData.map((item, index) => (
+              <tr
+                key={index}
+                onClick={() => handlePostalRowClick(item)}
+                style={{ cursor: "pointer" }}
+              >
+                {headers.map((header, idx) => (
+                  <td key={idx}>
+                    {header.key === "zonaRiesgo"
+                      ? renderCell(item[header.key] ? "Sí" : "No")
+                      : renderCell(item[header.key])}
+                  </td>
+                ))}
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={headers.length} style={{ textAlign: "center", color: "#bbb" }}>
+                Sin datos para mostrar
+              </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </Table>
     </div>
