@@ -446,12 +446,12 @@ const Complaints = ({ show, handleClose }) => {
                         }
                       }}
                     > 
-                     <Form.Label>Seleccionar Queja</Form.Label>
+                   
                       <Dropdown.Toggle
                         className="dropdown-queja w-100"
                         variant="primary"
                         id="scroll-container">
-                        <p id="dropdown-queja">{formData.tipoQuejaDescripcion || "Tipo de queja"}</p>
+                        <p id="dropdown-queja">{formData.tipoQuejaDescripcion || "Seleccionar tipo de queja"}</p>
                       </Dropdown.Toggle>    
                       <Dropdown.Menu className="dropdown-menu">
                         {ddComplaints.length > 0 ? (
@@ -473,7 +473,7 @@ const Complaints = ({ show, handleClose }) => {
                   </Form.Group>
                   <Form.Group className="mb-4 w-50">
                     <Dropdown onSelect={handleDropdownSelect}>
-                       <Form.Label>Seleccionar Origen</Form.Label>
+                       
                       <Dropdown.Toggle
                         className="w-100"
                         variant="primary"
@@ -660,7 +660,7 @@ const Complaints = ({ show, handleClose }) => {
                       <thead
                         style={{
                           position: "sticky",
-                          top: 0,
+                          top: -1,
                           backgroundColor: "#343a40",
                           zIndex: 20,
                         }}
@@ -748,7 +748,7 @@ const Complaints = ({ show, handleClose }) => {
                       <thead
                         style={{
                           position: "sticky",
-                          top: 0,
+                          top: -1,
                           backgroundColor: "#343a40",
                           zIndex: 20,
                         }}
@@ -808,7 +808,7 @@ const Complaints = ({ show, handleClose }) => {
                     <thead
                       style={{
                         position: "sticky",
-                        top: 0,
+                        top: -1,
                         backgroundColor: "#343a40",
                         zIndex: 20,
                       }}
@@ -853,7 +853,7 @@ const Complaints = ({ show, handleClose }) => {
           )}
         </Row>
         <Row
-          className="table-responsive custom-scrollbar w-100 p-3 pt-0 mt-2"
+          className="table-responsive custom-scrollbar w-100 p-3 pt-0 mt-5"
           style={{
             maxHeight: "70vh",
             maxWidth: "1210px",
@@ -871,7 +871,7 @@ const Complaints = ({ show, handleClose }) => {
             <thead
               style={{
                 position: "sticky",
-                top: -1,
+                top: -2,
                 backgroundColor: "#343a40",
                 zIndex: 1,
               }}
