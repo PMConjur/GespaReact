@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import PropTypes from "prop-types";
-import { Form, Row, Col, Button} from "react-bootstrap";
+import { Form, Row, Col, Button } from "react-bootstrap";
 
 const INFORMACION_MAP = {
   "1904": "Errónea",
@@ -58,14 +58,12 @@ const FormularioDom = ({
     }
   }, [isNuevoRegistro, isSinInformacion]);
 
-
   const handleIdentifyClick = async () => {
     await handleSubmitAddressInformation();
     setLocalIdentifyDisabled(true);
     setLocalSelectDisabled(true);
   };
 
-  // Determina el string a mostrar en el campo Información Actual
   const getInformacionString = () => {
     const infoValue = formData?.informacion;
     if (typeof infoValue === "string" && INFORMACION_MAP[infoValue]) {
@@ -74,7 +72,6 @@ const FormularioDom = ({
     if (typeof infoValue === "number" && INFORMACION_MAP[String(infoValue)]) {
       return INFORMACION_MAP[String(infoValue)];
     }
-    // Si es un string que ya es descriptivo
     if (
       [
         "Errónea",
@@ -89,6 +86,16 @@ const FormularioDom = ({
       return infoValue;
     }
     return infoValue || "Sin información";
+  };
+
+  const handleTextInputChange = (field, value) => {
+    setFormData({
+      ...formData,
+      [field]: value
+        .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]/g, "") // Permite letras, números y espacios
+        .replace(/(.)\1{3,}/g, "$1$1$1") // Evita repeticiones excesivas
+        .slice(0, 120) // Limita la longitud
+    });
   };
 
   if (onlyPagination) {
@@ -161,7 +168,7 @@ const FormularioDom = ({
   return (
     <>
       <Row>
-        {/* Campo oculto idCódigoPostal (no visible pero funcional) */}
+        {/* Campo oculto idCódigoPostal */}
         <Col style={{ display: "none" }}>
           <Form.Group>
             <Form.Label>idCódigoPostal</Form.Label>
@@ -175,7 +182,8 @@ const FormularioDom = ({
             />
           </Form.Group>
         </Col>
-        {/* C.Postal, Nú. Exterior y Nú. Interior alineados en el mismo row */}
+        
+        {/* C.Postal, Nú. Exterior y Nú. Interior */}
         <Col>
           <Form.Group>
             <Form.Label>C.Postal</Form.Label>
@@ -184,7 +192,7 @@ const FormularioDom = ({
               value={formData?.codigoPostal || ""}
               maxLength={5}
               onChange={(e) => {
-                const inputValue = e.target.value;
+                const inputValue = e.target.value.replace(/\D/g, ''); // Solo números
                 setFormData({ ...formData, codigoPostal: inputValue });
                 if (/^\d{5}$/.test(inputValue)) {
                   onSearchPostalCode(inputValue);
@@ -209,7 +217,7 @@ const FormularioDom = ({
               type="text"
               value={formData?.numExt}
               onChange={(e) =>
-                setFormData({ ...formData, numExt: e.target.value })
+                setFormData({ ...formData, numExt: e.target.value.replace(/[^a-zA-Z0-9\s]/g, '') })
               }
               disabled={!isNuevoRegistro}
             />
@@ -223,14 +231,16 @@ const FormularioDom = ({
               type="text"
               value={formData?.numInt}
               onChange={(e) =>
-                setFormData({ ...formData, numInt: e.target.value })
+                setFormData({ ...formData, numInt: e.target.value.replace(/[^a-zA-Z0-9\s]/g, '') })
               }
               disabled={!isNuevoRegistro}
             />
           </Form.Group>
         </Col>
       </Row>
+      
       <Form>
+        {/* Campo Calle */}
         <Row className="mb-3">
           <Col>
             <Form.Group>
@@ -238,14 +248,19 @@ const FormularioDom = ({
               <Form.Control
                 type="text"
                 value={formData?.calle}
-                onChange={(e) =>
-                  setFormData({ ...formData, calle: e.target.value })
-                }
+                onChange={(e) => handleTextInputChange('calle', e.target.value)}
                 disabled={!isNuevoRegistro}
+                onKeyDown={(e) => {
+                  if (e.key === ' ') {
+                    e.stopPropagation(); // Permite espacios
+                  }
+                }}
               />
             </Form.Group>
           </Col>
         </Row>
+
+        {/* Campos Colonia/Localidad y Estado */}
         <Row className="mb-3">
           <Col>
             <Form.Group>
@@ -253,10 +268,13 @@ const FormularioDom = ({
               <Form.Control
                 type="text"
                 value={formData?.colonia}
-                onChange={(e) =>
-                  setFormData({ ...formData, colonia: e.target.value })
-                }
+                onChange={(e) => handleTextInputChange('colonia', e.target.value)}
                 disabled={!isNuevoRegistro}
+                onKeyDown={(e) => {
+                  if (e.key === ' ') {
+                    e.stopPropagation();
+                  }
+                }}
               />
             </Form.Group>
           </Col>
@@ -266,14 +284,19 @@ const FormularioDom = ({
               <Form.Control
                 type="text"
                 value={formData?.estado}
-                onChange={(e) =>
-                  setFormData({ ...formData, estado: e.target.value })
-                }
+                onChange={(e) => handleTextInputChange('estado', e.target.value)}
                 disabled={!isNuevoRegistro}
+                onKeyDown={(e) => {
+                  if (e.key === ' ') {
+                    e.stopPropagation();
+                  }
+                }}
               />
             </Form.Group>
           </Col>
         </Row>
+
+        {/* Campo Delegación/Municipio */}
         <Row className="mb-3">
           <Col>
             <Form.Group>
@@ -281,14 +304,19 @@ const FormularioDom = ({
               <Form.Control
                 type="text"
                 value={formData?.municipio}
-                onChange={(e) =>
-                  setFormData({ ...formData, municipio: e.target.value })
-                }
+                onChange={(e) => handleTextInputChange('municipio', e.target.value)}
                 disabled={!isNuevoRegistro}
+                onKeyDown={(e) => {
+                  if (e.key === ' ') {
+                    e.stopPropagation();
+                  }
+                }}
               />
             </Form.Group>
           </Col>
         </Row>
+
+        {/* Origen, Fecha y Clase */}
         <Row className="mb-3">
           <Col>
             <Form.Group>
@@ -324,6 +352,8 @@ const FormularioDom = ({
             </Form.Group>
           </Col>
         </Row>
+
+        {/* Información Actual */}
         <Row className="mb-3">
           <Col>
             <Form.Group>
@@ -337,6 +367,8 @@ const FormularioDom = ({
             </Form.Group>
           </Col>
         </Row>
+
+        {/* Botones de acción */}
         <Row className="mt-4">
           <Col className="d-flex justify-content-start">
             <Button
@@ -390,18 +422,12 @@ FormularioDom.propTypes = {
   currentIndex: PropTypes.number.isRequired,
   totalItems: PropTypes.number.isRequired,
   onSearchPostalCode: PropTypes.func.isRequired,
-  handlePostalCodeChange: PropTypes.func.isRequired,
   idInformacion: PropTypes.string.isRequired,
   setIdInformacion: PropTypes.func.isRequired,
   isEstadoVisible: PropTypes.bool.isRequired,
-  isIdentifyButtonDisabled: PropTypes.bool.isRequired,
   handleSubmitAddressInformation: PropTypes.func.isRequired,
   onlyPagination: PropTypes.bool,
   setCurrentIndex: PropTypes.func,
-  setSelectedDomicilio: PropTypes.func,
-  setIsFormDisabled: PropTypes.func,
-  setIsEstadoVisible: PropTypes.func,
-  clearFormFields: PropTypes.func,
 };
 
 export default FormularioDom;

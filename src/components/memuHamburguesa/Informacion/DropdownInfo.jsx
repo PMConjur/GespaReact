@@ -144,10 +144,14 @@ function DropdownInfo() {
         searchResults={searchResults} // Pasar searchResults como prop
       />
       {/* Renderizar el modal de Mail */}
-      <Mail show={showMail} handleClose={handleCloseMail} />
+      <Mail 
+      show={showMail} 
+      handleClose={handleCloseMail} />
 
       {/* Renderizar el modal de Address */}
-      <Address show={showAddress} handleClose={handleCloseAddress} />
+      <Address 
+      show={showAddress}
+      handleClose={handleCloseAddress} />
     </>
   );
 }

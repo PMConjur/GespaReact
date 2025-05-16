@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import {
   Modal,
   Button,
@@ -51,6 +51,27 @@ const Addresses = ({ show, handleClose }) => {
   const [existingAddresses, setExistingAddresses] = useState([]); // Nuevo estado para almacenar direcciones existentes
   const [currentIndex, setCurrentIndex] = useState(0); // Índice actual del elemento seleccionado
   const [postalCodesByIdData, setPostalCodesByIdData] = useState([]); // Tabla basada en idCódigoPostal
+  const toastIdsRef = useRef([]);
+
+  // Función para mostrar toast y guardar su id
+  const showToast = (fn, ...args) => {
+    const id = fn(...args);
+    toastIdsRef.current.push(id);
+    return id;
+  };
+
+  // Limpia todos los toasts activos
+  const clearAllToasts = () => {
+    toastIdsRef.current.forEach(id => toast.dismiss(id));
+    toastIdsRef.current = [];
+  };
+
+  // Limpia los toasts al cerrar el modal
+  useEffect(() => {
+    if (!show) {
+      clearAllToasts();
+    }
+  }, [show]);
 
   // Mapeo de idInformacion a string
   const INFORMACION_MAP = {
@@ -108,8 +129,8 @@ const Addresses = ({ show, handleClose }) => {
     if (!idCuenta) {
       const errorText = "ID de cuenta no válido. Por favor, verifique.";
       if (errorMessage !== errorText) {
-        toast.dismiss();
-        toast.error(errorText);
+        clearAllToasts();
+        showToast(toast.error, errorText, { duration: 2000 });
         setErrorMessage(errorText);
       }
       return;
@@ -125,13 +146,12 @@ const Addresses = ({ show, handleClose }) => {
       } else {
         setIsNew(true);
         setRecordCount(0);
-        toast.info("No se encontró información de la dirección.");
+        showToast(toast.info, "No se encontró información de la dirección.", { duration: 2000 });
       }
     } catch (error) {
       console.error("Error fetching address data:", error);
 
       if (error.response?.status === 404) {
-        // toast.info("No se encontró información de la dirección para el ID de cuenta proporcionado.");
         setIsNew(true);
         setRecordCount(0);
       } else {
@@ -144,8 +164,8 @@ const Addresses = ({ show, handleClose }) => {
         }
 
         if (errorMessage !== message) {
-          toast.dismiss();
-          toast.error(message);
+          clearAllToasts();
+          showToast(toast.error, message, { duration: 2000 });
           setErrorMessage(message);
         }
       }
@@ -160,23 +180,23 @@ const Addresses = ({ show, handleClose }) => {
     try {
       const response = await servicio.get(`/search-customer/search-postal-code?codigoPostal=${codigoPostal}`);
       if (response.data.codigosPostales?.length === 0) {
-        toast.error("Sin colonias para este Código Postal.");
+        showToast(toast.error, "Sin colonias para este Código Postal.", { duration: 2000 });
         setPostalTableData([]); // Limpiar la tabla si no hay datos
         return;
       }
       setPostalTableData(response.data.codigosPostales); // Actualizar los datos en TablePostal
 
       // Mostrar solo un toast de éxito, cerrando cualquier otro abierto antes
-      toast.dismiss();
-      toast.success("Códigos postales cargados correctamente.");
+      clearAllToasts();
+      showToast(toast.success, "Códigos postales cargados correctamente.", { duration: 1200 });
     } catch (error) {
       if (error.response?.status === 404) {
         console.warn(`Código postal no encontrado: ${codigoPostal}.`);
-        toast.info("No se encontró información relacionada a ese código postal.");
+        showToast(toast.info, "No se encontró información relacionada a ese código postal.", { duration: 2000 });
         setPostalTableData([]); // Limpiar la tabla si no hay datos
       } else {
         console.error("Error al cargar códigos postales:", error);
-        toast.error("Falló al obtener los Códigos Postales.");
+        showToast(toast.error, "Falló al obtener los Códigos Postales.", { duration: 2000 });
       }
     }
   };
@@ -189,7 +209,7 @@ const Addresses = ({ show, handleClose }) => {
       
       // Verificar si la respuesta contiene datos
       if (!response.data || response.data.length === 0) {
-        toast.info(`No se encontraron datos para el idCódigoPostal: ${idCodigoPostal}.`);
+        showToast(toast.info, `No se encontraron datos para el idCódigoPostal: ${idCodigoPostal}.`, { duration: 2000 });
         setPostalCodesByIdData([]); // Limpiar la tabla si no hay datos
         return;
       }
@@ -198,7 +218,7 @@ const Addresses = ({ show, handleClose }) => {
       setPostalCodesByIdData(response.data);
     } catch (error) {
       console.error("Error al cargar datos para idCódigoPostal:", error);
-      toast.error("No se pudo cargar la información del idCódigoPostal.");
+      showToast(toast.error, "No se pudo cargar la información del idCódigoPostal.", { duration: 2000 });
     }
   };
 
@@ -239,7 +259,7 @@ const Addresses = ({ show, handleClose }) => {
       loadPostalCodesByText(item.CódigoPostal);
     }
   
-    toast.info("Datos cargados desde la tabla Postal por ID.");
+    showToast(toast.info, "Datos cargados desde la tabla Postal por ID.", { duration: 2000 });
   };
 
   const fetchTableDomData = async () => {
@@ -247,8 +267,8 @@ const Addresses = ({ show, handleClose }) => {
       const errorText = "ID de cuenta no válido. Por favor, verifique.";
       if (errorMessage !== errorText) {
         console.log("Mostrando toast con mensaje:", errorText);
-        toast.dismiss(); // Cierra cualquier toast abierto
-        toast.error(errorText);
+        clearAllToasts(); // Cierra cualquier toast abierto
+        showToast(toast.error, errorText, { duration: 2000 });
         setErrorMessage(errorText);
       } else {
         console.log("Mensaje duplicado, no se muestra toast:", errorText);
@@ -258,15 +278,10 @@ const Addresses = ({ show, handleClose }) => {
 
     setIsLoading(true);
     try {
-      console.log("Iniciando solicitud a /ejecutivo/Domicilios/1/${idCuenta}");
       const response = await servicio.get(
         `/ejecutivo/Domicilios/1/${idCuenta}`
       );
       
-      
-      if (response.headers) {
-        console.log("Cabeceras de la respuesta:", response.headers);
-      }
 
       const sanitizedData = (response.data || []).map((item) => ({
         ...item,
@@ -277,7 +292,6 @@ const Addresses = ({ show, handleClose }) => {
         // Agrega más campos según sea necesario
       }));
 
-      console.log("Datos sanitizados:", sanitizedData);
       setTableDomData(sanitizedData);
 
     } catch (error) {
@@ -311,14 +325,13 @@ const Addresses = ({ show, handleClose }) => {
 
       if (errorMessage !== message) {
         console.log("Mostrando toast con mensaje:", message);
-        toast.dismiss(); // Cierra cualquier toast abierto
-        toast.error(message);
+        clearAllToasts(); // Cierra cualquier toast abierto
+        showToast(toast.error, message, { duration: 2000 });
         setErrorMessage(message);
       } else {
         console.log("Mensaje duplicado, no se muestra toast:", message);
       }
     } finally {
-      console.log("Finalizando carga de datos de domicilios");
       setIsLoading(false);
     }
   };
@@ -328,8 +341,8 @@ const Addresses = ({ show, handleClose }) => {
       const errorText = "ID de cuenta no válido. Por favor, verifique.";
       if (errorMessage !== errorText) {
         console.log("Mostrando toast con mensaje:", errorText);
-        toast.dismiss(); // Cierra cualquier toast abierto
-        toast.error(errorText);
+        clearAllToasts(); // Cierra cualquier toast abierto
+        showToast(toast.error, errorText, { duration: 2000 });
         setErrorMessage(errorText);
       } else {
         console.log("Mensaje duplicado, no se muestra toast:", errorText);
@@ -339,17 +352,12 @@ const Addresses = ({ show, handleClose }) => {
 
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("authToken"); // Obtén el token del almacenamiento local
       const url = `/search-customer/domicilios-visitas?idCartera=1&idCuenta=${idCuenta}`;
-      console.log("URL de la solicitud:", url);
 
       const response = await servicio.get(url, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Agrega el token aquí
+        headers: { 
         },
       });
-
-      console.log("Datos recibidos del endpoint domi visi:", response.data);
 
       // Normaliza los datos
       const sanitizedData = (response.data.domicilios || []).map((item) => ({
@@ -423,8 +431,8 @@ const Addresses = ({ show, handleClose }) => {
 
       if (errorMessage !== message) {
         console.log("Mostrando toast con mensaje:", message);
-        toast.dismiss(); // Cierra cualquier toast abierto
-        toast.error(message);
+        clearAllToasts(); // Cierra cualquier toast abierto
+        showToast(toast.error, message, { duration: 2000 });
         setErrorMessage(message);
       } else {
         console.log("Mensaje duplicado, no se muestra toast:", message);
@@ -475,7 +483,6 @@ const Addresses = ({ show, handleClose }) => {
       const updatedDomiciliosData = domiciliosData.map((item) => {
         const postalInfo = postalDataMap[item.idCódigoPostal];
         if (postalInfo) {
-          console.log("Código Postal encontrado:", postalInfo.códigoPostal);
           return {
             ...item,
             códigoPostal: postalInfo.códigoPostal, // Actualiza el valor del código postal
@@ -505,7 +512,7 @@ const Addresses = ({ show, handleClose }) => {
 
   const handleSubmitAddressInformation = async () => {
     if (!selectedDomicilio || !idInformacion) {
-        toast.error("Por favor, seleccione un domicilio y un tipo de información válido.");
+        showToast(toast.error, "Por favor, seleccione un domicilio y un tipo de información válido.", { duration: 2000 });
         return;
     }
 
@@ -522,7 +529,7 @@ const Addresses = ({ show, handleClose }) => {
             "/search-customer/update-address-information",
             payload
         );
-        toast.success("Información del domicilio actualizada exitosamente.");
+        showToast(toast.success, "Información del domicilio actualizada exitosamente.", { duration: 2000 });
         console.log("Respuesta del servidor:", response.data);
 
         // Actualizar el campo 'informacion' en el formulario inmediatamente
@@ -543,9 +550,9 @@ const Addresses = ({ show, handleClose }) => {
 
         // Manejar el error 400 específicamente
         if (error.response?.status === 400 && error.response.data?.message) {
-            toast.error(error.response.data.message);
+            showToast(toast.error, error.response.data.message, { duration: 2000 });
         } else {
-            toast.error("No se pudo actualizar la información del domicilio.");
+            showToast(toast.error, "No se pudo actualizar la información del domicilio.", { duration: 2000 });
         }
     } finally {
         setIsLoading(false);
@@ -578,7 +585,7 @@ const Addresses = ({ show, handleClose }) => {
       estado: item.estado || "",
       // No modificar el código postal aquí
     }));
-    toast.info("Datos cargados desde la tabla postal.");
+    showToast(toast.info, "Datos cargados desde la tabla postal.", { duration: 2000 });
   };
 
 
@@ -592,14 +599,14 @@ const Addresses = ({ show, handleClose }) => {
       !formData.municipio ||
       !formData.estado
     ) {
-      toast.error("Por favor, complete todos los campos obligatorios.");
+      showToast(toast.error, "Por favor, complete todos los campos obligatorios.", { duration: 2000 });
       // No limpiar el formulario ni el código postal aquí
       return;
     }
 
     // Validar que el código postal sea válido (5 dígitos)
     if (!/^\d{5}$/.test(formData.codigoPostal)) {
-      toast.error("Ingrese un código postal válido (5 dígitos).");
+      showToast(toast.error, "Ingrese un código postal válido (5 dígitos).", { duration: 2000 });
       // No limpiar el formulario ni el código postal aquí
       return;
     }
@@ -612,7 +619,7 @@ const Addresses = ({ show, handleClose }) => {
     );
 
     if (isDuplicate) {
-      toast.error("La dirección ya existe. No se puede duplicar.");
+      showToast(toast.error, "La dirección ya existe. No se puede duplicar.", { duration: 2000 });
       return;
     }
 
@@ -645,7 +652,7 @@ const Addresses = ({ show, handleClose }) => {
         "/search-customer/save-new-address",
         payload
       );
-      toast.success("Dirección guardada exitosamente.");
+      showToast(toast.success, "Dirección guardada exitosamente.", { duration: 2000 });
       console.log("Respuesta del servidor:", response.data);
 
       // Actualizar la tabla de domicilios después de guardar
@@ -659,9 +666,9 @@ const Addresses = ({ show, handleClose }) => {
 
       // Manejar errores específicos
       if (error.response?.status === 400 && error.response?.data?.message) {
-        toast.error(error.response.data.message);
+        showToast(toast.error, error.response.data.message, { duration: 2000 });
       } else {
-        toast.error("No se pudo guardar la dirección. Intente nuevamente.");
+        showToast(toast.error, "No se pudo guardar la dirección. Intente nuevamente.", { duration: 2000 });
       }
     } finally {
       setIsLoading(false);
@@ -688,7 +695,7 @@ const Addresses = ({ show, handleClose }) => {
       clearFormFields();
       setIsFormDisabled(false); // Habilitar el formulario
       setSelectedDomicilio(null);
-      toast.info("Formulario listo para un nuevo registro.");
+      showToast(toast.info, "Formulario listo para un nuevo registro.", { duration: 2000 });
     } else {
       setFormData((prev) => ({
         ...prev,
@@ -715,7 +722,7 @@ const Addresses = ({ show, handleClose }) => {
       if (item.información === "Sin verificar") {
         setIdInformacion("");
         setIsEstadoVisible(true);
-        toast.info("Seleccione una información para identificar.");
+        showToast(toast.info, "Seleccione una información para identificar.", { duration: 2000 });
       } else {
         setIdInformacion(item.información);
         setIsEstadoVisible(false);
@@ -726,6 +733,7 @@ const Addresses = ({ show, handleClose }) => {
   const handleCloseModal = () => {
     clearFormFields(); // Limpia los campos del formulario
     setCurrentIndex(0); // Restablece el índice al formulario vacío (0)
+    clearAllToasts(); // Cierra todos los toasts activos
     handleClose(); // Cierra el modal
   };
 
