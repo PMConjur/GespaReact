@@ -11,7 +11,6 @@ import { BellFill } from "react-bootstrap-icons";
 
 const responseData = JSON.parse(localStorage.getItem("responseData"));
 const numEmpleado = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
-console.log("numEmpleado", numEmpleado);
 
 const SaveIcon = () => (
   <svg

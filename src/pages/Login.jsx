@@ -25,7 +25,7 @@ function Login() {
   const [days, setDays] = useState(""); // State to store days value
   const [expire, setExpire] = useState(null);
   const [responseData, setResponseData] = useState(""); // State to store response data
-
+  const [passwordError, setPasswordError] = useState("");
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -103,6 +103,15 @@ function Login() {
     setShowPasswordModal(false);
   };
 
+  const onlyLettersToUpper = (value) => {
+  return value.toUpperCase().replace(/[^A-Z]/g, "");
+};
+
+const isValidPassword = (value) => {
+  return /^[A-Za-z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]{8,}$/.test(value);
+
+};
+
   return (
     <>
       <div style={{ backgroundColor: "#000000", minHeight: "100vh" }}></div>
@@ -136,10 +145,14 @@ function Login() {
                       <PersonFillLock></PersonFillLock>
                     </InputGroup.Text>
                     <Form.Control
+                      autoComplete={user}
                       type="text"
                       placeholder="Teclea tu usuario"
                       value={user}
-                      onChange={(e) => setUser(e.target.value)}
+                      onChange={(e) =>
+                        setUser(onlyLettersToUpper(e.target.value))
+                      }
+                      maxLength={4}
                     />
                   </InputGroup>
                 </Form.Group>
@@ -154,8 +167,21 @@ function Login() {
                       type="password"
                       placeholder="Teclea tu contraseña"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setPassword(value);
+                        setPasswordError(
+                          value.length === 0 || isValidPassword(value)
+                            ? ""
+                            : "La contraseña debe tener al menos 8 caracteres."
+                        );
+                      }}
+                      autoComplete="current-password"
+                      isInvalid={!!passwordError}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {passwordError}
+                    </Form.Control.Feedback>
                   </InputGroup>
                 </Form.Group>
                 {/* Cartera */}
