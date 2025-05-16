@@ -2460,7 +2460,7 @@ $accent-color: #000000d2;
 }
 
 #scroll-container {
-  max-height: 2.5rem;
+  max-height: 2.35rem;
   border-radius: .375rem;
   overflow: hidden;
 }
@@ -2473,7 +2473,7 @@ $accent-color: #000000d2;
   
   -moz-animation: my-animation 7s linear infinite;
   -webkit-animation: my-animation 7s linear infinite;
-  animation: my-animation 7s linear infinite;
+  animation: my-animation 4s linear infinite;
 }
 
 /* for Firefox */

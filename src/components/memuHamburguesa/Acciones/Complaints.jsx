@@ -406,7 +406,7 @@ const Complaints = ({ show, handleClose }) => {
       <Modal.Body className="d-block gap-1"  style={{maxHeight: "80vh"}}>
         <Row className="d-block d-lg-flex">
           {complaints.length > 0 ? ( 
-            <Col Col xs={12} lg={6}>
+            <Col xs={12} lg={6}>
               <Form className="p-2">
                 <div className="d-flex gap-2">
                   <Form.Group className="mb-4 w-50">
@@ -446,13 +446,12 @@ const Complaints = ({ show, handleClose }) => {
                         }
                       }}
                     > 
-                  
+                     <Form.Label>Seleccionar Queja</Form.Label>
                       <Dropdown.Toggle
                         className="dropdown-queja w-100"
                         variant="primary"
-                        id="scroll-container"
-                                         >
-                                        <p id="dropdown-queja">{formData.tipoQuejaDescripcion || "Tipo de queja"}</p>    
+                        id="scroll-container">
+                        <p id="dropdown-queja">{formData.tipoQuejaDescripcion || "Tipo de queja"}</p>
                       </Dropdown.Toggle>    
                       <Dropdown.Menu className="dropdown-menu">
                         {ddComplaints.length > 0 ? (
@@ -474,6 +473,7 @@ const Complaints = ({ show, handleClose }) => {
                   </Form.Group>
                   <Form.Group className="mb-4 w-50">
                     <Dropdown onSelect={handleDropdownSelect}>
+                       <Form.Label>Seleccionar Origen</Form.Label>
                       <Dropdown.Toggle
                         className="w-100"
                         variant="primary"
@@ -852,7 +852,6 @@ const Complaints = ({ show, handleClose }) => {
             </Col>
           )}
         </Row>
-
         <Row
           className="table-responsive custom-scrollbar w-100 p-3 pt-0 mt-2"
           style={{
@@ -904,7 +903,7 @@ const Complaints = ({ show, handleClose }) => {
                   <tr key={index}>
                     <td style={{ textAlign: "left" }}>
                       {complaint.Fecha_Insert?.split("T")[0] || "--"}
-                    </td>{" "}
+                    </td>
                     <td style={{ textAlign: "left" }}>
                       {complaint.Segundo_Insert || "--"}
                     </td>
@@ -916,10 +915,10 @@ const Complaints = ({ show, handleClose }) => {
                     </td>
                     <td style={{ textAlign: "left" }}>
                       {complaint.Queja || "--"}
-                    </td>{" "}
+                    </td>
                     <td style={{ textAlign: "left" }}>
                       {complaint.Institución || "--"}
-                    </td>{" "}
+                    </td>
                     <td style={{ textAlign: "left" }}>
                       {complaint.Solicitante || "--"}
                     </td>
