@@ -15,7 +15,7 @@ import CustomToast from "../components/CustomToast";
 import NotesWidget from "../components/NotesWidget";
 import { searchCustomer, searchCustomers, automaticSearchEjecutivo, searchByAccount } from "../services/gespawebServices";
 import StickyTimmer from "../components/StickyTimmer";
-
+import Managments from "../components/TableGestionesAditionals";
 export const AppContext = createContext();
 
 const Managment = () => {
@@ -314,7 +314,7 @@ const handleAutomaticSearch = async () => {
                 </Row>
                 <Row>
                   <Col xs={12}>
-                    {/* <Managments /> */}
+                   <Managments />
                   </Col>
                 </Row>
               </Container>
