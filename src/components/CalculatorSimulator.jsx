@@ -1165,7 +1165,7 @@ const handleRowClick = (index) => {
                 <Card className="rounded-lg mb-0">
                   <Card.Body className="d-flex p-0 pb-1 w-100">
                     <Form
-                      className="d-flex w-100 gap-5"
+                      className="d-block d-lg-flex w-100 gap-5"
                       style={{ alignItems: "center" }}
                     >
                       <Col>
@@ -1522,7 +1522,7 @@ const handleRowClick = (index) => {
                               </Form.Group>
                             </Row>
                             <Row className="d-flex w-100">
-                              <Form.Group className="mt-3">
+                              <Form.Group className="mb-3">
                                 <Form.Label>Meses</Form.Label>
                                 <Form.Control
                                   type="text"
@@ -1548,8 +1548,8 @@ const handleRowClick = (index) => {
                                   min={new Date().toISOString().split("T")[0]} // Fecha mínima: hoy
                                 />
                               </Form.Group>
-                              <div className="d-flex justify-content-between mt-4">
-                                <div className="">
+                              <div className="d-block d-lg-flex justify-content-between mt-4">
+                                <div className="text-end">
                                   <h5 className="text-light pt-1 fw-bold d-inline-flex">
                                     Tasa Mensual:{" "}
                                     {calculosData.tasaMensual
@@ -1557,7 +1557,7 @@ const handleRowClick = (index) => {
                                       : "0%"}
                                   </h5>
                                 </div>
-                                <div>
+                                <div className="text-end">
                                   <Button
                                     variant="primary"
                                     onClick={handleCalculateSecondPart}
@@ -1662,9 +1662,9 @@ const handleRowClick = (index) => {
                           </div>
                           <Form
                             style={{ alignItems: "end" }}
-                            className=" d-flex gap-3"
+                            className=" d-flex justify-content-between gap-3 w-100"
                           >
-                            <Form.Group className="">
+                            <Form.Group className="w-100">
                               <Form.Label>
                                 Seleccione el pago para modificar
                               </Form.Label>
@@ -1696,7 +1696,7 @@ const handleRowClick = (index) => {
                                 }}
                               />
                             </Form.Group>
-                            <Form.Group className="">
+                            <Form.Group className="w-100">
                               <Form.Label>Fecha Pago</Form.Label>
                               <Form.Control
                                 type="date"
@@ -1725,7 +1725,7 @@ const handleRowClick = (index) => {
                                 }
                               />
                             </Form.Group>
-                            <div>
+                            <div className="text-end">
                               <Button
                                 variant="primary"
                                 onClick={() => {
