@@ -173,8 +173,6 @@ const handleAutomaticSearch = async () => {
   };
 
   const contextValue = {
-    nombreEjecutivo,
-    idEjecutivo, // Agregar idEjecutivo al contexto
     searchTerm,
     setSearchTerm,
     filter,

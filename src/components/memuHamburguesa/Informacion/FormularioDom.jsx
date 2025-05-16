@@ -15,6 +15,17 @@ const INFORMACION_MAP = {
   "Sin información": "Sin información"
 };
 
+// Función para formatear la fecha a "AAAA/MM/DD"
+const formatFecha = (fecha) => {
+  if (!fecha) return "--";
+  const d = new Date(fecha);
+  if (isNaN(d.getTime())) return "--";
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}/${month}/${day}`;
+};
+
 const FormularioDom = ({
   formData,
   setFormData,
@@ -217,7 +228,7 @@ const FormularioDom = ({
               type="text"
               value={formData?.numExt}
               onChange={(e) =>
-                setFormData({ ...formData, numExt: e.target.value.replace(/[^a-zA-Z0-9\s]/g, '') })
+                setFormData({ ...formData, numExt: e.target.value.replace(/[^0-9]/g, '') })
               }
               disabled={!isNuevoRegistro}
             />
@@ -231,7 +242,7 @@ const FormularioDom = ({
               type="text"
               value={formData?.numInt}
               onChange={(e) =>
-                setFormData({ ...formData, numInt: e.target.value.replace(/[^a-zA-Z0-9\s]/g, '') })
+                setFormData({ ...formData, numInt: e.target.value.replace(/[^0-9]/g, '') })
               }
               disabled={!isNuevoRegistro}
             />
@@ -327,7 +338,15 @@ const FormularioDom = ({
           <Col>
             <Form.Group>
               <Form.Label>Fecha</Form.Label>
-              <Form.Control type="text" value={formData?.fecha || ""} disabled />
+              <Form.Control
+                type="text"
+                value={
+                  isNuevoRegistro
+                    ? "--"
+                    : formatFecha(formData?.fecha_Insert || formData?.Fecha)
+                }
+                disabled
+              />
             </Form.Group>
           </Col>
           <Col>

@@ -27,7 +27,10 @@ const TableAditionals = ({ customColumnNames = {}, onRowClick, selectedAnswer, a
   // NUEVO: Función para cargar los datos de teléfonos
   const loadPhoneData = async () => {
     if (!searchResults || searchResults.length === 0) {
-      toast.error("Error 428: Primero debes buscar una Cuenta");
+      if (!hasShownToast.current) {
+        toast.error("Error 428: Primero debes buscar una Cuenta");
+        hasShownToast.current = true;
+      }
       return;
     }
 

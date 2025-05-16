@@ -10,23 +10,25 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
         isManagment,
         searchResults,
         setManagment,
-        nombreEjecutivo,
         formData,
         setFormData,
         selectedAnswer,
-        responseData,
         isDataAllPhones,
-        setAllPhones,
-        selectedPhoneForFollowUps, // Obtener el número del contexto
-        idEjecutivo // Obtener idEjecutivo del contexto
+        selectedPhoneForFollowUps // Obtener el número del contexto
     } = useContext(AppContext);
 
+    // Usar localStorage para obtener idCuenta e idEjecutivo
+    const idCuenta = searchResults?.map((result) => result.idCuenta) || [];
+    const responseDataLS = JSON.parse(localStorage.getItem("responseData"));
+    const idEjecutivo = responseDataLS?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+    const nombreEjecutivo = responseDataLS?.ejecutivo?.infoEjecutivo?.nombreEjecutivo;
+
     useEffect(() => {
-        console.log("DEBUG: idEjecutivo obtenido desde el contexto:", idEjecutivo);
+        console.log("DEBUG: idEjecutivo obtenido desde localStorage:", idEjecutivo);
         if (!idEjecutivo) {
             console.warn("Advertencia: idEjecutivo no está definido. Verifica el contexto.");
         }
-    }, [idEjecutivo]);
+    }, []); // Solo una vez
 
     useEffect(() => {
         if (!isFollowUpsActive) {
@@ -50,8 +52,6 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
         return null;
     }
 
-    const idCuenta = searchResults.map((result) => result.idCuenta);
-
     const [loading, setLoading] = useState(false);
     const [existingReminders, setExistingReminders] = useState([]);
 
@@ -65,15 +65,15 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
 
         setFormData(prev => ({
             ...prev,
-            idCartera: 1, // Restaurar idCartera
-            idCuenta: searchResults[0]?.idCuenta?.trim() || "", // Restaurar idCuenta
-            idEjecutivo: idEjecutivo, // Restaurar idEjecutivo
-            idAcercamiento: "1601", // Restaurar idAcercamiento
-            recordatorio: false, // Restaurar recordatorio
-            idMotivoS: "0", // Restaurar idMotivoS
-            datoContacto: "", // Restaurar datoContacto
-            fecha: new Date().toISOString().split('T')[0], // Fecha al día actual
-            segundo: "", // Elimina la hora actual
+            idCartera: 1,
+            idCuenta: idCuenta[0]?.trim() || "",
+            idEjecutivo: idEjecutivo,
+            idAcercamiento: "1601",
+            recordatorio: false,
+            idMotivoS: "0",
+            datoContacto: "",
+            fecha: new Date().toISOString().split('T')[0],
+            segundo: "",
             numeroTelefonico: phone.raw,
             displayedPhone: phone.formatted
         }));
@@ -117,7 +117,8 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
         };
 
         loadReminders();
-    }, [idCuenta]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Solo una vez
 
     useEffect(() => {
         const logFetchedNotes = async () => {
@@ -138,7 +139,7 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
         if (idEjecutivo) {
             logFetchedNotes();
         }
-    }, [idEjecutivo]);
+    }, []); // Solo una vez
 
     const hasReminderConflict = (date, time) => {
         try {
@@ -339,12 +340,12 @@ const FormFollowUps = ({ handleClose, isFollowUpsActive, onSuccessfulRegister, F
             setFormData(prev => ({
                 ...prev,
                 idCartera:  1,
-                idCuenta: searchResults[0]?.idCuenta?.trim() || "",
+                idCuenta: idCuenta[0]?.trim() || "",
                 idEjecutivo: idEjecutivo,
                 idAcercamiento: "1601",
                 idMotivoS: "0",
                 fecha: new Date().toISOString().split('T')[0],
-                segundo: "", // Restablece a una cadena vacía
+                segundo: "",
                 recordatorio: false,
                 datoContacto: "",
                 numeroTelefonico: "",

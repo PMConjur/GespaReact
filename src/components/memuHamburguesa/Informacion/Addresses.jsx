@@ -11,7 +11,7 @@ import {
 import { toast } from "sonner";
 import servicio from "../../../services/axiosServices";
 import { AppContext } from "../../../pages/Managment"; // Asegúrate de que la ruta sea correcta
-import { formatearFecha } from "../../ValoresCatalogos.js";
+import { formatearFecha, reemplazarValores } from "../../ValoresCatalogos.js";
 import TablePostal from "./TablePostal"; // Importar el nuevo componente
 import FormularioDom from "./FormularioDom"; // Importar el nuevo componente
 
@@ -25,8 +25,8 @@ const Addresses = ({ show, handleClose }) => {
     colonia: "",
     municipio: "",
     estado: "",
-    origen: "Gestión",
-    fecha: "",
+    origen: "",
+    fecha_Insert: "",
     codigoPostal: "",
     idCódigoPostal: "",
     informacion: "",
@@ -51,7 +51,9 @@ const Addresses = ({ show, handleClose }) => {
   const [existingAddresses, setExistingAddresses] = useState([]); // Nuevo estado para almacenar direcciones existentes
   const [currentIndex, setCurrentIndex] = useState(0); // Índice actual del elemento seleccionado
   const [postalCodesByIdData, setPostalCodesByIdData] = useState([]); // Tabla basada en idCódigoPostal
+  const [isCommentHovered, setIsCommentHovered] = useState(false); // Estado para hover del comentario
   const toastIdsRef = useRef([]);
+  const toast428ShownRef = useRef(false); // Nuevo useRef para el toast 428
 
   // Función para mostrar toast y guardar su id
   const showToast = (fn, ...args) => {
@@ -64,12 +66,55 @@ const Addresses = ({ show, handleClose }) => {
   const clearAllToasts = () => {
     toastIdsRef.current.forEach(id => toast.dismiss(id));
     toastIdsRef.current = [];
+    toast428ShownRef.current = false; // Reinicia el flag al limpiar
   };
 
-  // Limpia los toasts al cerrar el modal
+  // Función para limpiar todos los estados relevantes
+  const resetAllStates = () => {
+    setFormData({
+      calle: "",
+      numExt: "",
+      numInt: "",
+      colonia: "",
+      municipio: "",
+      estado: "",
+      origen: "",
+      fecha_Insert: "",
+      codigoPostal: "",
+      idCódigoPostal: "",
+      informacion: "",
+    });
+    setSelectedGestion(null);
+    setTableData([]);
+    setIsLoading(false);
+    setIsNew(false);
+    setRecordCount(0);
+    setErrorMessage("");
+    setTableDomicilioData([]);
+    setIsPostalTableVisible(false);
+    setPostalTableData([]);
+    setSelectedDomicilio(null);
+    setClase("");
+    setIsEstadoVisible(false);
+    setTableDomData([]);
+    setIsFormDisabled(false);
+    setIsDomicilioTableVisible(true);
+    setIdInformacion("");
+    setIsIdentifyButtonDisabled(true);
+    setExistingAddresses([]);
+    setCurrentIndex(0);
+    setPostalCodesByIdData([]);
+    setIsCommentHovered(false);
+    // Limpiar toasts también
+    clearAllToasts();
+  };
+
+  // Limpiar estados cada vez que el modal se abre o se cierra
   useEffect(() => {
-    if (!show) {
-      clearAllToasts();
+    if (show) {
+      resetAllStates();
+    } else {
+      resetAllStates();
     }
   }, [show]);
 
@@ -127,12 +172,13 @@ const Addresses = ({ show, handleClose }) => {
 
   const fetchAddressData = async () => {
     if (!idCuenta) {
-      const errorText = "ID de cuenta no válido. Por favor, verifique.";
-      if (errorMessage !== errorText) {
+      const errorText = "Error 428: Primero debes buscar una Cuenta.";
+      if (!toast428ShownRef.current) {
         clearAllToasts();
         showToast(toast.error, errorText, { duration: 2000 });
-        setErrorMessage(errorText);
+        toast428ShownRef.current = true;
       }
+      setErrorMessage(errorText);
       return;
     }
 
@@ -264,15 +310,13 @@ const Addresses = ({ show, handleClose }) => {
 
   const fetchTableDomData = async () => {
     if (!idCuenta) {
-      const errorText = "ID de cuenta no válido. Por favor, verifique.";
-      if (errorMessage !== errorText) {
-        console.log("Mostrando toast con mensaje:", errorText);
-        clearAllToasts(); // Cierra cualquier toast abierto
+      const errorText = "Error 428: Primero debes buscar una Cuenta.";
+      if (!toast428ShownRef.current) {
+        clearAllToasts();
         showToast(toast.error, errorText, { duration: 2000 });
-        setErrorMessage(errorText);
-      } else {
-        console.log("Mensaje duplicado, no se muestra toast:", errorText);
+        toast428ShownRef.current = true;
       }
+      setErrorMessage(errorText);
       return;
     }
 
@@ -338,15 +382,13 @@ const Addresses = ({ show, handleClose }) => {
 
   const fetchTableDomicilioData = async () => {
     if (!idCuenta) {
-      const errorText = "ID de cuenta no válido. Por favor, verifique.";
-      if (errorMessage !== errorText) {
-        console.log("Mostrando toast con mensaje:", errorText);
-        clearAllToasts(); // Cierra cualquier toast abierto
+      const errorText = "Error 428: Primero debes buscar una Cuenta.";
+      if (!toast428ShownRef.current) {
+        clearAllToasts();
         showToast(toast.error, errorText, { duration: 2000 });
-        setErrorMessage(errorText);
-      } else {
-        console.log("Mensaje duplicado, no se muestra toast:", errorText);
+        toast428ShownRef.current = true;
       }
+      setErrorMessage(errorText);
       return;
     }
 
@@ -444,6 +486,7 @@ const Addresses = ({ show, handleClose }) => {
 
   const compareAndReplacePostalCodes = async () => {
     if (!idCuenta) {
+      // Solo log, no toast aquí porque ya se muestra en fetchAddressData/fetchTableDomData
       console.error("ID de cuenta no válido. No se puede realizar la comparación.");
       return;
     }
@@ -499,8 +542,13 @@ const Addresses = ({ show, handleClose }) => {
 
 
   const renderCell = (value) => {
-    if (value === null || value === undefined || typeof value === "object") {
-      return ""; // Valor predeterminado
+    if (
+      value === null ||
+      value === undefined ||
+      value === "" ||
+      typeof value === "object"
+    ) {
+      return "--";
     }
     return value;
   };
@@ -568,7 +616,7 @@ const Addresses = ({ show, handleClose }) => {
       colonia: "",
       municipio: "",
       estado: "",
-      origen: "Gestión",
+      origen: "",
     });
     setClase(""); // Limpia el campo "Clase"
     setIsFormDisabled(false); // Habilita el formulario
@@ -583,11 +631,12 @@ const Addresses = ({ show, handleClose }) => {
       colonia: item.colonia || "",
       municipio: item.municipio || "",
       estado: item.estado || "",
+      // Guardar también el idCódigoPostal seleccionado
+      idCódigoPostal: item.idCódigoPostal || "",
       // No modificar el código postal aquí
     }));
     showToast(toast.info, "Datos cargados desde la tabla postal.", { duration: 2000 });
   };
-
 
   const handleSaveNewAddress = async () => {
     // Validar que todos los campos requeridos estén llenos
@@ -632,12 +681,10 @@ const Addresses = ({ show, handleClose }) => {
       calle: formData.calle,
       numeroExterior: formData.numExt,
       numeroInterior: formData.numInt || "0", // Valor predeterminado
-      idCodigoPostal: formData.codigoPostal, // Cambiado de codigoPostal a idCodigoPostal
-
-
-      // codigoPostal: formData.idCodigoPostal,
-
-      
+      // Asegura que idCodigoPostal sea string después de la conversión a número
+      idCodigoPostal: formData.idCódigoPostal
+        ? String(Number(formData.idCódigoPostal))
+        : (formData.codigoPostal ? String(Number(formData.codigoPostal)) : "0"),
       colonia: formData.colonia,
       municipio: formData.municipio,
       estado: formData.estado,
@@ -707,8 +754,9 @@ const Addresses = ({ show, handleClose }) => {
         colonia: item.coloniaLocalidad || "",
         municipio: item.delegaciónMunicipio || "",
         estado: item.estado || "",
-        origen: item.orígen || "Gestión",
+        origen: item.orígen || "",
         informacion: INFORMACION_MAP[item.información] || item.información || "Sin información",
+        fecha_Insert: item.fecha_Insert || item.Fecha || "", // <-- Agrega esta línea
       }));
       setClase(item.clase || "");
       setSelectedDomicilio(item);
@@ -731,9 +779,7 @@ const Addresses = ({ show, handleClose }) => {
   };
 
   const handleCloseModal = () => {
-    clearFormFields(); // Limpia los campos del formulario
-    setCurrentIndex(0); // Restablece el índice al formulario vacío (0)
-    clearAllToasts(); // Cierra todos los toasts activos
+    resetAllStates(); // Limpia todos los estados
     handleClose(); // Cierra el modal
   };
 
@@ -781,6 +827,8 @@ const Addresses = ({ show, handleClose }) => {
                 isIdentifyButtonDisabled={true}
                 handleSubmitAddressInformation={() => {}}
                 onlyPagination={true}
+                disableRegistrarDomicilio={true}
+                disableCodigoPostal={true}
               />
               <Button
                 variant="primary"
@@ -829,6 +877,8 @@ const Addresses = ({ show, handleClose }) => {
                 isEstadoVisible={isEstadoVisible}
                 isIdentifyButtonDisabled={isIdentifyButtonDisabled}
                 handleSubmitAddressInformation={handleSubmitAddressInformation}
+                disableRegistrarDomicilio={!idCuenta}
+                disableCodigoPostal={!idCuenta}
               />
             </Col>
           </Row>
@@ -908,7 +958,7 @@ const Addresses = ({ show, handleClose }) => {
               <thead
                 style={{
                   position: "sticky",
-                  top: 0,
+                  top: -1,
                   zIndex: 1,
                   backgroundColor: "#343a40",
                 }}
@@ -944,46 +994,94 @@ const Addresses = ({ show, handleClose }) => {
                 </tr>
               </thead>
               <tbody>
-                {tableDomData.map((item, index) => (
-                  <tr key={index} onClick={() => handleRowClick(item)}>
-                    <td>{renderCell(formatearFecha(item.Fecha))}</td>
-                    <td>{renderCell(item.Hora)}</td>
-                    <td>{renderCell(item.idContacto)}</td>
-                    <td>{renderCell(item.idSituación)}</td>
-                    <td>{renderCell(item.idCausaNoPago)}</td>
-                    <td>{renderCell(item.NombreContacto)}</td>
-                    <td>{renderCell(item.idParentesco)}</td>
-                    <td>{renderCell(item.idSucursal)}</td>
-                    <td>{renderCell(item.ColorFachada)}</td>
-                    <td>{renderCell(item.ColorPuerta)}</td>
-                    <td>{renderCell(item.ColorHerrería)}</td>
-                    <td>{renderCell(item.Pisos)}</td>
-                    <td>{renderCell(item.idVivienda)}</td>
-                    <td>{renderCell(item.idHabitación)}</td>
-                    <td>{renderCell(item.idEconómico)}</td>
-                    <td>{renderCell(item.NombrePropietario)}</td>
-                    <td>{renderCell(item.AutoMapeo)}</td>
-                    <td>{renderCell(item.AutoMarca)}</td>
-                    <td>{renderCell(item.AutoAño)}</td>
-                    <td>{renderCell(item.CalleHorizontalNorte)}</td>
-                    <td>{renderCell(item.CalleHorizontalSur)}</td>
-                    <td>{renderCell(item.CalleVerticalOeste)}</td>
-                    <td>{renderCell(item.CalleVerticalEste)}</td>
-                    <td>{renderCell(item.Visitador)}</td>
-                    <td>{renderCell(item.Capturista)}</td>
-                    <td>{renderCell(item.FechaPagoNegociación)}</td>
-                    <td>{renderCell(item.MontoNegociación)}</td>
-                  </tr>
-                ))}
+                {tableDomData.map((item, index) => {
+                  const idContacto =
+                    item.idContacto !== undefined && item.idContacto !== ""
+                      ? item.idContacto
+                      : null;
+                  const idSituacion =
+                    item.idSituacion !== undefined && item.idSituacion !== ""
+                      ? item.idSituacion
+                      : (item.idSituación !== undefined && item.idSituación !== "" ? item.idSituación : null);
+                  const idCausaNoPago =
+                    item.idCausaNoPago !== undefined && item.idCausaNoPago !== ""
+                      ? item.idCausaNoPago
+                      : null;
+                  const idParentesco =
+                    item.idParentesco !== undefined && item.idParentesco !== ""
+                      ? item.idParentesco
+                      : null;
+                  const idSucursal = 0;
+
+                  return (
+                    <tr
+                      key={index}
+                      onClick={() => handleRowClick(item)}
+                      style={{
+                        cursor: "pointer",
+                        backgroundColor:
+                          selectedGestion === item ? "#264d26" : "inherit"
+                      }}
+                    >
+                      <td>{renderCell(formatearFecha(item.Fecha))}</td>
+                      <td>{renderCell(item.Hora)}</td>
+                      <td>{renderCell(reemplazarValores(idContacto))}</td>
+                      <td>{renderCell(reemplazarValores(idSituacion))}</td>
+                      <td>{renderCell(reemplazarValores(idCausaNoPago))}</td>
+                      <td>{renderCell(item.NombreContacto)}</td>
+                      <td>{renderCell(reemplazarValores(idParentesco))}</td>
+                      <td>{renderCell(reemplazarValores(idSucursal))}</td>
+                      <td>{renderCell(item.ColorFachada)}</td>
+                      <td>{renderCell(item.ColorPuerta)}</td>
+                      <td>{renderCell(item.ColorHerrería)}</td>
+                      <td>{renderCell(item.Pisos)}</td>
+                      <td>{renderCell(item.idVivienda)}</td>
+                      <td>{renderCell(item.idHabitación)}</td>
+                      <td>{renderCell(item.idEconómico)}</td>
+                      <td>{renderCell(item.NombrePropietario)}</td>
+                      <td>{renderCell(item.AutoMapeo)}</td>
+                      <td>{renderCell(item.AutoMarca)}</td>
+                      <td>{renderCell(item.AutoAño)}</td>
+                      <td>{renderCell(item.CalleHorizontalNorte)}</td>
+                      <td>{renderCell(item.CalleHorizontalSur)}</td>
+                      <td>{renderCell(item.CalleVerticalOeste)}</td>
+                      <td>{renderCell(item.CalleVerticalEste)}</td>
+                      <td>{renderCell(item.Visitador)}</td>
+                      <td>{renderCell(item.Capturista)}</td>
+                      <td>{renderCell(item.FechaPagoNegociación)}</td>
+                      <td>{renderCell(item.MontoNegociación)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </Table>
           </div>
           <Row>
-            <div>
-              <strong>Comentario: </strong>
-              {selectedGestion && selectedGestion.Comentario
-                ? renderCell(selectedGestion.Comentario)
-                : "Seleccione una gestión para ver el comentario"}
+            <div
+              style={{
+                display: "inline-block",
+                backgroundColor: isCommentHovered
+                  ? "rgb(26.5611940299, 251.5388059701, 123.4746268657)"
+                  : "#000000",
+                color: isCommentHovered
+                  ? "#000"
+                  : "rgb(26.5611940299, 251.5388059701, 123.4746268657)",
+                fontWeight: "bold",
+                borderRadius: "10px",
+                padding: "5px",
+                transition: "background-color 0.5s ease, color 0.5s ease",
+                cursor: "pointer",
+                marginTop: "8px"
+              }}
+              onMouseEnter={() => setIsCommentHovered(true)}
+              onMouseLeave={() => setIsCommentHovered(false)}
+            >
+              <span>
+                Comentario:{" "}
+                {selectedGestion && selectedGestion.Comentario
+                  ? renderCell(selectedGestion.Comentario)
+                  : "Seleccione una gestión para ver el comentario"}
+              </span>
             </div>
           </Row>
           {/*TableVisits.jsx */}

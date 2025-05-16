@@ -90,7 +90,12 @@ const Multideudores = ({ show, handleClose, searchResults }) => {
   };
 
   return (
-    <Modal show={show} onHide={handleClose} size="xl">
+    <Modal 
+    show={show} 
+    onHide={handleClose} 
+    size="xl"
+    backdrop="static"
+    keyboard={false}>
       <Modal.Header closeButton>
         <Modal.Title>Multideudores</Modal.Title>
       </Modal.Header>
