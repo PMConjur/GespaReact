@@ -1672,16 +1672,11 @@ const handleRowClick = (index) => {
                                 placeholder="Monto"
                                 type="text"
                                 name="montoMod"
-                                value={
-                                  modifyForm.montoMod !== ""
-                                    ? `$${Number(modifyForm.montoMod).toFixed(
-                                        2
-                                      )}`
-                                    : ""
-                                }
+                                value={modifyForm.montoMod}
                                 onChange={(e) => {
+                                  // Permite solo números y punto decimal
                                   const value = e.target.value.replace(
-                                    /^\$/,
+                                    /[^0-9.]/g,
                                     ""
                                   );
                                   setModifyForm((prev) => ({
@@ -1689,9 +1684,19 @@ const handleRowClick = (index) => {
                                     montoMod: value,
                                   }));
                                 }}
+                                onBlur={(e) => {
+                                  // Al salir del input, formatea a moneda si hay valor
+                                  const value = e.target.value;
+                                  setModifyForm((prev) => ({
+                                    ...prev,
+                                    montoMod: value
+                                      ? Number(value).toFixed(2)
+                                      : "",
+                                  }));
+                                }}
                                 onKeyPress={(e) => {
                                   if (!/^\d*\.?\d*$/.test(e.key)) {
-                                    e.preventDefault(); // Evita que se ingresen caracteres no numéricos
+                                    e.preventDefault();
                                   }
                                 }}
                               />
