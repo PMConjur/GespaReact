@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { Form, Row, Col, Button } from "react-bootstrap";
 
@@ -43,7 +43,9 @@ const FormularioDom = ({
   isEstadoVisible,
   handleSubmitAddressInformation,
   onlyPagination = false,
-  setCurrentIndex
+  setCurrentIndex,
+  focusAnimCodigoPostal,
+  setFocusAnimCodigoPostal
 }) => {
   const isNuevoRegistro = currentIndex === 0;
 
@@ -53,6 +55,40 @@ const FormularioDom = ({
 
   const [localIdentifyDisabled, setLocalIdentifyDisabled] = React.useState(true);
   const [localSelectDisabled, setLocalSelectDisabled] = React.useState(false);
+
+  // Focus animado para el campo Código Postal
+  const [focusAnim, setFocusAnimState] = useState(true);
+  const postalInputRef = useRef(null);
+
+  // Sincroniza el focusAnim con el prop externo si está presente
+  useEffect(() => {
+    if (typeof focusAnimCodigoPostal === "boolean") {
+      setFocusAnimState(focusAnimCodigoPostal);
+    }
+  }, [focusAnimCodigoPostal]);
+
+  // Permite que el padre controle la animación
+  const setFocusAnim = (val) => {
+    setFocusAnimState(val);
+    if (typeof setFocusAnimCodigoPostal === "function") {
+      setFocusAnimCodigoPostal(val);
+    }
+  };
+
+  const [identifyBlink, setIdentifyBlink] = useState(false);
+  const [focusError, setFocusError] = useState({}); // Para animación de error por campo52436
+
+  useEffect(() => {
+    if (postalInputRef.current) {
+      postalInputRef.current.focus();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (/^\d{5}$/.test(formData?.codigoPostal || "")) {
+      setFocusAnim(false);
+    }
+  }, [formData?.codigoPostal]);
 
   useEffect(() => {
     if (isNuevoRegistro) {
@@ -69,11 +105,64 @@ const FormularioDom = ({
     }
   }, [isNuevoRegistro, isSinInformacion]);
 
+  // Quitar animación al cambiar de item con paginador
+  useEffect(() => {
+    setIdentifyBlink(false);
+  }, [currentIndex]);
+
+  const handleSelectInformacion = (e) => {
+    const value = e.target.value;
+    setIdInformacion(value);
+    if (value && value !== "" && value !== "Selecciona") {
+      setIdentifyBlink(true);
+    } else {
+      setIdentifyBlink(false);
+    }
+  };
+
   const handleIdentifyClick = async () => {
     await handleSubmitAddressInformation();
     setLocalIdentifyDisabled(true);
     setLocalSelectDisabled(true);
+    setIdentifyBlink(false); // Detener animación al terminar
   };
+
+  const handleSaveNewAddressWithError = () => {
+    // Validar campos requeridos
+    const requiredFields = [
+      { key: "calle", label: "calle" },
+      { key: "numExt", label: "numExt" },
+      { key: "codigoPostal", label: "codigoPostal" },
+      { key: "colonia", label: "colonia" },
+      { key: "municipio", label: "municipio" },
+      { key: "estado", label: "estado" },
+      { key: "clase", label: "clase" } // <-- Añade clase aquí
+    ];
+    let missing = {};
+    let hasError = false;
+    requiredFields.forEach(f => {
+      if (f.key === "clase") {
+        if (!clase) {
+          missing.clase = true;
+          hasError = true;
+        }
+      } else if (!formData[f.key]) {
+        missing[f.key] = true;
+        hasError = true;
+      }
+    });
+    setFocusError(missing);
+    if (hasError) {
+      setTimeout(() => setFocusError({}), 1200);
+      return;
+    }
+    handleSaveNewAddress();
+  };
+
+  // El botón solo se habilita si hay selección válida
+  const isIdentifyButtonEnabled = (
+    idInformacion && idInformacion !== "" && idInformacion !== "Selecciona"
+  );
 
   const getInformacionString = () => {
     const infoValue = formData?.informacion;
@@ -165,7 +254,14 @@ const FormularioDom = ({
                 Siguiente ⟶
               </Button>
             </div>
-            <div style={{ fontSize: "0.95rem", color: "#888", textAlign: "center" }}>
+            <div
+              style={{
+                fontSize: "0.95rem",
+                color: "#fff200",
+                textAlign: "center",
+                fontWeight: "bold"
+              }}
+            >
               {totalItems === 0
                 ? "Sin registros"
                 : `Registro ${totalItems === 0 ? 0 : currentIndex + 1} de ${totalItems}`}
@@ -178,87 +274,161 @@ const FormularioDom = ({
 
   return (
     <>
-      <Row>
-        {/* Campo oculto idCódigoPostal */}
-        <Col style={{ display: "none" }}>
-          <Form.Group>
-            <Form.Label>idCódigoPostal</Form.Label>
-            <Form.Control
-              type="text"
-              value={formData?.idCódigoPostal || ""}
-              disabled={true}
-              readOnly
-              tabIndex={-1}
-              autoComplete="off"
-            />
-          </Form.Group>
-        </Col>
-        
-        {/* C.Postal, Nú. Exterior y Nú. Interior */}
-        <Col>
-          <Form.Group>
-            <Form.Label>C.Postal</Form.Label>
-            <Form.Control
-              type="text"
-              value={formData?.codigoPostal || ""}
-              maxLength={5}
-              onChange={(e) => {
-                const inputValue = e.target.value.replace(/\D/g, ''); // Solo números
-                setFormData({ ...formData, codigoPostal: inputValue });
-                if (/^\d{5}$/.test(inputValue)) {
-                  onSearchPostalCode(inputValue);
-                }
-              }}
-              onBlur={(e) => {
-                const inputValue = e.target.value;
-                if (/^\d{5}$/.test(inputValue)) {
-                  onSearchPostalCode(inputValue);
-                }
-              }}
-              placeholder="Ingrese Código Postal"
-              disabled={!isNuevoRegistro}
-            />
-          </Form.Group>
-        </Col>
-        <Col>
-          <Form.Group>
-            <Form.Label>Nú. Exterior</Form.Label>
-            <Form.Control
-              maxLength={8}
-              type="text"
-              value={formData?.numExt}
-              onChange={(e) =>
-                setFormData({ ...formData, numExt: e.target.value.replace(/[^0-9]/g, '') })
-              }
-              disabled={!isNuevoRegistro}
-            />
-          </Form.Group>
-        </Col>
-        <Col>
-          <Form.Group>
-            <Form.Label>Nú. Interior</Form.Label>
-            <Form.Control
-              maxLength={8}
-              type="text"
-              value={formData?.numInt}
-              onChange={(e) =>
-                setFormData({ ...formData, numInt: e.target.value.replace(/[^0-9]/g, '') })
-              }
-              disabled={!isNuevoRegistro}
-            />
-          </Form.Group>
-        </Col>
-      </Row>
-      
-      <Form>
-        {/* Campo Calle */}
+      <style>
+        {`
+          .focus-anim-label {
+            color: rgba(248, 244, 6, 0.9) !important;
+            font-weight: bold;
+            transition: color 0.3s;
+            animation: focusPulseLabel 0.7s steps(1, end) infinite alternate, focusFlashLabel 0.7s steps(1, end) infinite alternate;
+          }
+          .focus-anim-input {
+            border: 2.5px solid rgba(248, 244, 6, 0.616) !important;
+            box-shadow: 0 0 8px rgba(248, 244, 6, 0.616);
+            animation: focusPulseInput 0.7s steps(1, end) infinite alternate, focusFlashInput 0.7s steps(1, end) infinite alternate;
+            transition: border 0.3s, box-shadow 0.3s;
+          }
+          /* Animación de parpadeo (blink) igual que en Times.jsx */
+          @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+          }
+          .blink {
+            animation: blink 1s steps(1, end) infinite;
+          }
+          @keyframes focusPulseInput {
+            from { box-shadow: 0 0 8px rgba(248, 244, 6, 0.616); }
+            to { box-shadow: 0 0 16px rgba(248, 244, 6, 1); }
+          }
+          @keyframes focusPulseLabel {
+            from { color: rgba(248, 244, 6, 0.9); }
+            to { color: rgba(248, 244, 6, 1); }
+          }
+          @keyframes focusFlashInput {
+            0% { border-color: rgba(248, 244, 6, 0.616); }
+            50% { border-color: #fff200; }
+            100% { border-color: rgba(248, 244, 6, 0.616); }
+          }
+          @keyframes focusFlashLabel {
+            0% { color: rgba(248, 244, 6, 0.9); }
+            50% { color: #fff200; }
+            100% { color: rgba(248, 244, 6, 0.9); }
+          }
+          .formulario-dom-reduce-size input,
+          .formulario-dom-reduce-size select,
+          .formulario-dom-reduce-size .form-control,
+          .formulario-dom-reduce-size .btn {
+            height: 75% !important;
+            min-height: 30px !important;
+            font-size: 0.85em !important;
+            padding-top: 0.25rem !important;
+            padding-bottom: 0.25rem !important;
+          }
+          .formulario-dom-reduce-size .btn {
+            padding-top: 0.25rem !important;
+            padding-bottom: 0.25rem !important;
+          }
+          .formulario-dom-reduce-size input:disabled,
+          .formulario-dom-reduce-size select:disabled,
+          .formulario-dom-reduce-size .form-control:disabled {
+            background-color: rgb(97.2, 105.3, 112.5) !important;
+            color: #ffffff !important;
+            border-color: rgb(97.2, 105.3, 112.5) !important;
+            opacity: 1 !important;
+          }
+          .formulario-dom-reduce-size select:disabled {
+            background-image: none !important;
+          }
+          .identify-blink {
+            animation: blink-identify 2s steps(16, end) infinite;
+          }
+          @keyframes blink-identify {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+          }
+          .focus-error-anim {
+            animation: focusErrorAnim 0.7s steps(1, end) 2 alternate;
+            border: 2.5px solid #ff2d2d !important;
+            box-shadow: 0 0 8px #ff2d2d;
+          }
+          @keyframes focusErrorAnim {
+            0% { border-color: #ff2d2d; box-shadow: 0 0 8px #ff2d2d; }
+            50% { border-color: #fff; box-shadow: 0 0 0px #fff; }
+            100% { border-color: #ff2d2d; box-shadow: 0 0 8px #ff2d2d; }
+          }
+        `}
+      </style>
+      <div className="formulario-dom-reduce-size">
+        <Row>
+          {/* Campo oculto idCódigoPostal */}
+          <Col style={{ display: "none" }}>
+            <Form.Group>
+              <Form.Label>idCódigoPostal</Form.Label>
+              <Form.Control
+                type="text"
+                value={formData?.idCódigoPostal || ""}
+                disabled={true}
+                readOnly
+                tabIndex={-1}
+                autoComplete="off"
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+
+        {/* Primer Row: Código Postal, Calle, Nú. Exterior, Nú. Interior */}
         <Row className="mb-3">
-          <Col>
+          <Col md={3}>
+            <Form.Group>
+              <Form.Label
+                className={
+                  focusAnim
+                    ? "focus-anim-label blink"
+                    : ""
+                }
+              >
+                Digite Código Postal
+              </Form.Label>
+              <Form.Control
+                ref={postalInputRef}
+                type="text"
+                value={formData?.codigoPostal || ""}
+                maxLength={5}
+                className={
+                  (focusAnim ? "focus-anim-input " : "") +
+                  (focusError.codigoPostal ? "focus-error-anim" : "")
+                }
+                onChange={(e) => {
+                  const inputValue = e.target.value.replace(/\D/g, ''); // Solo números
+                  setFormData({ ...formData, codigoPostal: inputValue });
+                  if (/^\d{5}$/.test(inputValue)) {
+                    onSearchPostalCode(inputValue);
+                    setFocusAnim(false);
+                  } else {
+                    setFocusAnim(true);
+                  }
+                }}
+                onBlur={(e) => {
+                  const inputValue = e.target.value;
+                  if (/^\d{5}$/.test(inputValue)) {
+                    onSearchPostalCode(inputValue);
+                    setFocusAnim(false);
+                  }
+                }}
+                placeholder="Ingrese Código Postal"
+                disabled={!isNuevoRegistro}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={5}>
             <Form.Group>
               <Form.Label>Calle</Form.Label>
               <Form.Control
                 type="text"
                 value={formData?.calle}
+                className={focusError.calle ? "focus-error-anim" : ""}
                 onChange={(e) => handleTextInputChange('calle', e.target.value)}
                 disabled={!isNuevoRegistro}
                 onKeyDown={(e) => {
@@ -269,9 +439,38 @@ const FormularioDom = ({
               />
             </Form.Group>
           </Col>
+          <Col md={2}>
+            <Form.Group>
+              <Form.Label>Nú. Exterior</Form.Label>
+              <Form.Control
+                maxLength={8}
+                type="text"
+                value={formData?.numExt}
+                className={focusError.numExt ? "focus-error-anim" : ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, numExt: e.target.value.replace(/[^0-9]/g, '') })
+                }
+                disabled={!isNuevoRegistro}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={2}>
+            <Form.Group>
+              <Form.Label>Nú. Interior</Form.Label>
+              <Form.Control
+                maxLength={8}
+                type="text"
+                value={formData?.numInt}
+                onChange={(e) =>
+                  setFormData({ ...formData, numInt: e.target.value.replace(/[^0-9]/g, '') })
+                }
+                disabled={!isNuevoRegistro}
+              />
+            </Form.Group>
+          </Col>
         </Row>
 
-        {/* Campos Colonia/Localidad y Estado */}
+        {/* Segundo Row: Colonia / Localidad, Delegación / Municipio, Estado y Clase */}
         <Row className="mb-3">
           <Col>
             <Form.Group>
@@ -279,6 +478,7 @@ const FormularioDom = ({
               <Form.Control
                 type="text"
                 value={formData?.colonia}
+                className={focusError.colonia ? "focus-error-anim" : ""}
                 onChange={(e) => handleTextInputChange('colonia', e.target.value)}
                 disabled={!isNuevoRegistro}
                 onKeyDown={(e) => {
@@ -291,30 +491,11 @@ const FormularioDom = ({
           </Col>
           <Col>
             <Form.Group>
-              <Form.Label>Estado</Form.Label>
-              <Form.Control
-                type="text"
-                value={formData?.estado}
-                onChange={(e) => handleTextInputChange('estado', e.target.value)}
-                disabled={!isNuevoRegistro}
-                onKeyDown={(e) => {
-                  if (e.key === ' ') {
-                    e.stopPropagation();
-                  }
-                }}
-              />
-            </Form.Group>
-          </Col>
-        </Row>
-
-        {/* Campo Delegación/Municipio */}
-        <Row className="mb-3">
-          <Col>
-            <Form.Group>
               <Form.Label>Delegación / Municipio</Form.Label>
               <Form.Control
                 type="text"
                 value={formData?.municipio}
+                className={focusError.municipio ? "focus-error-anim" : ""}
                 onChange={(e) => handleTextInputChange('municipio', e.target.value)}
                 disabled={!isNuevoRegistro}
                 onKeyDown={(e) => {
@@ -325,42 +506,37 @@ const FormularioDom = ({
               />
             </Form.Group>
           </Col>
-        </Row>
-
-        {/* Origen, Fecha y Clase */}
-        <Row className="mb-3">
-          <Col>
+          <Col md={3}>
             <Form.Group>
-              <Form.Label>Origen</Form.Label>
-              <Form.Control type="text" value={formData?.origen} disabled />
-            </Form.Group>
-          </Col>
-          <Col>
-            <Form.Group>
-              <Form.Label>Fecha</Form.Label>
+              <Form.Label>Estado</Form.Label>
               <Form.Control
                 type="text"
-                value={
-                  isNuevoRegistro
-                    ? "--"
-                    : formatFecha(formData?.fecha_Insert || formData?.Fecha)
-                }
-                disabled
+                value={formData?.estado}
+                className={focusError.estado ? "focus-error-anim" : ""}
+                onChange={(e) => handleTextInputChange('estado', e.target.value)}
+                disabled={!isNuevoRegistro}
+                onKeyDown={(e) => {
+                  if (e.key === ' ') {
+                    e.stopPropagation();
+                  }
+                }}
               />
             </Form.Group>
           </Col>
-          <Col>
+          <Col md={2}>
             <Form.Group controlId="clase">
               <Form.Label>Clase</Form.Label>
               <Form.Select
                 value={clase}
                 onChange={(e) => setClase(e.target.value)}
-                disabled={isFormDisabled || (clase && clase !== "" && clase !== "Sin verificar")}
+                // Solo habilitado si es nuevo registro
+                disabled={isFormDisabled || !isNuevoRegistro}
+                className={focusError.clase ? "focus-error-anim" : ""}
               >
                 {clase && !["1505", "1509", "1508", "1501", "1506", "1519"].includes(clase) && (
                   <option value={clase}>{clase}</option>
                 )}
-                <option value="">Selecciona una Clase</option>
+                <option value="">Selecciona</option>
                 <option value="1505">Hogar</option>
                 <option value="1509">Tercero</option>
                 <option value="1508">Familiar</option>
@@ -372,59 +548,112 @@ const FormularioDom = ({
           </Col>
         </Row>
 
-        {/* Información Actual */}
-        <Row className="mb-3">
-          <Col>
-            <Form.Group>
-              <Form.Label>Información Actual</Form.Label>
-              <Form.Control
-                type="text"
-                value={getInformacionString()}
-                disabled
-                placeholder="Sin información"
-              />
-            </Form.Group>
-          </Col>
-        </Row>
+        <Form>
+          {/* Origen, Fecha SOLO si NO es nuevo registro */}
+          {!isNuevoRegistro && (
+            <Row className="mb-3">
+              <Col>
+                <Form.Group>
+                  <Form.Label>Origen</Form.Label>
+                  <Form.Control type="text" value={formData?.origen} disabled />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group>
+                  <Form.Label>Fecha</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={
+                      isNuevoRegistro
+                        ? "--"
+                        : formatFecha(formData?.fecha_Insert || formData?.Fecha)
+                    }
+                    disabled
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+          )}
 
-        {/* Botones de acción */}
-        <Row className="mt-4">
-          <Col className="d-flex justify-content-start">
-            <Button
-              variant="success"
-              onClick={handleIdentifyClick}
-              disabled={localIdentifyDisabled}
-            >
-              Identificar Información
-            </Button>
-          </Col>
-          <Col className="d-flex justify-content-center">
-            <Form.Group controlId="idInformacion">
-              <Form.Select
-                value={idInformacion}
-                disabled={localSelectDisabled || !isEstadoVisible}
-                onChange={e => setIdInformacion(e.target.value)}
-              >
-                <option value="">Seleccione una Información</option>
-                <option value="1904">Errónea</option>
-                <option value="1902">Incompleta</option>
-                <option value="1903">No corresponde</option>
-                <option value="1905">Inexistente</option>
-                <option value="1906">Correcta</option>
-              </Form.Select>
-            </Form.Group>
-          </Col>
-          <Col className="d-flex justify-content-end">
-            <Button
-              variant="primary"
-              onClick={handleSaveNewAddress}
-              disabled={isFormDisabled || !isNuevoRegistro}
-            >
-              Registrar Domicilio
-            </Button>
-          </Col>
-        </Row>
-      </Form>
+          {/* Información Actual, Identificar, Dropdown y Registrar SOLO si NO es nuevo registro */}
+          {!isNuevoRegistro && (
+            <Row className="mb-3 align-items-end">
+              <Col md={4}>
+                <Form.Group>
+                  <Form.Label>Información Actual</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={getInformacionString()}
+                    disabled
+                    placeholder="Sin información"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={3} className="d-flex align-items-end">
+                <Button
+                  variant="success"
+                  onClick={handleIdentifyClick}
+                  disabled={!isIdentifyButtonEnabled || localIdentifyDisabled}
+                  className={`w-100${identifyBlink ? " identify-blink" : ""}`}
+                >
+                  Identificar Informacio
+                </Button>
+              </Col>
+              <Col md={3}>
+                <Form.Group controlId="idInformacion">
+                  <Form.Label>Seleccione Informacio</Form.Label>
+                  <Form.Select
+                    value={idInformacion}
+                    disabled={localSelectDisabled || !isEstadoVisible}
+                    onChange={handleSelectInformacion}
+                  >
+                    <option value="">Selecciona</option>
+                    <option value="1904">Errónea</option>
+                    <option value="1902">Incompleta</option>
+                    <option value="1903">No corresponde</option>
+                    <option value="1905">Inexistente</option>
+                    <option value="1906">Correcta</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={2} className="d-flex align-items-end justify-content-end">
+                <Button
+                  variant="primary"
+                  onClick={handleSaveNewAddress}
+                  disabled={isFormDisabled || !isNuevoRegistro}
+                  className="w-100"
+                >
+                  Registrar
+                </Button>
+              </Col>
+            </Row>
+          )}
+
+          {/* Botón Registrar Domicilio SOLO si es nuevo registro */}
+          {isNuevoRegistro && (
+            <Row className="mb-3">
+              <Col className="d-flex justify-content-center">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  style={{
+                    minWidth: 110,
+                    maxWidth: 180,
+                    fontWeight: "bold",
+                    borderRadius: "8px",
+                    letterSpacing: "1px",
+                  }}
+                  onClick={handleSaveNewAddressWithError}
+                  disabled={isFormDisabled || !isNuevoRegistro}
+                  className="w-75"
+                >
+                  Registrar Domicilio
+                </Button>
+              </Col>
+            </Row>
+          )}
+        </Form>
+      </div>
     </>
   );
 };
@@ -447,6 +676,8 @@ FormularioDom.propTypes = {
   handleSubmitAddressInformation: PropTypes.func.isRequired,
   onlyPagination: PropTypes.bool,
   setCurrentIndex: PropTypes.func,
+  focusAnimCodigoPostal: PropTypes.bool,
+  setFocusAnimCodigoPostal: PropTypes.func,
 };
 
 export default FormularioDom;

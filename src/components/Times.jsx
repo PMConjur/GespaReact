@@ -1,9 +1,8 @@
-import { useState, useContext, useRef } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Modal, Button, Form, Container, Row, Col } from "react-bootstrap";
 import TableTimes from "./TableTimes";
 import { toast } from "sonner";
 import { userTimesUpdate } from "../services/gespawebServices";
-import { AppContext } from "../pages/Managment";
 
 const REASONS = {
     Permiso: 0,
@@ -24,7 +23,10 @@ const formatTime = (seconds) => {
 };
 
 const Times = ({ show, handleClose }) => {
-    const { idEjecutivo } = useContext(AppContext);
+    // Obtener idEjecutivo desde localStorage como en FormPayments.jsx
+    const responseData = useMemo(() => JSON.parse(localStorage.getItem("responseData")), []);
+    const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo.idEjecutivo;
+
     const intervalRef = useRef(null);
     const timerSnapshot = useRef(0);
 
@@ -139,13 +141,7 @@ const Times = ({ show, handleClose }) => {
         handleClose();
     };
 
-    if (!idEjecutivo) {
-        return (
-            <div className="alert alert-warning text-center" role="alert">
-                No se encontró un ID de ejecutivo válido. Verifica tu sesión.
-            </div>
-        );
-    }
+
 
     return (
         <Modal 

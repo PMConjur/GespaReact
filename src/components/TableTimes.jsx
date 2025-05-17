@@ -1,9 +1,8 @@
-import { useState, useEffect, useContext, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import PropTypes from "prop-types";
 import { Table } from "react-bootstrap";
 import { userTimes, userTimesPromedio } from "../services/gespawebServices";
 import { toast } from "sonner";
-import { AppContext } from "../pages/Managment";
 
 const TIME_CATEGORIES = [
     'Cuentas', 'negociacion', 'Titulares', 
@@ -145,10 +144,11 @@ const loadPromedioTimes = async (idEjecutivo, formatOrDefault) => {
 };
 
 const TableTimes = ({ updatedTimes }) => {
-    const { idEjecutivo } = useContext(AppContext);
-    
-    const toastShownRef = useRef(false); // Nuevo useRef
-    
+    // Obtener idEjecutivo desde localStorage como en Times.jsx y FormPayments.jsx
+    const responseData = useMemo(() => JSON.parse(localStorage.getItem("responseData")), []);
+    const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo.idEjecutivo;
+
+    const toastShownRef = useRef(false);
     const [timesData, setTimesData] = useState({
         total: Object.fromEntries(TIME_CATEGORIES.map(cat => [cat, "--:--:--"])),
         promedio: Object.fromEntries(TIME_CATEGORIES.map(cat => [cat, "--:--:--"]))

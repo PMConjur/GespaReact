@@ -1,7 +1,7 @@
 import React from "react";
 import { Table } from "react-bootstrap";
 
-const TablePostal = ({ postalTableData, handlePostalRowClick, renderCell }) => {
+const TablePostal = ({ postalTableData, handlePostalRowClick, renderCell, isFocused }) => {
   // Campos a ocultar
   const hiddenFields = ["idCódigoPostal"];
 
@@ -35,68 +35,100 @@ const TablePostal = ({ postalTableData, handlePostalRowClick, renderCell }) => {
       : baseHeaders;
 
   return (
-    <div
-      className="scroll-container"
-      style={{
-        width: "100%",
-        maxHeight: "550px",
-        overflowY: "auto",
-        display: "flex",
-        backgroundColor: "#343a40",
-        color: "#ffffff",
-        scrollbarColor: "#6c757d #343a40",
-        scrollbarWidth: "thin",
-      }}
-    >
-      <Table
-        striped
-        bordered
-        hover
-        responsive
-        variant="dark"
-        style={{ fontSize: "13px" }}
+    <>
+      <style>
+        {`
+          .postal-table-focus {
+            border: 3px solid #fff200 !important;
+            box-shadow: 0 0 16px #fff200;
+            transition: border 0.3s, box-shadow 0.3s;
+            /* Solo el borde parpadea */
+            animation: borderBlink 1s steps(1, end) infinite;
+          }
+          @keyframes borderBlink {
+            0% { border-color: #fff200; }
+            50% { border-color: #343a40; }
+            100% { border-color: #fff200; }
+          }
+          @keyframes postalFocusAnim {
+            from { box-shadow: 0 0 16px #fff200; }
+            to { box-shadow: 0 0 32px #fff200; }
+          }
+          /* Scrollbar y sticky header igual que tabla de visitas */
+          .postal-scroll-container {
+            width: 100%;
+            max-height: 250px;
+            overflow-y: auto;
+            display: flex;
+            background-color: #343a40;
+            color: #ffffff;
+            scrollbar-color: #6c757d #343a40;
+            scrollbar-width: thin;
+          }
+          .postal-scroll-container::-webkit-scrollbar {
+            width: 8px;
+          }
+          .postal-scroll-container::-webkit-scrollbar-thumb {
+            background: #6c757d;
+          }
+          .postal-scroll-container::-webkit-scrollbar-track {
+            background: #343a40;
+          }
+          .postal-table th {
+            position: sticky;
+            top: -1px;
+            z-index: 1;
+            background-color: #343a40;
+          }
+        `}
+      </style>
+      <div
+        className={`postal-scroll-container${isFocused ? " postal-table-focus" : ""}`}
       >
-        <thead
-          style={{
-            position: "sticky",
-            top: -1,
-            zIndex: 1,
-            backgroundColor: "#343a40",
-          }}
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          variant="dark"
+          className="postal-table"
+          style={{ fontSize: "13px" }}
         >
-          <tr style={{ height: "55px" }}>
-            {headers.map((header, idx) => (
-              <th key={idx}>{header.label}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {postalTableData?.length > 0 ? (
-            postalTableData.map((item, index) => (
-              <tr
-                key={index}
-                onClick={() => handlePostalRowClick(item)}
-                style={{ cursor: "pointer" }}
-              >
-                {headers.map((header, idx) => (
-                  <td key={idx}>
-                    {header.key === "zonaRiesgo"
-                      ? renderCell(item[header.key] ? "Sí" : "No")
-                      : renderCell(item[header.key])}
-                  </td>
-                ))}
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={headers.length} style={{ textAlign: "center", color: "#bbb" }}>
-                Sin datos para mostrar
-              </td>
+          <thead>
+            <tr style={{ height: "55px" }}>
+              {headers.map((header, idx) => (
+                <th key={idx}>{header.label}</th>
+              ))}
             </tr>
-          )}
-        </tbody>
-      </Table>
-    </div>
+          </thead>
+          <tbody>
+            {postalTableData?.length > 0 ? (
+              postalTableData.map((item, index) => (
+                <tr
+                  key={index}
+                  onClick={() => handlePostalRowClick(item)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {headers.map((header, idx) => (
+                    <td key={idx}>
+                      {header.key === "zonaRiesgo"
+                        ? renderCell(item[header.key] ? "Sí" : "No")
+                        : renderCell(item[header.key])}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={headers.length} style={{ textAlign: "center", fontWeight: "bold" }}>
+                  Sin datos para mostrar
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      </div>
+    </>
   );
 };
 
