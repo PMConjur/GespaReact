@@ -111,7 +111,6 @@ const Multideudores = ({ show, handleClose, searchResults }) => {
           )}
         </Container>
       </Modal.Body>
-      <Modal.Footer></Modal.Footer>
     </Modal>
   );
 };

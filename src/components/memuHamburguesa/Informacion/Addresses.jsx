@@ -15,7 +15,6 @@ import { formatearFecha, reemplazarValores } from "../../ValoresCatalogos.js";
 import TablePostal from "./TablePostal"; // Importar el nuevo componente
 import FormularioDom from "./FormularioDom"; // Importar el nuevo componente
 
-
 const Addresses = ({ show, handleClose }) => {
   const { searchResults } = useContext(AppContext); // Obtén el contexto
   const [formData, setFormData] = useState({
@@ -52,8 +51,11 @@ const Addresses = ({ show, handleClose }) => {
   const [currentIndex, setCurrentIndex] = useState(0); // Índice actual del elemento seleccionado
   const [postalCodesByIdData, setPostalCodesByIdData] = useState([]); // Tabla basada en idCódigoPostal
   const [isCommentHovered, setIsCommentHovered] = useState(false); // Estado para hover del comentario
+  const [isPostalTableFocused, setIsPostalTableFocused] = useState(false); // Nuevo estado para el focus visual
+  const [focusAnimCodigoPostal, setFocusAnimCodigoPostal] = useState(true);
   const toastIdsRef = useRef([]);
   const toast428ShownRef = useRef(false); // Nuevo useRef para el toast 428
+  const postalTableFirstFocusShownRef = useRef(false); // Ref para controlar si ya se mostró el focus
 
   // Función para mostrar toast y guardar su id
   const showToast = (fn, ...args) => {
@@ -105,6 +107,8 @@ const Addresses = ({ show, handleClose }) => {
     setCurrentIndex(0);
     setPostalCodesByIdData([]);
     setIsCommentHovered(false);
+    setIsPostalTableFocused(false);
+    postalTableFirstFocusShownRef.current = false;
     // Limpiar toasts también
     clearAllToasts();
   };
@@ -113,6 +117,10 @@ const Addresses = ({ show, handleClose }) => {
   useEffect(() => {
     if (show) {
       resetAllStates();
+      // Deshabilitar todos los campos si no hay cuenta válida
+      if (!idCuenta) {
+        setIsFormDisabled(true);
+      }
     } else {
       resetAllStates();
     }
@@ -235,6 +243,17 @@ const Addresses = ({ show, handleClose }) => {
       // Mostrar solo un toast de éxito, cerrando cualquier otro abierto antes
       clearAllToasts();
       showToast(toast.success, "Códigos postales cargados correctamente.", { duration: 1200 });
+
+      // --- NUEVO: activar focus visual solo la primera vez que hay resultados ---
+      if (
+        !postalTableFirstFocusShownRef.current &&
+        response.data.codigosPostales.length > 0
+      ) {
+        setIsPostalTableFocused(true);
+        postalTableFirstFocusShownRef.current = true;
+        setTimeout(() => setIsPostalTableFocused(false), 3000);
+      }
+      // -------------------------------------------------------------------------
     } catch (error) {
       if (error.response?.status === 404) {
         console.warn(`Código postal no encontrado: ${codigoPostal}.`);
@@ -621,6 +640,8 @@ const Addresses = ({ show, handleClose }) => {
     setClase(""); // Limpia el campo "Clase"
     setIsFormDisabled(false); // Habilita el formulario
     setIsDomicilioTableVisible(true); // Muestra la tabla de domicilios
+    // Activa la animación de focus en código postal
+    setFocusAnimCodigoPostal && setFocusAnimCodigoPostal(true);
   };
 
   const handlePostalRowClick = (item) => {
@@ -708,6 +729,28 @@ const Addresses = ({ show, handleClose }) => {
       // Limpiar la tabla postal
       setPostalTableData([]);
       setIsPostalTableVisible(false); // Ocultar la tabla postal
+
+      // Limpiar todos los campos del formulario tras registro exitoso
+      setFormData({
+        calle: "",
+        numExt: "",
+        numInt: "",
+        colonia: "",
+        municipio: "",
+        estado: "",
+        origen: "",
+        fecha_Insert: "",
+        codigoPostal: "",
+        idCódigoPostal: "",
+        informacion: "",
+      });
+      setClase("");
+      setIdInformacion("");
+      setIsEstadoVisible(false);
+
+      // Activa la animación de focus en código postal
+      setFocusAnimCodigoPostal(true);
+
     } catch (error) {
       console.error("Error al guardar la dirección:", error);
 
@@ -715,7 +758,7 @@ const Addresses = ({ show, handleClose }) => {
       if (error.response?.status === 400 && error.response?.data?.message) {
         showToast(toast.error, error.response.data.message, { duration: 2000 });
       } else {
-        showToast(toast.error, "No se pudo guardar la dirección. Intente nuevamente.", { duration: 2000 });
+        showToast(toast.error, "Verifica que se esten enviando todos los campo selecionables.", { duration: 2000 });
       }
     } finally {
       setIsLoading(false);
@@ -783,7 +826,6 @@ const Addresses = ({ show, handleClose }) => {
     handleClose(); // Cierra el modal
   };
 
-
   return (
     <Modal
       show={show}
@@ -804,287 +846,276 @@ const Addresses = ({ show, handleClose }) => {
         }}
       >
         <Container fluid>
-          {/* Paginado y botón Limpiar centrados en el modal */}
-          <Row className="align-items-center mb-2">
-            <Col className="d-flex flex-column align-items-center justify-content-center">
-              <FormularioDom
-                // Solo renderiza el paginado, no el formulario completo
-                formData={{}} // dummy
-                setFormData={() => {}}
-                handleSaveNewAddress={() => {}}
-                isFormDisabled={true}
-                clase=""
-                setClase={() => {}}
-                handlePreviousItem={handlePreviousItem}
-                handleNextItem={handleNextItem}
-                currentIndex={currentIndex}
-                totalItems={tableDomicilioData.length + 1} // +1 para el formulario nuevo
-                onSearchPostalCode={() => {}}
-                handlePostalCodeChange={() => {}}
-                idInformacion=""
-                setIdInformacion={() => {}}
-                isEstadoVisible={false}
-                isIdentifyButtonDisabled={true}
-                handleSubmitAddressInformation={() => {}}
-                onlyPagination={true}
-                disableRegistrarDomicilio={true}
-                disableCodigoPostal={true}
-              />
-              <Button
-                variant="primary"
-                className="mt-3"
-                onClick={() => {
-                  setCurrentIndex(0);
-                  clearFormFields();
-                  setIsFormDisabled(false);
-                  setSelectedDomicilio(null);
-                  setIdInformacion("");
-                  setIsEstadoVisible(false);
+          {/* 1. Tabla postal arriba, ancho 12, maxHeight 250px */}
+          <Row>
+            <Col xs={12}>
+              <div style={{ maxHeight: "250px", overflowY: "auto" }}>
+                <TablePostal
+                  postalTableData={postalTableData}
+                  handlePostalRowClick={handlePostalRowClick}
+                  renderCell={renderCell}
+                  isFocused={isPostalTableFocused} // <-- Nuevo prop
+                />
+              </div>
+            </Col>
+          </Row>
+
+          {/* 2. Formulario (9) y paginador/botones/limpiar (3) en el mismo row, sin espacio muerto */}
+          <Row className="align-items-start mt-3">
+            <Col xs={12}>
+              <Row className="align-items-start">
+                {/* FormularioDom (ancho máx 9) */}
+                <Col xs={12} md={8}>
+                  <div style={{ marginTop: "18px" }}>
+                    <FormularioDom
+                      formData={formData}
+                      setFormData={setFormData}
+                      handleSaveNewAddress={handleSaveNewAddress}
+                      isFormDisabled={isFormDisabled || !idCuenta}
+                      clase={clase}
+                      setClase={setClase}
+                      handlePreviousItem={handlePreviousItem}
+                      handleNextItem={handleNextItem}
+                      currentIndex={currentIndex}
+                      totalItems={tableDomicilioData.length + 1}
+                      onSearchPostalCode={loadPostalCodesByText}
+                      handlePostalCodeChange={handlePostalCodeChange}
+                      handleIdCodigoPostalChange={handleIdCodigoPostalChange}
+                      idInformacion={idInformacion}
+                      setIdInformacion={setIdInformacion}
+                      isEstadoVisible={isEstadoVisible}
+                      isIdentifyButtonDisabled={isIdentifyButtonDisabled}
+                      handleSubmitAddressInformation={handleSubmitAddressInformation}
+                      disableRegistrarDomicilio={!idCuenta}
+                      disableCodigoPostal={!idCuenta}
+                      focusAnimCodigoPostal={focusAnimCodigoPostal}
+                      setFocusAnimCodigoPostal={setFocusAnimCodigoPostal}
+                    />
+                  </div>
+                </Col>
+                {/* Botones paginador, contador y limpiar (ancho 3), centrados */}
+                <Col
+                  xs={12}
+                  md={4}
+                  className="d-flex justify-content-center align-items-center"
+                  style={{ minHeight: "100%" }}
+                >
+                  <div
+                    style={{
+                      marginTop: "64px",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  >
+                    <FormularioDom
+                      // Solo renderiza el paginado, no el formulario completo
+                      formData={{}} // dummy
+                      setFormData={() => {}}
+                      handleSaveNewAddress={() => {}}
+                      isFormDisabled={true}
+                      clase=""
+                      setClase={() => {}}
+                      handlePreviousItem={handlePreviousItem}
+                      handleNextItem={handleNextItem}
+                      currentIndex={currentIndex}
+                      totalItems={tableDomicilioData.length + 1}
+                      onSearchPostalCode={() => {}}
+                      handlePostalCodeChange={() => {}}
+                      idInformacion=""
+                      setIdInformacion={() => {}}
+                      isEstadoVisible={false}
+                      isIdentifyButtonDisabled={true}
+                      handleSubmitAddressInformation={() => {}}
+                      onlyPagination={true}
+                      disableRegistrarDomicilio={true}
+                      disableCodigoPostal={true}
+                    />
+                    <Button
+                      variant="primary"
+                      className="mt-3"
+                      onClick={() => {
+                        setCurrentIndex(0);
+                        clearFormFields();
+                        setIsFormDisabled(false);
+                        setSelectedDomicilio(null);
+                        setIdInformacion("");
+                        setIsEstadoVisible(false);
+                        setPostalTableData([]);
+                        setFocusAnimCodigoPostal(true); // Activa animación al limpiar
+                      }}
+                      disabled={currentIndex === 0 || !idCuenta} // <-- Desactiva cuando es formulario de nuevo registro o sin cuenta
+                    >
+                      Limpiar Formulario
+                    </Button>
+                  </div>
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+
+          {/* 3. Tabla de visitas al final, ancho 12 */}
+          <Row className="mt-3">
+            <Col xs={12}>
+              <h4>Visitas</h4>
+              <div
+                className="scroll-container"
+                style={{
+                  width: "100%",
+                  maxHeight: "200px",
+                  overflowY: "auto",
+                  display: "flex",
+                  backgroundColor: "#343a40",
+                  color: "#ffffff",
+                  scrollbarColor: "#6c757d #343a40",
+                  scrollbarWidth: "thin",
                 }}
               >
-                Limpiar Formulario
-              </Button>
-            </Col>
-          </Row>
-          <Row>
-            {/* Postal Table a la izquierda (8/12 = 66.66%) */}
-            <Col md={8} style={{ minWidth: 0 }}>
-              <h4>Postal</h4>
-              <TablePostal
-                postalTableData={postalTableData}
-                handlePostalRowClick={handlePostalRowClick}
-                renderCell={renderCell}
-              />
-            </Col>
-            {/* FormularioDom a la derecha (4/12 = 33.33%) */}
-            <Col md={4} style={{ minWidth: 0 }}>
-              <FormularioDom
-                formData={formData}
-                setFormData={setFormData}
-                handleSaveNewAddress={handleSaveNewAddress}
-                isFormDisabled={isFormDisabled}
-                clase={clase}
-                setClase={setClase}
-                handlePreviousItem={handlePreviousItem}
-                handleNextItem={handleNextItem}
-                currentIndex={currentIndex}
-                totalItems={tableDomicilioData.length + 1}
-                onSearchPostalCode={loadPostalCodesByText}
-                handlePostalCodeChange={handlePostalCodeChange}
-                handleIdCodigoPostalChange={handleIdCodigoPostalChange}
-                idInformacion={idInformacion}
-                setIdInformacion={setIdInformacion}
-                isEstadoVisible={isEstadoVisible}
-                isIdentifyButtonDisabled={isIdentifyButtonDisabled}
-                handleSubmitAddressInformation={handleSubmitAddressInformation}
-                disableRegistrarDomicilio={!idCuenta}
-                disableCodigoPostal={!idCuenta}
-              />
-            </Col>
-          </Row>
-          {/* Ocultar visualmente la tabla Postal por ID y el campo de entrada, pero mantenerlos en el DOM */}
-          <Row>
-            <Col md={12} style={{ minWidth: 0 }}>
-              <div style={{ display: "none" }}>
-                <h4>Postal por ID</h4>
-                <Form.Group controlId="idCodigoPostalInput">
-                  <Form.Label>Ingrese ID Código Postal</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData.códigoPostal}
-                    onChange={handleIdCodigoPostalChange}
-                    placeholder="Ingrese el ID Código Postal"
-                  />
-                </Form.Group>
-                <Table striped bordered hover responsive variant="dark">
-                  <thead>
-                    <tr>
-                      <th>ID Código Postal</th>
-                      <th>Código Postal</th>
-                      <th>Colonia</th>
-                      <th>Municipio</th>
-                      <th>Estado</th>
-                      <th>Zona</th>
-                      <th>Asentamiento</th>
-                      <th>Periferia</th>
-                      <th>Estancia</th>
+                <Table
+                  striped
+                  bordered
+                  hover
+                  responsive
+                  variant="dark"
+                  style={{ fontSize: "13px" }}
+                >
+                  <thead
+                    style={{
+                      position: "sticky",
+                      top: -1,
+                      zIndex: 1,
+                      backgroundColor: "#343a40",
+                    }}
+                  >
+                    <tr style={{ height: "55px" }}>
+                      <th>Fecha</th>
+                      <th>Hora</th>
+                      <th>Contacto</th>
+                      <th>Situación</th>
+                      <th>Causa No Pago</th>
+                      <th>Nombre</th>
+                      <th>Parentesco</th>
                       <th>Sucursal</th>
-                      <th>Zona de Riesgo</th>
+                      <th>Color Fachada</th>
+                      <th>Color Puerta</th>
+                      <th>Color Herrería</th>
+                      <th>Pisos</th>
+                      <th>Vivienda</th>
+                      <th>Habitación</th>
+                      <th>Económico</th>
+                      <th>NombrePropietario</th>
+                      <th>AutoMapeo</th>
+                      <th>AutoMarca</th>
+                      <th>AutoAño</th>
+                      <th>CalleHorizontalNorte</th>
+                      <th>CalleHorizontalSur</th>
+                      <th>CalleVerticalOeste</th>
+                      <th>CalleVerticalEste</th>
+                      <th>Visitador</th>
+                      <th>Capturista</th>
+                      <th>FechaPagoNegociación</th>
+                      <th>MontoNegociación</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {postalCodesByIdData.map((item, index) => (
-                      <tr key={index} onClick={() => handlePostalIdRowClick(item)}>
-                        <td>{item.idCódigoPostal}</td>
-                        <td>{item.CódigoPostal}</td>
-                        <td>{item.Colonia}</td>
-                        <td>{item.Municipio}</td>
-                        <td>{item.Estado}</td>
-                        <td>{item.Zona}</td>
-                        <td>{item.Asentamiento}</td>
-                        <td>{item.Periferia}</td>
-                        <td>{item.Estancia}</td>
-                        <td>{item.Sucursal}</td>
-                        <td>{item.ZonaRiesgo ? "Sí" : "No"}</td>
-                      </tr>
-                    ))}
+                    {tableDomData.map((item, index) => {
+                      const idContacto =
+                        item.idContacto !== undefined && item.idContacto !== ""
+                          ? item.idContacto
+                          : null;
+                      const idSituacion =
+                        item.idSituacion !== undefined && item.idSituacion !== ""
+                          ? item.idSituacion
+                          : (item.idSituación !== undefined && item.idSituación !== "" ? item.idSituación : null);
+                      const idCausaNoPago =
+                        item.idCausaNoPago !== undefined && item.idCausaNoPago !== ""
+                          ? item.idCausaNoPago
+                          : null;
+                      const idParentesco =
+                        item.idParentesco !== undefined && item.idParentesco !== ""
+                          ? item.idParentesco
+                          : null;
+                      const idSucursal = 0;
+
+                      return (
+                        <tr
+                          key={index}
+                          onClick={() => handleRowClick(item)}
+                          style={{
+                            cursor: "pointer",
+                            backgroundColor:
+                              selectedGestion === item ? "#264d26" : "inherit"
+                          }}
+                        >
+                          <td>{renderCell(formatearFecha(item.Fecha))}</td>
+                          <td>{renderCell(item.Hora)}</td>
+                          <td>{renderCell(reemplazarValores(idContacto))}</td>
+                          <td>{renderCell(reemplazarValores(idSituacion))}</td>
+                          <td>{renderCell(reemplazarValores(idCausaNoPago))}</td>
+                          <td>{renderCell(item.NombreContacto)}</td>
+                          <td>{renderCell(reemplazarValores(idParentesco))}</td>
+                          <td>{renderCell(reemplazarValores(idSucursal))}</td>
+                          <td>{renderCell(item.ColorFachada)}</td>
+                          <td>{renderCell(item.ColorPuerta)}</td>
+                          <td>{renderCell(item.ColorHerrería)}</td>
+                          <td>{renderCell(item.Pisos)}</td>
+                          <td>{renderCell(item.idVivienda)}</td>
+                          <td>{renderCell(item.idHabitación)}</td>
+                          <td>{renderCell(item.idEconómico)}</td>
+                          <td>{renderCell(item.NombrePropietario)}</td>
+                          <td>{renderCell(item.AutoMapeo)}</td>
+                          <td>{renderCell(item.AutoMarca)}</td>
+                          <td>{renderCell(item.AutoAño)}</td>
+                          <td>{renderCell(item.CalleHorizontalNorte)}</td>
+                          <td>{renderCell(item.CalleHorizontalSur)}</td>
+                          <td>{renderCell(item.CalleVerticalOeste)}</td>
+                          <td>{renderCell(item.CalleVerticalEste)}</td>
+                          <td>{renderCell(item.Visitador)}</td>
+                          <td>{renderCell(item.Capturista)}</td>
+                          <td>{renderCell(item.FechaPagoNegociación)}</td>
+                          <td>{renderCell(item.MontoNegociación)}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </Table>
               </div>
             </Col>
           </Row>
-          <h4>Visitas</h4>
-          <div
-            className="scroll-container"
-            style={{
-              width: "100%",
-              maxHeight: "200px",
-              overflowY: "auto",
-              display: "flex",
-              backgroundColor: "#343a40",
-              color: "#ffffff",
-              scrollbarColor: "#6c757d #343a40",
-              scrollbarWidth: "thin",
-            }}
-          >
-            <Table
-              striped
-              bordered
-              hover
-              responsive
-              variant="dark"
-              style={{ fontSize: "13px" }}
-            >
-              <thead
-                style={{
-                  position: "sticky",
-                  top: -1,
-                  zIndex: 1,
-                  backgroundColor: "#343a40",
-                }}
-              >
-                <tr style={{ height: "55px" }}>
-                  <th>Fecha</th>
-                  <th>Hora</th>
-                  <th>Contacto</th>
-                  <th>Situación</th>
-                  <th>Causa No Pago</th>
-                  <th>Nombre</th>
-                  <th>Parentesco</th>
-                  <th>Sucursal</th>
-                  <th>Color Fachada</th>
-                  <th>Color Puerta</th>
-                  <th>Color Herrería</th>
-                  <th>Pisos</th>
-                  <th>Vivienda</th>
-                  <th>Habitación</th>
-                  <th>Económico</th>
-                  <th>NombrePropietario</th>
-                  <th>AutoMapeo</th>
-                  <th>AutoMarca</th>
-                  <th>AutoAño</th>
-                  <th>CalleHorizontalNorte</th>
-                  <th>CalleHorizontalSur</th>
-                  <th>CalleVerticalOeste</th>
-                  <th>CalleVerticalEste</th>
-                  <th>Visitador</th>
-                  <th>Capturista</th>
-                  <th>FechaPagoNegociación</th>
-                  <th>MontoNegociación</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tableDomData.map((item, index) => {
-                  const idContacto =
-                    item.idContacto !== undefined && item.idContacto !== ""
-                      ? item.idContacto
-                      : null;
-                  const idSituacion =
-                    item.idSituacion !== undefined && item.idSituacion !== ""
-                      ? item.idSituacion
-                      : (item.idSituación !== undefined && item.idSituación !== "" ? item.idSituación : null);
-                  const idCausaNoPago =
-                    item.idCausaNoPago !== undefined && item.idCausaNoPago !== ""
-                      ? item.idCausaNoPago
-                      : null;
-                  const idParentesco =
-                    item.idParentesco !== undefined && item.idParentesco !== ""
-                      ? item.idParentesco
-                      : null;
-                  const idSucursal = 0;
-
-                  return (
-                    <tr
-                      key={index}
-                      onClick={() => handleRowClick(item)}
-                      style={{
-                        cursor: "pointer",
-                        backgroundColor:
-                          selectedGestion === item ? "#264d26" : "inherit"
-                      }}
-                    >
-                      <td>{renderCell(formatearFecha(item.Fecha))}</td>
-                      <td>{renderCell(item.Hora)}</td>
-                      <td>{renderCell(reemplazarValores(idContacto))}</td>
-                      <td>{renderCell(reemplazarValores(idSituacion))}</td>
-                      <td>{renderCell(reemplazarValores(idCausaNoPago))}</td>
-                      <td>{renderCell(item.NombreContacto)}</td>
-                      <td>{renderCell(reemplazarValores(idParentesco))}</td>
-                      <td>{renderCell(reemplazarValores(idSucursal))}</td>
-                      <td>{renderCell(item.ColorFachada)}</td>
-                      <td>{renderCell(item.ColorPuerta)}</td>
-                      <td>{renderCell(item.ColorHerrería)}</td>
-                      <td>{renderCell(item.Pisos)}</td>
-                      <td>{renderCell(item.idVivienda)}</td>
-                      <td>{renderCell(item.idHabitación)}</td>
-                      <td>{renderCell(item.idEconómico)}</td>
-                      <td>{renderCell(item.NombrePropietario)}</td>
-                      <td>{renderCell(item.AutoMapeo)}</td>
-                      <td>{renderCell(item.AutoMarca)}</td>
-                      <td>{renderCell(item.AutoAño)}</td>
-                      <td>{renderCell(item.CalleHorizontalNorte)}</td>
-                      <td>{renderCell(item.CalleHorizontalSur)}</td>
-                      <td>{renderCell(item.CalleVerticalOeste)}</td>
-                      <td>{renderCell(item.CalleVerticalEste)}</td>
-                      <td>{renderCell(item.Visitador)}</td>
-                      <td>{renderCell(item.Capturista)}</td>
-                      <td>{renderCell(item.FechaPagoNegociación)}</td>
-                      <td>{renderCell(item.MontoNegociación)}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </Table>
-          </div>
+          {/* Comentario debajo de la tabla de visitas */}
           <Row>
-            <div
-              style={{
-                display: "inline-block",
-                backgroundColor: isCommentHovered
-                  ? "rgb(26.5611940299, 251.5388059701, 123.4746268657)"
-                  : "#000000",
-                color: isCommentHovered
-                  ? "#000"
-                  : "rgb(26.5611940299, 251.5388059701, 123.4746268657)",
-                fontWeight: "bold",
-                borderRadius: "10px",
-                padding: "5px",
-                transition: "background-color 0.5s ease, color 0.5s ease",
-                cursor: "pointer",
-                marginTop: "8px"
-              }}
-              onMouseEnter={() => setIsCommentHovered(true)}
-              onMouseLeave={() => setIsCommentHovered(false)}
-            >
-              <span>
-                Comentario:{" "}
-                {selectedGestion && selectedGestion.Comentario
-                  ? renderCell(selectedGestion.Comentario)
-                  : "Seleccione una gestión para ver el comentario"}
-              </span>
-            </div>
+            <Col xs={12}>
+              <div
+                style={{
+                  display: "inline-block",
+                  backgroundColor: isCommentHovered
+                    ? "rgb(26.5611940299, 251.5388059701, 123.4746268657)"
+                    : "#000000",
+                  color: isCommentHovered
+                    ? "#000"
+                    : "rgb(26.5611940299, 251.5388059701, 123.4746268657)",
+                  fontWeight: "bold",
+                  borderRadius: "10px",
+                  padding: "5px",
+                  transition: "background-color 0.5s ease, color 0.5s ease",
+                  cursor: "pointer",
+                  marginTop: "8px"
+                }}
+                onMouseEnter={() => setIsCommentHovered(true)}
+                onMouseLeave={() => setIsCommentHovered(false)}
+              >
+                <span>
+                  Comentario:{" "}
+                  {selectedGestion && selectedGestion.Comentario
+                    ? renderCell(selectedGestion.Comentario)
+                    : "Seleccione una gestión para ver el comentario"}
+                </span>
+              </div>
+            </Col>
           </Row>
-          {/*TableVisits.jsx */}
         </Container>
       </Modal.Body>
     </Modal>

@@ -179,7 +179,7 @@ const TableOnlineCharge = ({ customColumnNames = {}, refreshTrigger }) => {
           <thead
             style={{
               position: "sticky",
-              top: 0,
+              top: -1,
               zIndex: 1,
               backgroundColor: "#343a40",
             }}
