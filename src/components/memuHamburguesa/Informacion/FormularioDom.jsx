@@ -441,7 +441,7 @@ const FormularioDom = ({
                   }
                 }}
                 placeholder="Ingrese Código Postal"
-                disabled={!isNuevoRegistro}
+                disabled={!isNuevoRegistro || isFormDisabled}
               />
             </Form.Group>
           </Col>
@@ -453,7 +453,7 @@ const FormularioDom = ({
                 value={formData?.calle}
                 className={focusError.calle ? "focus-error-anim" : ""}
                 onChange={(e) => handleTextInputChange('calle', e.target.value)}
-                disabled={!isNuevoRegistro}
+                disabled={!isNuevoRegistro || isFormDisabled}
                 onKeyDown={(e) => {
                   if (e.key === ' ') {
                     e.stopPropagation(); // Permite espacios
@@ -478,7 +478,7 @@ const FormularioDom = ({
                     e.stopPropagation(); // Permite espacios
                   }
                 }}
-                disabled={!isNuevoRegistro}
+                disabled={!isNuevoRegistro || isFormDisabled}
               />
             </Form.Group>
           </Col>
@@ -497,7 +497,7 @@ const FormularioDom = ({
                     e.stopPropagation(); // Permite espacios
                   }
                 }}
-                disabled={!isNuevoRegistro}
+                disabled={!isNuevoRegistro || isFormDisabled}
               />
             </Form.Group>
           </Col>
@@ -513,7 +513,7 @@ const FormularioDom = ({
                 value={formData?.colonia}
                 className={focusError.colonia ? "focus-error-anim" : ""}
                 onChange={(e) => handleTextInputChange('colonia', e.target.value)}
-                disabled={!isNuevoRegistro}
+                disabled={!isNuevoRegistro || isFormDisabled}
                 onKeyDown={(e) => {
                   if (e.key === ' ') {
                     e.stopPropagation();
@@ -530,7 +530,7 @@ const FormularioDom = ({
                 value={formData?.municipio}
                 className={focusError.municipio ? "focus-error-anim" : ""}
                 onChange={(e) => handleTextInputChange('municipio', e.target.value)}
-                disabled={!isNuevoRegistro}
+                disabled={!isNuevoRegistro || isFormDisabled}
                 onKeyDown={(e) => {
                   if (e.key === ' ') {
                     e.stopPropagation();
@@ -547,7 +547,7 @@ const FormularioDom = ({
                 value={formData?.estado}
                 className={focusError.estado ? "focus-error-anim" : ""}
                 onChange={(e) => handleTextInputChange('estado', e.target.value)}
-                disabled={!isNuevoRegistro}
+                disabled={!isNuevoRegistro || isFormDisabled}
                 onKeyDown={(e) => {
                   if (e.key === ' ') {
                     e.stopPropagation();
@@ -628,7 +628,7 @@ const FormularioDom = ({
                     <Button
                       variant="success"
                       onClick={handleIdentifyClick}
-                      disabled={!isIdentifyButtonEnabled || localIdentifyDisabled}
+                      disabled={!isIdentifyButtonEnabled || localIdentifyDisabled || isFormDisabled}
                       className={`w-100${identifyBlink ? " identify-blink" : ""}`}
                     >
                       Identificar Informacio
@@ -639,7 +639,7 @@ const FormularioDom = ({
                       <Form.Label>Seleccione Informacio</Form.Label>
                       <Form.Select
                         value={idInformacion}
-                        disabled={localSelectDisabled || !isEstadoVisible}
+                        disabled={localSelectDisabled || !isEstadoVisible || isFormDisabled}
                         onChange={handleSelectInformacion}
                       >
                         <option value="">Selecciona</option>

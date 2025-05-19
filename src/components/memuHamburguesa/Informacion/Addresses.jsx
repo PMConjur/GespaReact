@@ -117,6 +117,10 @@ const Addresses = ({ show, handleClose }) => {
   useEffect(() => {
     if (show) {
       resetAllStates();
+      // Deshabilitar todos los campos si no hay cuenta válida
+      if (!idCuenta) {
+        setIsFormDisabled(true);
+      }
     } else {
       resetAllStates();
     }
@@ -867,7 +871,7 @@ const Addresses = ({ show, handleClose }) => {
                       formData={formData}
                       setFormData={setFormData}
                       handleSaveNewAddress={handleSaveNewAddress}
-                      isFormDisabled={isFormDisabled}
+                      isFormDisabled={isFormDisabled || !idCuenta}
                       clase={clase}
                       setClase={setClase}
                       handlePreviousItem={handlePreviousItem}
@@ -943,7 +947,7 @@ const Addresses = ({ show, handleClose }) => {
                         setPostalTableData([]);
                         setFocusAnimCodigoPostal(true); // Activa animación al limpiar
                       }}
-                      disabled={currentIndex === 0} // <-- Desactiva cuando es formulario de nuevo registro
+                      disabled={currentIndex === 0 || !idCuenta} // <-- Desactiva cuando es formulario de nuevo registro o sin cuenta
                     >
                       Limpiar Formulario
                     </Button>
