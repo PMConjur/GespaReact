@@ -16,7 +16,10 @@ import { toast } from "sonner";
 import Validators from "./fragments/Validators"; 
 
 const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
-  const { searchResults, idEjecutivo, isManagment, setNegotiationActive } =
+   const responseData =
+    location.state || JSON.parse(localStorage.getItem("responseData"));
+  const idEjecutivo = responseData?.ejecutivo?.infoEjecutivo?.idEjecutivo;
+  const { searchResults, isManagment, setNegotiationActive } =
     useContext(AppContext);
   useEffect(() => {
     console.log("Contenido de isManagment:", isManagment);
@@ -369,7 +372,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         no: calculo.no,
         fecha: new Date(calculo.fecha).toISOString(), // Convertir a formato ISO
         saldo: calculo.saldo || 0,
-        pago: calculo.pago || 0,
+        pago: (Number(calculo.pago) || 0).toFixed(2),
         saldoFinal: calculo.saldoFinal || 0,
       }));
 
@@ -499,7 +502,7 @@ const handleRowClick = (index) => {
     ...prev,
     filaMod: index, // Actualiza filaMod con el índice seleccionado
     montoMod: calculoSeleccionado.pago
-      ? calculoSeleccionado.pago.toString()
+      ? calculoSeleccionado.pago.toFixed(2)
       : "",
     fechaPagoMod: calculoSeleccionado.fecha
       ? new Date(calculoSeleccionado.fecha).toISOString().split("T")[0]
@@ -1162,7 +1165,7 @@ const handleRowClick = (index) => {
                 <Card className="rounded-lg mb-0">
                   <Card.Body className="d-flex p-0 pb-1 w-100">
                     <Form
-                      className="d-flex w-100 gap-5"
+                      className="d-block d-lg-flex w-100 gap-5"
                       style={{ alignItems: "center" }}
                     >
                       <Col>
@@ -1519,7 +1522,7 @@ const handleRowClick = (index) => {
                               </Form.Group>
                             </Row>
                             <Row className="d-flex w-100">
-                              <Form.Group className="mt-3">
+                              <Form.Group className="mb-3">
                                 <Form.Label>Meses</Form.Label>
                                 <Form.Control
                                   type="text"
@@ -1545,8 +1548,8 @@ const handleRowClick = (index) => {
                                   min={new Date().toISOString().split("T")[0]} // Fecha mínima: hoy
                                 />
                               </Form.Group>
-                              <div className="d-flex justify-content-between mt-4">
-                                <div className="">
+                              <div className="d-block d-lg-flex justify-content-between mt-4">
+                                <div className="text-end">
                                   <h5 className="text-light pt-1 fw-bold d-inline-flex">
                                     Tasa Mensual:{" "}
                                     {calculosData.tasaMensual
@@ -1554,7 +1557,7 @@ const handleRowClick = (index) => {
                                       : "0%"}
                                   </h5>
                                 </div>
-                                <div>
+                                <div className="text-end">
                                   <Button
                                     variant="primary"
                                     onClick={handleCalculateSecondPart}
@@ -1659,28 +1662,46 @@ const handleRowClick = (index) => {
                           </div>
                           <Form
                             style={{ alignItems: "end" }}
-                            className=" d-flex gap-3"
+                            className=" d-flex justify-content-between gap-3 w-100"
                           >
-                            <Form.Group className="">
+                            <Form.Group className="w-100">
                               <Form.Label>
                                 Seleccione el pago para modificar
                               </Form.Label>
                               <Form.Control
                                 placeholder="Monto"
-                                type="text"
                                 name="montoMod"
                                 value={
                                   modifyForm.montoMod !== ""
-                                    ? `$${Number(modifyForm.montoMod).toFixed(
-                                        2
-                                      )}`
+                                    ? `$${modifyForm.montoMod}` // Ya no formateamos aquí para controlar la entrada
                                     : ""
                                 }
                                 onChange={(e) => {
-                                  const value = e.target.value.replace(
-                                    /^\$/,
-                                    ""
-                                  );
+                                  let value = e.target.value.replace(/^\$/, "");
+                                  // Permitir solo números y un punto decimal
+                                  value = value.replace(/[^0-9.]/g, "");
+
+                                  // Limitar a un solo punto decimal
+                                  const parts = value.split(".");
+                                  if (parts.length > 2) {
+                                    value =
+                                      parts[0] +
+                                      "." +
+                                      parts.slice(1, 2).join("");
+                                  }
+
+                                  // Limitar a dos decimales después del punto
+                                  if (value.includes(".")) {
+                                    const [integerPart, decimalPart] =
+                                      value.split(".");
+                                    if (decimalPart && decimalPart.length > 2) {
+                                      value =
+                                        integerPart +
+                                        "." +
+                                        decimalPart.slice(0, 2);
+                                    }
+                                  }
+
                                   setModifyForm((prev) => ({
                                     ...prev,
                                     montoMod: value,
@@ -1688,12 +1709,12 @@ const handleRowClick = (index) => {
                                 }}
                                 onKeyPress={(e) => {
                                   if (!/^\d*\.?\d*$/.test(e.key)) {
-                                    e.preventDefault(); // Evita que se ingresen caracteres no numéricos
+                                    e.preventDefault();
                                   }
                                 }}
                               />
                             </Form.Group>
-                            <Form.Group className="">
+                            <Form.Group className="w-100">
                               <Form.Label>Fecha Pago</Form.Label>
                               <Form.Control
                                 type="date"
@@ -1722,7 +1743,7 @@ const handleRowClick = (index) => {
                                 }
                               />
                             </Form.Group>
-                            <div>
+                            <div className="text-end">
                               <Button
                                 variant="primary"
                                 onClick={() => {

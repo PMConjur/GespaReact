@@ -92,7 +92,6 @@ const DropdownActions = () => {
           </Dropdown.Item>
           <Dropdown.Item
             onClick={handleOpenModal}
-            href="/maintenance"
             className="custom-dropdown-item"
           >
             Busqueda
@@ -104,13 +103,12 @@ const DropdownActions = () => {
             Cargos en línea
           </Dropdown.Item>
           <Dropdown.Item
-            onClick={handleOpenComments} // Actualizar para abrir el modal de comentarios
+            onClick={handleOpenComments} 
             className="custom-dropdown-item"
           >
             Comentarios
           </Dropdown.Item>
           <Dropdown.Item
-            href="/maintenance"
             className="custom-dropdown-item"
             onClick={() => setModalShow(true)}
           >
@@ -121,8 +119,8 @@ const DropdownActions = () => {
             className="custom-dropdown-item"
           >
             Quejas
-          </Dropdown.Item>{" "}
-          {/* Actualizar para abrir el modal de quejas */}
+          </Dropdown.Item>
+          
           <Dropdown.Item
             onClick={handleShowProcessesWLP}
             className="custom-dropdown-item"
@@ -151,15 +149,15 @@ const DropdownActions = () => {
       <Complaints
         show={showComplaints}
         handleClose={handleCloseComplaints}
-      />{" "}
-      {/* Agregar el modal de quejas */}
+      />
+      
       <ProcessesWLP
         show={showProcessesWLP}
         handleCloseProcessesWLP={handleCloseProcessesWLP}
       />
       <Comments
-        show={showComments} // Pasar el estado al modal
-        handleClose={handleCloseComments} // Pasar la función de cierre al modal
+        show={showComments} 
+        handleClose={handleCloseComments} 
       />
     </>
   );

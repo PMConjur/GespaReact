@@ -52,7 +52,7 @@ const AccionamientosModal = ({ show, handleClose, data }) => {
   );
 };
 
-const Drives = ({ showModal, handleCloseModal }) => {
+const Drives = ({ showModal, handleCloseModal}) => {
   const [accionamientosData, setAccionamientosData] = useState([]);
   const { searchResults } = useContext(AppContext);
 

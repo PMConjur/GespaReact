@@ -31,30 +31,26 @@ const DebtorInformation = () => {
       <h4 className="text-secondary">
         Cartera: <strong className="text-white">American Express</strong>
       </h4>
-      <Breadcrumb style={{zIndex: '100'}}>
-        <Breadcrumb.Item href="#" onClick={handleShowModal}>
+      <Breadcrumb style={{ zIndex: "100" }}>
+        <Breadcrumb.Item onClick={handleShowModal}>
           Productividad
         </Breadcrumb.Item>
-        <Breadcrumb.Item href="#" onClick={handleShowModalR}>
+        <Breadcrumb.Item onClick={handleShowModalR}>
           Recuperación
         </Breadcrumb.Item>
-        {/*Migaja Times*/}
-        <Breadcrumb.Item href="#" onClick={handleShowModalTim}>
-          Tiempos
-        </Breadcrumb.Item>
-        <Breadcrumb.Item href="" onClick={handleShowCalculatorModal}>
+        <Breadcrumb.Item onClick={handleShowModalTim}>Tiempos</Breadcrumb.Item>
+        <Breadcrumb.Item onClick={handleShowCalculatorModal}>
           Simulador
         </Breadcrumb.Item>
-        <Breadcrumb.Item href="#">
-      {/*  */}
+        <div className="breadcrumb-item text-success">
           <DropdownsInfo />
-        </Breadcrumb.Item>
-        <Breadcrumb.Item href="#">
-          <DropdownAction />
-        </Breadcrumb.Item>
-        <Breadcrumb.Item href="#">
-          <DropdownExecutive />
-        </Breadcrumb.Item>
+        </div>
+        <div className="breadcrumb-item text-success">
+          <DropdownAction/>
+        </div>
+        <div className="breadcrumb-item text-success">
+          <DropdownExecutive/>
+        </div>
       </Breadcrumb>
       {showModal && (
         <ProductivityModal show={showModal} onHide={handleCloseModal} />
@@ -62,16 +58,14 @@ const DebtorInformation = () => {
       {showModalR && (
         <Recovery show={showModalR} handleClose={handleCloseModalR} />
       )}
-      {/**Mandar a llamar comp times */}
       {showModalTim && (
         <Times show={showModalTim} handleClose={handleCloseModalTim} />
       )}
-       {/* Modal de la Calculadora */}
-        {showCalculatorModal && (
+      {showCalculatorModal && (
         <CalculatorSimulator
           show={showCalculatorModal}
           handleClose={handleCloseCalculatorModal}
-          showCloseButton={true} // Prop para mostrar el botón de cerrar
+          showCloseButton={true}
         />
       )}
     </Row>
