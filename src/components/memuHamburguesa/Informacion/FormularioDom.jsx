@@ -202,18 +202,46 @@ const FormularioDom = ({
     return (
       <Row className="mb-3 w-100">
         <Col>
+          <style>
+            {`
+              .btn-nav-simple {
+                border-radius: 18px !important;
+                font-size: 1.13em !important;
+                letter-spacing: 1.5px;
+                font-weight: bold;
+                padding-left: 22px !important;
+                padding-right: 22px !important;
+                margin-bottom: 2px;
+                background: #222 !important;
+                color: #fff !important;
+                border: 3px solid;
+                border-image: linear-gradient(90deg, #6dd6ff, #07fb70) 1;
+                box-shadow: 0 0 8px #6dd6ff33, 0 0 8px #07fb7033;
+                transition: box-shadow 0.2s, border-image 0.2s;
+              }
+              .btn-nav-simple:focus, .btn-nav-simple:hover {
+                border-image: linear-gradient(90deg, #6dd6ff, #07fb70) 1;
+                box-shadow: 0 0 16px #6dd6ff99, 0 0 16px #07fb7099;
+                outline: none;
+              }
+              .btn-nav-label {
+                font-size: 0.92em;
+                font-weight: bold;
+                color: #fff;
+                margin-top: 2px;
+                letter-spacing: 1px;
+                text-align: center;
+                display: block;
+                user-select: none;
+              }
+            `}
+          </style>
           <div className="d-flex flex-column align-items-center justify-content-center" style={{ width: "100%" }}>
             <div className="d-flex justify-content-center align-items-center mb-2" style={{ width: "100%" }}>
               <Button
                 variant="dark"
                 size="sm"
-                className="me-3"
-                style={{
-                  minWidth: 110,
-                  fontWeight: "bold",
-                  borderRadius: "8px",
-                  letterSpacing: "1px",
-                }}
+                className="me-3 btn-nav-simple rounded-pill"
                 onClick={() => {
                   if (typeof setCurrentIndex === "function") {
                     setCurrentIndex(currentIndex === 0 ? totalItems - 1 : currentIndex - 1);
@@ -232,12 +260,7 @@ const FormularioDom = ({
               <Button
                 variant="dark"
                 size="sm"
-                style={{
-                  minWidth: 110,
-                  fontWeight: "bold",
-                  borderRadius: "8px",
-                  letterSpacing: "1px",
-                }}
+                className="btn-nav-simple rounded-circle"
                 onClick={() => {
                   if (typeof setCurrentIndex === "function") {
                     setCurrentIndex(currentIndex === totalItems - 1 ? 0 : currentIndex + 1);
@@ -443,13 +466,18 @@ const FormularioDom = ({
             <Form.Group>
               <Form.Label>Nú. Exterior</Form.Label>
               <Form.Control
-                maxLength={8}
+                maxLength={20}
                 type="text"
                 value={formData?.numExt}
                 className={focusError.numExt ? "focus-error-anim" : ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, numExt: e.target.value.replace(/[^0-9]/g, '') })
+                  setFormData({ ...formData, numExt: e.target.value })
                 }
+                onKeyDown={(e) => {
+                  if (e.key === ' ') {
+                    e.stopPropagation(); // Permite espacios
+                  }
+                }}
                 disabled={!isNuevoRegistro}
               />
             </Form.Group>
@@ -458,12 +486,17 @@ const FormularioDom = ({
             <Form.Group>
               <Form.Label>Nú. Interior</Form.Label>
               <Form.Control
-                maxLength={8}
+                maxLength={20}
                 type="text"
                 value={formData?.numInt}
                 onChange={(e) =>
-                  setFormData({ ...formData, numInt: e.target.value.replace(/[^0-9]/g, '') })
+                  setFormData({ ...formData, numInt: e.target.value })
                 }
+                onKeyDown={(e) => {
+                  if (e.key === ' ') {
+                    e.stopPropagation(); // Permite espacios
+                  }
+                }}
                 disabled={!isNuevoRegistro}
               />
             </Form.Group>
@@ -577,54 +610,48 @@ const FormularioDom = ({
 
           {/* Información Actual, Identificar, Dropdown y Registrar SOLO si NO es nuevo registro */}
           {!isNuevoRegistro && (
-            <Row className="mb-3 align-items-end">
-              <Col md={4}>
-                <Form.Group>
-                  <Form.Label>Información Actual</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={getInformacionString()}
-                    disabled
-                    placeholder="Sin información"
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={3} className="d-flex align-items-end">
-                <Button
-                  variant="success"
-                  onClick={handleIdentifyClick}
-                  disabled={!isIdentifyButtonEnabled || localIdentifyDisabled}
-                  className={`w-100${identifyBlink ? " identify-blink" : ""}`}
-                >
-                  Identificar Informacio
-                </Button>
-              </Col>
-              <Col md={3}>
-                <Form.Group controlId="idInformacion">
-                  <Form.Label>Seleccione Informacio</Form.Label>
-                  <Form.Select
-                    value={idInformacion}
-                    disabled={localSelectDisabled || !isEstadoVisible}
-                    onChange={handleSelectInformacion}
-                  >
-                    <option value="">Selecciona</option>
-                    <option value="1904">Errónea</option>
-                    <option value="1902">Incompleta</option>
-                    <option value="1903">No corresponde</option>
-                    <option value="1905">Inexistente</option>
-                    <option value="1906">Correcta</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-              <Col md={2} className="d-flex align-items-end justify-content-end">
-                <Button
-                  variant="primary"
-                  onClick={handleSaveNewAddress}
-                  disabled={isFormDisabled || !isNuevoRegistro}
-                  className="w-100"
-                >
-                  Registrar
-                </Button>
+            <Row className="mb-3 align-items-end justify-content-center">
+              <Col md={10} className="d-flex justify-content-center align-items-end">
+                <div className="d-flex flex-row justify-content-center align-items-end w-100">
+                  <div className="me-2 flex-fill">
+                    <Form.Group>
+                      <Form.Label>Información Actual</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={getInformacionString()}
+                        disabled
+                        placeholder="Sin información"
+                      />
+                    </Form.Group>
+                  </div>
+                  <div className="me-2 flex-fill d-flex align-items-end">
+                    <Button
+                      variant="success"
+                      onClick={handleIdentifyClick}
+                      disabled={!isIdentifyButtonEnabled || localIdentifyDisabled}
+                      className={`w-100${identifyBlink ? " identify-blink" : ""}`}
+                    >
+                      Identificar Informacio
+                    </Button>
+                  </div>
+                  <div className="flex-fill">
+                    <Form.Group controlId="idInformacion">
+                      <Form.Label>Seleccione Informacio</Form.Label>
+                      <Form.Select
+                        value={idInformacion}
+                        disabled={localSelectDisabled || !isEstadoVisible}
+                        onChange={handleSelectInformacion}
+                      >
+                        <option value="">Selecciona</option>
+                        <option value="1904">Errónea</option>
+                        <option value="1902">Incompleta</option>
+                        <option value="1903">No corresponde</option>
+                        <option value="1905">Inexistente</option>
+                        <option value="1906">Correcta</option>
+                      </Form.Select>
+                    </Form.Group>
+                  </div>
+                </div>
               </Col>
             </Row>
           )}
