@@ -372,7 +372,7 @@ const CalculatorSimulator = ({ show, handleClose, showCloseButton }) => {
         no: calculo.no,
         fecha: new Date(calculo.fecha).toISOString(), // Convertir a formato ISO
         saldo: calculo.saldo || 0,
-        pago: calculo.pago || 0,
+        pago: (Number(calculo.pago) || 0).toFixed(2),
         saldoFinal: calculo.saldoFinal || 0,
       }));
 
@@ -502,7 +502,7 @@ const handleRowClick = (index) => {
     ...prev,
     filaMod: index, // Actualiza filaMod con el índice seleccionado
     montoMod: calculoSeleccionado.pago
-      ? calculoSeleccionado.pago.toString()
+      ? calculoSeleccionado.pago.toFixed(2)
       : "",
     fechaPagoMod: calculoSeleccionado.fecha
       ? new Date(calculoSeleccionado.fecha).toISOString().split("T")[0]
@@ -1670,28 +1670,41 @@ const handleRowClick = (index) => {
                               </Form.Label>
                               <Form.Control
                                 placeholder="Monto"
-                                type="text"
                                 name="montoMod"
-                                value={modifyForm.montoMod}
+                                value={
+                                  modifyForm.montoMod !== ""
+                                    ? `$${modifyForm.montoMod}` // Ya no formateamos aquí para controlar la entrada
+                                    : ""
+                                }
                                 onChange={(e) => {
-                                  // Permite solo números y punto decimal
-                                  const value = e.target.value.replace(
-                                    /[^0-9.]/g,
-                                    ""
-                                  );
+                                  let value = e.target.value.replace(/^\$/, "");
+                                  // Permitir solo números y un punto decimal
+                                  value = value.replace(/[^0-9.]/g, "");
+
+                                  // Limitar a un solo punto decimal
+                                  const parts = value.split(".");
+                                  if (parts.length > 2) {
+                                    value =
+                                      parts[0] +
+                                      "." +
+                                      parts.slice(1, 2).join("");
+                                  }
+
+                                  // Limitar a dos decimales después del punto
+                                  if (value.includes(".")) {
+                                    const [integerPart, decimalPart] =
+                                      value.split(".");
+                                    if (decimalPart && decimalPart.length > 2) {
+                                      value =
+                                        integerPart +
+                                        "." +
+                                        decimalPart.slice(0, 2);
+                                    }
+                                  }
+
                                   setModifyForm((prev) => ({
                                     ...prev,
                                     montoMod: value,
-                                  }));
-                                }}
-                                onBlur={(e) => {
-                                  // Al salir del input, formatea a moneda si hay valor
-                                  const value = e.target.value;
-                                  setModifyForm((prev) => ({
-                                    ...prev,
-                                    montoMod: value
-                                      ? Number(value).toFixed(2)
-                                      : "",
                                   }));
                                 }}
                                 onKeyPress={(e) => {
