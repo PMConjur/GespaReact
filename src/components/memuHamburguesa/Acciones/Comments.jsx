@@ -18,7 +18,6 @@ const CommentsModal = ({ show, handleClose }) => {
           <CommentN comentario="" isValid={true} onSave={handleSaveComment} />
         </Container>
       </Modal.Body>
-      <Modal.Footer></Modal.Footer>
     </Modal>
   );
 };

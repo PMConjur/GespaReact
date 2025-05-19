@@ -231,16 +231,19 @@ const TableAditionals = ({ customColumnNames = {}, onRowClick, selectedAnswer, a
 
   return (
     <>
-    <div
-      className="scroll-container"
-      style={{
-        overflowX: "hhidden",
-        overflowY: "auto",
-        width: "100%",
-        height: "400px", // Asegura que ocupe todo el espacio del contenedor padre
-        maxHeight: "400px", // No exceder la altura del contenedor padre
-      }}
-    >
+      <div
+        className="scroll-container"
+        style={{
+          width: "100%",
+          maxHeight: "300px",
+          overflowY: "auto",
+          display: "flex",
+          backgroundColor: "#343a40", // Fondo oscuro
+          color: "#ffffff", // Texto claro
+          scrollbarColor: "#6c757d #343a40", // Colores del scroll
+          scrollbarWidth: "thin", // Scroll más delgado
+        }}
+      >
         <Table
           striped
           bordered

@@ -106,12 +106,6 @@ function DropdownInfo() {
           >
             Pagos
           </Dropdown.Item>
-          <Dropdown.Item
-            onClick={handleShowAddress}
-            className="custom-dropdown-item"
-          >
-            Address
-          </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
 
@@ -147,11 +141,6 @@ function DropdownInfo() {
       <Mail 
       show={showMail} 
       handleClose={handleCloseMail} />
-
-      {/* Renderizar el modal de Address */}
-      <Address 
-      show={showAddress}
-      handleClose={handleCloseAddress} />
     </>
   );
 }

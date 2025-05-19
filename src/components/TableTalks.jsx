@@ -138,7 +138,7 @@ const TableTalks = ({ customColumnNames = {}, onRowClick }) => {
                 }}
             >
                 <Table striped bordered hover responsive variant="dark" style={{ fontSize: "13px" }}>
-                    <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#343a40" }}>
+                    <thead style={{ position: "sticky", top: -1, zIndex: 1, backgroundColor: "#343a40" }}>
                         <tr style={{ height: "55px" }}>
                             {headers.map((header) => (
                                 <th key={header} style={{ padding: "4px", minHeight: "20px", textAlign: "center" }}>
