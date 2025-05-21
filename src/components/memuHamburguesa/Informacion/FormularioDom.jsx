@@ -198,6 +198,11 @@ const FormularioDom = ({
     });
   };
 
+  // Determinar si mostrar los controles de identificación
+  const infoActual = getInformacionString();
+  const mostrarIdentificar =
+    !isNuevoRegistro && infoActual === "Sin verificar";
+
   if (onlyPagination) {
     return (
       <Row className="mb-3 w-100">
@@ -582,13 +587,24 @@ const FormularioDom = ({
         </Row>
 
         <Form>
-          {/* Origen, Fecha SOLO si NO es nuevo registro */}
+          {/* Origen, Información Actual y Fecha SOLO si NO es nuevo registro */}
           {!isNuevoRegistro && (
             <Row className="mb-3">
               <Col>
                 <Form.Group>
                   <Form.Label>Origen</Form.Label>
                   <Form.Control type="text" value={formData?.origen} disabled />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group>
+                  <Form.Label>Información Actual</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={infoActual}
+                    disabled
+                    placeholder="Sin información"
+                  />
                 </Form.Group>
               </Col>
               <Col>
@@ -608,22 +624,12 @@ const FormularioDom = ({
             </Row>
           )}
 
-          {/* Información Actual, Identificar, Dropdown y Registrar SOLO si NO es nuevo registro */}
-          {!isNuevoRegistro && (
+          {/* Identificar, Dropdown SOLO si NO es nuevo registro y solo si infoActual es "Sin verificar" */}
+          {!isNuevoRegistro && mostrarIdentificar && (
             <Row className="mb-3 align-items-end justify-content-center">
               <Col md={10} className="d-flex justify-content-center align-items-end">
                 <div className="d-flex flex-row justify-content-center align-items-end w-100">
-                  <div className="me-2 flex-fill">
-                    <Form.Group>
-                      <Form.Label>Información Actual</Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={getInformacionString()}
-                        disabled
-                        placeholder="Sin información"
-                      />
-                    </Form.Group>
-                  </div>
+                  {/* Botón Identificar Información */}
                   <div className="me-2 flex-fill d-flex align-items-end">
                     <Button
                       variant="success"
@@ -631,12 +637,13 @@ const FormularioDom = ({
                       disabled={!isIdentifyButtonEnabled || localIdentifyDisabled || isFormDisabled}
                       className={`w-100${identifyBlink ? " identify-blink" : ""}`}
                     >
-                      Identificar Informacio
+                      Identificar Información
                     </Button>
                   </div>
+                  {/* Dropdown Seleccione Información */}
                   <div className="flex-fill">
                     <Form.Group controlId="idInformacion">
-                      <Form.Label>Seleccione Informacio</Form.Label>
+                      <Form.Label>Seleccione Información</Form.Label>
                       <Form.Select
                         value={idInformacion}
                         disabled={localSelectDisabled || !isEstadoVisible || isFormDisabled}
