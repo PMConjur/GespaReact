@@ -150,7 +150,6 @@ const Addresses = ({ show, handleClose }) => {
       fetchAddressData();
       fetchTableDomData();
       fetchTableDomicilioData();
-      compareAndReplacePostalCodes(); // Llama a la función aquí
     }
   }, [show]);
 
@@ -411,105 +410,8 @@ const Addresses = ({ show, handleClose }) => {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const url = `/search-customer/domicilios-visitas?idCartera=1&idCuenta=${idCuenta}`;
 
-      const response = await servicio.get(url, {
-        headers: { 
-        },
-      });
 
-      // Normaliza los datos
-      const sanitizedData = (response.data.domicilios || []).map((item) => ({
-        ...item,
-        idCódigoPostal: item.idCódigoPostal || null, // Asegúrate de incluir este campo
-      }));
-
-      // Filtrar códigos postales válidos
-      const uniquePostalIds = [...new Set(sanitizedData.map((item) => item.idCódigoPostal))].filter(
-        (idCódigoPostal) => idCódigoPostal
-      );
-
-      const postalDataPromises = uniquePostalIds.map((idCódigoPostal) =>
-        servicio
-          .get(`/search-customer/search-postal-code?codigoPostal=${idCódigoPostal}`)
-          .catch((error) => {
-            if (error.response?.status === 404) {
-              console.warn(
-                `Código postal no encontrado: ${idCódigoPostal}. Detalles: ${
-                  error.response.data?.mensaje || "Sin detalles"
-                }`
-              );
-              return null; // Retorna null si el código postal no existe
-            }
-            throw error; // Lanza otros errores
-          })
-      );
-
-      const postalResponses = await Promise.allSettled(postalDataPromises);
-      const postalDataMap = postalResponses.reduce((acc, result, index) => {
-        if (result.status === "fulfilled" && result.value?.data) {
-          const postalInfo = result.value.data.codigosPostales?.[0];
-          if (postalInfo) {
-            acc[uniquePostalIds[index]] = postalInfo;
-          }
-        }
-        return acc;
-      }, {});
-
-      // Reemplazar los valores en sanitizedData con los datos del segundo endpoint
-      const enrichedData = sanitizedData.map((item) => {
-        const postalInfo = postalDataMap[item.idCódigoPostal];
-        if (postalInfo) {
-          return {
-            ...item,
-            códigoPostal: postalInfo.códigoPostal || item.códigoPostal, // Actualiza el código postal
-            delegaciónMunicipio: postalInfo.municipio || item.delegaciónMunicipio, // Actualiza el municipio
-            estado: postalInfo.estado || item.estado, // Actualiza el estado
-          };
-        }
-        return item;
-      });
-
-      setTableDomicilioData(enrichedData); // solo los items reales
-      setExistingAddresses(enrichedData); // Actualiza las direcciones existentes
-    } catch (error) {
-      console.error("Error fetching domicilio data:", error);
-
-      let message = "No se pudo cargar la tabla de domicilios.";
-      if (error.response) {
-        const status = error.response.status;
-        message =
-          status === 404
-            ? "No se encontraron datos para la cuenta especificada."
-            : `Error ${status}: ${error.response.data.message}`;
-      } else if (error.request) {
-        message = "Error: No se recibió respuesta del servidor.";
-      } else {
-        message = `Error: Ocurrió un problema al realizar la solicitud. Detalles: ${error.message}`;
-      }
-
-      if (errorMessage !== message) {
-        console.log("Mostrando toast con mensaje:", message);
-        clearAllToasts(); // Cierra cualquier toast abierto
-        showToast(toast.error, message, { duration: 2000 });
-        setErrorMessage(message);
-      } else {
-        console.log("Mensaje duplicado, no se muestra toast:", message);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const compareAndReplacePostalCodes = async () => {
-    if (!idCuenta) {
-      // Solo log, no toast aquí porque ya se muestra en fetchAddressData/fetchTableDomData
-      console.error("ID de cuenta no válido. No se puede realizar la comparación.");
-      return;
-    }
-  
     try {
       const domiciliosResponse = await servicio.get(
         `/search-customer/domicilios-visitas?idCartera=1&idCuenta=${idCuenta}`
@@ -1120,6 +1022,7 @@ const Addresses = ({ show, handleClose }) => {
       </Modal.Body>
     </Modal>
   );
+
 };
 
 export default Addresses;

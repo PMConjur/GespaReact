@@ -98,7 +98,9 @@ const NewComment = ({ comentario, isValid, onSave, handleCloseModal }) => {
       setComment("");
       setSelectedOption("");
       setShowValidators(false);
-      handleCloseModal();
+      if (typeof handleCloseModal === "function") {
+        handleCloseModal();
+      }
     } catch (error) {
       toast.error(error.message || "Error al guardar el comentario.");
     }
@@ -128,6 +130,7 @@ const NewComment = ({ comentario, isValid, onSave, handleCloseModal }) => {
             name="commentType"
             onChange={handleRadioChange}
             checked={selectedOption === "revision"}
+            disabled={!idCuenta[0]} // Deshabilita si no hay idCuenta
           />
         </Col>
         <Col xs="auto">
@@ -138,6 +141,7 @@ const NewComment = ({ comentario, isValid, onSave, handleCloseModal }) => {
             name="commentType"
             onChange={handleRadioChange}
             checked={selectedOption === "segundaVoz"}
+            disabled={!idCuenta[0]} // Deshabilita si no hay idCuenta
           />
         </Col>
         <Col xs="auto">
@@ -148,13 +152,13 @@ const NewComment = ({ comentario, isValid, onSave, handleCloseModal }) => {
             name="commentType"
             onChange={handleRadioChange}
             checked={selectedOption === "rebotado"}
-            disabled={modificaSituacion} // Deshabilita si modificaSituacion es true
+            disabled={modificaSituacion || !idCuenta[0]} // Deshabilita si modificaSituacion es true o no hay idCuenta
           />
         </Col>
         <Col xs="auto">
           <Button
             variant="primary"
-            disabled={!valid}
+            disabled={!valid || !idCuenta[0]} // Deshabilita si no es válido o no hay idCuenta
             onClick={handleSave}
           >
             Guardar Comentario
@@ -165,7 +169,7 @@ const NewComment = ({ comentario, isValid, onSave, handleCloseModal }) => {
       {showValidators && (
         <Validators
           show={showValidators}
-          handleClose={handleCloseModal} // Asegúrate de pasar handleCloseModal correctamente
+          handleClose={typeof handleCloseModal === "function" ? handleCloseModal : () => setShowValidators(false)}
           handleValidate={handleValidate}
         />
       )}
