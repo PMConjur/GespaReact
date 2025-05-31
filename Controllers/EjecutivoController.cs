@@ -359,8 +359,7 @@ namespace NoriAPI.Controllers
             if (InfoCalucladora2.mensaje == "")
                 return Ok(InfoCalucladora2);
             else
-                return Ok(InfoCalucladora2.mensaje);
-
+                return BadRequest(InfoCalucladora2.mensaje);
         }
 
         [HttpPost("Ofrecer-Negociacion")]

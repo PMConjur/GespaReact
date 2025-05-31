@@ -7,13 +7,14 @@ namespace NoriAPI.Models.Ejecutivo
         public List<CalculosInfo> Calculos { get; set; }
         public double MontoRequerido { get; set; }
         public double MontoNegociado {  get; set; }
-        public string MontoDescuento { get; set; }
+        public double MontoDescuento { get; set; }
         public double Pago { get; set; }
         public double Saldo {  get; set; }
         public string Plazos { get; set; }
         public double Descuento { get; set; }
         public double Monto {  get; set; }
         public double TasaMensual {  get; set; }
+        public int MaxDescuento { get; set; }
         public string mensaje { get; set; }
     }
 }

@@ -597,27 +597,7 @@ namespace NoriAPI.Repositories
         public async Task<List<PreguntasRespuestasInfo>> ValidatePreguntas_Respuestas()
         {
             using var connection = GetConnection("Piso2Amex");
-            string preg_resp_Query = "select FP.[idPregunta],\r\n" +
-                "FP.[Pregunta],\r\n" +
-                "FR.[idRespuesta],\r\n" +
-                "FR.[idValor],\r\n" +
-                "FR.[Respuesta],\r\n" +
-                "FR.[idSiguientePregunta],\r\n" +
-                "FR.[Seguimiento],\r\n" +
-                "FR.[Negociación],\r\n" +
-                "FR.[Identificador],\r\n" +
-                "case when\r\n" +
-                "VC.[Valor] = 'Confirmar negociación '\r\n" +
-                "THEN 'Negociación'\r\n" +
-                "ELSE VC.[Valor]\r\n" +
-                "END[Valor],\r\n" +
-                "VC.[ValorActivo]\r\n" +
-                "from FlujoPreguntas FP\r\n" +
-                "inner join FlujoRespuestas FR\r\n" +
-                "on FR.idPregunta = FP.idPregunta \r\n" +
-                "left join ValoresCatálogo VC\r\n" +
-                "on VC.idValor = FR.idValor \r\n" +
-                "order by fr.idPregunta";
+            string preg_resp_Query = "SELECT  * FROM[dbCollection].[dbo].[vw_Flujo]";
 
             var preg_resp_list = await connection.QueryAsync<PreguntasRespuestasInfo>(
                 preg_resp_Query,
